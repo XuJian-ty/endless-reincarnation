@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e106b6c862299d447be7d709a444925c, type: 3}
+  m_Name: "\u5173\u5361\u914D\u7F6E\u5E93"
+  m_EditorClassIdentifier: 
+  levels:
+  - levelIndex: 1
+    guardianCount: 3
+    meleeMinCount: 0
+    meleeMaxCount: 4
+    rangedMinCount: 0
+    rangedMaxCount: 2
+    eliteMinCount: 0
+    eliteMaxCount: 1
+    chestMinCount: 0
+    chestMaxCount: 2
+    shopCount: 2
+    cellSize: 40
+  - levelIndex: 2
+    guardianCount: 4
+    meleeMinCount: 0
+    meleeMaxCount: 4
+    rangedMinCount: 0
+    rangedMaxCount: 2
+    eliteMinCount: 0
+    eliteMaxCount: 1
+    chestMinCount: 0
+    chestMaxCount: 2
+    shopCount: 2
+    cellSize: 40
+  - levelIndex: 3
+    guardianCount: 6
+    meleeMinCount: 0
+    meleeMaxCount: 4
+    rangedMinCount: 0
+    rangedMaxCount: 2
+    eliteMinCount: 0
+    eliteMaxCount: 1
+    chestMinCount: 0
+    chestMaxCount: 2
+    shopCount: 2
+    cellSize: 40
+  - levelIndex: 4
+    guardianCount: 7
+    meleeMinCount: 0
+    meleeMaxCount: 4
+    rangedMinCount: 0
+    rangedMaxCount: 2
+    eliteMinCount: 0
+    eliteMaxCount: 1
+    chestMinCount: 0
+    chestMaxCount: 2
+    shopCount: 2
+    cellSize: 40
+  - levelIndex: 5
+    guardianCount: 10
+    meleeMinCount: 0
+    meleeMaxCount: 4
+    rangedMinCount: 0
+    rangedMaxCount: 2
+    eliteMinCount: 0
+    eliteMaxCount: 1
+    chestMinCount: 0
+    chestMaxCount: 2
+    shopCount: 2
+    cellSize: 40

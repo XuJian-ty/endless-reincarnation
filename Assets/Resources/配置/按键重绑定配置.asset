@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1698c51d706a6634a99bd437de0b9000, type: 3}
+  m_Name: "\u6309\u952E\u91CD\u7ED1\u5B9A\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  entries:
+  - actionName: Skill0
+    bindingPart: 
+    displayName: "\u6280\u80FD0"
+  - actionName: Skill1
+    bindingPart: 
+    displayName: "\u6280\u80FD1"
+  - actionName: Skill2
+    bindingPart: 
+    displayName: "\u6280\u80FD2"
+  - actionName: Skill3
+    bindingPart: 
+    displayName: "\u6280\u80FD3"
+  - actionName: UseHealthPotion
+    bindingPart: 
+    displayName: "\u56DE\u8840\u836F\u5242"
+  - actionName: UseManaPotion
+    bindingPart: 
+    displayName: "\u56DE\u84DD\u836F\u5242"
+  - actionName: ToggleKeyConfig
+    bindingPart: 
+    displayName: "\u6309\u952E\u914D\u7F6E"
+  - actionName: ToggleBackpack
+    bindingPart: 
+    displayName: "\u80CC\u5305"
+  - actionName: ToggleSkillTree
+    bindingPart: 
+    displayName: "\u6280\u80FD\u6811"
+  - actionName: ToggleMenu
+    bindingPart: 
+    displayName: "\u83DC\u5355"
+  - actionName: Dodge
+    bindingPart: 
+    displayName: "\u95EA\u907F"
+  - actionName: Jump
+    bindingPart: 
+    displayName: "\u8DF3\u8DC3"
+  - actionName: Move
+    bindingPart: up
+    displayName: "\u79FB\u52A8-\u4E0A"
+  - actionName: Move
+    bindingPart: down
+    displayName: "\u79FB\u52A8-\u4E0B"
+  - actionName: Move
+    bindingPart: left
+    displayName: "\u79FB\u52A8-\u5DE6"
+  - actionName: Move
+    bindingPart: right
+    displayName: "\u79FB\u52A8-\u53F3"
+  - actionName: ToggleCursor
+    bindingPart: 
+    displayName: "\u5149\u6807\u663E\u9690"

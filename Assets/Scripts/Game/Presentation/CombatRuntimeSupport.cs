@@ -1,0 +1,168 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+using Game.Domain;
+using Game.GameFlow;
+
+namespace Game.Presentation
+{
+    public class CombatMotionController : MonoBehaviour
+    {
+        private CharacterController _characterController;
+        private NavMeshAgent _navMeshAgent;
+        private Vector3 _velocity;
+        private float _remainingTime;
+        private bool _capturedAgentState;
+        private bool _previousAgentStopped;
+
+        private void Awake()
+        {
+            _characterController = GetComponent<CharacterController>();
+            _navMeshAgent = GetComponent<NavMeshAgent>();
+        }
+
+        public void ApplyDisplacement(Vector3 worldDelta, float duration)
+        {
+            if (worldDelta.sqrMagnitude <= 0.0001f)
+                return;
+
+            if (duration <= 0.01f)
+            {
+                ApplyImmediate(worldDelta);
+                return;
+            }
+
+            _velocity = worldDelta / duration;
+            _remainingTime = duration;
+
+            if (_navMeshAgent != null && _navMeshAgent.enabled && _navMeshAgent.isOnNavMesh && !_capturedAgentState)
+            {
+                _previousAgentStopped = _navMeshAgent.isStopped;
+                _navMeshAgent.isStopped = true;
+                _capturedAgentState = true;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (GameStateMachine.GetInstance()?.IsGameplayPaused == true)
+                return;
+
+            if (_remainingTime <= 0f)
+                return;
+
+            float dt = Mathf.Min(Time.deltaTime, _remainingTime);
+            var delta = _velocity * dt;
+            ApplyImmediate(delta);
+
+            _remainingTime -= dt;
+            if (_remainingTime > 0f) return;
+
+            _velocity = Vector3.zero;
+            if (_navMeshAgent != null && _navMeshAgent.enabled && _capturedAgentState)
+            {
+                _navMeshAgent.isStopped = _previousAgentStopped;
+                _capturedAgentState = false;
+            }
+        }
+
+        private void ApplyImmediate(Vector3 delta)
+        {
+            if (_characterController != null && _characterController.enabled)
+            {
+                _characterController.Move(delta);
+                return;
+            }
+
+            if (_navMeshAgent != null && _navMeshAgent.enabled && _navMeshAgent.isOnNavMesh)
+            {
+                _navMeshAgent.Move(delta);
+                return;
+            }
+
+            transform.position += delta;
+        }
+    }
+
+    public class PlayerRuntimeStatModifierController : MonoBehaviour
+    {
+        [Serializable]
+        private sealed class RuntimeModifier
+        {
+            public StatModifier modifier;
+            public float endTime;
+        }
+
+        private readonly List<RuntimeModifier> _modifiers = new List<RuntimeModifier>();
+        private PlayerController _playerController;
+
+        private void Awake()
+        {
+            _playerController = GetComponent<PlayerController>();
+        }
+
+        private void Update()
+        {
+            if (GameStateMachine.GetInstance()?.IsGameplayPaused == true)
+                return;
+
+            if (_modifiers.Count <= 0 || _playerController?.PlayerModel == null) return;
+
+            float now = Time.time;
+            for (int i = _modifiers.Count - 1; i >= 0; i--)
+            {
+                if (now <= _modifiers[i].endTime) continue;
+                _playerController.PlayerModel.Stats.RemoveModifier(_modifiers[i].modifier);
+                _modifiers.RemoveAt(i);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_playerController?.PlayerModel == null) return;
+            for (int i = 0; i < _modifiers.Count; i++)
+                _playerController.PlayerModel.Stats.RemoveModifier(_modifiers[i].modifier);
+            _modifiers.Clear();
+        }
+
+        public void ApplyModifier(StatModifier modifier, float duration)
+        {
+            if (_playerController?.PlayerModel == null || modifier == null)
+                return;
+
+            var clone = modifier.Clone();
+            _playerController.PlayerModel.Stats.AddModifier(clone);
+            _modifiers.Add(new RuntimeModifier
+            {
+                modifier = clone,
+                endTime = Time.time + Mathf.Max(0.01f, duration)
+            });
+        }
+    }
+
+    public static class CombatCuePlayer
+    {
+        public static void PlayCue(string cueName, Transform actor)
+        {
+            if (actor == null || string.IsNullOrEmpty(cueName)) return;
+
+            var db = Game.ConfigManager.GetInstance()?.GetAnimationFrameVfxDatabase();
+            var entry = db?.GetEntry(cueName);
+            if (entry == null) return;
+
+            Transform mount = actor;
+            if (!string.IsNullOrEmpty(entry.mountPointName))
+            {
+                var found = actor.Find(entry.mountPointName);
+                if (found != null)
+                    mount = found;
+            }
+
+            if (entry.HasEffect)
+                UnityEngine.Object.Instantiate(entry.effectPrefab, mount.position, mount.rotation, mount);
+            if (entry.HasSound)
+                AudioSource.PlayClipAtPoint(entry.soundClip, mount.position);
+        }
+    }
+}

@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3c73c8af58434a48bc6926cc13cc993, type: 3}
+  m_Name: "\u654C\u4EBA\u884C\u4E3A_Boss1"
+  m_EditorClassIdentifier: 
+  enemyId: boss_1
+  displayName: Boss1
+  enemyType: 4
+  behaviorTreeAsset: {fileID: 11400000, guid: 19d0127e2bca69f4787221e7189102ae, type: 2}
+  sectorAngle: 160
+  sectorRange: 22
+  chaseBreakDistance: 40
+  patrolRadius: 16
+  enableTacticalCombat: 1
+  chaseInnerDistance: 5.5
+  chaseOuterDistance: 17.5
+  preferredSafetyDistanceOffset: 0.9
+  combatDistanceTolerance: 1.1
+  castRangeTolerance: 0.25
+  retreatStepDistance: 4.2
+  tacticalHoldDuration: 0.12
+  approachLeadTime: 0.25
+  losProbeInterval: 0.1
+  pathProbeInterval: 0.3
+  losBlockedPenaltySeconds: 0.35
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  perceptionEyeHeight: 1.2
+  skillSlots:
+  - slotIndex: 0
+    skillId: boss_1_slash
+    cooldown: 2.2
+    castRange: 3
+    castDuration: 0.9
+    postCastIdleDuration: 0
+    enterIdleAfterCast: 0
+    rotateToTargetOnCast: 1
+    animationTrigger: 
+    phaseAvailability: 0
+  - slotIndex: 1
+    skillId: boss_1_shot
+    cooldown: 2.8
+    castRange: 14
+    castDuration: 1
+    postCastIdleDuration: 0
+    enterIdleAfterCast: 0
+    rotateToTargetOnCast: 1
+    animationTrigger: 
+    phaseAvailability: 0
+  - slotIndex: 2
+    skillId: boss_1_charge
+    cooldown: 4
+    castRange: 5
+    castDuration: 1
+    postCastIdleDuration: 0.45
+    enterIdleAfterCast: 1
+    rotateToTargetOnCast: 1
+    animationTrigger: 
+    phaseAvailability: 1
+  - slotIndex: 3
+    skillId: boss_1_roar
+    cooldown: 5
+    castRange: 8
+    castDuration: 1.2
+    postCastIdleDuration: 0.55
+    enterIdleAfterCast: 1
+    rotateToTargetOnCast: 0
+    animationTrigger: 
+    phaseAvailability: 1

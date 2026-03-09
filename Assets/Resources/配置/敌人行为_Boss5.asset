@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3c73c8af58434a48bc6926cc13cc993, type: 3}
+  m_Name: "\u654C\u4EBA\u884C\u4E3A_Boss5"
+  m_EditorClassIdentifier: 
+  enemyId: boss_5
+  displayName: Boss5
+  enemyType: 4
+  behaviorTreeAsset: {fileID: 11400000, guid: 19d0127e2bca69f4787221e7189102ae, type: 2}
+  sectorAngle: 180
+  sectorRange: 26
+  chaseBreakDistance: 48
+  patrolRadius: 18
+  enableTacticalCombat: 1
+  chaseInnerDistance: 6.1
+  chaseOuterDistance: 19.5
+  preferredSafetyDistanceOffset: 0.9
+  combatDistanceTolerance: 1.1
+  castRangeTolerance: 0.25
+  retreatStepDistance: 4.2
+  tacticalHoldDuration: 0.12
+  approachLeadTime: 0.25
+  losProbeInterval: 0.1
+  pathProbeInterval: 0.3
+  losBlockedPenaltySeconds: 0.35
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  perceptionEyeHeight: 1.2
+  skillSlots:
+  - slotIndex: 0
+    skillId: boss_5_cleave
+    cooldown: 1.9
+    castRange: 3.6
+    castDuration: 1
+    postCastIdleDuration: 0
+    enterIdleAfterCast: 0
+    rotateToTargetOnCast: 1
+    animationTrigger: 
+    phaseAvailability: 0
+  - slotIndex: 1
+    skillId: boss_5_storm
+    cooldown: 2.3
+    castRange: 16
+    castDuration: 1.3
+    postCastIdleDuration: 0
+    enterIdleAfterCast: 0
+    rotateToTargetOnCast: 1
+    animationTrigger: 
+    phaseAvailability: 0
+  - slotIndex: 2
+    skillId: boss_5_stampede
+    cooldown: 3.3
+    castRange: 6.5
+    castDuration: 1.05
+    postCastIdleDuration: 0.6
+    enterIdleAfterCast: 1
+    rotateToTargetOnCast: 1
+    animationTrigger: 
+    phaseAvailability: 1
+  - slotIndex: 3
+    skillId: boss_5_regen_roar
+    cooldown: 4.2
+    castRange: 9
+    castDuration: 1.25
+    postCastIdleDuration: 0.6
+    enterIdleAfterCast: 1
+    rotateToTargetOnCast: 0
+    animationTrigger: 
+    phaseAvailability: 1

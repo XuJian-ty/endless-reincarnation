@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d166a875a80b6a347a3a335babfa589a, type: 3}
+  m_Name: "\u5171\u4EAB\u6280\u80FD\u5E93"
+  m_EditorClassIdentifier: 
+  entries:
+  - skillId: player_skill_0
+    displayName: "\u4E3B\u52A8\u6280\u80FD0"
+    ignoreAnimationDamageEvents: 0
+    events: []
+  - skillId: player_skill_1
+    displayName: "\u4E3B\u52A8\u6280\u80FD1"
+    ignoreAnimationDamageEvents: 0
+    events: []
+  - skillId: player_skill_2
+    displayName: "\u4E3B\u52A8\u6280\u80FD2"
+    ignoreAnimationDamageEvents: 0
+    events: []
+  - skillId: player_skill_3
+    displayName: "\u4E3B\u52A8\u6280\u80FD3"
+    ignoreAnimationDamageEvents: 0
+    events: []

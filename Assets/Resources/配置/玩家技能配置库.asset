@@ -1,0 +1,127 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9ea1188a1aa0e244880ce03e0b14eb4, type: 3}
+  m_Name: "\u73A9\u5BB6\u6280\u80FD\u914D\u7F6E\u5E93"
+  m_EditorClassIdentifier: 
+  entries:
+  - skillId: passive_1
+    displayName: "\u88AB\u52A81"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_2
+    displayName: "\u88AB\u52A82"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_3
+    displayName: "\u88AB\u52A83"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_4
+    displayName: "\u88AB\u52A84"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_5
+    displayName: "\u88AB\u52A85"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_6
+    displayName: "\u88AB\u52A86"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_7
+    displayName: "\u88AB\u52A87"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_8
+    displayName: "\u88AB\u52A88"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_9
+    displayName: "\u88AB\u52A89"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_10
+    displayName: "\u88AB\u52A810"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_11
+    displayName: "\u88AB\u52A811"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: passive_12
+    displayName: "\u88AB\u52A812"
+    isPassive: 1
+    talentCost: 1
+    mpCost: 0
+    sharedSkillId: 
+    animationStateIndex: 0
+  - skillId: active_1
+    displayName: "\u4E3B\u52A81"
+    isPassive: 0
+    talentCost: 2
+    mpCost: 10
+    sharedSkillId: player_skill_0
+    animationStateIndex: 0
+  - skillId: active_2
+    displayName: "\u4E3B\u52A82"
+    isPassive: 0
+    talentCost: 2
+    mpCost: 10
+    sharedSkillId: player_skill_1
+    animationStateIndex: 1
+  - skillId: active_3
+    displayName: "\u4E3B\u52A83"
+    isPassive: 0
+    talentCost: 2
+    mpCost: 10
+    sharedSkillId: player_skill_2
+    animationStateIndex: 2
+  - skillId: active_4
+    displayName: "\u4E3B\u52A84"
+    isPassive: 0
+    talentCost: 2
+    mpCost: 10
+    sharedSkillId: player_skill_3
+    animationStateIndex: 3

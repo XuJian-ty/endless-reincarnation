@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2b2a58e6c7d4b84590eb10e734775c0, type: 3}
+  m_Name: "\u7269\u54C1\u663E\u793A\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  entries:
+  - itemId: potion_hp
+    displayName: "\u56DE\u8840\u836F\u5242"
+    icon: {fileID: 0}
+    description: "\u4F7F\u7528\u540E\u6BCF\u79D2\u56DE\u590D5%\u6700\u5927\u751F\u547D\u503C\uFF0C\u6301\u7EED10\u79D2\u3002"
+    rarity: 0
+  - itemId: potion_mp
+    displayName: "\u56DE\u84DD\u836F\u5242"
+    icon: {fileID: 0}
+    description: "\u4F7F\u7528\u540E\u6BCF\u79D2\u56DE\u590D5%\u6700\u5927\u6CD5\u529B\u503C\uFF0C\u6301\u7EED10\u79D2\u3002"
+    rarity: 0
+  - itemId: nectar
+    displayName: "\u4ED9\u9732"
+    icon: {fileID: 0}
+    description: "\u6B7B\u4EA1\u65F6\u53EF\u6D88\u80171\u4E2A\u4ED9\u9732\u590D\u6D3B\uFF0C\u5E76\u56DE\u6EDA\u81F3\u68C0\u67E5\u70B9\u4E14\u96BE\u5EA6-1\u3002"
+    rarity: 0

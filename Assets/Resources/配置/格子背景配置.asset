@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fad54945d25af084787d4b3e99ae6381, type: 3}
+  m_Name: "\u683C\u5B50\u80CC\u666F\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  defaultBackground: {fileID: 21300000, guid: 2aa0abe298bca004793faf8b1f693201, type: 3}
+  commonBackground: {fileID: 21300000, guid: aa2cd18d7e4857c448a78072d523da78, type: 3}
+  rareBackground: {fileID: 21300000, guid: e830a3b3ee5710d49a9530d2c2c3b576, type: 3}
+  epicBackground: {fileID: 21300000, guid: 6170422790ec0124282829eabfd6ddd1, type: 3}
+  legendaryBackground: {fileID: 21300000, guid: 80a7c7be719eb32488e6335caf281e55,
+    type: 3}

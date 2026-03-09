@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3c73c8af58434a48bc6926cc13cc993, type: 3}
+  m_Name: "\u654C\u4EBA\u884C\u4E3A_\u8FD1\u6218\u5C0F\u602A"
+  m_EditorClassIdentifier: 
+  enemyId: melee_minion
+  displayName: "\u8FD1\u6218\u5C0F\u602A"
+  enemyType: 0
+  behaviorTreeAsset: {fileID: 11400000, guid: 19d0127e2bca69f4787221e7189102ae, type: 2}
+  sectorAngle: 120
+  sectorRange: 12
+  chaseBreakDistance: 20
+  patrolRadius: 10
+  enableTacticalCombat: 1
+  chaseInnerDistance: 2.2
+  chaseOuterDistance: 4.2
+  preferredSafetyDistanceOffset: 0.25
+  combatDistanceTolerance: 0.75
+  castRangeTolerance: 0.25
+  retreatStepDistance: 2.6
+  tacticalHoldDuration: 0.12
+  approachLeadTime: 0.15
+  losProbeInterval: 0.1
+  pathProbeInterval: 0.3
+  losBlockedPenaltySeconds: 0.35
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  perceptionEyeHeight: 1.2
+  skillSlots:
+  - slotIndex: 0
+    skillId: melee_minion_chop
+    cooldown: 0.65
+    castRange: 2.2
+    castDuration: 0.72
+    postCastIdleDuration: 0
+    enterIdleAfterCast: 0
+    rotateToTargetOnCast: 1
+    animationTrigger: 
+    phaseAvailability: 0

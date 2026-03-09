@@ -1,0 +1,2847 @@
+fileFormatVersion: 2
+guid: de78fae638ce6b542a54f0ff3b5e5727
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects: {}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 100
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton:
+    - name: "\u5929\u4F9D(Clone)"
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Armature
+      parentName: "\u5929\u4F9D(Clone)"
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+      scale: {x: 100, y: 100, z: 100}
+    - name: Hips
+      parentName: Armature
+      position: {x: -0, y: -0.0003208834, z: 0.009520793}
+      rotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 0.9999998, z: 0.9999998}
+    - name: Left leg
+      parentName: Hips
+      position: {x: -0.0006156886, y: -0.0004387862, z: -0.00036292552}
+      rotation: {x: -0.9987059, y: 0.026152102, z: -0.043604553, w: 0.0011418284}
+      scale: {x: 0.9999075, y: 1.0000004, z: 0.9999962}
+    - name: Left knee
+      parentName: Left leg
+      position: {x: 2.080924e-11, y: 0.0033899571, z: -6.9849196e-12}
+      rotation: {x: 0.030815262, y: -0.0151031045, z: 0.015943669, w: 0.99928385}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000006}
+    - name: Left ankle
+      parentName: Left knee
+      position: {x: -4.7730292e-11, y: 0.0043573207, z: -6.664778e-11}
+      rotation: {x: -0.2936693, y: 0.004040674, z: -0.0023200577, w: 0.9558958}
+      scale: {x: 1, y: 1, z: 1.0000006}
+    - name: Left toe
+      parentName: Left ankle
+      position: {x: -2.3175168e-11, y: 0.0013406598, z: -3.1984658e-11}
+      rotation: {x: 0.0000011294612, y: 0.86746436, z: -0.4974994, w: 0.000002032611}
+      scale: {x: 1.0000004, y: 1.0000011, z: 0.99999857}
+    - name: PiaoDai_L_01_01
+      parentName: Hips
+      position: {x: -0.0009858178, y: 0.0007785839, z: 0.00032496717}
+      rotation: {x: 0.96696365, y: -0.13561901, z: -0.1356188, w: 0.16791785}
+      scale: {x: 1.0000001, y: 1, z: 1.0000002}
+    - name: PiaoDai_L_01_02
+      parentName: PiaoDai_L_01_01
+      position: {x: 1.8626452e-10, y: 0.00037146738, z: 1.4901164e-10}
+      rotation: {x: 0.038168192, y: 0.020417113, z: -0.02349747, w: 0.99878645}
+      scale: {x: 1.0000001, y: 1.0000006, z: 1.0000004}
+    - name: PiaoDai_L_01_03
+      parentName: PiaoDai_L_01_02
+      position: {x: -1.1175871e-10, y: 0.00024320805, z: -1.1175871e-10}
+      rotation: {x: 0.05963095, y: -0.008458906, z: -0.005847422, w: 0.9981676}
+      scale: {x: 0.99999976, y: 1.0000004, z: 1.0000004}
+    - name: PiaoDai_L_01_04
+      parentName: PiaoDai_L_01_03
+      position: {x: -5.5879357e-11, y: 0.00028928826, z: -1.3038517e-10}
+      rotation: {x: -0.9838386, y: 0.116480075, z: 0.11648265, w: 0.07018405}
+      scale: {x: 1.0000008, y: 1.0000002, z: 1.0000001}
+    - name: PiaoDai_L_02_01
+      parentName: Hips
+      position: {x: -0.0010926541, y: 0.00077275466, z: -0.00052668795}
+      rotation: {x: 0.9569167, y: -0.14013742, z: -0.14013724, w: -0.21221125}
+      scale: {x: 0.9999997, y: 0.9999998, z: 0.9999997}
+    - name: PiaoDai_L_02_02
+      parentName: PiaoDai_L_02_01
+      position: {x: -1.3969838e-10, y: 0.00040319367, z: 2.7939676e-10}
+      rotation: {x: 0.008540853, y: 0.029411996, z: -0.04938902, w: 0.99830997}
+      scale: {x: 1.0000001, y: 1.0000007, z: 1.0000002}
+    - name: PiaoDai_L_02_03
+      parentName: PiaoDai_L_02_02
+      position: {x: -3.725291e-11, y: 0.00066598156, z: -4.284084e-10}
+      rotation: {x: 0.011648441, y: 0.013109807, z: -0.02413012, w: 0.99955505}
+      scale: {x: 1, y: 0.9999998, z: 0.9999999}
+    - name: PiaoDai_L_02_04
+      parentName: PiaoDai_L_02_03
+      position: {x: -1.1175871e-10, y: 0.00083701033, z: 3.1664965e-10}
+      rotation: {x: -0.019637333, y: -0.019541876, z: 0.036472727, w: 0.9989506}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000002}
+    - name: PiaoDai_L_02_05
+      parentName: PiaoDai_L_02_04
+      position: {x: 3.725291e-11, y: 0.00082994247, z: 1.3038517e-10}
+      rotation: {x: -0.061835505, y: -0.0051958994, z: 0.026275981, w: 0.9977269}
+      scale: {x: 0.99999976, y: 1.0000006, z: 1.0000007}
+    - name: PiaoDai_L_02_06
+      parentName: PiaoDai_L_02_05
+      position: {x: -2.6077035e-10, y: 0.0008289793, z: 1.8626452e-10}
+      rotation: {x: -0.019547774, y: 0.019116882, z: -0.020153554, w: 0.999423}
+      scale: {x: 1.0000004, y: 0.9999998, z: 0.9999996}
+    - name: PiaoDai_L_02_07
+      parentName: PiaoDai_L_02_06
+      position: {x: 1.1175871e-10, y: 0.00084374676, z: 3.725291e-11}
+      rotation: {x: 0.08455614, y: 0.053127084, z: -0.091371074, w: 0.9907972}
+      scale: {x: 0.9999997, y: 0.9999996, z: 0.9999999}
+    - name: PiaoDai_L_02_08
+      parentName: PiaoDai_L_02_07
+      position: {x: -9.313226e-11, y: 0.000881167, z: 4.656613e-11}
+      rotation: {x: -0.97462034, y: 0.033442423, z: 0.033442296, w: -0.21881124}
+      scale: {x: 1, y: 1.0000005, z: 1.0000008}
+    - name: PiaoDai_L_03_01
+      parentName: Hips
+      position: {x: -0.0010942126, y: 0.00077275466, z: -0.0004907517}
+      rotation: {x: 0.9737531, y: -0.13946079, z: -0.13946076, w: -0.11360623}
+      scale: {x: 0.99999976, y: 0.99999976, z: 0.9999998}
+    - name: PiaoDai_L_03_02
+      parentName: PiaoDai_L_03_01
+      position: {x: -3.678724e-10, y: 0.00037533068, z: 1.8626452e-10}
+      rotation: {x: 0.07884343, y: 0.03556574, z: -0.070527315, w: 0.9937529}
+      scale: {x: 0.9999999, y: 0.9999999, z: 0.9999998}
+    - name: PiaoDai_L_03_03
+      parentName: PiaoDai_L_03_02
+      position: {x: -6.519259e-11, y: 0.00064460444, z: 3.352761e-10}
+      rotation: {x: -0.003789849, y: 0.018890882, z: -0.027500335, w: 0.99943614}
+      scale: {x: 1, y: 1.0000005, z: 1.0000006}
+    - name: PiaoDai_L_03_04
+      parentName: PiaoDai_L_03_03
+      position: {x: -1.769513e-10, y: 0.00079812977, z: 5.0291415e-10}
+      rotation: {x: -0.030917328, y: 0.020830097, z: -0.026141023, w: 0.99896294}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000002}
+    - name: PiaoDai_L_03_05
+      parentName: PiaoDai_L_03_04
+      position: {x: 1.6763806e-10, y: 0.00077623845, z: -3.259629e-10}
+      rotation: {x: -0.028987058, y: 0.030246422, z: -0.039423298, w: 0.99834406}
+      scale: {x: 0.99999994, y: 1.0000006, z: 1.0000006}
+    - name: PiaoDai_L_03_06
+      parentName: PiaoDai_L_03_05
+      position: {x: 1.1641532e-11, y: 0.0007604412, z: -2.2642781e-10}
+      rotation: {x: -0.99112195, y: 0.0028197358, z: 0.0028196282, w: -0.13289694}
+      scale: {x: 1.0000001, y: 0.9999997, z: 0.9999963}
+    - name: PiaoDai_R_01_01
+      parentName: Hips
+      position: {x: 0.0009858178, y: 0.0007785839, z: 0.00032496717}
+      rotation: {x: 0.96696365, y: 0.13561901, z: 0.1356188, w: 0.16791785}
+      scale: {x: 1.0000001, y: 1, z: 1.0000002}
+    - name: PiaoDai_R_01_02
+      parentName: PiaoDai_R_01_01
+      position: {x: -1.8626452e-10, y: 0.00037146738, z: 1.4901164e-10}
+      rotation: {x: 0.038168192, y: -0.020417113, z: 0.02349747, w: 0.99878645}
+      scale: {x: 1.0000001, y: 1.0000006, z: 1.0000004}
+    - name: PiaoDai_R_01_03
+      parentName: PiaoDai_R_01_02
+      position: {x: 1.1175871e-10, y: 0.00024320805, z: -1.1175871e-10}
+      rotation: {x: 0.05963095, y: 0.008458906, z: 0.005847422, w: 0.9981676}
+      scale: {x: 0.99999976, y: 1.0000004, z: 1.0000004}
+    - name: PiaoDai_R_01_04
+      parentName: PiaoDai_R_01_03
+      position: {x: 5.5879357e-11, y: 0.00028928826, z: -1.3038517e-10}
+      rotation: {x: -0.9838386, y: -0.116480075, z: -0.11648265, w: 0.07018405}
+      scale: {x: 1.0000008, y: 1.0000002, z: 1.0000001}
+    - name: PiaoDai_R_02_01
+      parentName: Hips
+      position: {x: 0.0010926541, y: 0.00077275466, z: -0.00052668795}
+      rotation: {x: 0.9569167, y: 0.14013742, z: 0.14013724, w: -0.21221125}
+      scale: {x: 0.9999997, y: 0.9999998, z: 0.9999997}
+    - name: PiaoDai_R_02_02
+      parentName: PiaoDai_R_02_01
+      position: {x: 1.3969838e-10, y: 0.00040319367, z: 2.7939676e-10}
+      rotation: {x: 0.008540853, y: -0.029411996, z: 0.04938902, w: 0.99830997}
+      scale: {x: 1.0000001, y: 1.0000007, z: 1.0000002}
+    - name: PiaoDai_R_02_03
+      parentName: PiaoDai_R_02_02
+      position: {x: 3.725291e-11, y: 0.00066598156, z: -4.284084e-10}
+      rotation: {x: 0.011648441, y: -0.013109807, z: 0.02413012, w: 0.99955505}
+      scale: {x: 1, y: 0.9999998, z: 0.9999999}
+    - name: PiaoDai_R_02_04
+      parentName: PiaoDai_R_02_03
+      position: {x: 1.1175871e-10, y: 0.00083701033, z: 3.1664965e-10}
+      rotation: {x: -0.019637333, y: 0.019541876, z: -0.036472727, w: 0.9989506}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000002}
+    - name: PiaoDai_R_02_05
+      parentName: PiaoDai_R_02_04
+      position: {x: -3.725291e-11, y: 0.00082994247, z: 1.3038517e-10}
+      rotation: {x: -0.061835505, y: 0.0051958994, z: -0.026275981, w: 0.9977269}
+      scale: {x: 0.99999976, y: 1.0000006, z: 1.0000007}
+    - name: PiaoDai_R_02_06
+      parentName: PiaoDai_R_02_05
+      position: {x: 2.6077035e-10, y: 0.0008289793, z: 1.8626452e-10}
+      rotation: {x: -0.019547774, y: -0.019116882, z: 0.020153554, w: 0.999423}
+      scale: {x: 1.0000004, y: 0.9999998, z: 0.9999996}
+    - name: PiaoDai_R_02_07
+      parentName: PiaoDai_R_02_06
+      position: {x: -1.1175871e-10, y: 0.00084374676, z: 3.725291e-11}
+      rotation: {x: 0.08455614, y: -0.053127084, z: 0.091371074, w: 0.9907972}
+      scale: {x: 0.9999997, y: 0.9999996, z: 0.9999999}
+    - name: PiaoDai_R_02_08
+      parentName: PiaoDai_R_02_07
+      position: {x: 9.313226e-11, y: 0.000881167, z: 4.656613e-11}
+      rotation: {x: -0.97462034, y: -0.033442423, z: -0.033442296, w: -0.21881124}
+      scale: {x: 1, y: 1.0000005, z: 1.0000008}
+    - name: PiaoDai_R_03_01
+      parentName: Hips
+      position: {x: 0.0010942126, y: 0.00077275466, z: -0.0004907517}
+      rotation: {x: 0.9737531, y: 0.13946079, z: 0.13946076, w: -0.11360623}
+      scale: {x: 0.99999976, y: 0.99999976, z: 0.9999998}
+    - name: PiaoDai_R_03_02
+      parentName: PiaoDai_R_03_01
+      position: {x: 3.678724e-10, y: 0.00037533068, z: 1.8626452e-10}
+      rotation: {x: 0.07884343, y: -0.03556574, z: 0.070527315, w: 0.9937529}
+      scale: {x: 0.9999999, y: 0.9999999, z: 0.9999998}
+    - name: PiaoDai_R_03_03
+      parentName: PiaoDai_R_03_02
+      position: {x: 6.519259e-11, y: 0.00064460444, z: 3.352761e-10}
+      rotation: {x: -0.003789849, y: -0.018890882, z: 0.027500335, w: 0.99943614}
+      scale: {x: 1, y: 1.0000005, z: 1.0000006}
+    - name: PiaoDai_R_03_04
+      parentName: PiaoDai_R_03_03
+      position: {x: 1.769513e-10, y: 0.00079812977, z: 5.0291415e-10}
+      rotation: {x: -0.030917328, y: -0.020830097, z: 0.026141023, w: 0.99896294}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000002}
+    - name: PiaoDai_R_03_05
+      parentName: PiaoDai_R_03_04
+      position: {x: -1.6763806e-10, y: 0.00077623845, z: -3.259629e-10}
+      rotation: {x: -0.028987058, y: -0.030246422, z: 0.039423298, w: 0.99834406}
+      scale: {x: 0.99999994, y: 1.0000006, z: 1.0000006}
+    - name: PiaoDai_R_03_06
+      parentName: PiaoDai_R_03_05
+      position: {x: -1.1641532e-11, y: 0.0007604412, z: -2.2642781e-10}
+      rotation: {x: -0.99112195, y: -0.0028197358, z: -0.0028196282, w: -0.13289694}
+      scale: {x: 1.0000001, y: 0.9999997, z: 0.9999963}
+    - name: Right leg
+      parentName: Hips
+      position: {x: 0.0006156886, y: -0.0004387862, z: -0.00036292552}
+      rotation: {x: -0.9987059, y: -0.02615201, z: 0.04360446, w: 0.0011418217}
+      scale: {x: 1.0002671, y: 1.0000001, z: 1.0000117}
+    - name: Right knee
+      parentName: Right leg
+      position: {x: 8.20728e-11, y: 0.0033899595, z: 2.3283068e-12}
+      rotation: {x: 0.030812893, y: 0.015098116, z: -0.015932236, w: 0.99928415}
+      scale: {x: 1.0000001, y: 0.99999994, z: 1.0000002}
+    - name: Right ankle
+      parentName: Right knee
+      position: {x: -7.421477e-12, y: 0.004357313, z: 1.6589181e-11}
+      rotation: {x: -0.29366702, y: -0.0040442795, z: 0.0023173918, w: 0.95589644}
+      scale: {x: 0.9999999, y: 1.0000011, z: 0.9999993}
+    - name: Right toe
+      parentName: Right ankle
+      position: {x: -1.939199e-11, y: 0.001340656, z: 6.629307e-11}
+      rotation: {x: -0.0000018191057, y: 0.86746496, z: -0.4974983, w: -0.0000033727845}
+      scale: {x: 1.0000002, y: 0.99999595, z: 1.0000049}
+    - name: Skirt_0_0
+      parentName: Hips
+      position: {x: -1.8264341e-11, y: 0.0006143338, z: 0.0006235039}
+      rotation: {x: 1, y: -0.0000010255459, z: -0.0000005523352, w: 0.00033450127}
+      scale: {x: 1, y: 1, z: 0.9999998}
+    - name: Skirt_1_0
+      parentName: Skirt_0_0
+      position: {x: 9.237055e-16, y: 0.0013022504, z: -1.6295172e-11}
+      rotation: {x: 0.00056537986, y: 0.0000012603839, z: -0.0000017334854, w: 0.9999999}
+      scale: {x: 1, y: 1.0000001, z: 1.0000001}
+    - name: Skirt_0_1
+      parentName: Hips
+      position: {x: -0.00037843364, y: 0.0006216937, z: 0.0005657591}
+      rotation: {x: 0.997244, y: -0.052257992, z: -0.052257307, w: -0.0065460503}
+      scale: {x: 0.99996394, y: 0.9999993, z: 0.99999964}
+    - name: Skirt_1_1
+      parentName: Skirt_0_1
+      position: {x: 2.7939678e-11, y: 0.0013016768, z: 4.1909514e-11}
+      rotation: {x: -0.002592305, y: 0.007147583, z: -0.0069687655, w: 0.99994683}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000004}
+    - name: Skirt_0_2
+      parentName: Hips
+      position: {x: -0.00069925416, y: 0.00064021064, z: 0.00040124267}
+      rotation: {x: 0.9905191, y: -0.095576815, z: -0.095577024, w: -0.02453798}
+      scale: {x: 1.0000031, y: 0.9999997, z: 0.9999999}
+    - name: Skirt_1_2
+      parentName: Skirt_0_2
+      position: {x: -7.450582e-11, y: 0.0013005186, z: 4.656613e-11}
+      rotation: {x: -0.01022095, y: 0.01162094, z: -0.01018872, w: 0.99982834}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
+    - name: Skirt_0_3
+      parentName: Hips
+      position: {x: -0.00091361965, y: 0.0006611699, z: 0.00015482517}
+      rotation: {x: 0.9835932, y: -0.12290626, z: -0.122906365, w: -0.048295997}
+      scale: {x: 1.0000002, y: 1.0000005, z: 1.0000004}
+    - name: Skirt_1_3
+      parentName: Skirt_0_3
+      position: {x: 1.2107193e-10, y: 0.0012998127, z: 1.4901164e-10}
+      rotation: {x: -0.019680921, y: 0.012708982, z: -0.008848897, w: 0.99968636}
+      scale: {x: 0.9999997, y: 1, z: 0.9999998}
+    - name: Skirt_0_4
+      parentName: Hips
+      position: {x: -0.0009888946, y: 0.0006754857, z: -0.00013615437}
+      rotation: {x: 0.9802225, y: -0.13050066, z: -0.13049959, w: -0.071438015}
+      scale: {x: 0.99999595, y: 0.9999995, z: 0.99999917}
+    - name: Skirt_1_4
+      parentName: Skirt_0_4
+      position: {x: 7.101335e-11, y: 0.0013001178, z: 9.313227e-12}
+      rotation: {x: -0.02889448, y: 0.011725832, z: -0.0052709803, w: 0.99949986}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1}
+    - name: Skirt_0_5
+      parentName: Hips
+      position: {x: -0.00091361965, y: 0.0006785948, z: -0.0004294197}
+      rotation: {x: 0.9805454, y: -0.115783036, z: -0.11578387, w: -0.108254924}
+      scale: {x: 1.0000013, y: 1.0000002, z: 1.0000007}
+    - name: Skirt_1_5
+      parentName: Skirt_0_5
+      position: {x: -1.6763806e-10, y: 0.0013076602, z: 7.450582e-11}
+      rotation: {x: -0.038595337, y: 0.009493908, z: -0.0016044525, w: 0.99920857}
+      scale: {x: 0.9999998, y: 1, z: 0.99999994}
+    - name: Skirt_0_6
+      parentName: Hips
+      position: {x: -0.00069925416, y: 0.00067240774, z: -0.0006783012}
+      rotation: {x: 0.9833996, y: -0.08546016, z: -0.08545885, w: -0.13534641}
+      scale: {x: 0.9999988, y: 0.9999997, z: 0.9999978}
+    - name: Skirt_1_6
+      parentName: Skirt_0_6
+      position: {x: -0, y: 0.0013196636, z: -1.0244548e-10}
+      rotation: {x: -0.046241928, y: 0.0070491973, z: 0.000020697711, w: 0.9989055}
+      scale: {x: 1, y: 0.99999994, z: 1.0000001}
+    - name: Skirt_0_7
+      parentName: Hips
+      position: {x: -0.00037843353, y: 0.0006637603, z: -0.00084473315}
+      rotation: {x: 0.9864069, y: -0.04509927, z: -0.04509944, w: -0.15143844}
+      scale: {x: 1, y: 0.99999994, z: 1.0000005}
+    - name: Skirt_1_7
+      parentName: Skirt_0_7
+      position: {x: -9.313227e-12, y: 0.0013306477, z: -1.0244548e-10}
+      rotation: {x: -0.051249325, y: 0.0038872524, z: 0.00023898852, w: 0.9986784}
+      scale: {x: 1, y: 1, z: 0.99999994}
+    - name: Skirt_0_8
+      parentName: Hips
+      position: {x: 6.6949064e-11, y: 0.0006598669, z: -0.0009032018}
+      rotation: {x: 0.98764277, y: -0.00000062798074, z: -0.0000006279739, w: -0.15672196}
+      scale: {x: 1, y: 1.0000002, z: 0.99999875}
+    - name: Skirt_1_8
+      parentName: Skirt_0_8
+      position: {x: 1.4210857e-16, y: 0.0013350906, z: 2.2351937e-10}
+      rotation: {x: -0.05299826, y: 0.0000013708044, z: -0.0000018078006, w: 0.99859464}
+      scale: {x: 1, y: 1.0000004, z: 1.0000004}
+    - name: Skirt_0_9
+      parentName: Hips
+      position: {x: 0.00037843361, y: 0.0006637603, z: -0.00084473315}
+      rotation: {x: 0.98640704, y: 0.045098275, z: 0.045097608, w: -0.1514384}
+      scale: {x: 0.9999997, y: 1.0000001, z: 0.99999815}
+    - name: Skirt_1_9
+      parentName: Skirt_0_9
+      position: {x: -1.8626455e-11, y: 0.0013306477, z: 9.0803955e-11}
+      rotation: {x: -0.051249146, y: -0.0038850117, z: -0.00024191663, w: 0.9986784}
+      scale: {x: 0.9999999, y: 0.99999994, z: 0.9999998}
+    - name: Skirt_0_10
+      parentName: Hips
+      position: {x: 0.00069925416, y: 0.00067240774, z: -0.00067830115}
+      rotation: {x: 0.9833995, y: 0.08545957, z: 0.08545997, w: -0.13534655}
+      scale: {x: 1.0000004, y: 1.0000004, z: 1.0000007}
+    - name: Skirt_1_10
+      parentName: Skirt_0_10
+      position: {x: 1.5832483e-10, y: 0.0013196614, z: -1.5832483e-10}
+      rotation: {x: -0.046242204, y: -0.00704728, z: -0.000023037192, w: 0.9989054}
+      scale: {x: 0.9999999, y: 1.0000007, z: 1.0000008}
+    - name: Skirt_0_11
+      parentName: Hips
+      position: {x: 0.00091361924, y: 0.0006785948, z: -0.00042941948}
+      rotation: {x: 0.98054564, y: 0.115782514, z: 0.11578232, w: -0.10825503}
+      scale: {x: 0.9999996, y: 1.0000001, z: 0.9999999}
+    - name: Skirt_1_11
+      parentName: Skirt_0_11
+      position: {x: -4.656613e-11, y: 0.0013076575, z: 2.7939676e-10}
+      rotation: {x: -0.038595397, y: -0.009492734, z: 0.0016030732, w: 0.9992086}
+      scale: {x: 1, y: 1.0000005, z: 1.0000004}
+    - name: Skirt_0_12
+      parentName: Hips
+      position: {x: 0.0009888946, y: 0.0006754857, z: -0.00013615408}
+      rotation: {x: 0.9802223, y: 0.13050073, z: 0.13050085, w: -0.07143834}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
+    - name: Skirt_1_12
+      parentName: Skirt_0_12
+      position: {x: 9.19681e-11, y: 0.0013001177, z: 1.071021e-10}
+      rotation: {x: -0.028894335, y: -0.011724792, z: 0.0052696913, w: 0.99949986}
+      scale: {x: 0.99999976, y: 0.9999999, z: 0.99999994}
+    - name: Skirt_0_13
+      parentName: Hips
+      position: {x: 0.00091361924, y: 0.0006611699, z: 0.00015482541}
+      rotation: {x: 0.9835937, y: 0.12290501, z: 0.12290423, w: -0.048295617}
+      scale: {x: 0.99999386, y: 0.9999997, z: 0.9999997}
+    - name: Skirt_1_13
+      parentName: Skirt_0_13
+      position: {x: 1.5832483e-10, y: 0.001299812, z: 0}
+      rotation: {x: -0.01968074, y: -0.0127075445, z: 0.008847504, w: 0.9996865}
+      scale: {x: 1, y: 1.0000001, z: 0.9999999}
+    - name: Skirt_0_14
+      parentName: Hips
+      position: {x: 0.00069925416, y: 0.00064021064, z: 0.00040124284}
+      rotation: {x: 0.99051946, y: 0.095575236, z: 0.095574714, w: -0.02453771}
+      scale: {x: 0.9999921, y: 0.99999994, z: 1.0000001}
+    - name: Skirt_1_14
+      parentName: Skirt_0_14
+      position: {x: 1.9557773e-10, y: 0.001300518, z: 1.769513e-10}
+      rotation: {x: -0.010221061, y: -0.011619745, z: 0.010187581, w: 0.9998284}
+      scale: {x: 1, y: 0.9999996, z: 0.9999997}
+    - name: Skirt_0_15
+      parentName: Hips
+      position: {x: 0.00037843353, y: 0.0006216937, z: 0.0005657591}
+      rotation: {x: 0.9972438, y: 0.05225917, z: 0.052259162, w: -0.0065463185}
+      scale: {x: 0.9999986, y: 0.99999964, z: 0.9999996}
+    - name: Skirt_1_15
+      parentName: Skirt_0_15
+      position: {x: -9.313226e-11, y: 0.0013016793, z: 4.656613e-11}
+      rotation: {x: -0.0025924167, y: -0.0071458784, z: 0.006966793, w: 0.99994683}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000004}
+    - name: Spine
+      parentName: Hips
+      position: {x: -5.2152245e-12, y: 0.0008908694, z: 0.00000009465964}
+      rotation: {x: -0.014779031, y: -0.000006693038, z: -0.000006693039, w: 0.99989086}
+      scale: {x: 1, y: 0.99999994, z: 1}
+    - name: Chest
+      parentName: Spine
+      position: {x: 9.6633805e-15, y: 0.0009162886, z: -7.4669854e-11}
+      rotation: {x: -0.15985274, y: 0.000005428189, z: 0.000007763201, w: 0.9871409}
+      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+    - name: BreastLower_L
+      parentName: Chest
+      position: {x: -0.00038534257, y: 0.00040116924, z: 0.00011485342}
+      rotation: {x: 0.61984885, y: 0.2553278, z: 0.36525825, w: 0.64589596}
+      scale: {x: 1, y: 0.9999998, z: 1.0000001}
+    - name: BreastLower_R
+      parentName: Chest
+      position: {x: 0.00038531784, y: 0.00040116924, z: 0.00011485335}
+      rotation: {x: 0.61984926, y: -0.25532714, z: -0.36525738, w: 0.6458964}
+      scale: {x: 1, y: 0.99999994, z: 1}
+    - name: Bust_LUpper2
+      parentName: Chest
+      position: {x: -0.00044454428, y: 0.0007558541, z: 0.0006199471}
+      rotation: {x: 0.9915109, y: 0.0034553972, z: 0.004942986, w: -0.1298841}
+      scale: {x: 1.0000001, y: 0.99999976, z: 0.999996}
+    - name: Bust_RUpper2
+      parentName: Chest
+      position: {x: 0.00044451907, y: 0.0007558541, z: 0.0006199468}
+      rotation: {x: 0.99151087, y: -0.0034551513, z: -0.004942678, w: -0.12988429}
+      scale: {x: 1.0000001, y: 1.0000005, z: 0.9999983}
+    - name: GuaShi_01_01
+      parentName: Chest
+      position: {x: -0.00050315936, y: -0.000085044456, z: 0.00058671896}
+      rotation: {x: 0.9849126, y: 0.0021752745, z: 0.003111835, w: -0.17301148}
+      scale: {x: 1, y: 1.0000004, z: 1.0000001}
+    - name: GuaShi_01_02
+      parentName: GuaShi_01_01
+      position: {x: 8.440111e-12, y: 0.00032666646, z: 1.5133991e-11}
+      rotation: {x: 0.010171113, y: 0.008119009, z: -0.008041227, w: 0.999883}
+      scale: {x: 1.0000001, y: 1.0000006, z: 1.0000007}
+    - name: GuaShi_01_03
+      parentName: GuaShi_01_02
+      position: {x: -4.7730292e-11, y: 0.00013872758, z: -3.4924594e-11}
+      rotation: {x: -0.99984497, y: -0.01076332, z: -0.010855152, w: -0.008737617}
+      scale: {x: 0.99989074, y: 0.99999994, z: 0.99992466}
+    - name: Left shoulder
+      parentName: Chest
+      position: {x: -0.0004145791, y: 0.0014209334, z: -0.00010164236}
+      rotation: {x: -0.4047612, y: 0.40642515, z: 0.58141935, w: 0.5770083}
+      scale: {x: 0.99999994, y: 0.9999999, z: 1.0000002}
+    - name: Left arm
+      parentName: Left shoulder
+      position: {x: -2.1536835e-11, y: 0.00050180126, z: -4.3677575e-10}
+      rotation: {x: 0.023256559, y: -0.32474554, z: 0.012393931, w: -0.9454343}
+      scale: {x: 1, y: 1.0000001, z: 1.0000004}
+    - name: Left elbow
+      parentName: Left arm
+      position: {x: 2.6077035e-10, y: 0.002306455, z: 1.8626452e-10}
+      rotation: {x: -0.013881923, y: -0.009853184, z: 0.03369884, w: 0.99928707}
+      scale: {x: 1.0000001, y: 1, z: 0.99999964}
+    - name: Left wrist
+      parentName: Left elbow
+      position: {x: -4.4703485e-10, y: 0.0019126943, z: 1.3038517e-10}
+      rotation: {x: 0.0058529195, y: -0.0038988236, z: -0.0015609035, w: 0.99997413}
+      scale: {x: 1.0000001, y: 1.0000004, z: 1.0000004}
+    - name: IndexFinger1_L
+      parentName: Left wrist
+      position: {x: -0.00016153055, y: 0.000615065, z: -0.000033238193}
+      rotation: {x: 0.00039994097, y: 0.030535145, z: -0.04942998, w: 0.9983107}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
+    - name: IndexFinger2_L
+      parentName: IndexFinger1_L
+      position: {x: 4.8894433e-10, y: 0.00029871945, z: 2.5611374e-10}
+      rotation: {x: 0.029759206, y: -0.017150221, z: -0.0075053973, w: 0.99938184}
+      scale: {x: 1.0000001, y: 1.0000001, z: 0.99999994}
+    - name: IndexFinger3_L
+      parentName: IndexFinger2_L
+      position: {x: 3.0267983e-10, y: 0.00015137957, z: -2.2817405e-10}
+      rotation: {x: 0.101174995, y: -0.09273739, z: 0.035137005, w: 0.9899135}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000004}
+    - name: LittleFinger1_L
+      parentName: Left wrist
+      position: {x: 0.0002228069, y: 0.0005659972, z: 0.00013334113}
+      rotation: {x: 0.032083984, y: -0.009542839, z: -0.02749715, w: 0.9990613}
+      scale: {x: 1.0000004, y: 0.9999998, z: 0.99999994}
+    - name: LittleFinger2_L
+      parentName: LittleFinger1_L
+      position: {x: 2.9802327e-10, y: 0.00020537569, z: -6.891787e-10}
+      rotation: {x: -0.007880236, y: 0.001496908, z: 0.0082655065, w: 0.99993366}
+      scale: {x: 0.99999976, y: 0.9999998, z: 0.99999964}
+    - name: LittleFinger3_L
+      parentName: LittleFinger2_L
+      position: {x: -1.1175871e-10, y: 0.000107159896, z: 0.0000000011920931}
+      rotation: {x: 0.092584066, y: -0.09042925, z: 0.02943833, w: 0.99115294}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000005}
+    - name: MiddleFinger1_L
+      parentName: Left wrist
+      position: {x: -0.000029157289, y: 0.00061936444, z: 0.000038215494}
+      rotation: {x: 0.0041374583, y: 0.021913648, z: -0.040607322, w: 0.99892634}
+      scale: {x: 1, y: 1, z: 1.0000002}
+    - name: MiddleFinger2_L
+      parentName: MiddleFinger1_L
+      position: {x: 3.9115547e-10, y: 0.00030884636, z: 4.656613e-11}
+      rotation: {x: 0.01961718, y: -0.02248106, z: 0.012578003, w: 0.9994757}
+      scale: {x: 0.9999999, y: 0.99999964, z: 0.99999964}
+    - name: MiddleFinger3_L
+      parentName: MiddleFinger2_L
+      position: {x: -7.450582e-11, y: 0.00017227088, z: -7.357448e-10}
+      rotation: {x: 0.08972782, y: -0.08902106, z: 0.03364904, w: 0.9914091}
+      scale: {x: 0.99999994, y: 0.99999976, z: 0.9999997}
+    - name: RingFinger1_L
+      parentName: Left wrist
+      position: {x: 0.000096063886, y: 0.0005968159, z: 0.00009743321}
+      rotation: {x: 0.020018397, y: 0.008142928, z: -0.03973052, w: 0.99897677}
+      scale: {x: 1.0000002, y: 0.99999994, z: 1.0000004}
+    - name: RingFinger2_L
+      parentName: RingFinger1_L
+      position: {x: 3.725291e-11, y: 0.00029532393, z: 3.7252904e-10}
+      rotation: {x: -0.016903048, y: 0.01017946, z: 0.0043715504, w: 0.9997958}
+      scale: {x: 0.9999998, y: 1.0000005, z: 1.0000005}
+    - name: RingFinger3_L
+      parentName: RingFinger2_L
+      position: {x: 2.0489097e-10, y: 0.00014353388, z: 2.7939676e-10}
+      rotation: {x: 0.09814257, y: -0.0967711, z: 0.03564109, w: 0.9898147}
+      scale: {x: 1.0000002, y: 1.0000001, z: 0.99999994}
+    - name: Thumb0_L
+      parentName: Left wrist
+      position: {x: -0.00011676027, y: 0.00021353742, z: -0.0001680324}
+      rotation: {x: -0.19461091, y: 0.03432902, z: 0.24497871, w: 0.94917524}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: Thumb1_L
+      parentName: Thumb0_L
+      position: {x: 8.381903e-11, y: 0.00027532317, z: -5.308538e-10}
+      rotation: {x: 0.022233311, y: 0.01165791, z: -0.030126708, w: 0.9992308}
+      scale: {x: 1.0000004, y: 1.0000004, z: 1.0000007}
+    - name: Thumb2_L
+      parentName: Thumb1_L
+      position: {x: 2.0489097e-10, y: 0.00015665736, z: -1.769513e-10}
+      rotation: {x: 0.025069613, y: -0.08232709, z: 0.06369121, w: 0.99425215}
+      scale: {x: 0.9999999, y: 0.9999998, z: 0.9999998}
+    - name: zHandTwist_L
+      parentName: Left elbow
+      position: {x: 4.842877e-10, y: 0.0011476178, z: -1.3038517e-10}
+      rotation: {x: -0.0000013532116, y: 0.0000016419215, z: -0.0000010617804, w: 1}
+      scale: {x: 0.99999994, y: 1.0000001, z: 1}
+    - name: zArmTwist_L
+      parentName: Left arm
+      position: {x: -0.000011440684, y: 0.0013835696, z: -0.000009068754}
+      rotation: {x: -0.0032776594, y: -0.00000035762787, z: 0.00413429, w: 0.9999861}
+      scale: {x: 1.0000001, y: 1.0000001, z: 0.9999997}
+    - name: LingDai_01_01
+      parentName: Chest
+      position: {x: -0.0000015811366, y: 0.0015688554, z: 0.0003986462}
+      rotation: {x: 0.9807168, y: 0.0021322342, z: 0.0030502542, w: 0.195399}
+      scale: {x: 1, y: 1.0000004, z: 1.0000026}
+    - name: LingDai_01_02
+      parentName: LingDai_01_01
+      position: {x: -2.1827874e-13, y: 0.00020603753, z: -1.7878278e-10}
+      rotation: {x: -0.0073640337, y: 0.0004350056, z: -0.00022076067, w: 0.9999728}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
+    - name: LingDai_01_03
+      parentName: LingDai_01_02
+      position: {x: 1.470653e-11, y: 0.0003037627, z: 7.0360895e-10}
+      rotation: {x: -0.026571492, y: 0.000588066, z: -0.0003745573, w: 0.9996467}
+      scale: {x: 0.9999999, y: 1.0000001, z: 1.0000001}
+    - name: LingDai_01_04
+      parentName: LingDai_01_03
+      position: {x: 1.3533281e-11, y: 0.00040273773, z: 6.530183e-10}
+      rotation: {x: 0.0426872, y: 0.00059459783, z: -0.000012151808, w: 0.99908835}
+      scale: {x: 1.0000001, y: 1.0000004, z: 1.0000005}
+    - name: LingDai_01_05
+      parentName: LingDai_01_04
+      position: {x: 8.149073e-12, y: 0.00032774935, z: 0.0000000010906706}
+      rotation: {x: 0.21047659, y: -0.00037588045, z: 0.0014258098, w: 0.97759783}
+      scale: {x: 1.0000001, y: 1.0000008, z: 1.000001}
+    - name: LingDai_01_06
+      parentName: LingDai_01_05
+      position: {x: 7.275958e-12, y: 0.00031131206, z: 2.126012e-10}
+      rotation: {x: 0.12942195, y: -0.00015061637, z: 0.0008175019, w: 0.9915893}
+      scale: {x: 0.9999998, y: 0.9999995, z: 1.0000005}
+    - name: LingDai_01_07
+      parentName: LingDai_01_06
+      position: {x: 4.6566136e-12, y: 0.000342985, z: -8.919869e-12}
+      rotation: {x: 0.014571888, y: -0.0012571049, z: 0.0012802909, w: 0.9998923}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000004}
+    - name: LingDai_01_08
+      parentName: LingDai_01_07
+      position: {x: -2.3283068e-12, y: 0.0002922239, z: 9.2445586e-11}
+      rotation: {x: 0.0067957393, y: -0.0013872935, z: 0.0013872893, w: 0.99997497}
+      scale: {x: 1.0000001, y: 1.000001, z: 1.0000007}
+    - name: Neck
+      parentName: Chest
+      position: {x: -2.9781731e-16, y: 0.0017062086, z: -3.7252795e-11}
+      rotation: {x: 0.16397795, y: 3.228706e-11, z: 0.000000002174829, w: 0.986464}
+      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+    - name: Head
+      parentName: Neck
+      position: {x: 8.149036e-16, y: 0.00058451155, z: 1.5865781e-16}
+      rotation: {x: 0.010598986, y: -0.000000006459896, z: -0.0000000064602035, w: 0.99994385}
+      scale: {x: 1, y: 0.9999999, z: 0.9999999}
+    - name: BaZiBian_01_01
+      parentName: Head
+      position: {x: 0.000048031357, y: 0.001954087, z: -0.00071114395}
+      rotation: {x: -0.32601166, y: -0.504183, z: -0.504183, w: 0.6207378}
+      scale: {x: 0.99999964, y: 0.99999976, z: 0.9999998}
+    - name: BaZiBian_01_02
+      parentName: BaZiBian_01_01
+      position: {x: -1.2281814e-10, y: 0.0004219451, z: -0.0000000012479723}
+      rotation: {x: -0.1644075, y: -0.15685238, z: 0.058641165, w: 0.9720745}
+      scale: {x: 1.0000005, y: 1.0000001, z: 1.0000001}
+    - name: BaZiBian_02_01
+      parentName: Head
+      position: {x: -0.000052842694, y: 0.0019484019, z: -0.0007060307}
+      rotation: {x: -0.33585835, y: 0.496165, z: 0.4961646, w: 0.6283631}
+      scale: {x: 0.9999999, y: 0.99999994, z: 0.99999994}
+    - name: BaZiBian_02_02
+      parentName: BaZiBian_02_01
+      position: {x: 8.4110074e-10, y: 0.00044126308, z: -5.9604655e-10}
+      rotation: {x: -0.17242232, y: 0.14593798, z: -0.10387108, w: 0.9685988}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1.0000001}
+    - name: Eye_L
+      parentName: Head
+      position: {x: -0.00031472475, y: 0.00064847944, z: 0.0003952382}
+      rotation: {x: -0.062476743, y: 0.70073014, z: 0.7007303, w: 0.118537016}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000002}
+    - name: Eye_R
+      parentName: Head
+      position: {x: 0.00031469975, y: 0.00064847944, z: 0.0003952382}
+      rotation: {x: 0.062535234, y: 0.70073277, z: 0.7007327, w: -0.11847658}
+      scale: {x: 1, y: 1.0000001, z: 0.99999994}
+    - name: FaShi_01_01
+      parentName: Head
+      position: {x: -0.000032196524, y: 0.002181059, z: 0.00026757145}
+      rotation: {x: -0.22864701, y: 0.40939695, z: 0.4093969, w: 0.7826295}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
+    - name: FaShi_01_02
+      parentName: FaShi_01_01
+      position: {x: 4.540198e-10, y: 0.00016311536, z: -5.7509175e-10}
+      rotation: {x: -0.18910487, y: 0.049449645, z: -0.189231, w: 0.9622816}
+      scale: {x: 1, y: 0.99999994, z: 1}
+    - name: FaShi_01_03
+      parentName: FaShi_01_02
+      position: {x: -3.539026e-10, y: 0.0002900206, z: -8.288772e-10}
+      rotation: {x: -0.025751168, y: -0.013453615, z: -0.10835238, w: 0.993688}
+      scale: {x: 0.9999997, y: 0.9999999, z: 0.9999998}
+    - name: FaShi_02_01
+      parentName: Head
+      position: {x: 0.000032047003, y: 0.0021814683, z: 0.00026862317}
+      rotation: {x: -0.2321861, y: -0.4087317, z: -0.4087318, w: 0.7822828}
+      scale: {x: 0.9999999, y: 0.99999976, z: 0.99999976}
+    - name: FaShi_02_02
+      parentName: FaShi_02_01
+      position: {x: -1.4435499e-10, y: 0.00016301521, z: 3.9581206e-11}
+      rotation: {x: -0.18443435, y: -0.049214613, z: 0.18331644, w: 0.9643428}
+      scale: {x: 1.0000004, y: 1.0000001, z: 1.0000005}
+    - name: FaShi_02_03
+      parentName: FaShi_02_02
+      position: {x: -2.7939678e-11, y: 0.00028919012, z: -0.000000002165325}
+      rotation: {x: -0.027503245, y: 0.014892468, z: 0.11751018, w: 0.99257904}
+      scale: {x: 0.99999964, y: 0.9999999, z: 0.9999997}
+    - name: FaShi_03_01
+      parentName: Head
+      position: {x: -0.000053508407, y: 0.0021256553, z: 0.00027313072}
+      rotation: {x: -0.4568073, y: 0.57187897, z: 0.57187897, w: 0.37045392}
+      scale: {x: 0.99999994, y: 1.0000001, z: 1}
+    - name: FaShi_03_02
+      parentName: FaShi_03_01
+      position: {x: 7.101335e-11, y: 0.00011632753, z: -3.1886882e-10}
+      rotation: {x: -0.015207645, y: 0.017709207, z: 0.031771235, w: 0.99922264}
+      scale: {x: 1, y: 0.99999994, z: 1.0000002}
+    - name: FaShi_04_01
+      parentName: Head
+      position: {x: 0.000053483633, y: 0.0021256553, z: 0.00027313072}
+      rotation: {x: 0.45680743, y: 0.5718788, z: 0.57187885, w: -0.37045404}
+      scale: {x: 1.0000004, y: 1.0000001, z: 1}
+    - name: FaShi_04_02
+      parentName: FaShi_04_01
+      position: {x: 1.0128134e-10, y: 0.0001163275, z: -3.214518e-10}
+      rotation: {x: -0.024391675, y: -0.029824741, z: -0.037350737, w: 0.9985592}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000006}
+    - name: MaHuaBian_01_01
+      parentName: Head
+      position: {x: -0.000007887071, y: 0.0018443001, z: -0.0007925014}
+      rotation: {x: 0.96501327, y: 0.024740772, z: 0.024740785, w: -0.25985625}
+      scale: {x: 1, y: 1.0000002, z: 1.0000004}
+    - name: MaHuaBian_01_02
+      parentName: MaHuaBian_01_01
+      position: {x: -4.9476513e-11, y: 0.00017421262, z: 5.2216825e-10}
+      rotation: {x: -0.07438818, y: -0.040099025, z: 0.06443278, w: 0.99433744}
+      scale: {x: 0.9999999, y: 1.0000006, z: 1.0000007}
+    - name: MaHuaBian_01_03
+      parentName: MaHuaBian_01_02
+      position: {x: 2.4447217e-11, y: 0.000121819045, z: 2.544948e-10}
+      rotation: {x: 0.0225687, y: 0.007825462, z: -0.013162206, w: 0.99962807}
+      scale: {x: 1, y: 1.0000006, z: 1.0000006}
+    - name: MaHuaBian_01_04
+      parentName: MaHuaBian_01_03
+      position: {x: 1.1641532e-11, y: 0.00014410337, z: 7.4065615e-10}
+      rotation: {x: 0.043181773, y: 0.002648229, z: -0.006137725, w: 0.9990449}
+      scale: {x: 1.0000001, y: 1, z: 0.9999998}
+    - name: MaHuaBian_01_05
+      parentName: MaHuaBian_01_04
+      position: {x: -2.3283065e-11, y: 0.00011054801, z: -1.6856574e-10}
+      rotation: {x: 0.0081104785, y: 0.00527308, z: -0.0092828665, w: 0.9999101}
+      scale: {x: 0.99999976, y: 1.0000004, z: 1.0000004}
+    - name: MaHuaBian_01_06
+      parentName: MaHuaBian_01_05
+      position: {x: 2.3283068e-12, y: 0.00008410749, z: 4.8371473e-10}
+      rotation: {x: -0.010807784, y: -0.0014437411, z: 0.0026865925, w: 0.99993694}
+      scale: {x: 0.99999994, y: 1.0000006, z: 1.0000004}
+    - name: MaHuaBian_01_07
+      parentName: MaHuaBian_01_06
+      position: {x: 2.0954757e-11, y: 0.00016980928, z: -4.6320567e-10}
+      rotation: {x: -0.018490309, y: 0.004724244, z: -0.0075757643, w: 0.99978924}
+      scale: {x: 1.0000002, y: 1.0000005, z: 1.0000004}
+    - name: QianFa_01_01
+      parentName: Head
+      position: {x: 0.00006846767, y: 0.0020225719, z: 0.00054781674}
+      rotation: {x: 0.8793609, y: 0.16678245, z: 0.16678265, w: 0.41363212}
+      scale: {x: 1, y: 1.0000004, z: 0.99999994}
+    - name: QianFa_01_02
+      parentName: QianFa_01_01
+      position: {x: 7.6368467e-10, y: 0.00025438282, z: -4.656613e-11}
+      rotation: {x: 0.075712405, y: -0.18261628, z: 0.08530943, w: 0.97654563}
+      scale: {x: 0.9999999, y: 1, z: 1.0000005}
+    - name: QianFa_01_03
+      parentName: QianFa_01_02
+      position: {x: 1.3737007e-10, y: 0.00031301824, z: -0.00000000144355}
+      rotation: {x: 0.13350165, y: -0.113585815, z: 0.056407973, w: 0.98290074}
+      scale: {x: 0.9999999, y: 1.0000004, z: 1.0000001}
+    - name: QianFa_01_04
+      parentName: QianFa_01_03
+      position: {x: 2.0489097e-10, y: 0.00025854394, z: 4.260801e-10}
+      rotation: {x: 0.15026179, y: -0.069344044, z: 0.026948351, w: 0.9858431}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000006}
+    - name: QianFa_01_05
+      parentName: QianFa_01_04
+      position: {x: 2.4447216e-10, y: 0.00025649005, z: -6.397022e-10}
+      rotation: {x: 0.14472657, y: -0.0022731193, z: -0.02971014, w: 0.989023}
+      scale: {x: 1.0000001, y: 1.0000006, z: 1.0000005}
+    - name: QianFa_01_06
+      parentName: QianFa_01_05
+      position: {x: -3.678724e-10, y: 0.0002571318, z: -5.3842084e-11}
+      rotation: {x: 0.14507703, y: 0.03496761, z: -0.07310565, w: 0.9860961}
+      scale: {x: 1, y: 1.0000002, z: 1}
+    - name: QianFa_01_07
+      parentName: QianFa_01_06
+      position: {x: 2.3283065e-11, y: 0.00021741331, z: -2.517481e-10}
+      rotation: {x: 0.085870944, y: 0.08293774, z: -0.14196187, w: 0.98264664}
+      scale: {x: 0.9999997, y: 0.99999994, z: 1.0000001}
+    - name: QianFa_01_08
+      parentName: QianFa_01_07
+      position: {x: 4.4237825e-11, y: 0.00011905644, z: 0.0000000012168312}
+      rotation: {x: 0.17865913, y: 0.13015428, z: -0.213124, w: 0.9516927}
+      scale: {x: 0.99999976, y: 1.0000012, z: 1.0000004}
+    - name: QianFa_01_09
+      parentName: QianFa_01_08
+      position: {x: 1.7345883e-10, y: 0.000054965345, z: -6.5920186e-10}
+      rotation: {x: -0.40338075, y: -0.1856415, z: 0.11001011, w: -0.8892238}
+      scale: {x: 1, y: 1.0000004, z: 0.9999996}
+    - name: QianFa_02_01
+      parentName: Head
+      position: {x: -0.000010208113, y: 0.0019820954, z: 0.0004950493}
+      rotation: {x: 0.90705705, y: 0.016897948, z: 0.016897954, w: 0.420329}
+      scale: {x: 1.0000001, y: 1.0000004, z: 1.0000002}
+    - name: QianFa_02_02
+      parentName: QianFa_02_01
+      position: {x: -1.8044373e-11, y: 0.0001726212, z: 0.0000000012342571}
+      rotation: {x: 0.06908684, y: -0.087721504, z: 0.033924825, w: 0.9931672}
+      scale: {x: 0.99999994, y: 1.0000004, z: 1.0000002}
+    - name: QianFa_02_03
+      parentName: QianFa_02_02
+      position: {x: 1.0244548e-10, y: 0.00025730697, z: 0.0000000011792872}
+      rotation: {x: 0.08469439, y: -0.072309725, z: 0.025823062, w: 0.9934442}
+      scale: {x: 1, y: 0.99999976, z: 0.99999976}
+    - name: QianFa_02_04
+      parentName: QianFa_02_03
+      position: {x: -3.4458936e-10, y: 0.00028256048, z: 1.9324946e-10}
+      rotation: {x: 0.10750443, y: -0.036197357, z: 0.0019234176, w: 0.9935436}
+      scale: {x: 0.9999998, y: 1.0000004, z: 1.0000006}
+    - name: QianFa_02_05
+      parentName: QianFa_02_04
+      position: {x: 8.381903e-11, y: 0.00025434524, z: 3.4924597e-10}
+      rotation: {x: 0.14787005, y: 0.034356494, z: -0.05709331, w: 0.9867596}
+      scale: {x: 0.99999994, y: 1, z: 0.9999997}
+    - name: QianFa_02_06
+      parentName: QianFa_02_05
+      position: {x: -2.142042e-10, y: 0.00020688443, z: 1.2107193e-10}
+      rotation: {x: 0.19908133, y: 0.09062611, z: -0.11982392, w: 0.9683986}
+      scale: {x: 0.99999976, y: 0.9999999, z: 1.0000001}
+    - name: QianFa_02_07
+      parentName: QianFa_02_06
+      position: {x: -2.3283065e-11, y: 0.00018258345, z: -6.2398614e-10}
+      rotation: {x: 0.13502394, y: 0.05394476, z: -0.07026748, w: 0.9868744}
+      scale: {x: 0.9999999, y: 1.0000005, z: 1}
+    - name: QianFa_02_08
+      parentName: QianFa_02_07
+      position: {x: -1.0244548e-10, y: 0.00012338274, z: -7.718336e-10}
+      rotation: {x: 0.16416645, y: 0.06778242, z: -0.089829095, w: 0.9799927}
+      scale: {x: 0.99999994, y: 1.0000006, z: 1.0000005}
+    - name: QianFa_03_01
+      parentName: Head
+      position: {x: -0.00003491701, y: 0.0020043827, z: 0.00054821966}
+      rotation: {x: 0.8997794, y: -0.08112212, z: -0.08112218, w: 0.42099354}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_03_02
+      parentName: QianFa_03_01
+      position: {x: 2.561137e-11, y: 0.00023338782, z: 4.4819898e-10}
+      rotation: {x: 0.10546245, y: -0.122371085, z: 0.031405028, w: 0.98636544}
+      scale: {x: 0.99999994, y: 1, z: 1.0000002}
+    - name: QianFa_03_03
+      parentName: QianFa_03_02
+      position: {x: 5.122275e-10, y: 0.0002944275, z: 0.0000000014668332}
+      rotation: {x: 0.13315418, y: -0.06828031, z: -0.0027777385, w: 0.9887366}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000005}
+    - name: QianFa_03_04
+      parentName: QianFa_03_03
+      position: {x: -5.215407e-10, y: 0.00027733302, z: 3.9115547e-10}
+      rotation: {x: 0.095087014, y: 0.062810786, z: -0.078511976, w: 0.9903783}
+      scale: {x: 1, y: 1.0000007, z: 1.0000005}
+    - name: QianFa_03_05
+      parentName: QianFa_03_04
+      position: {x: 1.8626452e-10, y: 0.00022875603, z: 0}
+      rotation: {x: 0.11860624, y: 0.12579627, z: -0.13813291, w: 0.97520626}
+      scale: {x: 0.9999998, y: 1, z: 0.9999997}
+    - name: QianFa_03_06
+      parentName: QianFa_03_05
+      position: {x: 6.9849196e-12, y: 0.00017973449, z: -9.720679e-11}
+      rotation: {x: 0.14753926, y: 0.10295735, z: -0.11397703, w: 0.97705746}
+      scale: {x: 0.9999997, y: 1, z: 1.0000001}
+    - name: QianFa_03_07
+      parentName: QianFa_03_06
+      position: {x: -2.4214386e-10, y: 0.0001334511, z: -1.7229468e-10}
+      rotation: {x: 0.15111631, y: 0.10321538, z: -0.11344742, w: 0.97654504}
+      scale: {x: 0.99999976, y: 0.99999994, z: 0.9999999}
+    - name: QianFa_04_01
+      parentName: Head
+      position: {x: -0.00012033356, y: 0.001967858, z: 0.000513595}
+      rotation: {x: 0.8699889, y: -0.20858249, z: -0.2085827, w: 0.39510256}
+      scale: {x: 1, y: 0.9999998, z: 1}
+    - name: QianFa_04_02
+      parentName: QianFa_04_01
+      position: {x: -1.3969839e-11, y: 0.00022876477, z: 5.215407e-10}
+      rotation: {x: 0.069308534, y: 0.069851026, z: -0.04907495, w: 0.99393606}
+      scale: {x: 0.9999996, y: 1.0000001, z: 1.0000001}
+    - name: QianFa_04_03
+      parentName: QianFa_04_02
+      position: {x: -9.126962e-10, y: 0.00027877, z: 5.494803e-10}
+      rotation: {x: 0.15300491, y: -0.005083433, z: -0.03462343, w: 0.9876057}
+      scale: {x: 1, y: 1.0000004, z: 1.0000004}
+    - name: QianFa_04_04
+      parentName: QianFa_04_03
+      position: {x: 5.215407e-10, y: 0.00024208748, z: 1.2107193e-10}
+      rotation: {x: 0.1220862, y: 0.012835632, z: -0.039036296, w: 0.9916685}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_04_05
+      parentName: QianFa_04_04
+      position: {x: 2.142042e-10, y: 0.00020639841, z: 2.142042e-10}
+      rotation: {x: 0.109391466, y: 0.052513473, z: -0.07100985, w: 0.9900674}
+      scale: {x: 0.9999999, y: 0.99999994, z: 1.0000001}
+    - name: QianFa_04_06
+      parentName: QianFa_04_05
+      position: {x: 6.519259e-11, y: 0.00015531007, z: 1.1641532e-11}
+      rotation: {x: 0.15563749, y: 0.07903833, z: -0.1057814, w: 0.9789486}
+      scale: {x: 0.99999994, y: 1.0000007, z: 1.0000004}
+    - name: QianFa_04_07
+      parentName: QianFa_04_06
+      position: {x: 3.725291e-11, y: 0.000096378, z: 2.4912877e-10}
+      rotation: {x: 0.13647696, y: 0.06950631, z: -0.093060516, w: 0.9838103}
+      scale: {x: 0.9999995, y: 1.0000004, z: 1.0000002}
+    - name: QianFa_05_01
+      parentName: Head
+      position: {x: -0.00011379921, y: 0.0020292257, z: 0.00049482886}
+      rotation: {x: 0.7906132, y: -0.35397163, z: -0.35397184, w: 0.35261723}
+      scale: {x: 1.0000002, y: 1.0000001, z: 0.99999964}
+    - name: QianFa_05_02
+      parentName: QianFa_05_01
+      position: {x: -5.494803e-10, y: 0.00023110268, z: 1.4901164e-10}
+      rotation: {x: 0.07767961, y: 0.12698622, z: -0.09675397, w: 0.9841134}
+      scale: {x: 0.9999998, y: 1.0000005, z: 1.0000005}
+    - name: QianFa_05_03
+      parentName: QianFa_05_02
+      position: {x: 3.725291e-11, y: 0.00030298912, z: -1.6763806e-10}
+      rotation: {x: 0.12724444, y: 0.09044347, z: -0.09991768, w: 0.9826726}
+      scale: {x: 0.9999999, y: 0.99999976, z: 0.9999999}
+    - name: QianFa_05_04
+      parentName: QianFa_05_03
+      position: {x: 1.1175871e-10, y: 0.00030502718, z: 5.681068e-10}
+      rotation: {x: 0.16791289, y: 0.049543053, z: -0.08378198, w: 0.9809849}
+      scale: {x: 1, y: 1.0000005, z: 1.0000001}
+    - name: QianFa_05_05
+      parentName: QianFa_05_04
+      position: {x: -5.5879357e-11, y: 0.00027621724, z: -9.313227e-12}
+      rotation: {x: 0.16149598, y: 0.026689285, z: -0.059900653, w: 0.98469216}
+      scale: {x: 1.0000002, y: 1.0000008, z: 1.0000007}
+    - name: QianFa_05_06
+      parentName: QianFa_05_05
+      position: {x: -1.0244548e-10, y: 0.00022987572, z: -1.769513e-10}
+      rotation: {x: 0.1329159, y: 0.033704635, z: -0.06548218, w: 0.98838735}
+      scale: {x: 0.99999976, y: 1.0000007, z: 1.0000006}
+    - name: QianFa_05_07
+      parentName: QianFa_05_06
+      position: {x: 8.149073e-12, y: 0.00015517329, z: -3.71947e-10}
+      rotation: {x: 0.12232053, y: 0.036097456, z: -0.06969931, w: 0.98938197}
+      scale: {x: 0.9999999, y: 1.0000008, z: 1.0000004}
+    - name: QianFa_06_01
+      parentName: Head
+      position: {x: -0.00017381841, y: 0.0020086742, z: 0.00044524172}
+      rotation: {x: 0.75818884, y: -0.42017403, z: -0.42017427, w: 0.26843444}
+      scale: {x: 0.9999999, y: 0.9999997, z: 0.99999976}
+    - name: QianFa_06_02
+      parentName: QianFa_06_01
+      position: {x: 7.3108825e-10, y: 0.00022029561, z: 2.4214386e-10}
+      rotation: {x: 0.034060873, y: 0.15155213, z: -0.10017941, w: 0.9827695}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - name: QianFa_06_03
+      parentName: QianFa_06_02
+      position: {x: 0.0000000018253924, y: 0.00026332244, z: -1.6763806e-10}
+      rotation: {x: 0.083509795, y: 0.13773595, z: -0.120206065, w: 0.9795946}
+      scale: {x: 0.9999995, y: 0.99999994, z: 1.0000001}
+    - name: QianFa_06_04
+      parentName: QianFa_06_03
+      position: {x: -4.0978193e-10, y: 0.00030327542, z: 4.284084e-10}
+      rotation: {x: 0.1632671, y: 0.055182423, z: -0.09197477, w: 0.9807341}
+      scale: {x: 0.99999994, y: 1.0000004, z: 1.0000005}
+    - name: QianFa_06_05
+      parentName: QianFa_06_04
+      position: {x: -2.5145708e-10, y: 0.00032915812, z: -2.3283064e-10}
+      rotation: {x: 0.25739354, y: -0.028554933, z: -0.034739535, w: 0.9652598}
+      scale: {x: 0.99999976, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_06_06
+      parentName: QianFa_06_05
+      position: {x: 4.4703485e-10, y: 0.00032304978, z: -2.5145708e-10}
+      rotation: {x: 0.21588233, y: -0.042781305, z: 0.0022190323, w: 0.9754792}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000002}
+    - name: QianFa_06_07
+      parentName: QianFa_06_06
+      position: {x: -8.381903e-11, y: 0.0002812623, z: 5.867332e-10}
+      rotation: {x: -0.13370873, y: 0.017475884, z: 0.026174018, w: -0.9905209}
+      scale: {x: 0.99999994, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_06_08
+      parentName: QianFa_06_07
+      position: {x: -6.519259e-11, y: 0.00017153136, z: -4.93601e-10}
+      rotation: {x: 0.048063293, y: 0.035157245, z: -0.2394383, w: 0.96908367}
+      scale: {x: 1, y: 0.9999998, z: 0.99999964}
+    - name: QianFa_07_01
+      parentName: Head
+      position: {x: -0.00021947308, y: 0.0020249856, z: 0.00043223798}
+      rotation: {x: 0.7142585, y: -0.48291588, z: -0.48291594, w: 0.15303376}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000005}
+    - name: QianFa_07_02
+      parentName: QianFa_07_01
+      position: {x: 7.334166e-10, y: 0.00023762301, z: 1.9557773e-10}
+      rotation: {x: -0.0019903178, y: 0.21501687, z: -0.13692091, w: 0.9669625}
+      scale: {x: 1, y: 1.0000005, z: 1.0000001}
+    - name: QianFa_07_03
+      parentName: QianFa_07_02
+      position: {x: -3.7252904e-10, y: 0.00029694542, z: -1.4901164e-10}
+      rotation: {x: 0.067726426, y: 0.122492515, z: -0.12208898, w: 0.98260015}
+      scale: {x: 0.99999976, y: 1.0000001, z: 1.0000006}
+    - name: QianFa_07_04
+      parentName: QianFa_07_03
+      position: {x: 5.401671e-10, y: 0.00033349468, z: -7.450582e-11}
+      rotation: {x: 0.14354971, y: 0.075122885, z: -0.11779992, w: 0.9797312}
+      scale: {x: 1.0000001, y: 1.0000008, z: 1.0000002}
+    - name: QianFa_07_05
+      parentName: QianFa_07_04
+      position: {x: 1.8626452e-10, y: 0.00033320987, z: 5.5879357e-11}
+      rotation: {x: 0.2001703, y: 0.07422536, z: -0.13238014, w: 0.96793497}
+      scale: {x: 0.9999997, y: 1.0000002, z: 1.0000001}
+    - name: QianFa_07_06
+      parentName: QianFa_07_05
+      position: {x: -2.7939678e-11, y: 0.0003096793, z: 1.3969839e-11}
+      rotation: {x: 0.0038907523, y: 0.0578048, z: -0.09279603, w: 0.99399817}
+      scale: {x: 0.9999996, y: 1, z: 1.0000002}
+    - name: QianFa_07_07
+      parentName: QianFa_07_06
+      position: {x: 7.450582e-11, y: 0.00021658995, z: -9.313226e-10}
+      rotation: {x: -0.22456746, y: 0.14162818, z: -0.26017433, w: 0.92834276}
+      scale: {x: 0.9999994, y: 1.0000005, z: 1.0000007}
+    - name: QianFa_07_08
+      parentName: QianFa_07_07
+      position: {x: 1.8626455e-11, y: 0.000121348276, z: 0}
+      rotation: {x: -0.10046666, y: 0.2779939, z: -0.32544145, w: 0.8981725}
+      scale: {x: 0.99999994, y: 0.9999998, z: 1.0000002}
+    - name: QianFa_07_09
+      parentName: QianFa_07_08
+      position: {x: -0.0000000014388934, y: 0.00009618851, z: -1.8626455e-11}
+      rotation: {x: 0.12707138, y: 0.34500974, z: -0.080866754, w: 0.926435}
+      scale: {x: 1.0000011, y: 1.0000004, z: 0.99999964}
+    - name: QianFa_08_01
+      parentName: Head
+      position: {x: -0.00026608817, y: 0.002028421, z: 0.00039919952}
+      rotation: {x: 0.6660554, y: -0.52739185, z: -0.527392, w: 0.009255894}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_08_02
+      parentName: QianFa_08_01
+      position: {x: 8.0093737e-10, y: 0.00019896404, z: 8.381903e-11}
+      rotation: {x: -0.05334825, y: 0.17667452, z: -0.08850513, w: 0.9788294}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
+    - name: QianFa_08_03
+      parentName: QianFa_08_02
+      position: {x: -4.842877e-10, y: 0.00028100863, z: 3.539026e-10}
+      rotation: {x: -0.0018705274, y: 0.18898185, z: -0.14815164, w: 0.97073865}
+      scale: {x: 0.9999999, y: 1.0000001, z: 1.0000001}
+    - name: QianFa_08_04
+      parentName: QianFa_08_03
+      position: {x: 9.126962e-10, y: 0.00033265038, z: -7.450582e-11}
+      rotation: {x: 0.09478705, y: 0.16211127, z: -0.17998682, w: 0.96557766}
+      scale: {x: 1, y: 1.000001, z: 1.0000008}
+    - name: QianFa_08_05
+      parentName: QianFa_08_04
+      position: {x: 9.313226e-11, y: 0.0003438907, z: 1.6298147e-11}
+      rotation: {x: 0.14035842, y: 0.09795597, z: -0.12789954, w: 0.9769063}
+      scale: {x: 0.9999997, y: 1.0000007, z: 1.0000005}
+    - name: QianFa_08_06
+      parentName: QianFa_08_05
+      position: {x: -2.561137e-11, y: 0.00032198752, z: -3.2261596e-10}
+      rotation: {x: 0.057440184, y: 0.086034015, z: -0.112154044, w: 0.9882916}
+      scale: {x: 0.99999994, y: 1, z: 0.99999976}
+    - name: QianFa_08_07
+      parentName: QianFa_08_06
+      position: {x: -9.313227e-12, y: 0.00024453024, z: -2.7008354e-10}
+      rotation: {x: 0.014361752, y: 0.0724749, z: -0.10301823, w: 0.99193174}
+      scale: {x: 0.99999946, y: 1.0000002, z: 1.0000004}
+    - name: QianFa_08_08
+      parentName: QianFa_08_07
+      position: {x: 3.352761e-10, y: 0.00012676728, z: 8.381903e-10}
+      rotation: {x: -0.011163708, y: 0.055129398, z: -0.08933021, w: 0.99441254}
+      scale: {x: 0.99999976, y: 1.0000006, z: 1.0000004}
+    - name: QianFa_09_01
+      parentName: Head
+      position: {x: -0.00029972804, y: 0.002005633, z: 0.0003568991}
+      rotation: {x: 0.69667447, y: -0.50641793, z: -0.50641817, w: -0.041547257}
+      scale: {x: 1.0000001, y: 0.9999999, z: 0.9999999}
+    - name: QianFa_09_02
+      parentName: QianFa_09_01
+      position: {x: -7.951167e-10, y: 0.0002617726, z: -4.656613e-10}
+      rotation: {x: -0.05185083, y: 0.16147746, z: -0.10179661, w: 0.98024184}
+      scale: {x: 0.99999994, y: 1.0000002, z: 0.9999999}
+    - name: QianFa_09_03
+      parentName: QianFa_09_02
+      position: {x: 4.656613e-10, y: 0.00030331843, z: 2.0489097e-10}
+      rotation: {x: -0.026630076, y: 0.19920154, z: -0.16149099, w: 0.9661937}
+      scale: {x: 0.99999964, y: 0.9999999, z: 0.9999999}
+    - name: QianFa_09_04
+      parentName: QianFa_09_03
+      position: {x: 2.6077035e-10, y: 0.00035023215, z: 3.1199307e-10}
+      rotation: {x: 0.07985104, y: 0.17984672, z: -0.19661584, w: 0.9605318}
+      scale: {x: 0.9999999, y: 1.0000001, z: 1.0000002}
+    - name: QianFa_09_05
+      parentName: QianFa_09_04
+      position: {x: -5.5879357e-11, y: 0.0003870965, z: -8.381903e-11}
+      rotation: {x: 0.10449773, y: 0.07072056, z: -0.0861075, w: 0.9882633}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000002}
+    - name: QianFa_09_06
+      parentName: QianFa_09_05
+      position: {x: -5.5879357e-11, y: 0.00038113052, z: -2.956949e-10}
+      rotation: {x: 0.054119337, y: 0.08211851, z: -0.10311755, w: 0.98979515}
+      scale: {x: 0.9999999, y: 1.0000007, z: 1.0000001}
+    - name: QianFa_09_07
+      parentName: QianFa_09_06
+      position: {x: 3.0267983e-10, y: 0.0002825538, z: 1.1175871e-10}
+      rotation: {x: -0.0389992, y: 0.1920392, z: -0.2882827, w: 0.93727964}
+      scale: {x: 0.99999994, y: 1.0000006, z: 1.0000004}
+    - name: QianFa_09_08
+      parentName: QianFa_09_07
+      position: {x: 4.1909515e-10, y: 0.00014999878, z: -5.5879357e-11}
+      rotation: {x: 0.010486583, y: 0.180179, z: -0.22660628, w: 0.9571182}
+      scale: {x: 0.9999994, y: 0.9999999, z: 0.99999976}
+    - name: QianFa_10_01
+      parentName: Head
+      position: {x: 0.00023192361, y: 0.0019988606, z: 0.00050635805}
+      rotation: {x: 0.8328348, y: 0.33924922, z: 0.3392492, w: 0.2760549}
+      scale: {x: 1, y: 0.99999994, z: 1}
+    - name: QianFa_10_02
+      parentName: QianFa_10_01
+      position: {x: -3.4458936e-10, y: 0.00024980662, z: -2.0489097e-10}
+      rotation: {x: 0.08630598, y: -0.17438868, z: 0.14036974, w: 0.9707916}
+      scale: {x: 0.9999998, y: 1.0000006, z: 1.0000002}
+    - name: QianFa_10_03
+      parentName: QianFa_10_02
+      position: {x: -3.1664965e-10, y: 0.00030870564, z: 1.6763806e-10}
+      rotation: {x: 0.12210032, y: -0.027269954, z: 0.058614932, w: 0.9904101}
+      scale: {x: 1.0000001, y: 0.99999976, z: 0.9999997}
+    - name: QianFa_10_04
+      parentName: QianFa_10_03
+      position: {x: 1.6763806e-10, y: 0.00029208802, z: -1.1175871e-10}
+      rotation: {x: 0.18377122, y: 0.020500308, z: 0.036566276, w: 0.9820748}
+      scale: {x: 1, y: 0.9999998, z: 1.0000001}
+    - name: QianFa_10_05
+      parentName: QianFa_10_04
+      position: {x: 1.4901164e-10, y: 0.00026791642, z: 4.0046869e-10}
+      rotation: {x: 0.19181164, y: 0.023482937, z: 0.035580724, w: 0.9805054}
+      scale: {x: 1.0000001, y: 1, z: 0.9999999}
+    - name: QianFa_10_06
+      parentName: QianFa_10_05
+      position: {x: 2.5145708e-10, y: 0.00027631025, z: 1.3038517e-10}
+      rotation: {x: 0.16084956, y: 0.011660937, z: 0.045349017, w: 0.9858676}
+      scale: {x: 0.99999964, y: 1.0000004, z: 1.0000004}
+    - name: QianFa_10_07
+      parentName: QianFa_10_06
+      position: {x: 1.769513e-10, y: 0.00026279726, z: -6.519259e-11}
+      rotation: {x: -0.062082365, y: 0.0202299, z: -0.094396956, w: -0.9933911}
+      scale: {x: 1.0000001, y: 1.0000007, z: 1.0000002}
+    - name: QianFa_11_01
+      parentName: Head
+      position: {x: 0.00032091062, y: 0.0020015847, z: 0.000440694}
+      rotation: {x: 0.74091643, y: 0.47187373, z: 0.471874, w: 0.07558449}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000001}
+    - name: QianFa_11_02
+      parentName: QianFa_11_01
+      position: {x: 0.0000000012852253, y: 0.00028143372, z: 4.4703485e-10}
+      rotation: {x: -0.011869481, y: -0.21306023, z: 0.15989417, w: 0.96379375}
+      scale: {x: 0.9999997, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_11_03
+      parentName: QianFa_11_02
+      position: {x: -0.0000000010430814, y: 0.00029280913, z: 3.0733643e-10}
+      rotation: {x: 0.05327169, y: -0.1444488, z: 0.14714634, w: 0.97705925}
+      scale: {x: 0.9999999, y: 1.0000005, z: 1.0000005}
+    - name: QianFa_11_04
+      parentName: QianFa_11_03
+      position: {x: 5.494803e-10, y: 0.00026840862, z: 1.8626455e-11}
+      rotation: {x: 0.111216456, y: -0.04459169, z: 0.07840954, w: 0.9896942}
+      scale: {x: 0.99999946, y: 1.0000002, z: 1.0000001}
+    - name: QianFa_11_05
+      parentName: QianFa_11_04
+      position: {x: -1.769513e-10, y: 0.00024906613, z: -5.5879357e-11}
+      rotation: {x: 0.114653535, y: -0.06441935, z: 0.10159227, w: 0.98609525}
+      scale: {x: 0.99999976, y: 1.0000004, z: 1}
+    - name: QianFa_11_06
+      parentName: QianFa_11_05
+      position: {x: 1.1641532e-11, y: 0.00030219372, z: -1.8626452e-10}
+      rotation: {x: -0.018305149, y: -0.07871899, z: 0.11115477, w: 0.9905114}
+      scale: {x: 0.9999997, y: 1.0000008, z: 1.0000011}
+    - name: QianFa_11_07
+      parentName: QianFa_11_06
+      position: {x: 1.2805687e-10, y: 0.0002666293, z: 9.313226e-11}
+      rotation: {x: -0.1362892, y: -0.20548832, z: 0.30370227, w: 0.9203069}
+      scale: {x: 0.99999934, y: 1.0000008, z: 1.0000006}
+    - name: QianFa_11_08
+      parentName: QianFa_11_07
+      position: {x: 1.6763806e-10, y: 0.00016220947, z: -9.313226e-11}
+      rotation: {x: -0.03348016, y: 0.3455542, z: -0.32420176, w: -0.8799799}
+      scale: {x: 0.9999999, y: 1.0000001, z: 0.99999946}
+    - name: QianFa_11_09
+      parentName: QianFa_11_08
+      position: {x: 4.0978193e-10, y: 0.00012385688, z: -9.313227e-12}
+      rotation: {x: 0.11645396, y: -0.2814393, z: 0.071566656, w: 0.949794}
+      scale: {x: 1.0000004, y: 1.0000002, z: 0.99999946}
+    - name: QianFa_12_01
+      parentName: Head
+      position: {x: 0.00038053872, y: 0.0020143592, z: 0.00028954292}
+      rotation: {x: 0.7387391, y: 0.4661675, z: 0.46616772, w: -0.14014319}
+      scale: {x: 0.9999998, y: 0.99999976, z: 0.99999994}
+    - name: QianFa_12_02
+      parentName: QianFa_12_01
+      position: {x: 4.260801e-10, y: 0.00021277538, z: -0.0000000022142195}
+      rotation: {x: -0.07821953, y: -0.14473405, z: 0.090674475, w: 0.9821975}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000004}
+    - name: QianFa_12_03
+      parentName: QianFa_12_02
+      position: {x: -1.2107193e-10, y: 0.00030165145, z: 4.1909515e-10}
+      rotation: {x: -0.029906139, y: -0.14194098, z: 0.13323227, w: 0.98041195}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000001}
+    - name: QianFa_12_04
+      parentName: QianFa_12_03
+      position: {x: -1.2107193e-10, y: 0.00036900648, z: -1.4901164e-10}
+      rotation: {x: -0.027695315, y: -0.17287277, z: 0.16708724, w: 0.9702731}
+      scale: {x: 0.99999976, y: 0.9999998, z: 1.0000002}
+    - name: QianFa_12_05
+      parentName: QianFa_12_04
+      position: {x: -1.3504177e-10, y: 0.00034474576, z: 3.725291e-11}
+      rotation: {x: 0.021278413, y: 0.033339977, z: -0.029505748, w: 0.9987818}
+      scale: {x: 0.99999994, y: 0.99999964, z: 0.99999976}
+    - name: QianFa_12_06
+      parentName: QianFa_12_05
+      position: {x: 4.4237825e-11, y: 0.0002664005, z: -7.450582e-11}
+      rotation: {x: 0.06299727, y: 0.11047186, z: -0.09956737, w: 0.9868707}
+      scale: {x: 1.0000004, y: 1.0000006, z: 1.0000007}
+    - name: QianFa_12_07
+      parentName: QianFa_12_06
+      position: {x: -5.401671e-10, y: 0.00017595281, z: 1.3969838e-10}
+      rotation: {x: 0.11138679, y: 0.16363157, z: -0.13838255, w: 0.9703958}
+      scale: {x: 0.99999964, y: 0.9999994, z: 0.99999934}
+    - name: QianFa_13_01
+      parentName: Head
+      position: {x: -0.00025573003, y: 0.002038859, z: 0.00045016585}
+      rotation: {x: 0.7501921, y: -0.4552826, z: -0.45528296, w: 0.15048951}
+      scale: {x: 0.9999999, y: 0.9999996, z: 0.99999976}
+    - name: QianFa_13_02
+      parentName: QianFa_13_01
+      position: {x: -2.3283065e-11, y: 0.00036232232, z: -9.313226e-11}
+      rotation: {x: -0.010909004, y: 0.2775866, z: -0.17379722, w: 0.94478637}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1}
+    - name: QianFa_13_03
+      parentName: QianFa_13_02
+      position: {x: -8.381903e-10, y: 0.0004017091, z: 7.450582e-11}
+      rotation: {x: 0.10098885, y: 0.20980604, z: -0.18114789, w: 0.9554937}
+      scale: {x: 0.99999976, y: 0.99999994, z: 1.0000001}
+    - name: QianFa_13_04
+      parentName: QianFa_13_03
+      position: {x: 7.916241e-11, y: 0.00033655306, z: 5.5879357e-11}
+      rotation: {x: 0.19163786, y: 0.15291776, z: -0.14508182, w: 0.9585627}
+      scale: {x: 0.9999999, y: 1.0000006, z: 1.0000004}
+    - name: QianFa_13_05
+      parentName: QianFa_13_04
+      position: {x: -6.519259e-11, y: 0.0002375632, z: 1.4901164e-10}
+      rotation: {x: 0.20981391, y: 0.11353598, z: -0.09417776, w: 0.9665497}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_14_01
+      parentName: Head
+      position: {x: 0.00017264481, y: 0.0019594107, z: 0.00051932776}
+      rotation: {x: 0.84834254, y: 0.30038404, z: 0.3003842, w: 0.3159964}
+      scale: {x: 0.9999999, y: 0.9999997, z: 0.9999997}
+    - name: QianFa_14_02
+      parentName: QianFa_14_01
+      position: {x: -6.2398614e-10, y: 0.00024259226, z: -1.3038517e-10}
+      rotation: {x: 0.044601034, y: -0.16196276, z: 0.09706372, w: 0.9809982}
+      scale: {x: 0.99999994, y: 1.0000001, z: 1.0000001}
+    - name: QianFa_14_03
+      parentName: QianFa_14_02
+      position: {x: 6.519258e-10, y: 0.00030568597, z: 9.313227e-12}
+      rotation: {x: 0.15495065, y: -0.12675281, z: 0.11043295, w: 0.97351354}
+      scale: {x: 1, y: 1.0000001, z: 0.9999999}
+    - name: QianFa_14_04
+      parentName: QianFa_14_03
+      position: {x: -1.1175871e-10, y: 0.00030988085, z: -2.7939678e-11}
+      rotation: {x: 0.104313485, y: -0.09911946, z: 0.0846282, w: 0.98596764}
+      scale: {x: 0.99999976, y: 0.9999995, z: 0.9999999}
+    - name: QianFa_14_05
+      parentName: QianFa_14_04
+      position: {x: 7.450582e-11, y: 0.00023690819, z: -2.5145708e-10}
+      rotation: {x: 0.11078354, y: -0.10081426, z: 0.08576346, w: 0.98499143}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000007}
+    - name: QianFa_14_06
+      parentName: QianFa_14_05
+      position: {x: 5.5879357e-11, y: 0.00015374651, z: 2.0954757e-10}
+      rotation: {x: 0.114228055, y: -0.063009635, z: 0.040990714, w: 0.99060667}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000001}
+    - name: QianFa_14_07
+      parentName: QianFa_14_06
+      position: {x: -7.450582e-11, y: 0.000099038916, z: 7.450582e-11}
+      rotation: {x: 0.14182146, y: -0.08566645, z: 0.06195591, w: 0.9842304}
+      scale: {x: 1, y: 1.0000001, z: 1.0000002}
+    - name: QianFa_15_01
+      parentName: Head
+      position: {x: 0.0001327449, y: 0.0020136712, z: 0.0005461332}
+      rotation: {x: 0.8609953, y: 0.27564302, z: 0.2756429, w: 0.32669413}
+      scale: {x: 1, y: 1.0000002, z: 1.0000005}
+    - name: QianFa_15_02
+      parentName: QianFa_15_01
+      position: {x: 3.7252904e-10, y: 0.0002644684, z: -2.0489097e-10}
+      rotation: {x: 0.07157178, y: -0.15714523, z: 0.103915505, w: 0.97948176}
+      scale: {x: 1, y: 1.0000001, z: 1.0000001}
+    - name: QianFa_15_03
+      parentName: QianFa_15_02
+      position: {x: -2.4214386e-10, y: 0.0003120082, z: -4.842877e-10}
+      rotation: {x: 0.10459597, y: -0.14218254, z: 0.10381263, w: 0.9788089}
+      scale: {x: 0.9999997, y: 1.0000002, z: 1.0000001}
+    - name: QianFa_15_04
+      parentName: QianFa_15_03
+      position: {x: 1.6996635e-10, y: 0.00029058647, z: -2.0954757e-11}
+      rotation: {x: 0.103298604, y: -0.17070171, z: 0.12367196, w: 0.97205746}
+      scale: {x: 0.9999997, y: 1.0000004, z: 1.0000002}
+    - name: QianFa_15_05
+      parentName: QianFa_15_04
+      position: {x: -0, y: 0.00024287647, z: -1.1175871e-10}
+      rotation: {x: 0.11228166, y: -0.16172431, z: 0.1137516, w: 0.9738063}
+      scale: {x: 0.99999994, y: 1.0000007, z: 1.0000004}
+    - name: QianFa_15_06
+      parentName: QianFa_15_05
+      position: {x: -3.8184234e-10, y: 0.00017944963, z: -3.725291e-11}
+      rotation: {x: 0.11971305, y: -0.1425467, z: 0.08810179, w: 0.9785639}
+      scale: {x: 1, y: 1.0000004, z: 1.0000006}
+    - name: QianFa_15_07
+      parentName: QianFa_15_06
+      position: {x: -7.6368467e-10, y: 0.00010317842, z: -5.727634e-10}
+      rotation: {x: 0.17513867, y: -0.19413605, z: 0.107062526, w: 0.9592577}
+      scale: {x: 1.0000002, y: 1.0000007, z: 1.0000002}
+    - name: QianFa_16_01
+      parentName: Head
+      position: {x: 0.00017131427, y: 0.0020053075, z: 0.00056300266}
+      rotation: {x: 0.8783793, y: 0.22306614, z: 0.22306603, w: 0.35907245}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_16_02
+      parentName: QianFa_16_01
+      position: {x: -4.656613e-10, y: 0.00026951777, z: -0.0000000010803342}
+      rotation: {x: 0.049773537, y: -0.23042783, z: 0.1146456, w: 0.9650296}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000005}
+    - name: QianFa_16_03
+      parentName: QianFa_16_02
+      position: {x: 4.4237825e-11, y: 0.00030717623, z: -8.055941e-10}
+      rotation: {x: 0.112256706, y: -0.25811538, z: 0.13223703, w: 0.95041484}
+      scale: {x: 0.99999964, y: 1.0000006, z: 1.0000004}
+    - name: QianFa_16_04
+      parentName: QianFa_16_03
+      position: {x: -9.87202e-10, y: 0.00025555206, z: 2.6077035e-10}
+      rotation: {x: 0.13197576, y: -0.20545241, z: 0.09323067, w: 0.9652356}
+      scale: {x: 0.99999994, y: 1.0000004, z: 1.0000002}
+    - name: QianFa_16_05
+      parentName: QianFa_16_04
+      position: {x: 2.1886082e-10, y: 0.00019859834, z: 1.769513e-10}
+      rotation: {x: 0.14883976, y: -0.13490407, z: 0.020666113, w: 0.97939813}
+      scale: {x: 0.99999994, y: 1.0000008, z: 1.0000005}
+    - name: QianFa_16_06
+      parentName: QianFa_16_05
+      position: {x: -7.4272977e-10, y: 0.00014790676, z: 3.8882716e-10}
+      rotation: {x: 0.1384011, y: -0.10602882, z: -0.0060232044, w: 0.9846659}
+      scale: {x: 1.0000002, y: 1.0000008, z: 1.0000006}
+    - name: QianFa_16_07
+      parentName: QianFa_16_06
+      position: {x: -5.867332e-10, y: 0.00010532166, z: 6.0535965e-10}
+      rotation: {x: 0.11801965, y: -0.0952805, z: 0.004846205, w: 0.9884177}
+      scale: {x: 1, y: 1.0000005, z: 0.9999998}
+    - name: QianFa_16_08
+      parentName: QianFa_16_07
+      position: {x: 4.1909514e-11, y: 0.00006961825, z: 5.727634e-10}
+      rotation: {x: 0.04697986, y: -0.01828078, z: -0.06898034, w: 0.99634355}
+      scale: {x: 0.9999999, y: 0.99999994, z: 0.9999998}
+    - name: QianFa_17_01
+      parentName: Head
+      position: {x: 0.00001526485, y: 0.0020154344, z: 0.0005685415}
+      rotation: {x: 0.8856625, y: -0.0005262068, z: -0.000526207, w: 0.46432894}
+      scale: {x: 0.9999998, y: 1, z: 1.0000001}
+    - name: QianFa_17_02
+      parentName: QianFa_17_01
+      position: {x: 2.1100276e-12, y: 0.00024345207, z: 9.489645e-10}
+      rotation: {x: 0.09761709, y: -0.13764629, z: 0.04288343, w: 0.9847261}
+      scale: {x: 1.0000001, y: 0.99999994, z: 0.9999996}
+    - name: QianFa_17_03
+      parentName: QianFa_17_02
+      position: {x: -2.3166649e-10, y: 0.00027530795, z: -0.000000001108856}
+      rotation: {x: 0.16368556, y: -0.1437118, z: 0.034946434, w: 0.9753629}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
+    - name: QianFa_17_04
+      parentName: QianFa_17_03
+      position: {x: -2.0023434e-10, y: 0.0002609026, z: 1.8626452e-10}
+      rotation: {x: 0.18140446, y: -0.17041871, z: 0.045952752, w: 0.96743906}
+      scale: {x: 1.0000002, y: 0.99999994, z: 0.99999976}
+    - name: QianFa_17_05
+      parentName: QianFa_17_04
+      position: {x: -1.8626452e-10, y: 0.00020505018, z: 1.6763806e-10}
+      rotation: {x: 0.19823593, y: -0.162526, z: 0.026438614, w: 0.9662241}
+      scale: {x: 0.9999999, y: 1.0000005, z: 1}
+    - name: QianFa_17_06
+      parentName: QianFa_17_05
+      position: {x: 1.3038517e-10, y: 0.00015256173, z: 0.0000000010430814}
+      rotation: {x: 0.14903784, y: -0.10650196, z: -0.0076315347, w: 0.9830498}
+      scale: {x: 1.0000001, y: 0.9999997, z: 0.9999999}
+    - name: QianFa_17_07
+      parentName: QianFa_17_06
+      position: {x: -6.519259e-11, y: 0.00011674887, z: 9.313227e-12}
+      rotation: {x: 0.09494519, y: -0.056392115, z: -0.04186813, w: 0.9930017}
+      scale: {x: 0.99999994, y: 1.0000007, z: 1.0000002}
+    - name: QianFa_17_08
+      parentName: QianFa_17_07
+      position: {x: -7.450582e-11, y: 0.00009738236, z: 6.938353e-10}
+      rotation: {x: -0.060527347, y: 0.034203, z: 0.037430033, w: -0.99687797}
+      scale: {x: 0.99999994, y: 1.0000006, z: 1.0000002}
+    - name: QianFa_17_09
+      parentName: QianFa_17_08
+      position: {x: -7.450582e-11, y: 0.00006454266, z: -0.0000000013597308}
+      rotation: {x: 0.06626127, y: -0.037542354, z: -0.039677523, w: 0.99630606}
+      scale: {x: 1.0000002, y: 1.0000002, z: 0.99999976}
+    - name: QianFa_18_01
+      parentName: Head
+      position: {x: 0.00020191044, y: 0.0020298958, z: 0.0005231738}
+      rotation: {x: 0.7897423, y: 0.395392, z: 0.39539197, w: 0.25226498}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1.0000002}
+    - name: QianFa_18_02
+      parentName: QianFa_18_01
+      position: {x: 9.49949e-10, y: 0.00022508894, z: 0}
+      rotation: {x: 0.049456056, y: -0.14574628, z: 0.11270974, w: 0.98163575}
+      scale: {x: 0.99999994, y: 1.0000004, z: 1.0000001}
+    - name: QianFa_18_03
+      parentName: QianFa_18_02
+      position: {x: 1.8626455e-11, y: 0.00028442932, z: 7.450582e-11}
+      rotation: {x: 0.12770115, y: -0.03792859, z: 0.08757758, w: 0.9872103}
+      scale: {x: 1, y: 1.0000006, z: 1.0000005}
+    - name: QianFa_18_04
+      parentName: QianFa_18_03
+      position: {x: -7.2643164e-10, y: 0.00029221867, z: 1.8626455e-11}
+      rotation: {x: 0.19000314, y: 0.03625451, z: 0.05397064, w: 0.9796283}
+      scale: {x: 1.0000001, y: 1.0000004, z: 1.0000006}
+    - name: QianFa_18_05
+      parentName: QianFa_18_04
+      position: {x: 1.1175871e-10, y: 0.000269578, z: -9.313226e-11}
+      rotation: {x: 0.16337894, y: 0.074963205, z: -0.008960752, w: 0.9836705}
+      scale: {x: 0.9999998, y: 1.0000005, z: 1.0000004}
+    - name: QianFa_18_06
+      parentName: QianFa_18_05
+      position: {x: 1.6763806e-10, y: 0.00024075975, z: 1.4901164e-10}
+      rotation: {x: 0.19259252, y: 0.079286784, z: 0.006700626, w: 0.9780475}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000006}
+    - name: QianFa_18_07
+      parentName: QianFa_18_06
+      position: {x: 2.4214386e-10, y: 0.0002048056, z: 1.8626452e-10}
+      rotation: {x: -0.1555505, y: -0.05037753, z: -0.05678099, w: -0.9849072}
+      scale: {x: 1.0000001, y: 1.0000004, z: 1.0000005}
+    - name: QianFa_18_08
+      parentName: QianFa_18_07
+      position: {x: 5.5879357e-11, y: 0.00016249041, z: -4.4703485e-10}
+      rotation: {x: 0.08092392, y: 0.022314839, z: 0.0775676, w: 0.9934469}
+      scale: {x: 1.0000001, y: 1.0000004, z: 1.0000002}
+    - name: QianFa_18_09
+      parentName: QianFa_18_08
+      position: {x: 5.122274e-11, y: 0.000104782266, z: 0.0000000018125867}
+      rotation: {x: 0.06912063, y: 0.018922051, z: 0.049122944, w: 0.9962185}
+      scale: {x: 1, y: 1.0000001, z: 1.0000005}
+    - name: QianFa_19_01
+      parentName: Head
+      position: {x: 0.00020879878, y: 0.0020004497, z: 0.0005526459}
+      rotation: {x: 0.858076, y: 0.29240337, z: 0.29240322, w: 0.30447704}
+      scale: {x: 1, y: 1.0000001, z: 1.0000007}
+    - name: QianFa_19_02
+      parentName: QianFa_19_01
+      position: {x: -7.357448e-10, y: 0.00025419882, z: 2.9802327e-10}
+      rotation: {x: 0.06295188, y: -0.13330372, z: 0.09514535, w: 0.98448694}
+      scale: {x: 0.99999976, y: 1.0000002, z: 0.99999994}
+    - name: QianFa_19_03
+      parentName: QianFa_19_02
+      position: {x: 7.543713e-10, y: 0.00030868425, z: -1.8626455e-11}
+      rotation: {x: 0.1244545, y: -0.03808297, z: 0.06018072, w: 0.98966616}
+      scale: {x: 1.0000001, y: 0.9999995, z: 0.99999964}
+    - name: QianFa_19_04
+      parentName: QianFa_19_03
+      position: {x: -5.401671e-10, y: 0.00026508476, z: 2.9802327e-10}
+      rotation: {x: 0.17272317, y: 0.040806454, z: 0.012624313, w: 0.9840438}
+      scale: {x: 0.9999998, y: 1, z: 1.0000004}
+    - name: QianFa_19_05
+      parentName: QianFa_19_04
+      position: {x: 1.6763806e-10, y: 0.0001997772, z: -2.142042e-10}
+      rotation: {x: 0.21030048, y: 0.055011492, z: 0.009551971, w: 0.9760411}
+      scale: {x: 1, y: 1, z: 1.0000005}
+    - name: QianFa_19_06
+      parentName: QianFa_19_05
+      position: {x: 4.284084e-10, y: 0.00016807251, z: -2.7939678e-11}
+      rotation: {x: 0.12635927, y: 0.024312226, z: 0.021101145, w: 0.99146205}
+      scale: {x: 0.99999994, y: 1.0000004, z: 1.0000008}
+    - name: QianFa_19_07
+      parentName: QianFa_19_06
+      position: {x: 1.6763806e-10, y: 0.00014189699, z: 4.93601e-10}
+      rotation: {x: 0.07312677, y: 0.022943746, z: -0.0098148575, w: 0.99701047}
+      scale: {x: 1, y: 1.0000004, z: 1.0000005}
+    - name: QianFa_20_01
+      parentName: Head
+      position: {x: 0.00024764857, y: 0.0020302308, z: 0.0004686936}
+      rotation: {x: 0.7553463, y: 0.44673684, z: 0.44673672, w: 0.1740817}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000006}
+    - name: QianFa_20_02
+      parentName: QianFa_20_01
+      position: {x: -7.4505807e-10, y: 0.0003209549, z: -3.7252904e-10}
+      rotation: {x: 0.07869803, y: -0.1493792, z: 0.16907568, w: 0.97103345}
+      scale: {x: 0.9999997, y: 1.0000002, z: 1.0000006}
+    - name: QianFa_20_03
+      parentName: QianFa_20_02
+      position: {x: 3.352761e-10, y: 0.00032625714, z: 2.0489097e-10}
+      rotation: {x: 0.258875, y: 0.10822656, z: 0.07863189, w: 0.9566022}
+      scale: {x: 1, y: 1.0000001, z: 1.0000006}
+    - name: QianFa_20_04
+      parentName: QianFa_20_03
+      position: {x: 3.7252904e-10, y: 0.00028688126, z: 1.4901164e-10}
+      rotation: {x: 0.2679426, y: 0.10480369, z: 0.09272059, w: 0.9532187}
+      scale: {x: 0.9999998, y: 0.9999996, z: 1.0000001}
+    - name: QianFa_20_05
+      parentName: QianFa_20_04
+      position: {x: 1.4901164e-10, y: 0.0002257867, z: 9.406359e-10}
+      rotation: {x: -0.17594393, y: -0.063388795, z: -0.084221765, w: -0.97874016}
+      scale: {x: 1.0000001, y: 0.99999976, z: 1.0000002}
+    - name: QianFa_20_06
+      parentName: QianFa_20_05
+      position: {x: -0, y: 0.00010592608, z: -1.6880221e-10}
+      rotation: {x: 0.07437019, y: 0.026728941, z: 0.038749926, w: 0.996119}
+      scale: {x: 0.99999976, y: 1.0000001, z: 1.0000005}
+    - name: QianFa_21_01
+      parentName: Head
+      position: {x: -0.00073904986, y: 0.0010591173, z: -0.00013089586}
+      rotation: {x: 0.985773, y: -0.106879085, z: -0.10687839, w: 0.07352147}
+      scale: {x: 1.0000008, y: 1.0000004, z: 1.0000008}
+    - name: QianFa_21_02
+      parentName: QianFa_21_01
+      position: {x: -1.4435499e-10, y: 0.0002312401, z: -1.8626452e-10}
+      rotation: {x: 0.0010544959, y: 0.14080307, z: -0.12147051, w: 0.982557}
+      scale: {x: 0.99999994, y: 1.0000005, z: 1.0000001}
+    - name: QianFa_21_03
+      parentName: QianFa_21_02
+      position: {x: 3.6088747e-11, y: 0.00023657396, z: 2.4214386e-10}
+      rotation: {x: -0.0039054528, y: 0.11543566, z: -0.09980876, w: 0.9882802}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+    - name: QianFa_21_04
+      parentName: QianFa_21_03
+      position: {x: 1.3969838e-10, y: 0.00023617473, z: -1.1175871e-10}
+      rotation: {x: -0.06808576, y: 0.07816776, z: -0.084021434, w: 0.99105734}
+      scale: {x: 0.99999994, y: 1.0000004, z: 1.0000007}
+    - name: QianFa_21_05
+      parentName: QianFa_21_04
+      position: {x: 1.8626455e-11, y: 0.00022108716, z: 2.6077035e-10}
+      rotation: {x: -0.06683232, y: 0.11404869, z: -0.10999323, w: 0.985103}
+      scale: {x: 1.0000001, y: 0.9999995, z: 0.9999998}
+    - name: QianFa_21_06
+      parentName: QianFa_21_05
+      position: {x: 8.3353374e-10, y: 0.0001927298, z: -3.725291e-11}
+      rotation: {x: -0.017593749, y: 0.33067286, z: -0.2162753, w: 0.9184612}
+      scale: {x: 1, y: 1.0000002, z: 1.0000004}
+    - name: QianFa_22_01
+      parentName: Head
+      position: {x: 0.00073902454, y: 0.0010591173, z: -0.00013089579}
+      rotation: {x: 0.9857726, y: 0.1068797, z: 0.10688121, w: 0.073521964}
+      scale: {x: 0.9999983, y: 0.9999998, z: 0.999999}
+    - name: QianFa_22_02
+      parentName: QianFa_22_01
+      position: {x: 3.958121e-10, y: 0.0002312398, z: -1.1175871e-10}
+      rotation: {x: 0.0010549276, y: -0.1408041, z: 0.12147181, w: 0.98255676}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_22_03
+      parentName: QianFa_22_02
+      position: {x: -8.847565e-11, y: 0.00023657839, z: 3.259629e-10}
+      rotation: {x: -0.009231634, y: -0.093149565, z: 0.08082351, w: 0.99232334}
+      scale: {x: 1, y: 1.0000007, z: 1.0000008}
+    - name: QianFa_22_04
+      parentName: QianFa_22_03
+      position: {x: -1.6763806e-10, y: 0.00023617494, z: 5.5879357e-11}
+      rotation: {x: -0.071950205, y: -0.07749185, z: 0.08073871, w: 0.99111027}
+      scale: {x: 0.99999964, y: 0.99999994, z: 0.99999964}
+    - name: QianFa_22_05
+      parentName: QianFa_22_04
+      position: {x: -6.9849193e-10, y: 0.00022108796, z: -4.284084e-10}
+      rotation: {x: -0.07208685, y: -0.11315838, z: 0.10662611, w: 0.9852054}
+      scale: {x: 0.9999994, y: 0.9999996, z: 1}
+    - name: QianFa_22_06
+      parentName: QianFa_22_05
+      position: {x: -1.6298145e-10, y: 0.00019272664, z: -2.7008354e-10}
+      rotation: {x: -0.038201332, y: -0.15884617, z: 0.11642626, w: 0.9796701}
+      scale: {x: 0.99999964, y: 1.0000005, z: 1.0000005}
+    - name: QianFa_22_07
+      parentName: QianFa_22_06
+      position: {x: 0.0000000014272517, y: 0.00008489658, z: 4.656613e-11}
+      rotation: {x: -0.06977373, y: 0.4668351, z: -0.19428512, w: -0.8599127}
+      scale: {x: 1.0000004, y: 1.0000007, z: 1}
+    - name: QianFa_23_01
+      parentName: Head
+      position: {x: -0.0008538796, y: 0.0014831998, z: 0.00013198878}
+      rotation: {x: 0.96015924, y: -0.19427703, z: -0.19427708, w: -0.051060177}
+      scale: {x: 0.99999976, y: 1.0000002, z: 1.0000002}
+    - name: QianFa_23_02
+      parentName: QianFa_23_01
+      position: {x: -3.2130631e-10, y: 0.00032952696, z: -1.8626455e-11}
+      rotation: {x: -0.0033770457, y: 0.07818803, z: -0.08552763, w: 0.9932574}
+      scale: {x: 0.9999997, y: 1.0000004, z: 1.0000005}
+    - name: QianFa_23_03
+      parentName: QianFa_23_02
+      position: {x: 2.5145708e-10, y: 0.00027915754, z: 5.5879357e-11}
+      rotation: {x: -0.037478305, y: 0.0695422, z: -0.0676659, w: 0.99457556}
+      scale: {x: 1, y: 1.0000002, z: 1.0000006}
+    - name: QianFa_23_04
+      parentName: QianFa_23_03
+      position: {x: 9.778887e-11, y: 0.00026718146, z: -2.7939678e-11}
+      rotation: {x: -0.056699928, y: 0.123069264, z: -0.12064621, w: 0.9834041}
+      scale: {x: 0.9999998, y: 1.000001, z: 1.0000006}
+    - name: QianFa_23_05
+      parentName: QianFa_23_04
+      position: {x: -3.0267983e-11, y: 0.00018871318, z: 1.1175871e-10}
+      rotation: {x: -0.07847246, y: 0.108682625, z: -0.110718966, w: 0.9847698}
+      scale: {x: 0.99999976, y: 0.9999997, z: 1.0000005}
+    - name: QianFa_23_06
+      parentName: QianFa_23_05
+      position: {x: 4.796311e-10, y: 0.00007329168, z: -1.8626455e-11}
+      rotation: {x: -0.08237422, y: 0.22690907, z: -0.20340203, w: 0.94887006}
+      scale: {x: 0.9999996, y: 1.0000005, z: 1.000001}
+    - name: QianFa_24_01
+      parentName: Head
+      position: {x: 0.0008077992, y: 0.0015667832, z: 0.00007532252}
+      rotation: {x: 0.9513487, y: 0.21132636, z: 0.21132642, w: -0.074953005}
+      scale: {x: 1.0000005, y: 0.99999976, z: 0.9999996}
+    - name: QianFa_24_02
+      parentName: QianFa_24_01
+      position: {x: 8.102507e-10, y: 0.00021616636, z: 2.4214386e-10}
+      rotation: {x: -0.04266315, y: -0.05560663, z: 0.044543136, w: 0.9965459}
+      scale: {x: 1.0000002, y: 0.9999997, z: 0.99999976}
+    - name: QianFa_24_03
+      parentName: QianFa_24_02
+      position: {x: -6.0535965e-10, y: 0.00022577324, z: 0}
+      rotation: {x: -0.056538027, y: -0.068489105, z: 0.05347623, w: 0.994612}
+      scale: {x: 0.9999999, y: 1.0000005, z: 1.0000002}
+    - name: QianFa_24_04
+      parentName: QianFa_24_03
+      position: {x: -3.725291e-11, y: 0.00022202474, z: 2.1536835e-11}
+      rotation: {x: -0.084863655, y: -0.043137144, z: 0.023640996, w: 0.9951776}
+      scale: {x: 1.0000001, y: 1.0000007, z: 1.0000005}
+    - name: QianFa_24_05
+      parentName: QianFa_24_04
+      position: {x: 6.7520885e-11, y: 0.0002461378, z: 9.313226e-11}
+      rotation: {x: -0.0915336, y: -0.11652829, z: 0.081296325, w: 0.9856134}
+      scale: {x: 0.9999999, y: 0.99999994, z: 0.9999999}
+    - name: QianFa_24_06
+      parentName: QianFa_24_05
+      position: {x: -6.693881e-11, y: 0.00022011211, z: 2.0954757e-10}
+      rotation: {x: -0.06693195, y: -0.20687161, z: 0.13928892, w: 0.9660864}
+      scale: {x: 1.0000002, y: 1.0000001, z: 0.9999998}
+    - name: QianFa_24_07
+      parentName: QianFa_24_06
+      position: {x: -2.2706445e-10, y: 0.00014415593, z: -9.669021e-10}
+      rotation: {x: 0.110105515, y: -0.4956506, z: 0.23919937, w: 0.82764184}
+      scale: {x: 1.0000002, y: 1.0000007, z: 1.0000002}
+    - name: TouFa_In_01_01
+      parentName: Head
+      position: {x: 0.0004741974, y: 0.0006561339, z: -0.0006737185}
+      rotation: {x: 0.9917444, y: -0.062983796, z: -0.06298449, w: 0.09224462}
+      scale: {x: 0.9999996, y: 0.99999994, z: 0.9999988}
+    - name: TouFa_In_01_02
+      parentName: TouFa_In_01_01
+      position: {x: -1.5832483e-10, y: 0.0003903579, z: -5.122274e-11}
+      rotation: {x: 0.0061416393, y: -0.12935095, z: 0.10662248, w: 0.9858308}
+      scale: {x: 1.0000004, y: 1.0000002, z: 1.0000002}
+    - name: TouFa_In_01_03
+      parentName: TouFa_In_01_02
+      position: {x: 6.332993e-10, y: 0.00028363647, z: -2.7939678e-11}
+      rotation: {x: 0.04026906, y: -0.16806175, z: 0.1274178, w: 0.97667724}
+      scale: {x: 1.0000004, y: 0.99999976, z: 0.9999998}
+    - name: TouFa_In_01_04
+      parentName: TouFa_In_01_03
+      position: {x: 3.259629e-10, y: 0.000293352, z: -1.3969838e-10}
+      rotation: {x: 0.18513429, y: -0.06341719, z: -0.06931263, w: 0.97821236}
+      scale: {x: 1.0000002, y: 1.0000006, z: 1.0000005}
+    - name: TouFa_In_02_01
+      parentName: Head
+      position: {x: 0.000012703126, y: 0.0006986357, z: -0.00070411165}
+      rotation: {x: 0.9990421, y: 0.011258864, z: 0.011258145, w: 0.040760737}
+      scale: {x: 1.0000002, y: 0.99999994, z: 1.0000026}
+    - name: TouFa_In_02_02
+      parentName: TouFa_In_02_01
+      position: {x: -1.1641532e-11, y: 0.00039779802, z: -1.4522811e-10}
+      rotation: {x: -0.08157704, y: -0.02770799, z: 0.023768976, w: 0.99599826}
+      scale: {x: 1, y: 1.0000001, z: 0.99999994}
+    - name: TouFa_In_02_03
+      parentName: TouFa_In_02_02
+      position: {x: 3.0267983e-11, y: 0.0003743128, z: 2.431625e-10}
+      rotation: {x: -0.06548328, y: -0.042577386, z: 0.03495782, w: 0.9963319}
+      scale: {x: 1.0000001, y: 1.0000004, z: 1.0000006}
+    - name: TouFa_In_02_04
+      parentName: TouFa_In_02_03
+      position: {x: 2.2118911e-10, y: 0.00024495166, z: 1.4435499e-10}
+      rotation: {x: 0.15997364, y: -0.024285572, z: 0.0018462199, w: 0.9868208}
+      scale: {x: 0.99999994, y: 1.0000007, z: 0.9999996}
+    - name: TouFa_In_03_01
+      parentName: Head
+      position: {x: -0.00023745719, y: 0.0007373142, z: -0.00069478794}
+      rotation: {x: 0.9901817, y: 0.07018772, z: 0.07018722, w: 0.09842636}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000012}
+    - name: TouFa_In_03_02
+      parentName: TouFa_In_03_01
+      position: {x: -5.5879357e-11, y: 0.00039970968, z: -1.0477379e-10}
+      rotation: {x: -0.060593896, y: 0.019288892, z: -0.023614377, w: 0.99769676}
+      scale: {x: 1.0000002, y: 1.0000001, z: 0.9999999}
+    - name: TouFa_In_03_03
+      parentName: TouFa_In_03_02
+      position: {x: -1.5832483e-10, y: 0.0003755327, z: 1.1175871e-10}
+      rotation: {x: 0.0778725, y: -0.04868349, z: 0.04758304, w: 0.9946365}
+      scale: {x: 0.9999996, y: 1.0000004, z: 1.0000002}
+    - name: TouFa_In_03_04
+      parentName: TouFa_In_03_03
+      position: {x: -6.0535965e-11, y: 0.00026405338, z: -3.1199307e-10}
+      rotation: {x: 0.15681542, y: -0.11475508, z: 0.1100063, w: 0.9747507}
+      scale: {x: 1, y: 1.0000008, z: 1.0000006}
+    - name: TouFa_In_04_01
+      parentName: Head
+      position: {x: 0.00014982582, y: 0.0006279969, z: -0.0008056298}
+      rotation: {x: 0.99931806, y: 0.0038998234, z: 0.00390426, w: 0.03651174}
+      scale: {x: 0.9999996, y: 0.9999996, z: 0.99995655}
+    - name: TouFa_In_04_02
+      parentName: TouFa_In_04_01
+      position: {x: -4.0745367e-12, y: 0.0004044028, z: 5.122274e-11}
+      rotation: {x: -0.20423381, y: -0.12866794, z: 0.11806437, w: 0.9632206}
+      scale: {x: 0.99999994, y: 1.0000005, z: 1.0000004}
+    - name: TouFa_In_04_03
+      parentName: TouFa_In_04_02
+      position: {x: -2.2351743e-10, y: 0.000290136, z: -3.1664965e-10}
+      rotation: {x: -0.018674284, y: -0.119158775, z: 0.07519417, w: 0.9898476}
+      scale: {x: 1.0000012, y: 1.0000027, z: 0.9999963}
+    - name: TouFa_In_04_04
+      parentName: TouFa_In_04_03
+      position: {x: 3.1432135e-10, y: 0.00024228639, z: -1.4319085e-10}
+      rotation: {x: 0.18216816, y: 0.16393003, z: -0.1614915, w: 0.9559614}
+      scale: {x: 0.9999924, y: 0.9999892, z: 1.000019}
+    - name: TouFa_In_05_01
+      parentName: Head
+      position: {x: -0.00018813944, y: 0.00064890145, z: -0.0008445599}
+      rotation: {x: 0.99752223, y: 0.04862686, z: 0.0486327, w: -0.014822797}
+      scale: {x: 1.0000287, y: 1.0000006, z: 1.000002}
+    - name: TouFa_In_05_02
+      parentName: TouFa_In_05_01
+      position: {x: -0, y: 0.00038502435, z: 2.165325e-10}
+      rotation: {x: -0.17034486, y: -0.0120612895, z: -0.004432141, w: 0.9853007}
+      scale: {x: 0.99999976, y: 0.9999999, z: 1.0000002}
+    - name: TouFa_In_05_03
+      parentName: TouFa_In_05_02
+      position: {x: -4.656613e-11, y: 0.0003156677, z: -9.19681e-11}
+      rotation: {x: -0.11461723, y: 0.06069754, z: -0.052977107, w: 0.9901375}
+      scale: {x: 1, y: 0.99999994, z: 1.0000002}
+    - name: TouFa_In_05_04
+      parentName: TouFa_In_05_03
+      position: {x: -8.381903e-11, y: 0.00032929427, z: 4.912726e-10}
+      rotation: {x: -0.071961775, y: -0.05798193, z: 0.020743653, w: 0.9955046}
+      scale: {x: 0.99999875, y: 1.0000002, z: 1.0000012}
+    - name: TouFa_In_06_01
+      parentName: Head
+      position: {x: -0.00053551997, y: 0.00068137044, z: -0.0005925275}
+      rotation: {x: 0.989395, y: 0.10255258, z: 0.10255272, w: -0.007965242}
+      scale: {x: 0.9999997, y: 1.0000002, z: 1.0000001}
+    - name: TouFa_In_06_02
+      parentName: TouFa_In_06_01
+      position: {x: -3.9115547e-10, y: 0.00035747868, z: -7.450582e-11}
+      rotation: {x: -0.015105529, y: 0.06605399, z: -0.07028311, w: 0.99522316}
+      scale: {x: 1.0000001, y: 1.0000001, z: 0.99999994}
+    - name: TouFa_In_06_03
+      parentName: TouFa_In_06_02
+      position: {x: -1.8626452e-10, y: 0.0002749082, z: -2.7939678e-11}
+      rotation: {x: -0.0017479886, y: 0.098842755, z: -0.09794272, w: 0.99026984}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000004}
+    - name: TouFa_In_06_04
+      parentName: TouFa_In_06_03
+      position: {x: 5.5879357e-11, y: 0.00022628678, z: 5.5879357e-11}
+      rotation: {x: 0.03346055, y: 0.002849734, z: 0.016018504, w: 0.99930763}
+      scale: {x: 1, y: 1.0000001, z: 1.0000004}
+    - name: TouFa_In_06_05
+      parentName: TouFa_In_06_04
+      position: {x: 2.0489097e-10, y: 0.00017581794, z: 1.1175871e-10}
+      rotation: {x: -0.057665195, y: -0.15566534, z: 0.13218792, w: 0.9772254}
+      scale: {x: 1, y: 1, z: 1.0000001}
+    - name: TouFa_L_01_01
+      parentName: Head
+      position: {x: -0.0007043415, y: 0.0017691007, z: 0.00037492762}
+      rotation: {x: 0.908157, y: -0.2942264, z: -0.2942265, w: -0.045963425}
+      scale: {x: 1.0000001, y: 0.99999994, z: 1}
+    - name: TouFa_L_01_02
+      parentName: TouFa_L_01_01
+      position: {x: -7.683412e-10, y: 0.00034335046, z: -9.313227e-12}
+      rotation: {x: 0.0034285325, y: 0.13460772, z: -0.15129942, w: 0.979274}
+      scale: {x: 0.9999998, y: 1.0000002, z: 0.99999994}
+    - name: TouFa_L_01_03
+      parentName: TouFa_L_01_02
+      position: {x: 7.217749e-11, y: 0.00039518168, z: 1.8626455e-11}
+      rotation: {x: 0.038097575, y: 0.11916497, z: -0.14597541, w: 0.9813458}
+      scale: {x: 0.9999999, y: 1.0000006, z: 1.0000005}
+    - name: TouFa_L_01_04
+      parentName: TouFa_L_01_03
+      position: {x: 1.4406396e-10, y: 0.00041061328, z: 9.807991e-11}
+      rotation: {x: -0.02458897, y: 0.14792496, z: -0.17718267, w: 0.97268695}
+      scale: {x: 0.9999997, y: 1.0000004, z: 1.0000006}
+    - name: TouFa_L_01_05
+      parentName: TouFa_L_01_04
+      position: {x: 4.621689e-10, y: 0.00031788382, z: -7.450582e-11}
+      rotation: {x: 0.0065887733, y: 0.18622804, z: -0.21164389, w: 0.9594178}
+      scale: {x: 0.9999999, y: 1.0000007, z: 1.0000005}
+    - name: TouFa_L_02_01
+      parentName: Head
+      position: {x: -0.0007334363, y: 0.0017299068, z: 0.00000741845}
+      rotation: {x: 0.93761224, y: -0.24093018, z: -0.2409304, w: -0.06919894}
+      scale: {x: 0.9999999, y: 0.99999994, z: 1.0000002}
+    - name: TouFa_L_02_02
+      parentName: TouFa_L_02_01
+      position: {x: 4.3772164e-10, y: 0.0003414217, z: 3.1664965e-10}
+      rotation: {x: -0.095478185, y: 0.1440676, z: -0.11404892, w: 0.9783258}
+      scale: {x: 0.99999976, y: 1.0000001, z: 0.99999994}
+    - name: TouFa_L_02_03
+      parentName: TouFa_L_02_02
+      position: {x: 9.778887e-11, y: 0.0003939314, z: -1.0244548e-10}
+      rotation: {x: -0.014456902, y: 0.008640765, z: -0.0048495196, w: 0.99984646}
+      scale: {x: 1.0000001, y: 1.0000007, z: 1.0000008}
+    - name: TouFa_L_02_04
+      parentName: TouFa_L_02_03
+      position: {x: 1.3504177e-10, y: 0.00037039898, z: -5.5879357e-11}
+      rotation: {x: -0.040948637, y: 0.23259571, z: -0.20419312, w: 0.95001453}
+      scale: {x: 0.9999999, y: 1.0000008, z: 1.000001}
+    - name: TouFa_L_02_05
+      parentName: TouFa_L_02_04
+      position: {x: -1.3969839e-11, y: 0.0003352067, z: -5.5879357e-11}
+      rotation: {x: 0.071658336, y: 0.2611298, z: -0.2044484, w: 0.9406791}
+      scale: {x: 1, y: 1.000001, z: 1.0000007}
+    - name: TouFa_L_03_01
+      parentName: Head
+      position: {x: -0.0009465345, y: 0.000662657, z: -0.00015530642}
+      rotation: {x: 0.99741924, y: -0.014873312, z: -0.014873058, w: 0.06864787}
+      scale: {x: 1, y: 1.0000002, z: 1.0000017}
+    - name: TouFa_L_03_02
+      parentName: TouFa_L_03_01
+      position: {x: 3.4924598e-12, y: 0.00020407882, z: -1.769513e-10}
+      rotation: {x: -0.029500704, y: 0.07488885, z: -0.06442082, w: 0.9946715}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000002}
+    - name: TouFa_L_03_03
+      parentName: TouFa_L_03_02
+      position: {x: -3.0966477e-10, y: 0.00020566687, z: 3.1664965e-10}
+      rotation: {x: 0.008670017, y: 0.12828335, z: -0.10437272, w: 0.986192}
+      scale: {x: 0.99999994, y: 1.0000006, z: 1.0000008}
+    - name: TouFa_L_03_04
+      parentName: TouFa_L_03_03
+      position: {x: 1.3969838e-10, y: 0.0001620542, z: -1.8626452e-10}
+      rotation: {x: 0.031959772, y: 0.18341145, z: -0.14287694, w: 0.97207254}
+      scale: {x: 0.99999964, y: 1, z: 1.0000002}
+    - name: TouFa_L_04_01
+      parentName: Head
+      position: {x: -0.0007718836, y: 0.0007961309, z: -0.000025849975}
+      rotation: {x: 0.9929016, y: 0.06981125, z: 0.06981059, w: 0.06632777}
+      scale: {x: 1.0000005, y: 1.0000001, z: 1.0000008}
+    - name: TouFa_L_04_02
+      parentName: TouFa_L_04_01
+      position: {x: 2.561137e-11, y: 0.00023535755, z: 2.0489097e-10}
+      rotation: {x: 0.0083963, y: 0.12901987, z: -0.11175476, w: 0.9852889}
+      scale: {x: 0.99999994, y: 1.0000002, z: 1.0000002}
+    - name: TouFa_L_04_03
+      parentName: TouFa_L_04_02
+      position: {x: -2.3283064e-10, y: 0.00021976186, z: -1.4901164e-10}
+      rotation: {x: 0.07313036, y: 0.2358372, z: -0.18283193, w: 0.951633}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000005}
+    - name: TouFa_L_04_04
+      parentName: TouFa_L_04_03
+      position: {x: 1.1175871e-10, y: 0.00020347972, z: -1.2107193e-10}
+      rotation: {x: 0.052202664, y: 0.13112794, z: -0.0907966, w: 0.9858176}
+      scale: {x: 1.0000005, y: 1.0000004, z: 1.0000007}
+    - name: TouFa_L_05_01
+      parentName: Head
+      position: {x: -0.00073470466, y: 0.0017299055, z: -0.000015693791}
+      rotation: {x: 0.9296426, y: -0.23724669, z: -0.23724669, w: -0.15229134}
+      scale: {x: 0.9999994, y: 1.0000001, z: 1.0000001}
+    - name: TouFa_L_05_02
+      parentName: TouFa_L_05_01
+      position: {x: -3.7252904e-10, y: 0.00035708788, z: 3.725291e-11}
+      rotation: {x: -0.071622364, y: 0.08788647, z: -0.07860407, w: 0.99043816}
+      scale: {x: 0.99999976, y: 1.0000004, z: 1.0000002}
+    - name: TouFa_L_05_03
+      parentName: TouFa_L_05_02
+      position: {x: 6.1467287e-10, y: 0.0004066035, z: -3.539026e-10}
+      rotation: {x: -0.031932525, y: 0.084719, z: -0.088984646, w: 0.9919097}
+      scale: {x: 0.9999999, y: 1.0000007, z: 1.000001}
+    - name: TouFa_L_05_04
+      parentName: TouFa_L_05_03
+      position: {x: -2.2351743e-10, y: 0.00035463163, z: 2.7939678e-11}
+      rotation: {x: -0.05121281, y: 0.1404258, z: -0.14776044, w: 0.9776629}
+      scale: {x: 0.9999996, y: 1.0000001, z: 1}
+    - name: TouFa_L_05_05
+      parentName: TouFa_L_05_04
+      position: {x: 1.1641532e-10, y: 0.00029964335, z: 0}
+      rotation: {x: -0.042017408, y: 0.13563973, z: -0.14163974, w: 0.97968084}
+      scale: {x: 0.9999995, y: 1.0000007, z: 1.0000011}
+    - name: TouFa_L_06_01
+      parentName: Head
+      position: {x: -0.00068976195, y: 0.001736306, z: -0.0003115763}
+      rotation: {x: 0.945901, y: -0.19571942, z: -0.19571926, w: -0.16929042}
+      scale: {x: 0.99999946, y: 1.0000002, z: 1.0000004}
+    - name: TouFa_L_06_02
+      parentName: TouFa_L_06_01
+      position: {x: 1.6763806e-10, y: 0.00035511272, z: 4.656613e-10}
+      rotation: {x: -0.09381314, y: 0.09760664, z: -0.09287537, w: 0.98643106}
+      scale: {x: 0.99999976, y: 1.0000005, z: 1.0000005}
+    - name: TouFa_L_06_03
+      parentName: TouFa_L_06_02
+      position: {x: -3.539026e-10, y: 0.00040361987, z: 2.9802327e-10}
+      rotation: {x: -0.09098501, y: 0.07331451, z: -0.06509296, w: 0.9910145}
+      scale: {x: 0.99999994, y: 1.0000005, z: 1.0000006}
+    - name: TouFa_L_06_04
+      parentName: TouFa_L_06_03
+      position: {x: 2.7939678e-11, y: 0.0003792971, z: 3.2596294e-11}
+      rotation: {x: -0.13969633, y: 0.16302198, z: -0.14900887, w: 0.96524876}
+      scale: {x: 0.9999995, y: 0.9999997, z: 1.0000001}
+    - name: TouFa_L_06_05
+      parentName: TouFa_L_06_04
+      position: {x: -5.401671e-10, y: 0.00038974916, z: -1.1175871e-10}
+      rotation: {x: -0.055500694, y: 0.20022857, z: -0.15774697, w: 0.96537256}
+      scale: {x: 0.99999934, y: 1.0000002, z: 1.000001}
+    - name: TouFa_L_07_01
+      parentName: Head
+      position: {x: -0.0008355141, y: 0.00059649826, z: -0.0005031299}
+      rotation: {x: 0.99379617, y: 0.05858662, z: 0.058588624, w: 0.074189916}
+      scale: {x: 0.99999845, y: 0.9999999, z: 0.99999714}
+    - name: TouFa_L_07_02
+      parentName: TouFa_L_07_01
+      position: {x: -2.2351743e-10, y: 0.00029216328, z: 9.313227e-12}
+      rotation: {x: -0.06615856, y: 0.18444453, z: -0.16607818, w: 0.96644783}
+      scale: {x: 1, y: 0.99999994, z: 1.0000002}
+    - name: TouFa_L_07_03
+      parentName: TouFa_L_07_02
+      position: {x: -1.8626455e-11, y: 0.00025813875, z: -2.2351743e-10}
+      rotation: {x: 0.008123946, y: 0.18551773, z: -0.13477995, w: 0.97331995}
+      scale: {x: 1.0000002, y: 1.0000008, z: 1.0000001}
+    - name: TouFa_L_08_01
+      parentName: Head
+      position: {x: -0.00033939345, y: 0.0017518294, z: -0.00066339126}
+      rotation: {x: 0.9501395, y: -0.1295402, z: -0.12953989, w: -0.25233644}
+      scale: {x: 0.99999994, y: 1.0000004, z: 0.99999976}
+    - name: TouFa_L_08_02
+      parentName: TouFa_L_08_01
+      position: {x: -5.587935e-10, y: 0.00037388963, z: -9.87202e-10}
+      rotation: {x: -0.15998407, y: 0.054580312, z: -0.034655478, w: 0.98500013}
+      scale: {x: 1, y: 1.0000004, z: 1.0000002}
+    - name: TouFa_L_08_03
+      parentName: TouFa_L_08_02
+      position: {x: 3.725291e-11, y: 0.000415641, z: -3.725291e-11}
+      rotation: {x: -0.03191412, y: 0.07968112, z: -0.09016982, w: 0.99222064}
+      scale: {x: 0.9999998, y: 0.99999994, z: 0.9999997}
+    - name: TouFa_L_08_04
+      parentName: TouFa_L_08_03
+      position: {x: 2.910383e-11, y: 0.00040520428, z: 8.527422e-11}
+      rotation: {x: -0.08470739, y: 0.053028185, z: -0.0596487, w: 0.9932043}
+      scale: {x: 0.99999994, y: 1, z: 0.9999999}
+    - name: TouFa_L_08_05
+      parentName: TouFa_L_08_04
+      position: {x: 5.5879357e-11, y: 0.0003707815, z: -5.5879357e-11}
+      rotation: {x: -0.09841386, y: 0.17929325, z: -0.18183002, w: 0.96182454}
+      scale: {x: 0.9999996, y: 1.0000002, z: 1.0000005}
+    - name: TouFa_L_09_01
+      parentName: Head
+      position: {x: -0.00054475956, y: 0.0017471348, z: -0.000505503}
+      rotation: {x: 0.95301616, y: -0.13147633, z: -0.1314762, w: -0.23914085}
+      scale: {x: 0.9999998, y: 1.0000001, z: 0.99999994}
+    - name: TouFa_L_09_02
+      parentName: TouFa_L_09_01
+      position: {x: 7.450582e-11, y: 0.00038366416, z: 8.288772e-10}
+      rotation: {x: -0.17544296, y: 0.066114165, z: -0.045785766, w: 0.9811995}
+      scale: {x: 0.99999994, y: 1.0000004, z: 1.0000002}
+    - name: TouFa_L_09_03
+      parentName: TouFa_L_09_02
+      position: {x: 1.6763806e-10, y: 0.00039747424, z: 2.7008354e-10}
+      rotation: {x: -0.07718681, y: 0.05862604, z: -0.05381037, w: 0.99383587}
+      scale: {x: 0.9999997, y: 0.9999998, z: 0.99999976}
+    - name: TouFa_L_09_04
+      parentName: TouFa_L_09_03
+      position: {x: 6.984919e-11, y: 0.00046232116, z: 1.6298147e-11}
+      rotation: {x: -0.034987003, y: 0.12490476, z: -0.12028226, w: 0.98422915}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
+    - name: TouFa_L_09_05
+      parentName: TouFa_L_09_04
+      position: {x: -2.2351743e-10, y: 0.00040214826, z: 1.6763806e-10}
+      rotation: {x: -0.038036272, y: 0.27537668, z: -0.25757203, w: 0.92540675}
+      scale: {x: 0.99999976, y: 1.0000007, z: 1.0000006}
+    - name: TouFa_L_10_01
+      parentName: Head
+      position: {x: -0.00026634187, y: 0.0017883444, z: -0.0007252115}
+      rotation: {x: 0.9639739, y: -0.03717132, z: -0.03717132, w: -0.2607508}
+      scale: {x: 1, y: 1.0000001, z: 0.99999994}
+    - name: TouFa_L_10_02
+      parentName: TouFa_L_10_01
+      position: {x: -0, y: 0.00041052478, z: -1.3504177e-10}
+      rotation: {x: -0.075213, y: 0.055108044, z: -0.08802418, w: 0.9917449}
+      scale: {x: 0.9999999, y: 1, z: 1}
+    - name: TouFa_L_10_03
+      parentName: TouFa_L_10_02
+      position: {x: 8.381903e-11, y: 0.00034884535, z: 5.2852556e-10}
+      rotation: {x: -0.0278591, y: 0.06748606, z: -0.10189979, w: 0.99211186}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000002}
+    - name: TouFa_L_10_04
+      parentName: TouFa_L_10_03
+      position: {x: -4.284084e-10, y: 0.00023259854, z: -4.1909515e-10}
+      rotation: {x: -0.060297206, y: 0.08730191, z: -0.13910843, w: 0.9845768}
+      scale: {x: 1, y: 1.0000011, z: 1.0000005}
+    - name: TouFa_L_11_01
+      parentName: Head
+      position: {x: -0.0004891037, y: 0.0017797329, z: -0.0006225933}
+      rotation: {x: 0.9650128, y: -0.11315621, z: -0.11315603, w: -0.20770615}
+      scale: {x: 0.9999998, y: 1.0000002, z: 0.99999976}
+    - name: TouFa_L_11_02
+      parentName: TouFa_L_11_01
+      position: {x: -5.5879357e-11, y: 0.00036681246, z: -0.0000000010617076}
+      rotation: {x: -0.02508683, y: 0.075764954, z: -0.109828115, w: 0.99074125}
+      scale: {x: 0.99999976, y: 1, z: 1.0000002}
+    - name: TouFa_L_11_03
+      parentName: TouFa_L_11_02
+      position: {x: -5.5879357e-11, y: 0.00035838372, z: 4.0628945e-10}
+      rotation: {x: 0.062188443, y: 0.102264725, z: -0.15282725, w: 0.9809783}
+      scale: {x: 0.99999994, y: 1.0000005, z: 1.0000006}
+    - name: TouFa_L_11_04
+      parentName: TouFa_L_11_03
+      position: {x: -2.2351743e-10, y: 0.00029428359, z: 5.215407e-10}
+      rotation: {x: 0.10169331, y: 0.10831854, z: -0.15068811, w: 0.9773529}
+      scale: {x: 0.99999994, y: 1.0000008, z: 1.0000007}
+    - name: TouFa_L_12_01
+      parentName: Head
+      position: {x: -0.0006781012, y: 0.0017765606, z: -0.00035624008}
+      rotation: {x: 0.9418931, y: -0.18953095, z: -0.1895308, w: -0.20246859}
+      scale: {x: 0.99999964, y: 0.9999998, z: 0.9999997}
+    - name: TouFa_L_12_02
+      parentName: TouFa_L_12_01
+      position: {x: -9.313226e-10, y: 0.0003095885, z: 8.754433e-10}
+      rotation: {x: -0.04521135, y: 0.062866285, z: -0.07411696, w: 0.9942387}
+      scale: {x: 0.9999999, y: 1.0000004, z: 1.0000001}
+    - name: TouFa_L_12_03
+      parentName: TouFa_L_12_02
+      position: {x: 5.9604655e-10, y: 0.00033434262, z: -2.0489097e-10}
+      rotation: {x: 0.00006422399, y: 0.06836966, z: -0.09551826, w: 0.99307704}
+      scale: {x: 0.9999999, y: 1.0000005, z: 1.0000001}
+    - name: TouFa_L_12_04
+      parentName: TouFa_L_12_03
+      position: {x: 1.0244548e-10, y: 0.00031728196, z: -2.142042e-10}
+      rotation: {x: 0.0033863469, y: 0.102448955, z: -0.14345162, w: 0.9843345}
+      scale: {x: 0.9999999, y: 0.99999994, z: 1.0000001}
+    - name: TouFa_L_12_05
+      parentName: TouFa_L_12_04
+      position: {x: -1.1175871e-10, y: 0.00027808416, z: -7.916242e-10}
+      rotation: {x: 0.012557625, y: 0.070450746, z: -0.09651017, w: 0.9927562}
+      scale: {x: 0.9999999, y: 1.0000008, z: 1.0000005}
+    - name: TouFa_L_13_01
+      parentName: Head
+      position: {x: -0.0007792379, y: 0.0017452897, z: -0.00010917123}
+      rotation: {x: 0.9442164, y: -0.20903122, z: -0.20903127, w: -0.14514565}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1}
+    - name: TouFa_L_13_02
+      parentName: TouFa_L_13_01
+      position: {x: 2.2351743e-10, y: 0.00032832279, z: -2.6077035e-10}
+      rotation: {x: -0.0053734626, y: 0.047716297, z: -0.06223964, w: 0.9969055}
+      scale: {x: 1, y: 1, z: 0.9999999}
+    - name: TouFa_L_13_03
+      parentName: TouFa_L_13_02
+      position: {x: -2.6077035e-10, y: 0.0003362744, z: -1.6763806e-10}
+      rotation: {x: 0.026426978, y: 0.041214217, z: -0.065501206, w: 0.9966507}
+      scale: {x: 0.99999994, y: 1.0000001, z: 1.0000001}
+    - name: TouFa_L_13_04
+      parentName: TouFa_L_13_03
+      position: {x: -2.7939676e-10, y: 0.0002614579, z: -8.381903e-10}
+      rotation: {x: 0.05391761, y: 0.12070741, z: -0.18589394, w: 0.97363555}
+      scale: {x: 0.99999994, y: 1.0000004, z: 1.0000006}
+    - name: TouFa_L_14_01
+      parentName: Head
+      position: {x: -0.00080084923, y: 0.0017155576, z: 0.00015205774}
+      rotation: {x: 0.92858964, y: -0.25473213, z: -0.25473222, w: -0.08913138}
+      scale: {x: 1, y: 1.0000001, z: 0.9999999}
+    - name: TouFa_L_14_02
+      parentName: TouFa_L_14_01
+      position: {x: 4.0046869e-10, y: 0.0003188284, z: 2.7008354e-10}
+      rotation: {x: -0.055202175, y: 0.11781391, z: -0.10933011, w: 0.985454}
+      scale: {x: 0.9999997, y: 1.0000004, z: 1.0000001}
+    - name: TouFa_L_14_03
+      parentName: TouFa_L_14_02
+      position: {x: -1.071021e-10, y: 0.0003119839, z: -1.8626452e-10}
+      rotation: {x: -0.026726656, y: -0.013967541, z: 0.023255236, w: 0.9992747}
+      scale: {x: 1.0000004, y: 0.9999997, z: 0.99999964}
+    - name: TouFa_L_14_04
+      parentName: TouFa_L_14_03
+      position: {x: 5.681068e-10, y: 0.0002546661, z: -8.381903e-11}
+      rotation: {x: 0.10311123, y: -0.21043645, z: 0.17838061, w: 0.95564896}
+      scale: {x: 1, y: 1.0000001, z: 1.0000001}
+    - name: TouFa_L_15_01
+      parentName: Head
+      position: {x: -0.00081164535, y: 0.0016881921, z: 0.00029858912}
+      rotation: {x: 0.9167025, y: -0.2808765, z: -0.28087655, w: -0.043281883}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000004}
+    - name: TouFa_L_15_02
+      parentName: TouFa_L_15_01
+      position: {x: 2.863817e-10, y: 0.00033119362, z: 1.14087025e-10}
+      rotation: {x: -0.058458716, y: 0.12651657, z: -0.101456866, w: 0.98502934}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000005}
+    - name: TouFa_L_15_03
+      parentName: TouFa_L_15_02
+      position: {x: -5.634501e-10, y: 0.00029046502, z: -7.450582e-11}
+      rotation: {x: -0.04669141, y: 0.11163035, z: -0.09122948, w: 0.98845124}
+      scale: {x: 1, y: 1.0000006, z: 1.0000004}
+    - name: TouFa_L_15_04
+      parentName: TouFa_L_15_03
+      position: {x: 7.5669956e-11, y: 0.00025413407, z: 5.5879357e-11}
+      rotation: {x: -0.07083373, y: 0.11769432, z: -0.0932393, w: 0.9861223}
+      scale: {x: 0.9999997, y: 1.0000001, z: 1.0000006}
+    - name: TouFa_L_15_05
+      parentName: TouFa_L_15_04
+      position: {x: -7.7707216e-11, y: 0.00018920067, z: 1.0244548e-10}
+      rotation: {x: 0.00037673846, y: 0.23520762, z: -0.17769751, w: 0.9555631}
+      scale: {x: 0.99999964, y: 1.0000005, z: 1.0000005}
+    - name: TouFa_L_16_01
+      parentName: Head
+      position: {x: -0.0001693865, y: 0.0017527437, z: -0.00069228344}
+      rotation: {x: 0.957371, y: -0.09525763, z: -0.09525741, w: -0.25552464}
+      scale: {x: 0.9999999, y: 1.0000002, z: 0.9999998}
+    - name: TouFa_L_16_02
+      parentName: TouFa_L_16_01
+      position: {x: 3.352761e-10, y: 0.000349568, z: 1.14087025e-10}
+      rotation: {x: -0.097719654, y: 0.021304186, z: -0.010291054, w: 0.9949328}
+      scale: {x: 1, y: 1.0000001, z: 1.0000004}
+    - name: TouFa_L_16_03
+      parentName: TouFa_L_16_02
+      position: {x: 7.450582e-11, y: 0.00041771214, z: 0.0000000012479723}
+      rotation: {x: -0.11287607, y: 0.08514524, z: -0.09596785, w: 0.9852916}
+      scale: {x: 0.99999976, y: 0.99999994, z: 1}
+    - name: TouFa_L_16_04
+      parentName: TouFa_L_16_03
+      position: {x: 1.1641532e-11, y: 0.00047574806, z: -3.6670826e-11}
+      rotation: {x: -0.124817684, y: 0.06955502, z: -0.07906713, w: 0.9865754}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1}
+    - name: TouFa_L_16_05
+      parentName: TouFa_L_16_04
+      position: {x: 3.725291e-11, y: 0.0003937303, z: -1.4435499e-10}
+      rotation: {x: -0.021888696, y: 0.19714838, z: -0.17182468, w: 0.9649507}
+      scale: {x: 0.9999998, y: 1.0000005, z: 1.0000005}
+    - name: TouFa_M_01_01
+      parentName: Head
+      position: {x: -0.00001103622, y: 0.0017711055, z: -0.0006900521}
+      rotation: {x: 0.96802413, y: -0.008702759, z: -0.008702728, w: -0.25055498}
+      scale: {x: 0.99999994, y: 1.0000001, z: 0.99999976}
+    - name: TouFa_M_01_02
+      parentName: TouFa_M_01_01
+      position: {x: 1.04773785e-11, y: 0.00031083258, z: -9.66429e-11}
+      rotation: {x: -0.011582817, y: 0.0037923967, z: -0.00616017, w: 0.99990684}
+      scale: {x: 1, y: 0.99999994, z: 0.99999976}
+    - name: TouFa_M_01_03
+      parentName: TouFa_M_01_02
+      position: {x: -1.2805685e-11, y: 0.00036037614, z: 2.901197e-10}
+      rotation: {x: -0.19033594, y: -0.001769912, z: 0.004795038, w: 0.9817058}
+      scale: {x: 1, y: 1.0000006, z: 1.0000006}
+    - name: TouFa_M_01_04
+      parentName: TouFa_M_01_03
+      position: {x: 1.3969839e-11, y: 0.00039128077, z: -1.0080839e-10}
+      rotation: {x: -0.072826855, y: 0.02644887, z: -0.028159682, w: 0.99659616}
+      scale: {x: 0.9999999, y: 1.0000006, z: 1.0000004}
+    - name: TouFa_M_01_05
+      parentName: TouFa_M_01_04
+      position: {x: 2.6775525e-11, y: 0.0004214363, z: 2.0190783e-11}
+      rotation: {x: -0.16682631, y: 0.016526353, z: -0.022406058, w: 0.98559314}
+      scale: {x: 0.9999999, y: 0.99999994, z: 0.9999999}
+    - name: TouFa_M_01_06
+      parentName: TouFa_M_01_05
+      position: {x: 8.556526e-11, y: 0.00028789596, z: -3.2894604e-10}
+      rotation: {x: -0.14958882, y: 0.14612493, z: -0.108905, w: 0.9718078}
+      scale: {x: 1, y: 1.0000007, z: 1.0000002}
+    - name: TouFa_R_01_02
+      parentName: Head
+      position: {x: 0.0006934695, y: 0.00051289913, z: 0.00005237125}
+      rotation: {x: 0.9632384, y: -0.18648884, z: -0.18649025, w: 0.051138133}
+      scale: {x: 0.99999803, y: 0.99999994, z: 0.99999994}
+    - name: TouFa_R_01_03
+      parentName: TouFa_R_01_02
+      position: {x: 5.1688404e-10, y: 0.00022091137, z: 1.4901164e-10}
+      rotation: {x: 0.02851006, y: -0.2107799, z: 0.17904536, w: 0.96057373}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000005}
+    - name: TouFa_R_01_04
+      parentName: TouFa_R_01_03
+      position: {x: -1.6763806e-10, y: 0.00019581725, z: 6.1467287e-10}
+      rotation: {x: 0.07574184, y: -0.19079791, z: 0.119851775, w: 0.97133666}
+      scale: {x: 0.9999996, y: 1.0000005, z: 1.0000007}
+    - name: TouFa_R_02_01
+      parentName: Head
+      position: {x: 0.0007504647, y: 0.0016203581, z: 0.00020556951}
+      rotation: {x: 0.94419837, y: 0.23275475, z: 0.23275459, w: -0.011835586}
+      scale: {x: 1.0000004, y: 0.99999976, z: 0.9999997}
+    - name: TouFa_R_02_02
+      parentName: TouFa_R_02_01
+      position: {x: 7.241033e-10, y: 0.000347427, z: 1.5832483e-10}
+      rotation: {x: -0.10198602, y: -0.21492872, z: 0.1694659, w: 0.95639217}
+      scale: {x: 0.9999997, y: 1.0000002, z: 1.0000002}
+    - name: TouFa_R_02_03
+      parentName: TouFa_R_02_02
+      position: {x: -2.0685549e-10, y: 0.000394714, z: -2.4039765e-10}
+      rotation: {x: -0.0348725, y: -0.18588786, z: 0.15062222, w: 0.97033113}
+      scale: {x: 0.99999994, y: 1.0000001, z: 0.9999999}
+    - name: TouFa_R_02_04
+      parentName: TouFa_R_02_03
+      position: {x: -1.7229468e-10, y: 0.00039452524, z: 1.6763806e-10}
+      rotation: {x: 0.04758161, y: -0.196508, z: 0.13953152, w: 0.9693563}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000005}
+    - name: TouFa_R_02_05
+      parentName: TouFa_R_02_04
+      position: {x: -5.215407e-10, y: 0.00026322383, z: 1.9208527e-11}
+      rotation: {x: -0.021344194, y: -0.17166042, z: 0.15944411, w: 0.9719335}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000002}
+    - name: TouFa_R_03_01
+      parentName: Head
+      position: {x: 0.00091156247, y: 0.00069312094, z: -0.000026825628}
+      rotation: {x: 0.9977391, y: -0.012804842, z: -0.01280421, w: 0.06472115}
+      scale: {x: 1, y: 1, z: 1.0000033}
+    - name: TouFa_R_03_02
+      parentName: TouFa_R_03_01
+      position: {x: 4.1909514e-11, y: 0.00023873601, z: 1.4901164e-10}
+      rotation: {x: -0.08726041, y: -0.12321221, z: 0.11030386, w: 0.9823632}
+      scale: {x: 1.0000001, y: 1.0000001, z: 0.9999998}
+    - name: TouFa_R_03_03
+      parentName: TouFa_R_03_02
+      position: {x: 7.543713e-10, y: 0.00021190644, z: -2.0489097e-10}
+      rotation: {x: 0.035907287, y: -0.14921434, z: 0.100900926, w: 0.9829877}
+      scale: {x: 0.9999999, y: 0.9999999, z: 1.0000004}
+    - name: TouFa_R_03_04
+      parentName: TouFa_R_03_03
+      position: {x: -4.7031795e-10, y: 0.00016154074, z: 1.1175871e-10}
+      rotation: {x: 0.05117062, y: -0.16332357, z: 0.104651816, w: 0.9796709}
+      scale: {x: 0.9999997, y: 0.9999997, z: 1.0000005}
+    - name: TouFa_R_04_01
+      parentName: Head
+      position: {x: 0.00073504547, y: 0.0016701914, z: -0.00007627908}
+      rotation: {x: 0.9395492, y: 0.22469032, z: 0.22469045, w: -0.1275765}
+      scale: {x: 1.0000006, y: 1.0000007, z: 1.0000007}
+    - name: TouFa_R_04_02
+      parentName: TouFa_R_04_01
+      position: {x: -9.313226e-11, y: 0.00032737298, z: -4.842877e-10}
+      rotation: {x: -0.07085036, y: -0.0920786, z: 0.08180165, w: 0.9898537}
+      scale: {x: 1, y: 1.0000005, z: 1.0000006}
+    - name: TouFa_R_04_03
+      parentName: TouFa_R_04_02
+      position: {x: 5.215407e-10, y: 0.000379015, z: -1.4901164e-10}
+      rotation: {x: -0.10520214, y: -0.11476295, z: 0.09676476, w: 0.9830557}
+      scale: {x: 0.9999998, y: 1.0000005, z: 1.0000005}
+    - name: TouFa_R_04_04
+      parentName: TouFa_R_04_03
+      position: {x: 2.6309863e-10, y: 0.0003776989, z: 1.3969839e-11}
+      rotation: {x: -0.031767353, y: -0.13279584, z: 0.118168235, w: 0.9835611}
+      scale: {x: 0.9999997, y: 1.0000008, z: 1.0000013}
+    - name: TouFa_R_04_05
+      parentName: TouFa_R_04_04
+      position: {x: -1.9557773e-10, y: 0.00029730186, z: -3.725291e-11}
+      rotation: {x: 0.04800912, y: -0.15963504, z: 0.12752643, w: 0.9777264}
+      scale: {x: 0.9999998, y: 1.0000008, z: 1.0000008}
+    - name: TouFa_R_04_06
+      parentName: TouFa_R_04_05
+      position: {x: 8.6613e-10, y: 0.00019303763, z: -3.725291e-11}
+      rotation: {x: 0.12957218, y: -0.23905288, z: 0.16354461, w: 0.9483237}
+      scale: {x: 0.9999995, y: 1.0000011, z: 1.0000007}
+    - name: TouFa_R_05_01
+      parentName: Head
+      position: {x: 0.0009438892, y: 0.0013061726, z: -0.0002445586}
+      rotation: {x: 0.976797, y: 0.1485788, z: 0.14857878, w: -0.041429467}
+      scale: {x: 0.99999917, y: 1, z: 1.0000001}
+    - name: TouFa_R_05_02
+      parentName: TouFa_R_05_01
+      position: {x: 6.332993e-10, y: 0.00039290928, z: -1.4901164e-10}
+      rotation: {x: -0.10342751, y: -0.11003965, z: 0.08692949, w: 0.98470163}
+      scale: {x: 0.99999964, y: 1, z: 1}
+    - name: TouFa_R_05_03
+      parentName: TouFa_R_05_02
+      position: {x: 1.8626452e-10, y: 0.0003352555, z: -8.381903e-11}
+      rotation: {x: -0.07804834, y: -0.12298636, z: 0.100743935, w: 0.9841918}
+      scale: {x: 0.99999964, y: 0.99999976, z: 1.0000002}
+    - name: TouFa_R_05_04
+      parentName: TouFa_R_05_03
+      position: {x: 1.1175871e-10, y: 0.00024568875, z: 8.381903e-11}
+      rotation: {x: -0.07668648, y: -0.24679938, z: 0.19333537, w: 0.9464833}
+      scale: {x: 0.9999997, y: 1.0000002, z: 1.0000006}
+    - name: TouFa_R_05_05
+      parentName: TouFa_R_05_04
+      position: {x: 2.8870997e-10, y: 0.0001691436, z: -3.725291e-11}
+      rotation: {x: 0.1090574, y: -0.407716, z: 0.19962813, w: 0.88432056}
+      scale: {x: 0.9999998, y: 1.0000002, z: 1.0000006}
+    - name: TouFa_R_06_01
+      parentName: Head
+      position: {x: 0.00073677185, y: 0.0016474712, z: -0.0003427222}
+      rotation: {x: 0.96244544, y: 0.16523722, z: 0.1652373, w: -0.13817422}
+      scale: {x: 1.0000002, y: 0.9999998, z: 0.99999976}
+    - name: TouFa_R_06_02
+      parentName: TouFa_R_06_01
+      position: {x: -6.332993e-10, y: 0.0003800134, z: 4.842877e-10}
+      rotation: {x: -0.06546405, y: -0.058047414, z: 0.05126204, w: 0.99484533}
+      scale: {x: 0.99999994, y: 0.99999976, z: 0.99999976}
+    - name: TouFa_R_06_03
+      parentName: TouFa_R_06_02
+      position: {x: -5.5879357e-11, y: 0.00040716835, z: -1.3038517e-10}
+      rotation: {x: -0.09988957, y: -0.0898366, z: 0.07968659, w: 0.98772544}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000001}
+    - name: TouFa_R_06_04
+      parentName: TouFa_R_06_03
+      position: {x: -5.122274e-11, y: 0.00037035457, z: 1.3969839e-11}
+      rotation: {x: -0.07971871, y: -0.29026836, z: 0.2706398, w: 0.9144088}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1}
+    - name: TouFa_R_06_05
+      parentName: TouFa_R_06_04
+      position: {x: 1.1175871e-10, y: 0.0003796336, z: 4.0978193e-10}
+      rotation: {x: -0.0040460667, y: -0.11250843, z: 0.09162668, w: 0.98940897}
+      scale: {x: 1.0000005, y: 1.0000001, z: 1.0000002}
+    - name: TouFa_R_08_01
+      parentName: Head
+      position: {x: 0.00057452807, y: 0.001648108, z: -0.000552087}
+      rotation: {x: 0.96552575, y: 0.12218363, z: 0.12218377, w: -0.19468562}
+      scale: {x: 1, y: 0.9999995, z: 0.99999976}
+    - name: TouFa_R_08_02
+      parentName: TouFa_R_08_01
+      position: {x: 9.313226e-11, y: 0.0003908215, z: -6.519259e-11}
+      rotation: {x: -0.14804459, y: -0.09013964, z: 0.088739194, w: 0.9808583}
+      scale: {x: 0.99999994, y: 0.99999976, z: 0.99999994}
+    - name: TouFa_R_08_03
+      parentName: TouFa_R_08_02
+      position: {x: 1.1641532e-10, y: 0.00029292752, z: 8.847565e-11}
+      rotation: {x: -0.06428954, y: -0.019404741, z: 0.016808026, w: 0.99760103}
+      scale: {x: 1, y: 1.0000001, z: 1.0000002}
+    - name: TouFa_R_08_04
+      parentName: TouFa_R_08_03
+      position: {x: 1.6298145e-10, y: 0.00047326533, z: 6.519259e-11}
+      rotation: {x: -0.09960283, y: -0.20862706, z: 0.19880533, w: 0.95238155}
+      scale: {x: 1.0000001, y: 1.0000002, z: 0.9999998}
+    - name: TouFa_R_08_05
+      parentName: TouFa_R_08_04
+      position: {x: 1.8626452e-10, y: 0.00046333688, z: 0}
+      rotation: {x: -0.06557544, y: -0.1885245, z: 0.17103972, w: 0.96483356}
+      scale: {x: 1.0000005, y: 1.0000002, z: 1.0000008}
+    - name: TouFa_R_09_01
+      parentName: Head
+      position: {x: 0.00028797652, y: 0.0015396322, z: -0.0008127146}
+      rotation: {x: 0.9816507, y: 0.047457647, z: 0.04745792, w: -0.17848663}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.000001}
+    - name: TouFa_R_09_02
+      parentName: TouFa_R_09_01
+      position: {x: -9.313227e-12, y: 0.00042195374, z: 3.3760442e-10}
+      rotation: {x: -0.14743237, y: -0.033346236, z: 0.03074414, w: 0.9880317}
+      scale: {x: 0.99999976, y: 0.99999976, z: 0.9999996}
+    - name: TouFa_R_09_03
+      parentName: TouFa_R_09_02
+      position: {x: -2.7939678e-11, y: 0.0005126001, z: -7.5669956e-11}
+      rotation: {x: -0.11023815, y: -0.1166988, z: 0.120726764, w: 0.9796193}
+      scale: {x: 0.9999999, y: 1, z: 1.0000002}
+    - name: TouFa_R_09_04
+      parentName: TouFa_R_09_03
+      position: {x: 1.1175871e-10, y: 0.00042604137, z: 3.3061953e-10}
+      rotation: {x: -0.046252992, y: -0.16774447, z: 0.15176524, w: 0.9729799}
+      scale: {x: 1.0000004, y: 1.0000001, z: 1.0000006}
+    - name: TouFa_R_09_05
+      parentName: TouFa_R_09_04
+      position: {x: 6.6123906e-10, y: 0.00026483025, z: -5.5879357e-11}
+      rotation: {x: -0.021790562, y: -0.20158337, z: 0.16562915, w: 0.9651199}
+      scale: {x: 1.0000002, y: 0.99999976, z: 1.0000001}
+    - name: TouFa_R_10_01
+      parentName: Head
+      position: {x: 0.0007793907, y: 0.001730926, z: 0.00014132522}
+      rotation: {x: 0.9268055, y: 0.26205364, z: 0.26205328, w: -0.060724847}
+      scale: {x: 1.0000012, y: 1.0000005, z: 0.99999994}
+    - name: TouFa_R_10_02
+      parentName: TouFa_R_10_01
+      position: {x: 1.2107193e-10, y: 0.00032153493, z: -7.450582e-11}
+      rotation: {x: 0.01024633, y: -0.09648959, z: 0.11622067, w: 0.9884724}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000006}
+    - name: TouFa_R_10_03
+      parentName: TouFa_R_10_02
+      position: {x: 1.3969839e-11, y: 0.0002986512, z: 3.1664965e-10}
+      rotation: {x: 0.115678124, y: -0.02630735, z: 0.071943715, w: 0.99032855}
+      scale: {x: 0.9999997, y: 1.0000006, z: 1.0000007}
+    - name: TouFa_R_10_04
+      parentName: TouFa_R_10_03
+      position: {x: 2.3283065e-11, y: 0.00020660159, z: -2.2351743e-10}
+      rotation: {x: 0.13144273, y: 0.004682123, z: 0.029904647, w: 0.9908616}
+      scale: {x: 1.0000004, y: 0.99999994, z: 1.0000001}
+    - name: TouFa_R_11_01
+      parentName: Head
+      position: {x: 0.0008020142, y: 0.0017059171, z: -0.00010773729}
+      rotation: {x: 0.94242203, y: 0.22538564, z: 0.22538576, w: -0.10120928}
+      scale: {x: 0.9999999, y: 1.0000001, z: 1.0000002}
+    - name: TouFa_R_11_02
+      parentName: TouFa_R_11_01
+      position: {x: 4.284084e-10, y: 0.00037853824, z: 3.7252904e-10}
+      rotation: {x: -0.020982394, y: -0.019578451, z: 0.01304577, w: 0.9995031}
+      scale: {x: 1, y: 1.0000006, z: 1.0000005}
+    - name: TouFa_R_11_03
+      parentName: TouFa_R_11_02
+      position: {x: 4.4703485e-10, y: 0.00031598195, z: -1.4901164e-10}
+      rotation: {x: 0.022091053, y: -0.030494027, z: 0.04674423, w: 0.9981969}
+      scale: {x: 0.99999976, y: 0.9999998, z: 0.99999976}
+    - name: TouFa_R_11_04
+      parentName: TouFa_R_11_03
+      position: {x: 1.4901164e-10, y: 0.00027899272, z: 1.8626452e-10}
+      rotation: {x: 0.045134097, y: -0.10011653, z: 0.14248055, w: 0.9836864}
+      scale: {x: 0.9999999, y: 0.9999998, z: 1.0000002}
+    - name: TouFa_R_11_05
+      parentName: TouFa_R_11_04
+      position: {x: -0, y: 0.00022019199, z: 3.259629e-10}
+      rotation: {x: 0.079639, y: -0.11777594, z: 0.17083265, w: 0.97498864}
+      scale: {x: 0.99999946, y: 1.0000002, z: 0.99999964}
+    - name: TouFa_R_11_06
+      parentName: TouFa_R_11_05
+      position: {x: 3.8184234e-10, y: 0.00014292913, z: -8.1956386e-10}
+      rotation: {x: 0.14400956, y: -0.10968766, z: 0.14059407, w: 0.9733772}
+      scale: {x: 0.9999997, y: 1.0000005, z: 1.0000002}
+    - name: TouFa_R_12_01
+      parentName: Head
+      position: {x: 0.00075968506, y: 0.0016697764, z: -0.0004079476}
+      rotation: {x: 0.94564855, y: 0.19692276, z: 0.19692264, w: -0.167904}
+      scale: {x: 0.99999934, y: 1.0000005, z: 1.0000005}
+    - name: TouFa_R_12_02
+      parentName: TouFa_R_12_01
+      position: {x: 2.6077035e-10, y: 0.00035199022, z: -6.891787e-10}
+      rotation: {x: -0.022916628, y: -0.08447978, z: 0.10935092, w: 0.99014163}
+      scale: {x: 1, y: 1.0000008, z: 1.0000012}
+    - name: TouFa_R_12_03
+      parentName: TouFa_R_12_02
+      position: {x: -9.313226e-11, y: 0.00033504915, z: -1.1175871e-10}
+      rotation: {x: -0.0012086573, y: -0.091916434, z: 0.12477291, w: 0.9879179}
+      scale: {x: 0.99999964, y: 1.0000001, z: 0.99999976}
+    - name: TouFa_R_12_04
+      parentName: TouFa_R_12_03
+      position: {x: -1.0943041e-10, y: 0.0002466437, z: -5.646143e-10}
+      rotation: {x: -0.027658418, y: -0.09233327, z: 0.1258704, w: 0.9873532}
+      scale: {x: 0.99999934, y: 0.99999994, z: 1.0000006}
+    - name: TouFa_R_13_01
+      parentName: Head
+      position: {x: 0.0005327817, y: 0.001693269, z: -0.00066712213}
+      rotation: {x: 0.96154296, y: 0.10156979, z: 0.10156985, w: -0.23409913}
+      scale: {x: 1, y: 0.99999976, z: 0.99999976}
+    - name: TouFa_R_13_02
+      parentName: TouFa_R_13_01
+      position: {x: 1.1175871e-10, y: 0.00040523862, z: -3.4458936e-10}
+      rotation: {x: -0.054249495, y: -0.067510895, z: 0.09581302, w: 0.99162453}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1}
+    - name: TouFa_R_13_03
+      parentName: TouFa_R_13_02
+      position: {x: -5.5879357e-11, y: 0.00032495588, z: 0.0000000011525116}
+      rotation: {x: -0.05137624, y: -0.088200286, z: 0.12609655, w: 0.9867527}
+      scale: {x: 1, y: 1.0000004, z: 1.0000004}
+    - name: TouFa_R_13_04
+      parentName: TouFa_R_13_03
+      position: {x: 5.5879357e-11, y: 0.0002385972, z: -3.6321582e-10}
+      rotation: {x: -0.09938242, y: -0.057950668, z: 0.09672614, w: 0.98863995}
+      scale: {x: 1, y: 1.0000006, z: 1.0000002}
+    - name: TouFa_R_14_01
+      parentName: Head
+      position: {x: 0.00025474917, y: 0.001770022, z: -0.0007517831}
+      rotation: {x: 0.9571183, y: 0.06351641, z: 0.06351638, w: -0.27541956}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000001}
+    - name: TouFa_R_14_02
+      parentName: TouFa_R_14_01
+      position: {x: 3.7252904e-10, y: 0.00037239806, z: -0.0000000013620594}
+      rotation: {x: -0.09616673, y: -0.03918169, z: 0.052921653, w: 0.99318486}
+      scale: {x: 0.99999994, y: 1.0000001, z: 1.0000004}
+    - name: TouFa_R_14_03
+      parentName: TouFa_R_14_02
+      position: {x: -0, y: 0.00030326686, z: -4.5227358e-10}
+      rotation: {x: -0.01993384, y: -0.10801612, z: 0.15637735, w: 0.9815709}
+      scale: {x: 1, y: 1.0000004, z: 1}
+    - name: TouFa_R_14_04
+      parentName: TouFa_R_14_03
+      position: {x: -4.4703485e-10, y: 0.00024265099, z: 3.259629e-10}
+      rotation: {x: 0.15549226, y: -0.13236514, z: 0.1395818, w: 0.96892655}
+      scale: {x: 1, y: 1.0000008, z: 1.0000007}
+    - name: TouFa_R_15_01
+      parentName: Head
+      position: {x: 0.0004954761, y: 0.001518687, z: -0.00074480573}
+      rotation: {x: 0.9757955, y: 0.09191096, z: 0.09191082, w: -0.17586322}
+      scale: {x: 1, y: 1.0000001, z: 0.99999976}
+    - name: TouFa_R_15_02
+      parentName: TouFa_R_15_01
+      position: {x: 2.4214386e-10, y: 0.00040499482, z: 9.313227e-12}
+      rotation: {x: -0.17003076, y: -0.075193666, z: 0.06918342, w: 0.98012716}
+      scale: {x: 0.9999999, y: 0.99999964, z: 1.0000001}
+    - name: TouFa_R_15_03
+      parentName: TouFa_R_15_02
+      position: {x: -1.2572854e-10, y: 0.0004967139, z: -1.14087025e-10}
+      rotation: {x: -0.04166279, y: -0.1386595, z: 0.13861482, w: 0.9797059}
+      scale: {x: 1, y: 1.0000004, z: 0.9999999}
+    - name: TouFa_R_15_04
+      parentName: TouFa_R_15_03
+      position: {x: -1.3038517e-10, y: 0.0003895229, z: 8.381903e-11}
+      rotation: {x: -0.022741849, y: -0.1250548, z: 0.121562235, w: 0.9844119}
+      scale: {x: 1.0000001, y: 1, z: 1.0000002}
+    - name: TouFa_R_15_05
+      parentName: TouFa_R_15_04
+      position: {x: 1.8626452e-10, y: 0.00026363946, z: -2.7939678e-11}
+      rotation: {x: -0.0013357135, y: -0.14023897, z: 0.12475899, w: 0.98222524}
+      scale: {x: 1.0000001, y: 1, z: 0.9999998}
+    - name: MaWei_L_0_1
+      parentName: Neck
+      position: {x: -0.00047519276, y: 0.00055772596, z: -0.00003401996}
+      rotation: {x: 0.7988816, y: -0.17013313, z: -0.17377844, w: 0.55013084}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: MaWei_L_1_1
+      parentName: MaWei_L_0_1
+      position: {x: 1.1379598e-10, y: 0.00034753673, z: 2.6193447e-11}
+      rotation: {x: 0.109070785, y: 0.008432722, z: -0.029217668, w: 0.9935688}
+      scale: {x: 1.0000001, y: 0.99999994, z: 1.0000001}
+    - name: MaWei_L_2_1
+      parentName: MaWei_L_1_1
+      position: {x: -7.450582e-11, y: 0.0003408073, z: -0.0000000012107193}
+      rotation: {x: 0.08994919, y: -0.049086876, z: -0.007523479, w: 0.9947075}
+      scale: {x: 1, y: 1, z: 0.99999994}
+    - name: MaWei_L_3_1
+      parentName: MaWei_L_2_1
+      position: {x: 6.2398614e-10, y: 0.00035081472, z: 4.4703485e-10}
+      rotation: {x: 0.06941885, y: -0.06433684, z: 0.004872034, w: 0.99549896}
+      scale: {x: 1, y: 0.9999999, z: 1.0000002}
+    - name: MaWei_L_4_1
+      parentName: MaWei_L_3_1
+      position: {x: 2.9802327e-10, y: 0.0003693627, z: 7.4505807e-10}
+      rotation: {x: 0.053997364, y: -0.067931876, z: 0.0126546575, w: 0.9961473}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000002}
+    - name: MaWei_L_5_1
+      parentName: MaWei_L_4_1
+      position: {x: 8.568168e-10, y: 0.00039174978, z: -7.450582e-11}
+      rotation: {x: 0.04360847, y: -0.06627326, z: 0.016788283, w: 0.9967068}
+      scale: {x: 0.99999976, y: 1.0000001, z: 1.0000002}
+    - name: MaWei_L_6_1
+      parentName: MaWei_L_5_1
+      position: {x: -3.725291e-11, y: 0.00041554883, z: 2.2351743e-10}
+      rotation: {x: 0.036383025, y: -0.061182342, z: 0.017826347, w: 0.997304}
+      scale: {x: 1.0000002, y: 1, z: 0.99999994}
+    - name: MaWei_L_7_1
+      parentName: MaWei_L_6_1
+      position: {x: 5.215407e-10, y: 0.0004392747, z: -1.8160791e-10}
+      rotation: {x: 0.030577417, y: -0.053425163, z: 0.016421333, w: 0.99796855}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
+    - name: MaWei_L_8_1
+      parentName: MaWei_L_7_1
+      position: {x: 3.7252904e-10, y: 0.0004615892, z: 1.4901164e-10}
+      rotation: {x: 0.024960345, y: -0.043375388, z: 0.0132197905, w: 0.9986595}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.000001}
+    - name: MaWei_L_9_1
+      parentName: MaWei_L_8_1
+      position: {x: 6.705522e-10, y: 0.00048091254, z: 0}
+      rotation: {x: 0.018797686, y: -0.031119265, z: 0.008649607, w: 0.9993015}
+      scale: {x: 0.9999999, y: 1.0000006, z: 1}
+    - name: MaWei_L_10_1
+      parentName: MaWei_L_9_1
+      position: {x: -4.4703485e-10, y: 0.0004954136, z: 0}
+      rotation: {x: 0.011695494, y: -0.01641242, z: 0.002738041, w: 0.9997932}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000005}
+    - name: MaWei_L_11_1
+      parentName: MaWei_L_10_1
+      position: {x: -3.352761e-10, y: 0.0005031558, z: 4.4703485e-10}
+      rotation: {x: 0.003422399, y: 0.0015696905, z: -0.0051274155, w: 0.9999798}
+      scale: {x: 0.99999994, y: 1, z: 1.0000005}
+    - name: MaWei_L_12_1
+      parentName: MaWei_L_11_1
+      position: {x: -0, y: 0.0005024207, z: 1.4901164e-10}
+      rotation: {x: -0.0059452034, y: 0.024275262, z: -0.01649387, w: 0.99955165}
+      scale: {x: 1.0000005, y: 1.0000006, z: 1.0000002}
+    - name: MaWei_L_13_1
+      parentName: MaWei_L_12_1
+      position: {x: -7.450582e-11, y: 0.00049225707, z: -4.4703485e-10}
+      rotation: {x: -0.015380936, y: 0.053803194, z: -0.03436264, w: 0.99784166}
+      scale: {x: 1.0000002, y: 1.000001, z: 1.0000006}
+    - name: MaWei_L_14_1
+      parentName: MaWei_L_13_1
+      position: {x: 4.4703485e-10, y: 0.00047344493, z: -5.9604655e-10}
+      rotation: {x: -0.020679692, y: 0.09144711, z: -0.063058995, w: 0.9935962}
+      scale: {x: 1.0000002, y: 1.0000007, z: 1.0000012}
+    - name: MaWei_L_15_1
+      parentName: MaWei_L_14_1
+      position: {x: -0, y: 0.00045034697, z: -9.313226e-11}
+      rotation: {x: -0.010880894, y: 0.13272077, z: -0.10379942, w: 0.9856432}
+      scale: {x: 0.9999995, y: 1.0000006, z: 1.0000005}
+    - name: MaWei_L_16_1
+      parentName: MaWei_L_15_1
+      position: {x: -0.000000001117587, y: 0.0004340481, z: -3.7252904e-10}
+      rotation: {x: -0.9536177, y: 0.20123665, z: 0.20123503, w: 0.098089635}
+      scale: {x: 0.9999994, y: 1.0000008, z: 1.0000006}
+    - name: MaWei_R_0_1
+      parentName: Neck
+      position: {x: 0.00047516802, y: 0.0005577283, z: -0.000034019777}
+      rotation: {x: 0.79888064, y: 0.17012827, z: 0.17377344, w: 0.5501354}
+      scale: {x: 1, y: 0.9999997, z: 1.0000001}
+    - name: MaWei_R_1_1
+      parentName: MaWei_R_0_1
+      position: {x: -2.219895e-10, y: 0.00034753612, z: -9.57225e-10}
+      rotation: {x: 0.10908069, y: -0.008423737, z: 0.029217746, w: 0.99356776}
+      scale: {x: 1, y: 1.0000002, z: 0.99999994}
+    - name: MaWei_R_2_1
+      parentName: MaWei_R_1_1
+      position: {x: -0.0000000012177043, y: 0.00034080935, z: 3.539026e-10}
+      rotation: {x: 0.08994438, y: 0.04908968, z: 0.0075213746, w: 0.9947078}
+      scale: {x: 1, y: 0.9999999, z: 0.9999999}
+    - name: MaWei_R_3_1
+      parentName: MaWei_R_2_1
+      position: {x: -3.539026e-10, y: 0.00035081248, z: 2.9802327e-10}
+      rotation: {x: 0.069415025, y: 0.06432786, z: -0.004869225, w: 0.9954998}
+      scale: {x: 1, y: 1.0000005, z: 1.0000006}
+    - name: MaWei_R_4_1
+      parentName: MaWei_R_3_1
+      position: {x: -1.8626452e-10, y: 0.00036936268, z: 4.0978193e-10}
+      rotation: {x: 0.054003093, y: 0.067941606, z: -0.01265725, w: 0.9961463}
+      scale: {x: 1, y: 1, z: 0.9999997}
+    - name: MaWei_R_5_1
+      parentName: MaWei_R_4_1
+      position: {x: 2.6077035e-10, y: 0.00039174463, z: -4.4703485e-10}
+      rotation: {x: 0.043603897, y: 0.066263944, z: -0.016785238, w: 0.9967076}
+      scale: {x: 1, y: 1, z: 1.0000005}
+    - name: MaWei_R_6_1
+      parentName: MaWei_R_5_1
+      position: {x: -2.2351743e-10, y: 0.00041555075, z: 7.450582e-11}
+      rotation: {x: 0.036384348, y: 0.061185084, z: -0.01782748, w: 0.9973038}
+      scale: {x: 1, y: 1.0000001, z: 0.99999994}
+    - name: MaWei_R_7_1
+      parentName: MaWei_R_6_1
+      position: {x: -3.725291e-11, y: 0.00043927462, z: -4.93601e-10}
+      rotation: {x: 0.03057861, y: 0.053426523, z: -0.016421355, w: 0.9979684}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000006}
+    - name: MaWei_R_8_1
+      parentName: MaWei_R_7_1
+      position: {x: 6.332993e-10, y: 0.0004615882, z: 6.705522e-10}
+      rotation: {x: 0.024960201, y: 0.043376878, z: -0.01322167, w: 0.99865943}
+      scale: {x: 1.0000004, y: 1, z: 1.0000006}
+    - name: MaWei_R_9_1
+      parentName: MaWei_R_8_1
+      position: {x: -0, y: 0.0004809124, z: 3.7252904e-10}
+      rotation: {x: 0.018797731, y: 0.031119753, z: -0.008649524, w: 0.99930155}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000006}
+    - name: MaWei_R_10_1
+      parentName: MaWei_R_9_1
+      position: {x: -0, y: 0.0004954153, z: 7.4505807e-10}
+      rotation: {x: 0.0116935475, y: 0.016409189, z: -0.002737396, w: 0.99979323}
+      scale: {x: 0.99999964, y: 0.9999994, z: 0.9999997}
+    - name: MaWei_R_11_1
+      parentName: MaWei_R_10_1
+      position: {x: -0.0000000012293457, y: 0.00050315476, z: 0}
+      rotation: {x: 0.0034249146, y: -0.0015659871, z: 0.0051267254, w: 0.9999798}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000004}
+    - name: MaWei_R_12_1
+      parentName: MaWei_R_11_1
+      position: {x: 2.2351743e-10, y: 0.0005024212, z: 0}
+      rotation: {x: -0.0059478064, y: -0.024283146, z: 0.01649852, w: 0.99955136}
+      scale: {x: 1, y: 1.0000002, z: 1}
+    - name: MaWei_R_13_1
+      parentName: MaWei_R_12_1
+      position: {x: -2.2351743e-10, y: 0.0004922584, z: -2.9802327e-10}
+      rotation: {x: -0.01537939, y: -0.053795446, z: 0.034356996, w: 0.9978423}
+      scale: {x: 1.0000001, y: 1, z: 0.9999997}
+    - name: MaWei_R_14_1
+      parentName: MaWei_R_13_1
+      position: {x: -7.4505807e-10, y: 0.00047344592, z: -1.4901164e-10}
+      rotation: {x: -0.020679232, y: -0.091450244, z: 0.06306183, w: 0.9935958}
+      scale: {x: 1.0000001, y: 1.0000006, z: 1.000001}
+    - name: MaWei_R_15_1
+      parentName: MaWei_R_14_1
+      position: {x: -5.9604655e-10, y: 0.00045034508, z: -1.6763806e-10}
+      rotation: {x: -0.0108801415, y: -0.13271965, z: 0.10379919, w: 0.9856434}
+      scale: {x: 0.9999998, y: 0.9999996, z: 0.99999964}
+    - name: MaWei_R_16_1
+      parentName: MaWei_R_15_1
+      position: {x: 1.4901164e-10, y: 0.00043405028, z: 0}
+      rotation: {x: -0.9536177, y: -0.20123754, z: -0.20123428, w: 0.09808987}
+      scale: {x: 0.99999934, y: 1.0000001, z: 1.0000002}
+    - name: Right shoulder
+      parentName: Chest
+      position: {x: 0.0004145541, y: 0.0014209334, z: -0.000101642334}
+      rotation: {x: 0.40475988, y: 0.40642655, z: 0.5814185, w: -0.5770091}
+      scale: {x: 1.0000004, y: 1.0000002, z: 1.0000004}
+    - name: Right arm
+      parentName: Right shoulder
+      position: {x: 8.149073e-12, y: 0.00050180155, z: 7.3247075e-10}
+      rotation: {x: -0.023259083, y: -0.3247446, z: 0.012394977, w: 0.9454345}
+      scale: {x: 1, y: 1.0000005, z: 1.0000001}
+    - name: Right elbow
+      parentName: Right arm
+      position: {x: 3.1664965e-10, y: 0.0023064541, z: 2.9802327e-10}
+      rotation: {x: -0.013882963, y: 0.009851991, z: -0.033697914, w: 0.9992871}
+      scale: {x: 0.99999976, y: 0.99999976, z: 0.9999996}
+    - name: Right wrist
+      parentName: Right elbow
+      position: {x: 3.539026e-10, y: 0.0019126936, z: 8.0093737e-10}
+      rotation: {x: 0.0058536, y: 0.0038992367, z: 0.0015603065, w: 0.9999741}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000007}
+    - name: IndexFinger1_R
+      parentName: Right wrist
+      position: {x: 0.0001615316, y: 0.00061506673, z: -0.000033237142}
+      rotation: {x: 0.00039458874, y: -0.030542502, z: 0.04943492, w: 0.9983102}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000004}
+    - name: IndexFinger2_R
+      parentName: IndexFinger1_R
+      position: {x: -4.656613e-10, y: 0.00029871915, z: 0.0000000011967495}
+      rotation: {x: 0.029767383, y: 0.017160453, z: 0.0074980464, w: 0.9993815}
+      scale: {x: 0.99999994, y: 0.99999976, z: 0.9999999}
+    - name: IndexFinger3_R
+      parentName: IndexFinger2_R
+      position: {x: 1.6298145e-10, y: 0.00015137924, z: 6.1932953e-10}
+      rotation: {x: 0.10117246, y: 0.092734225, z: -0.03513434, w: 0.98991424}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000005}
+    - name: LittleFinger1_R
+      parentName: Right wrist
+      position: {x: -0.00022280563, y: 0.0005659983, z: 0.00013334218}
+      rotation: {x: 0.032084037, y: 0.0095430575, z: 0.027497143, w: 0.9990613}
+      scale: {x: 1.0000004, y: 1.0000004, z: 1}
+    - name: LittleFinger2_R
+      parentName: LittleFinger1_R
+      position: {x: -5.587935e-10, y: 0.00020537547, z: -2.0489097e-10}
+      rotation: {x: -0.007894569, y: -0.0015142856, z: -0.008254083, w: 0.99993366}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: LittleFinger3_R
+      parentName: LittleFinger2_R
+      position: {x: -4.4703485e-10, y: 0.00010716139, z: -5.401671e-10}
+      rotation: {x: 0.09260638, y: 0.09045429, z: -0.029453453, w: 0.9911482}
+      scale: {x: 1.0000001, y: 1.0000005, z: 1.0000005}
+    - name: MiddleFinger1_R
+      parentName: Right wrist
+      position: {x: 0.000029158216, y: 0.0006193656, z: 0.00003821653}
+      rotation: {x: 0.004137012, y: -0.021914007, z: 0.040607773, w: 0.99892634}
+      scale: {x: 1.0000004, y: 1.0000008, z: 1.0000005}
+    - name: MiddleFinger2_R
+      parentName: MiddleFinger1_R
+      position: {x: -8.381903e-10, y: 0.00030884478, z: -3.8184234e-10}
+      rotation: {x: 0.019616105, y: 0.022479864, z: -0.012577003, w: 0.9994757}
+      scale: {x: 0.9999998, y: 0.99999964, z: 0.99999964}
+    - name: MiddleFinger3_R
+      parentName: MiddleFinger2_R
+      position: {x: 3.1664965e-10, y: 0.00017226872, z: 6.891787e-10}
+      rotation: {x: 0.089725375, y: 0.08901832, z: -0.033648297, w: 0.9914096}
+      scale: {x: 1.0000001, y: 0.9999997, z: 1.0000004}
+    - name: RingFinger1_R
+      parentName: Right wrist
+      position: {x: -0.000096062315, y: 0.0005968165, z: 0.00009743471}
+      rotation: {x: 0.020018268, y: -0.008142925, z: 0.039730806, w: 0.9989767}
+      scale: {x: 1.0000002, y: 1.0000006, z: 1.0000004}
+    - name: RingFinger2_R
+      parentName: RingFinger1_R
+      position: {x: 2.7939676e-10, y: 0.00029532437, z: 3.725291e-11}
+      rotation: {x: -0.016918628, y: -0.010198461, z: -0.0043587964, w: 0.99979544}
+      scale: {x: 0.99999976, y: 0.99999934, z: 0.9999997}
+    - name: RingFinger3_R
+      parentName: RingFinger2_R
+      position: {x: 3.539026e-10, y: 0.00014353571, z: 1.3038517e-10}
+      rotation: {x: 0.09816597, y: 0.09679788, z: -0.03565819, w: 0.98980916}
+      scale: {x: 1.0000001, y: 1.0000006, z: 1.0000005}
+    - name: Thumb0_R
+      parentName: Right wrist
+      position: {x: 0.00011676237, y: 0.00021353831, z: -0.0001680306}
+      rotation: {x: -0.1946195, y: -0.034342036, z: -0.24497594, w: 0.9491737}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000001}
+    - name: Thumb1_R
+      parentName: Thumb0_R
+      position: {x: -8.2422047e-10, y: 0.0002753228, z: 7.0314865e-10}
+      rotation: {x: 0.022240754, y: -0.011646347, z: 0.030122519, w: 0.99923086}
+      scale: {x: 1.0000004, y: 1.0000006, z: 1.0000006}
+    - name: Thumb2_R
+      parentName: Thumb1_R
+      position: {x: -0.0000000011827797, y: 0.00015665698, z: -7.357448e-10}
+      rotation: {x: 0.02507156, y: 0.08233023, z: -0.06369304, w: 0.9942517}
+      scale: {x: 0.99999976, y: 0.99999946, z: 0.9999997}
+    - name: zHandTwist_R
+      parentName: Right elbow
+      position: {x: -0.0000000013224781, y: 0.0011476168, z: -0.0000000013969839}
+      rotation: {x: 0.0000002039596, y: 0.0000001583248, z: -0.0000001461303, w: 1}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000005}
+    - name: zArmTwist_R
+      parentName: Right arm
+      position: {x: 0.00001143882, y: 0.0013835677, z: -0.000009067524}
+      rotation: {x: -0.00327718, y: 0.000000059604638, z: -0.0041331546, w: 0.9999862}
+      scale: {x: 0.99999976, y: 0.9999999, z: 0.99999994}
+    - name: Wing_01_01
+      parentName: Chest
+      position: {x: 0.0027152586, y: 0.0037567257, z: -0.00025815857}
+      rotation: {x: -0.15752192, y: -0.32839653, z: -0.4697864, w: 0.80414134}
+      scale: {x: 1.0000001, y: 1, z: 1.0000002}
+    - name: Wing_02_01
+      parentName: Chest
+      position: {x: 0.0029383681, y: 0.0030153757, z: -0.0005712015}
+      rotation: {x: -0.3197193, y: -0.36893192, z: -0.52777386, w: 0.6950709}
+      scale: {x: 1.0000001, y: 0.99999964, z: 1.0000002}
+    - name: Wing_03_01
+      parentName: Chest
+      position: {x: 0.0029347034, y: 0.0022115, z: -0.00081049046}
+      rotation: {x: -0.45704937, y: -0.3727701, z: -0.53326505, w: 0.606446}
+      scale: {x: 1, y: 1, z: 1.0000001}
+    - name: Wing_04_01
+      parentName: Chest
+      position: {x: 0.0027467532, y: 0.0016524998, z: -0.0009796746}
+      rotation: {x: 0.706797, y: 0.32720754, z: 0.46808553, w: -0.41745564}
+      scale: {x: 1.0000006, y: 1.0000007, z: 1.0000005}
+    - name: Body
+      parentName: "\u5929\u4F9D(Clone)"
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+      scale: {x: 100, y: 100, z: 100}
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 1
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 3
+  humanoidOversampling: 1
+  avatarSetup: 1
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
