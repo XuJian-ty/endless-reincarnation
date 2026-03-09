@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 using Game.Data;
 using ProjectBase;
 
@@ -10,10 +12,9 @@ namespace Game
     public class ConfigManager : BaseManager<ConfigManager>
     {
         private const string ConfigPathPrefix = "配置/";
+        private const string ConfigFolderName = "配置";
 
         private EnemyStatsDatabaseSO _enemyStatsDatabase;
-        private EnemyArchetypeDatabaseSO _enemyArchetypeDatabase;
-        private EnemySkillDatabaseSO _enemySkillDatabase;
         private SharedSkillDatabaseSO _sharedSkillDatabase;
         private LevelConfigDatabaseSO _levelConfigDatabase;
         private DropTableDatabaseSO _dropTableDatabase;
@@ -30,6 +31,10 @@ namespace Game
         private KeyRebindConfigSO _keyRebindConfig;
         private BackpackUIConfigSO _backpackUIConfig;
         private BuffConfigSO _buffConfig;
+        private EnemyArchetypeSO[] _enemyArchetypes;
+        private Dictionary<string, EnemyArchetypeSO> _enemyArchetypesById;
+        private Dictionary<EnemyType, List<EnemyArchetypeSO>> _enemyArchetypesByType;
+        private bool _enemyArchetypesCached;
 
         public EnemyStatsDatabaseSO GetEnemyStatsDatabase()
         {
@@ -38,38 +43,40 @@ namespace Game
             return _enemyStatsDatabase;
         }
 
-        public EnemyArchetypeDatabaseSO GetEnemyArchetypeDatabase()
-        {
-            if (_enemyArchetypeDatabase == null)
-                _enemyArchetypeDatabase = Resources.Load<EnemyArchetypeDatabaseSO>(ConfigPathPrefix + "敌人行为配置库");
-            return _enemyArchetypeDatabase;
-        }
-
         public EnemyArchetypeSO GetEnemyArchetype(EnemyType type)
         {
-            return GetEnemyArchetypeDatabase() != null ? _enemyArchetypeDatabase.Get(type) : null;
+            EnsureEnemyArchetypeCache();
+            if (_enemyArchetypesByType != null && _enemyArchetypesByType.TryGetValue(type, out var entries) && entries.Count > 0)
+                return entries[0];
+            return null;
         }
 
         public EnemyArchetypeSO GetEnemyArchetype(string enemyId)
         {
-            return GetEnemyArchetypeDatabase() != null ? _enemyArchetypeDatabase.Get(enemyId) : null;
+            EnsureEnemyArchetypeCache();
+            if (string.IsNullOrWhiteSpace(enemyId) || _enemyArchetypesById == null)
+                return null;
+
+            _enemyArchetypesById.TryGetValue(NormalizeId(enemyId), out var archetype);
+            return archetype;
         }
 
-        public EnemySkillDatabaseSO GetEnemySkillDatabase()
+        public int CountEnemyArchetypesByType(EnemyType type)
         {
-            if (_enemySkillDatabase == null)
-            {
-                _enemySkillDatabase = Resources.Load<EnemySkillDatabaseSO>(ConfigPathPrefix + "敌人技能库");
-                if (_enemySkillDatabase == null)
-                    _enemySkillDatabase = EnemySkillDatabaseDefaults.CreateRuntimeDefault();
-            }
-            return _enemySkillDatabase;
+            EnsureEnemyArchetypeCache();
+            return _enemyArchetypesByType != null && _enemyArchetypesByType.TryGetValue(type, out var entries)
+                ? entries.Count
+                : 0;
         }
 
         public SharedSkillDatabaseSO GetSharedSkillDatabase()
         {
             if (_sharedSkillDatabase == null)
+            {
                 _sharedSkillDatabase = Resources.Load<SharedSkillDatabaseSO>(ConfigPathPrefix + "共享技能库");
+                if (_sharedSkillDatabase == null)
+                    _sharedSkillDatabase = SharedSkillDatabaseDefaults.CreateRuntimeDefault();
+            }
             return _sharedSkillDatabase;
         }
 
@@ -188,6 +195,51 @@ namespace Game
             if (_buffConfig == null)
                 _buffConfig = Resources.Load<BuffConfigSO>(ConfigPathPrefix + "Buff配置");
             return _buffConfig;
+        }
+
+        private void EnsureEnemyArchetypeCache()
+        {
+            if (_enemyArchetypesCached)
+                return;
+
+            _enemyArchetypesCached = true;
+            _enemyArchetypes = Resources.LoadAll<EnemyArchetypeSO>(ConfigFolderName);
+            _enemyArchetypesById = new Dictionary<string, EnemyArchetypeSO>(StringComparer.Ordinal);
+            _enemyArchetypesByType = new Dictionary<EnemyType, List<EnemyArchetypeSO>>();
+
+            if (_enemyArchetypes == null)
+                return;
+
+            for (int i = 0; i < _enemyArchetypes.Length; i++)
+            {
+                var archetype = _enemyArchetypes[i];
+                if (archetype == null)
+                    continue;
+
+                string enemyId = NormalizeId(archetype.GetResolvedEnemyId());
+                if (!string.IsNullOrEmpty(enemyId))
+                {
+                    if (_enemyArchetypesById.ContainsKey(enemyId))
+                        Debug.LogWarning($"[Config] 检测到重复 enemyId 的敌人行为配置：{enemyId}");
+                    else
+                        _enemyArchetypesById.Add(enemyId, archetype);
+                }
+
+                if (!_enemyArchetypesByType.TryGetValue(archetype.enemyType, out var entries))
+                {
+                    entries = new List<EnemyArchetypeSO>();
+                    _enemyArchetypesByType.Add(archetype.enemyType, entries);
+                }
+
+                entries.Add(archetype);
+            }
+        }
+
+        private static string NormalizeId(string value)
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? string.Empty
+                : value.Trim().ToLowerInvariant();
         }
     }
 }

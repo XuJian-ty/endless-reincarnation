@@ -90,6 +90,7 @@ namespace Game.Presentation
                     skillMultiplier,
                     enemy.Defense,
                     _rng,
+                    enemy.DamageReduce,
                     out float finalDamage,
                     out _,
                     out float lifeStealHeal);

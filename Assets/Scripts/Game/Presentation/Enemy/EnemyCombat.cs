@@ -17,11 +17,8 @@ namespace Game.Presentation
         private static readonly HashSet<string> MissingAnimationDamageWarnings  = new HashSet<string>();
         private static readonly HashSet<string> MissingAnimatorParameterWarnings = new HashSet<string>();
         private static readonly HashSet<string> MissingAnimatorActionWarnings    = new HashSet<string>();
-        private const string ParamSpeed      = "Speed";
         private const string ParamMoveX      = "MoveX";
         private const string ParamMoveY      = "MoveY";
-        private const string ParamMoveSigned = "MoveSigned";
-        private const string ParamIsRetreat  = "IsRetreat";
         private const string TriggerHurt     = "Hurt";
         private const string TriggerDead     = "Dead";
 
@@ -169,8 +166,13 @@ namespace Game.Presentation
                 var player = col.GetComponentInParent<PlayerController>();
                 if (player == null) continue;
                 float dmg = CombatCalculator.CalculateDamageFromEnemy(
-                    _controller.Attack, player.PlayerModel.Stats.Defense) * damageMultiplier;
+                    _controller.Attack,
+                    player.PlayerModel.Stats.Defense,
+                    _controller.DamageBonus,
+                    player.PlayerModel.Stats.DamageReduce) * damageMultiplier;
                 player.OnHit(dmg, stunDuration > 0.01f ? stunDuration : 0.2f);
+                if (dmg > 0f && _controller.LifeSteal > 0f)
+                    _controller.Heal(dmg * _controller.LifeSteal);
                 break;
             }
         }
@@ -179,22 +181,8 @@ namespace Game.Presentation
         {
             if (_anim == null) return;
 
-            if (HasAnimatorParameter(ParamSpeed))
-                _anim.SetFloat(ParamSpeed, _controller.AnimatorMoveBlend);
-            else
-                WarnMissingAnimatorParameter(ParamSpeed);
-
             if (HasAnimatorParameter(ParamMoveX))      _anim.SetFloat(ParamMoveX,      _controller.AnimatorMoveStrafe);
             if (HasAnimatorParameter(ParamMoveY))      _anim.SetFloat(ParamMoveY,      _controller.AnimatorMoveForward);
-            if (HasAnimatorParameter(ParamMoveSigned)) _anim.SetFloat(ParamMoveSigned, _controller.AnimatorMoveSigned);
-
-            if (HasAnimatorParameter(ParamIsRetreat))
-            {
-                bool retreating = (_controller.CurrentIntent.Type == EnemyIntentType.Retreat || _controller.IsInPostCastRecovery)
-                                  && _controller.AnimatorMoveBlend > 0.01f
-                                  && _controller.AnimatorMoveForward < -0.01f;
-                _anim.SetBool(ParamIsRetreat, retreating);
-            }
         }
 
         private void RotateToward(Vector3 worldPos)

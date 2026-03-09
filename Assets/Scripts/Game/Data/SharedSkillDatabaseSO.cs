@@ -4,9 +4,8 @@ using UnityEngine;
 namespace Game.Data
 {
     /// <summary>
-    /// 玩家与敌人共享技能库。存储 <see cref="SharedSkillDefinition"/> 条目，
-    /// 敌人通过 <see cref="EnemySkillSlotBinding.skillId"/> 引用，
-    /// 玩家通过 <see cref="SkillConfigEntry.sharedSkillId"/> 引用。
+    /// 玩家与敌人共用的技能库。技能本体时间轴统一定义在这里，
+    /// 玩家与敌人分别通过各自的配置层引用 skillId。
     /// </summary>
     [CreateAssetMenu(menuName = "游戏/配置/共享技能库", fileName = "共享技能库")]
     public class SharedSkillDatabaseSO : ScriptableObject
@@ -16,7 +15,8 @@ namespace Game.Data
 
         public SharedSkillDefinition GetEntry(string skillId)
         {
-            if (entries == null || string.IsNullOrEmpty(skillId)) return null;
+            if (entries == null || string.IsNullOrEmpty(skillId))
+                return null;
 
             for (int i = 0; i < entries.Count; i++)
             {
@@ -28,6 +28,9 @@ namespace Game.Data
             return null;
         }
 
-        public bool Contains(string skillId) => GetEntry(skillId) != null;
+        public bool Contains(string skillId)
+        {
+            return GetEntry(skillId) != null;
+        }
     }
 }

@@ -9,6 +9,8 @@ namespace Game.Presentation
     {
         private static readonly List<Transform> DetectedTargetsScratch = new List<Transform>(16);
         private static readonly HashSet<Transform> DetectedTargetSet = new HashSet<Transform>();
+        private static readonly List<Transform> DamageTargetsScratch = new List<Transform>(16);
+        private static readonly HashSet<Transform> DamageTargetSet = new HashSet<Transform>();
 
         public static void ExecuteEvent(SkillTimelineEvent evt, ISkillExecutionContext ctx)
         {
@@ -21,37 +23,54 @@ namespace Game.Presentation
             DetectedTargetsScratch.Clear();
             DetectedTargetSet.Clear();
 
-            if (!string.IsNullOrEmpty(evt.hitDetectionName) && ctx.DamageDatabase != null)
+            if (evt.damageEffects != null && ctx.DamageDatabase != null)
             {
-                if (DamageDetectionRunner.TryRunDetection(
-                        evt.hitDetectionName,
-                        ctx.CasterTransform,
-                        ctx.DamageDatabase,
-                        ctx.OverlapBuffer,
-                        out var detectorEntry,
-                        out int hitCount))
+                for (int damageIndex = 0; damageIndex < evt.damageEffects.Count; damageIndex++)
                 {
-                    primaryDetectorEntry = detectorEntry;
+                    var damageEffect = evt.damageEffects[damageIndex];
+                    if (damageEffect == null || string.IsNullOrEmpty(damageEffect.damageName))
+                        continue;
+
+                    if (!DamageDetectionRunner.TryRunDetection(
+                            damageEffect.damageName,
+                            ctx.CasterTransform,
+                            ctx.DamageDatabase,
+                            ctx.OverlapBuffer,
+                            out var detectorEntry,
+                            out int hitCount))
+                    {
+                        continue;
+                    }
+
+                    if (primaryDetectorEntry == null && detectorEntry != null)
+                        primaryDetectorEntry = detectorEntry;
+
+                    DamageTargetsScratch.Clear();
+                    DamageTargetSet.Clear();
+
                     for (int i = 0; i < hitCount; i++)
                     {
                         var target = ExtractTargetTransform(ctx.OverlapBuffer[i]);
                         if (target == null)
                             continue;
 
+                        if (DamageTargetSet.Add(target))
+                            DamageTargetsScratch.Add(target);
+
                         if (DetectedTargetSet.Add(target))
                             DetectedTargetsScratch.Add(target);
                     }
 
                     float detectorMultiplier = detectorEntry != null ? detectorEntry.damageMultiplier : 1f;
-                    float finalMultiplier = evt.damageMagnitude > 0f
-                        ? evt.damageMagnitude * detectorMultiplier
+                    float finalMultiplier = damageEffect.damageMagnitude > 0f
+                        ? damageEffect.damageMagnitude * detectorMultiplier
                         : detectorMultiplier;
                     float stunDuration = detectorEntry != null && detectorEntry.pushDuration > 0.01f
                         ? detectorEntry.pushDuration
                         : 0.2f;
 
-                    for (int i = 0; i < DetectedTargetsScratch.Count; i++)
-                        ApplyDamageToTarget(DetectedTargetsScratch[i], ctx.CasterAttack, finalMultiplier, stunDuration);
+                    for (int i = 0; i < DamageTargetsScratch.Count; i++)
+                        ApplyDamageToTarget(DamageTargetsScratch[i], ctx, finalMultiplier, stunDuration);
                 }
             }
 
@@ -70,20 +89,29 @@ namespace Game.Presentation
 
         private static void ApplyDamageToTarget(
             Transform target,
-            float casterAttack,
+            ISkillExecutionContext ctx,
             float damageMultiplier,
             float stunDuration)
         {
-            if (target == null)
+            if (target == null || ctx == null)
                 return;
+
+            float casterAttack = ctx.CasterAttack;
+            EnemyController casterEnemy = ctx.CasterTransform != null
+                ? ctx.CasterTransform.GetComponent<EnemyController>()
+                : null;
 
             var player = target.GetComponentInParent<PlayerController>();
             if (player != null)
             {
                 float damage = CombatCalculator.CalculateDamageFromEnemy(
                     casterAttack,
-                    player.PlayerModel.Stats.Defense) * damageMultiplier;
+                    player.PlayerModel.Stats.Defense,
+                    casterEnemy != null ? casterEnemy.DamageBonus : 0f,
+                    player.PlayerModel.Stats.DamageReduce) * damageMultiplier;
                 player.OnHit(damage, stunDuration);
+                if (casterEnemy != null && damage > 0f)
+                    casterEnemy.Heal(damage * casterEnemy.LifeSteal);
                 return;
             }
 
@@ -92,7 +120,9 @@ namespace Game.Presentation
             {
                 float damage = CombatCalculator.CalculateDamageFromEnemy(
                     casterAttack,
-                    enemy.Defense) * damageMultiplier;
+                    enemy.Defense,
+                    0f,
+                    enemy.DamageReduce) * damageMultiplier;
                 enemy.ApplyDamage(damage);
             }
         }
@@ -109,6 +139,12 @@ namespace Game.Presentation
             if (effect.effectType == PhysicsEffectType.DashSelf)
             {
                 ApplySelfDisplacement(effect, ctx);
+                return;
+            }
+
+            if (effect.effectType == PhysicsEffectType.Airborne)
+            {
+                ApplySelfAirborne(effect, ctx);
                 return;
             }
 
@@ -130,6 +166,17 @@ namespace Game.Presentation
             var motion = ctx.CasterTransform.GetComponent<CombatMotionController>()
                          ?? ctx.CasterTransform.gameObject.AddComponent<CombatMotionController>();
             motion.ApplyDisplacement(direction.normalized * effect.magnitude, duration);
+        }
+
+        private static void ApplySelfAirborne(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
+        {
+            if (effect.magnitude <= 0f || ctx.CasterTransform == null)
+                return;
+
+            float duration = effect.duration > 0f ? effect.duration : 0.12f;
+            var motion = ctx.CasterTransform.GetComponent<CombatMotionController>()
+                         ?? ctx.CasterTransform.gameObject.AddComponent<CombatMotionController>();
+            motion.ApplyDisplacement(Vector3.up * effect.magnitude, duration);
         }
 
         private static void ApplyTargetPhysicsEffect(
@@ -155,7 +202,8 @@ namespace Game.Presentation
             }
             else if (effect.effectType == PhysicsEffectType.Launch)
             {
-                direction = Vector3.up;
+                Vector3 horizontal = ResolveHorizontalDirection(ctx.CasterTransform, target, effect.direction, ctx);
+                direction = (Vector3.up + horizontal * 0.35f).normalized;
             }
             else if (effect.effectType == PhysicsEffectType.Stun)
             {
@@ -171,6 +219,19 @@ namespace Game.Presentation
             var motion = target.GetComponent<CombatMotionController>()
                          ?? target.gameObject.AddComponent<CombatMotionController>();
             motion.ApplyDisplacement(direction.normalized * effect.magnitude, duration);
+        }
+
+        private static Vector3 ResolveHorizontalDirection(
+            Transform caster,
+            Transform target,
+            SkillEffectDirection direction,
+            ISkillExecutionContext ctx)
+        {
+            Vector3 resolved = ResolveDirection(caster, target, direction, ctx);
+            resolved.y = 0f;
+            if (resolved.sqrMagnitude <= 0.0001f)
+                return Vector3.zero;
+            return resolved.normalized;
         }
 
         private static void ApplyAttributeEffect(
@@ -412,11 +473,18 @@ namespace Game.Presentation
                 case SkillStatField.SkillDamage:
                     modifier.damageBonusAdd = magnitude;
                     break;
+                case SkillStatField.DamageReduce:
+                    modifier.damageReduceAdd = magnitude;
+                    break;
+                case SkillStatField.LifeSteal:
+                    modifier.lifeStealAdd = magnitude;
+                    break;
                 default:
                     return null;
             }
 
             return modifier;
         }
+
     }
 }

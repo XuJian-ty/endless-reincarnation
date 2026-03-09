@@ -29,3 +29,758 @@ MonoBehaviour:
     displayName: "\u4E3B\u52A8\u6280\u80FD3"
     ignoreAnimationDamageEvents: 0
     events: []
+  - skillId: melee_minion_chop
+    displayName: Melee Minion Chop
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: hit
+      startTime: 0.24
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyMeleeLight
+        damageMagnitude: 1
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 0.8
+        duration: 0.08
+      attributeEffects: []
+      cues: []
+  - skillId: ranged_minion_shot
+    displayName: Ranged Minion Shot
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: shot
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyRangedShot
+        damageMagnitude: 1
+      physicsEffects: []
+      attributeEffects: []
+      cues: []
+  - skillId: elite_1_combo
+    displayName: Elite 1 Combo
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: hit_a
+      startTime: 0.2
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyMeleeArc
+        damageMagnitude: 0.85
+      physicsEffects: []
+      attributeEffects: []
+      cues: []
+    - eventId: hit_b
+      startTime: 0.45
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyMeleeArc
+        damageMagnitude: 1
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 1
+        duration: 0.1
+      attributeEffects: []
+      cues: []
+  - skillId: elite_1_slam
+    displayName: Elite 1 Slam
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: slam
+      startTime: 0.48
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyMeleeHeavy
+        damageMagnitude: 1.35
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 1.8
+        duration: 0.14
+      attributeEffects: []
+      cues: []
+  - skillId: elite_2_burst_shot
+    displayName: Elite 2 Burst Shot
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: burst
+      startTime: 0.2
+      triggerMode: 1
+      activeDuration: 0.36
+      repeatInterval: 0.18
+      damageEffects:
+      - damageName: EnemyRangedBurst
+        damageMagnitude: 0.65
+      physicsEffects: []
+      attributeEffects: []
+      cues: []
+  - skillId: elite_2_hook_pull
+    displayName: Elite 2 Hook Pull
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: hook
+      startTime: 0.35
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyPullWave
+        damageMagnitude: 0.8
+      physicsEffects:
+      - effectType: 1
+        targetMode: 2
+        direction: 1
+        magnitude: 2.2
+        duration: 0.18
+      attributeEffects: []
+      cues: []
+  - skillId: guardian_1_crush
+    displayName: Guardian 1 Crush
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: crush
+      startTime: 0.5
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyMeleeHeavy
+        damageMagnitude: 1.5
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 2
+        duration: 0.18
+      attributeEffects: []
+      cues: []
+  - skillId: guardian_1_fortify
+    displayName: Guardian 1 Fortify
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: fortify
+      startTime: 0.15
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects: []
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 4
+        usePercent: 0
+        duration: 4
+      - statField: 3
+        targetMode: 0
+        magnitude: 8
+        usePercent: 0
+        duration: 4
+      cues: []
+  - skillId: guardian_2_bash
+    displayName: Guardian 2 Bash
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: step
+      startTime: 0.05
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects:
+      - effectType: 3
+        targetMode: 0
+        direction: 1
+        magnitude: 2.8
+        duration: 0.18
+      attributeEffects: []
+      cues: []
+    - eventId: impact
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyChargeImpact
+        damageMagnitude: 1.45
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 2.1
+        duration: 0.14
+      attributeEffects: []
+      cues: []
+  - skillId: guardian_2_chain_pull
+    displayName: Guardian 2 Chain Pull
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: chain
+      startTime: 0.32
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyPullWave
+        damageMagnitude: 0.95
+      physicsEffects:
+      - effectType: 1
+        targetMode: 2
+        direction: 1
+        magnitude: 2.8
+        duration: 0.2
+      attributeEffects: []
+      cues: []
+  - skillId: boss_1_slash
+    displayName: Boss 1 Slash
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: slash
+      startTime: 0.34
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyBossCleave
+        damageMagnitude: 1.45
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 1.2
+        duration: 0.1
+      attributeEffects: []
+      cues: []
+  - skillId: boss_1_shot
+    displayName: Boss 1 Shot
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: shot
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyRangedHeavy
+        damageMagnitude: 1.15
+      physicsEffects: []
+      attributeEffects: []
+      cues: []
+  - skillId: boss_1_charge
+    displayName: Boss 1 Charge
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: dash
+      startTime: 0.05
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects:
+      - effectType: 3
+        targetMode: 0
+        direction: 1
+        magnitude: 3.2
+        duration: 0.2
+      attributeEffects: []
+      cues: []
+    - eventId: impact
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyChargeImpact
+        damageMagnitude: 1.8
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 2.2
+        duration: 0.16
+      attributeEffects: []
+      cues: []
+  - skillId: boss_1_roar
+    displayName: Boss 1 Roar
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: buff
+      startTime: 0.2
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects: []
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 6
+        usePercent: 0
+        duration: 3.5
+      - statField: 3
+        targetMode: 0
+        magnitude: 4
+        usePercent: 0
+        duration: 3.5
+      - statField: 4
+        targetMode: 0
+        magnitude: 0.2
+        usePercent: 0
+        duration: 3.5
+      cues: []
+  - skillId: boss_2_cross_slash
+    displayName: Boss 2 Cross Slash
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: cut_a
+      startTime: 0.22
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyMeleeArc
+        damageMagnitude: 0.9
+      physicsEffects: []
+      attributeEffects: []
+      cues: []
+    - eventId: cut_b
+      startTime: 0.48
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyBossCleave
+        damageMagnitude: 1.1
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 1.6
+        duration: 0.1
+      attributeEffects: []
+      cues: []
+  - skillId: boss_2_volley
+    displayName: Boss 2 Volley
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: volley
+      startTime: 0.22
+      triggerMode: 1
+      activeDuration: 0.45
+      repeatInterval: 0.15
+      damageEffects:
+      - damageName: EnemyRangedBurst
+        damageMagnitude: 0.72
+      physicsEffects: []
+      attributeEffects: []
+      cues: []
+  - skillId: boss_2_crash
+    displayName: Boss 2 Crash
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: dash
+      startTime: 0.05
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects:
+      - effectType: 3
+        targetMode: 0
+        direction: 1
+        magnitude: 3.8
+        duration: 0.2
+      attributeEffects: []
+      cues: []
+    - eventId: crash
+      startTime: 0.32
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyChargeImpact
+        damageMagnitude: 2
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 2.4
+        duration: 0.18
+      attributeEffects: []
+      cues: []
+  - skillId: boss_2_rage
+    displayName: Boss 2 Rage
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: rage
+      startTime: 0.18
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects: []
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 8
+        usePercent: 0
+        duration: 4
+      - statField: 4
+        targetMode: 0
+        magnitude: 0.35
+        usePercent: 0
+        duration: 4
+      cues: []
+  - skillId: boss_3_pull_cleave
+    displayName: Boss 3 Pull Cleave
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: pull
+      startTime: 0.14
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects:
+      - effectType: 1
+        targetMode: 2
+        direction: 1
+        magnitude: 2.5
+        duration: 0.18
+      attributeEffects: []
+      cues: []
+    - eventId: cleave
+      startTime: 0.46
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyBossCleave
+        damageMagnitude: 1.35
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 1.4
+        duration: 0.1
+      attributeEffects: []
+      cues: []
+  - skillId: boss_3_barrage
+    displayName: Boss 3 Barrage
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: barrage
+      startTime: 0.25
+      triggerMode: 1
+      activeDuration: 0.6
+      repeatInterval: 0.15
+      damageEffects:
+      - damageName: EnemyRangedBurst
+        damageMagnitude: 0.68
+      physicsEffects: []
+      attributeEffects: []
+      cues: []
+  - skillId: boss_3_lunge
+    displayName: Boss 3 Lunge
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: lunge
+      startTime: 0.05
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects:
+      - effectType: 3
+        targetMode: 0
+        direction: 1
+        magnitude: 4.1
+        duration: 0.22
+      attributeEffects: []
+      cues: []
+    - eventId: impact
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyChargeImpact
+        damageMagnitude: 1.75
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 2
+        duration: 0.16
+      attributeEffects: []
+      cues: []
+  - skillId: boss_3_drain
+    displayName: Boss 3 Drain
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: drain_hit
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyBossRoar
+        damageMagnitude: 0.75
+      physicsEffects:
+      - effectType: 1
+        targetMode: 2
+        direction: 0
+        magnitude: 1.6
+        duration: 0.12
+      attributeEffects: []
+      cues: []
+    - eventId: heal
+      startTime: 0.45
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects: []
+      attributeEffects:
+      - statField: 0
+        targetMode: 0
+        magnitude: 0.08
+        usePercent: 1
+        duration: 0
+      - statField: 3
+        targetMode: 0
+        magnitude: 5
+        usePercent: 0
+        duration: 3
+      cues: []
+  - skillId: boss_4_spin
+    displayName: Boss 4 Spin
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: spin
+      startTime: 0.2
+      triggerMode: 1
+      activeDuration: 0.5
+      repeatInterval: 0.16
+      damageEffects:
+      - damageName: EnemyMeleeSpin
+        damageMagnitude: 0.7
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 0.7
+        duration: 0.08
+      attributeEffects: []
+      cues: []
+  - skillId: boss_4_piercing_shot
+    displayName: Boss 4 Piercing Shot
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: pierce
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyRangedHeavy
+        damageMagnitude: 1.4
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 1.8
+        duration: 0.12
+      attributeEffects: []
+      cues: []
+  - skillId: boss_4_pursuit
+    displayName: Boss 4 Pursuit
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: rush
+      startTime: 0.04
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects:
+      - effectType: 3
+        targetMode: 0
+        direction: 1
+        magnitude: 4.6
+        duration: 0.22
+      attributeEffects: []
+      cues: []
+    - eventId: finish
+      startTime: 0.26
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyChargeImpact
+        damageMagnitude: 1.95
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 2.3
+        duration: 0.18
+      attributeEffects: []
+      cues: []
+  - skillId: boss_4_battlecry
+    displayName: Boss 4 Battlecry
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: battlecry
+      startTime: 0.18
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects: []
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 6
+        usePercent: 0
+        duration: 4
+      - statField: 4
+        targetMode: 0
+        magnitude: 0.45
+        usePercent: 0
+        duration: 4
+      - statField: 5
+        targetMode: 0
+        magnitude: 1.2
+        usePercent: 0
+        duration: 4
+      cues: []
+  - skillId: boss_5_cleave
+    displayName: Boss 5 Cleave
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: cleave
+      startTime: 0.38
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyBossCleave
+        damageMagnitude: 1.7
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 2
+        duration: 0.12
+      attributeEffects: []
+      cues: []
+  - skillId: boss_5_storm
+    displayName: Boss 5 Storm
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: storm
+      startTime: 0.2
+      triggerMode: 1
+      activeDuration: 0.75
+      repeatInterval: 0.15
+      damageEffects:
+      - damageName: EnemyRangedBurst
+        damageMagnitude: 0.75
+      physicsEffects: []
+      attributeEffects: []
+      cues: []
+  - skillId: boss_5_stampede
+    displayName: Boss 5 Stampede
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: charge
+      startTime: 0.04
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects:
+      - effectType: 3
+        targetMode: 0
+        direction: 1
+        magnitude: 5
+        duration: 0.24
+      attributeEffects: []
+      cues: []
+    - eventId: stomp
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyChargeImpact
+        damageMagnitude: 2.1
+      physicsEffects:
+      - effectType: 0
+        targetMode: 2
+        direction: 0
+        magnitude: 2.6
+        duration: 0.2
+      attributeEffects: []
+      cues: []
+  - skillId: boss_5_regen_roar
+    displayName: Boss 5 Regen Roar
+    ignoreAnimationDamageEvents: 1
+    events:
+    - eventId: roar_hit
+      startTime: 0.25
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageName: EnemyBossRoar
+        damageMagnitude: 0.85
+      physicsEffects:
+      - effectType: 1
+        targetMode: 2
+        direction: 0
+        magnitude: 1.2
+        duration: 0.1
+      attributeEffects: []
+      cues: []
+    - eventId: regen
+      startTime: 0.42
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects: []
+      attributeEffects:
+      - statField: 0
+        targetMode: 0
+        magnitude: 0.12
+        usePercent: 1
+        duration: 0
+      - statField: 2
+        targetMode: 0
+        magnitude: 5
+        usePercent: 0
+        duration: 4.5
+      - statField: 3
+        targetMode: 0
+        magnitude: 6
+        usePercent: 0
+        duration: 4.5
+      cues: []

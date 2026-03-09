@@ -69,6 +69,114 @@ namespace Game.Editor
             return existing;
         }
 
+        private static WeaponDatabaseSO CreateOrMergeWeaponDatabaseAsset(WeaponDatabaseSO source, string assetPath)
+        {
+            string objectName = Path.GetFileNameWithoutExtension(assetPath);
+            source.name = objectName;
+
+            var existing = AssetDatabase.LoadAssetAtPath<WeaponDatabaseSO>(assetPath);
+            if (existing == null)
+            {
+                AssetDatabase.CreateAsset(source, assetPath);
+                return source;
+            }
+
+            var existingById = new Dictionary<string, WeaponEntryData>();
+            if (existing.entries != null)
+            {
+                for (int i = 0; i < existing.entries.Count; i++)
+                {
+                    var entry = existing.entries[i];
+                    if (entry == null || string.IsNullOrEmpty(entry.weaponId) || existingById.ContainsKey(entry.weaponId))
+                        continue;
+
+                    existingById.Add(entry.weaponId, entry);
+                }
+            }
+
+            var mergedEntries = new List<WeaponEntryData>();
+            if (source.entries != null)
+            {
+                for (int i = 0; i < source.entries.Count; i++)
+                {
+                    var entry = source.entries[i];
+                    if (entry == null)
+                        continue;
+
+                    if (!string.IsNullOrEmpty(entry.weaponId) && existingById.TryGetValue(entry.weaponId, out var existingEntry))
+                    {
+                        entry.icon = existingEntry.icon;
+                        existingById.Remove(entry.weaponId);
+                    }
+
+                    mergedEntries.Add(entry);
+                }
+            }
+
+            foreach (var kv in existingById)
+                mergedEntries.Add(kv.Value);
+
+            existing.entries = mergedEntries;
+            existing.name = objectName;
+            UnityEngine.Object.DestroyImmediate(source);
+            EditorUtility.SetDirty(existing);
+            return existing;
+        }
+
+        private static ItemDisplayDatabaseSO CreateOrMergeItemDisplayDatabaseAsset(ItemDisplayDatabaseSO source, string assetPath)
+        {
+            string objectName = Path.GetFileNameWithoutExtension(assetPath);
+            source.name = objectName;
+
+            var existing = AssetDatabase.LoadAssetAtPath<ItemDisplayDatabaseSO>(assetPath);
+            if (existing == null)
+            {
+                AssetDatabase.CreateAsset(source, assetPath);
+                return source;
+            }
+
+            var existingById = new Dictionary<string, ItemDisplayEntry>();
+            if (existing.entries != null)
+            {
+                for (int i = 0; i < existing.entries.Count; i++)
+                {
+                    var entry = existing.entries[i];
+                    if (entry == null || string.IsNullOrEmpty(entry.itemId) || existingById.ContainsKey(entry.itemId))
+                        continue;
+
+                    existingById.Add(entry.itemId, entry);
+                }
+            }
+
+            var mergedEntries = new List<ItemDisplayEntry>();
+            if (source.entries != null)
+            {
+                for (int i = 0; i < source.entries.Count; i++)
+                {
+                    var entry = source.entries[i];
+                    if (entry == null)
+                        continue;
+
+                    if (!string.IsNullOrEmpty(entry.itemId) && existingById.TryGetValue(entry.itemId, out var existingEntry))
+                    {
+                        entry.icon = existingEntry.icon;
+                        existingById.Remove(entry.itemId);
+                    }
+
+                    mergedEntries.Add(entry);
+                }
+            }
+
+            foreach (var kv in existingById)
+                mergedEntries.Add(kv.Value);
+
+            existing.entries = mergedEntries;
+            existing.name = objectName;
+            UnityEngine.Object.DestroyImmediate(source);
+            EditorUtility.SetDirty(existing);
+            return existing;
+        }
+
         private static void NormalizeConfigAssetNames()
         {
             var guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets/Resources/配置" });
@@ -150,7 +258,6 @@ namespace Game.Editor
             string displayName,
             EnemyType enemyType,
             Game.AI.BehaviorTreeAsset defaultBehaviorTree,
-            EnemySkillDatabaseSO skillDatabase,
             float sectorAngle,
             float sectorRange,
             float chaseBreakDistance,
@@ -167,15 +274,14 @@ namespace Game.Editor
             archetype.chaseBreakDistance = chaseBreakDistance;
             archetype.patrolRadius = patrolRadius;
             archetype.skillSlots = new List<EnemySkillSlotBinding>(skillSlots);
-            ApplyTacticalDefaults(archetype, enemyType, skillSlots, skillDatabase);
+            ApplyTacticalDefaults(archetype, enemyType, skillSlots);
             return archetype;
         }
 
         private static void ApplyTacticalDefaults(
             EnemyArchetypeSO archetype,
             EnemyType enemyType,
-            EnemySkillSlotBinding[] skillSlots,
-            EnemySkillDatabaseSO skillDatabase)
+            EnemySkillSlotBinding[] skillSlots)
         {
             float minRange = float.MaxValue;
             float maxRange = 0f;
@@ -188,7 +294,7 @@ namespace Game.Editor
                     if (slot == null)
                         continue;
 
-                    float castRange = ResolveSkillSlotRange(slot, skillDatabase);
+                    float castRange = ResolveSkillSlotRange(slot);
                     minRange = Mathf.Min(minRange, castRange);
                     maxRange = Mathf.Max(maxRange, castRange);
                 }
@@ -218,7 +324,7 @@ namespace Game.Editor
             archetype.obstacleMask = Physics.DefaultRaycastLayers;
         }
 
-        private static float ResolveSkillSlotRange(EnemySkillSlotBinding slot, EnemySkillDatabaseSO skillDatabase)
+        private static float ResolveSkillSlotRange(EnemySkillSlotBinding slot)
         {
             if (slot == null)
                 return 3f;
@@ -226,7 +332,7 @@ namespace Game.Editor
             return slot.castRange > 0.01f ? slot.castRange : 3f;
         }
 
-        private static void NormalizeSkillSlotOverrides(List<EnemyArchetypeSO> archetypes, EnemySkillDatabaseSO skillDatabase)
+        private static void NormalizeSkillSlotOverrides(List<EnemyArchetypeSO> archetypes)
         {
             // 新系统中槽位绑定字段为直接值（无覆盖语义），此方法保留签名以免调用处报错。
         }
@@ -355,7 +461,7 @@ namespace Game.Editor
                 new WeaponEntryData { weaponId = "sword", displayName = "剑", type = WeaponType.MeleeSword, common = def, rare = def, epic = def, legendary = def },
                 new WeaponEntryData { weaponId = "gun", displayName = "枪", type = WeaponType.RangedGun, common = def, rare = def, epic = def, legendary = def },
             };
-            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/武器库.asset");
+            CreateOrMergeWeaponDatabaseAsset(db, $"{ResourcesConfigDir}/武器库.asset");
             AssetDatabase.SaveAssets();
         }
 
@@ -390,7 +496,7 @@ namespace Game.Editor
             var defaultBehaviorTree = CreateDefaultBehaviorTreeAsset.Create();
             CreateEnemyStatsDatabase();
             CreateSharedSkillDatabase();
-            CreateEnemyArchetypeDatabase(defaultBehaviorTree, null);
+            CreateEnemyArchetypeDatabase(defaultBehaviorTree);
             CreateLevelConfigDatabase();
             CreateDropTableDatabase();
             CreateWeaponDatabase();
@@ -501,27 +607,10 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
         }
 
-        private static EnemySkillDatabaseSO CreateEnemySkillDatabase()
-        {
-            EnsureConfigFolder();
-            var db = EnemySkillDatabaseDefaults.CreateRuntimeDefault();
-            var created = CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/敌人技能库.asset");
-            AssetDatabase.SaveAssets();
-            return created;
-        }
-
         private static void CreateSharedSkillDatabase()
         {
             EnsureConfigFolder();
-            var db = ScriptableObject.CreateInstance<SharedSkillDatabaseSO>();
-            db.entries = new List<SharedSkillDefinition>
-            {
-                // 玩家主动技能默认定义（可在编辑器中完善时间轴事件）
-                new SharedSkillDefinition { skillId = "player_skill_0", displayName = "主动技能0", ignoreAnimationDamageEvents = false },
-                new SharedSkillDefinition { skillId = "player_skill_1", displayName = "主动技能1", ignoreAnimationDamageEvents = false },
-                new SharedSkillDefinition { skillId = "player_skill_2", displayName = "主动技能2", ignoreAnimationDamageEvents = false },
-                new SharedSkillDefinition { skillId = "player_skill_3", displayName = "主动技能3", ignoreAnimationDamageEvents = false },
-            };
+            var db = SharedSkillDatabaseDefaults.CreateRuntimeDefault();
             CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/共享技能库.asset");
             AssetDatabase.SaveAssets();
         }
@@ -580,7 +669,7 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
         }
 
-        private static void CreateEnemyArchetypeDatabase(Game.AI.BehaviorTreeAsset defaultBehaviorTree, EnemySkillDatabaseSO enemySkillDb)
+        private static void CreateEnemyArchetypeDatabase(Game.AI.BehaviorTreeAsset defaultBehaviorTree)
         {
             EnsureConfigFolder();
             var archetypes = new List<EnemyArchetypeSO>
@@ -591,7 +680,6 @@ namespace Game.Editor
                         "近战小怪",
                         EnemyType.MeleeMinion,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         120f,
                         12f,
                         20f,
@@ -604,7 +692,6 @@ namespace Game.Editor
                         "远程小怪",
                         EnemyType.RangedMinion,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         130f,
                         14f,
                         22f,
@@ -617,7 +704,6 @@ namespace Game.Editor
                         "精英1",
                         EnemyType.Elite,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         145f,
                         16f,
                         28f,
@@ -631,7 +717,6 @@ namespace Game.Editor
                         "精英2",
                         EnemyType.Elite,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         150f,
                         17f,
                         30f,
@@ -645,7 +730,6 @@ namespace Game.Editor
                         "守卫者1",
                         EnemyType.Guardian,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         145f,
                         18f,
                         30f,
@@ -659,7 +743,6 @@ namespace Game.Editor
                         "守卫者2",
                         EnemyType.Guardian,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         150f,
                         20f,
                         32f,
@@ -673,7 +756,6 @@ namespace Game.Editor
                         "Boss1",
                         EnemyType.Boss,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         160f,
                         22f,
                         40f,
@@ -689,7 +771,6 @@ namespace Game.Editor
                         "Boss2",
                         EnemyType.Boss,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         165f,
                         23f,
                         42f,
@@ -705,7 +786,6 @@ namespace Game.Editor
                         "Boss3",
                         EnemyType.Boss,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         170f,
                         24f,
                         44f,
@@ -721,7 +801,6 @@ namespace Game.Editor
                         "Boss4",
                         EnemyType.Boss,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         175f,
                         25f,
                         46f,
@@ -737,7 +816,6 @@ namespace Game.Editor
                         "Boss5",
                         EnemyType.Boss,
                         defaultBehaviorTree,
-                        enemySkillDb,
                         180f,
                         26f,
                         48f,
@@ -749,11 +827,11 @@ namespace Game.Editor
                     $"{ResourcesConfigDir}/敌人行为_Boss5.asset"),
             };
 
-            NormalizeSkillSlotOverrides(archetypes, enemySkillDb);
+            NormalizeSkillSlotOverrides(archetypes);
 
-            var db = ScriptableObject.CreateInstance<EnemyArchetypeDatabaseSO>();
-            db.entries = archetypes;
-            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/敌人行为配置库.asset");
+            string legacyDatabasePath = $"{ResourcesConfigDir}/敌人行为配置库.asset";
+            if (AssetDatabase.LoadMainAssetAtPath(legacyDatabasePath) != null)
+                AssetDatabase.DeleteAsset(legacyDatabasePath);
             AssetDatabase.SaveAssets();
         }
 
@@ -763,15 +841,16 @@ namespace Game.Editor
             var db = ScriptableObject.CreateInstance<ItemDisplayDatabaseSO>();
             db.entries = new List<ItemDisplayEntry>
             {
-                new ItemDisplayEntry { itemId = "potion_hp",  displayName = "回血药剂",  description = "使用后每秒回复5%最大生命值，持续10秒。" },
-                new ItemDisplayEntry { itemId = "potion_mp",  displayName = "回蓝药剂",  description = "使用后每秒回复5%最大法力值，持续10秒。" },
-                new ItemDisplayEntry { itemId = "nectar",     displayName = "仙露",      description = "死亡时可消耗1个仙露复活，并回滚至检查点且难度-1。" },
+                new ItemDisplayEntry { itemId = "potion_hp",  displayName = "回血药剂",  description = "使用后每秒回复5%最大生命值，持续10秒。", rarity = WeaponRarity.Epic },
+                new ItemDisplayEntry { itemId = "potion_mp",  displayName = "回蓝药剂",  description = "使用后每秒回复5%最大法力值，持续10秒。", rarity = WeaponRarity.Epic },
+                new ItemDisplayEntry { itemId = "nectar",     displayName = "仙露",      description = "死亡时可消耗1个仙露复活，并回滚至检查点且难度-1。", rarity = WeaponRarity.Legendary },
             };
-            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/物品显示配置.asset");
+            CreateOrMergeItemDisplayDatabaseAsset(db, $"{ResourcesConfigDir}/物品显示配置.asset");
             AssetDatabase.SaveAssets();
         }
     }
 }
+
 
 
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEditor;
 using UnityEngine;
 using Game.Data;
@@ -9,8 +9,7 @@ namespace Game.Editor
     /// One-click tactical AI upgrade:
     /// 1) refresh default behavior tree
     /// 2) ensure tactical parameters
-    /// 3) remove redundant skill-slot overrides
-    /// 4) apply recommended post-cast idle recovery presets
+    /// 3) remove redundant slot override placeholders
     /// </summary>
     public static class UpgradeEnemyTacticalAI
     {
@@ -18,25 +17,25 @@ namespace Game.Editor
         public static void Upgrade()
         {
             var defaultTree = CreateDefaultBehaviorTreeAsset.Create();
-            var archetypeDb = EnemyConfigAuditUtility.LoadFirstAsset<EnemyArchetypeDatabaseSO>("t:EnemyArchetypeDatabaseSO");
-            var skillDb = EnemyConfigAuditUtility.LoadFirstAsset<EnemySkillDatabaseSO>("t:EnemySkillDatabaseSO");
+            var archetypes = EnemyConfigAuditUtility.LoadEnemyArchetypes();
+            var sharedSkillDb = EnemyConfigAuditUtility.LoadFirstAsset<SharedSkillDatabaseSO>("t:SharedSkillDatabaseSO");
 
-            if (archetypeDb == null)
+            if (archetypes == null || archetypes.Count == 0)
             {
-                Debug.LogWarning("[AI] 未找到 EnemyArchetypeDatabaseSO，请先执行：游戏/一键创建全部配置（需求书默认数据）。");
+                Debug.LogWarning("[AI] 未找到 EnemyArchetypeSO，请先执行：游戏/一键创建全部配置（需求书默认数据）。");
                 return;
             }
 
             int updatedArchetypes = 0;
-            for (int i = 0; i < archetypeDb.entries.Count; i++)
+            for (int i = 0; i < archetypes.Count; i++)
             {
-                var archetype = archetypeDb.entries[i];
+                var archetype = archetypes[i];
                 if (archetype == null)
                     continue;
 
                 bool dirty = EnsureBehaviorTreeBinding(archetype, defaultTree);
-                dirty |= EnsureTacticalDefaults(archetype, skillDb);
-                dirty |= NormalizeRedundantSlotOverrides(archetype, skillDb);
+                dirty |= EnsureTacticalDefaults(archetype);
+                dirty |= NormalizeRedundantSlotOverrides(archetype);
 
                 if (!dirty)
                     continue;
@@ -45,16 +44,11 @@ namespace Game.Editor
                 EditorUtility.SetDirty(archetype);
             }
 
-            int updatedRecoverySkills = ApplyRecommendedPostCastRecovery(skillDb);
-            if (updatedRecoverySkills > 0 && skillDb != null)
-                EditorUtility.SetDirty(skillDb);
-
-            EditorUtility.SetDirty(archetypeDb);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            EnemyConfigAuditUtility.Audit(archetypeDb, skillDb, logResult: true);
+            EnemyConfigAuditUtility.Audit(archetypes, sharedSkillDb, logResult: true);
 
-            Debug.Log($"[AI] 战术AI升级完成：更新 {updatedArchetypes} 个敌人行为配置，更新 {updatedRecoverySkills} 个技能后摇配置。");
+            Debug.Log($"[AI] 战术 AI 升级完成：更新 {updatedArchetypes} 个敌人行为配置。");
         }
 
         private static bool EnsureBehaviorTreeBinding(EnemyArchetypeSO archetype, Game.AI.BehaviorTreeAsset defaultTree)
@@ -80,7 +74,7 @@ namespace Game.Editor
             return false;
         }
 
-        private static bool EnsureTacticalDefaults(EnemyArchetypeSO archetype, EnemySkillDatabaseSO skillDb)
+        private static bool EnsureTacticalDefaults(EnemyArchetypeSO archetype)
         {
             bool changed = false;
             if (archetype == null)
@@ -96,7 +90,7 @@ namespace Game.Editor
                     if (slot == null)
                         continue;
 
-                    float castRange = ResolveCastRange(slot, skillDb);
+                    float castRange = ResolveCastRange(slot);
                     minRange = Mathf.Min(minRange, castRange);
                     maxRange = Mathf.Max(maxRange, castRange);
                 }
@@ -205,7 +199,7 @@ namespace Game.Editor
             return changed;
         }
 
-        private static float ResolveCastRange(EnemySkillSlotBinding slot, EnemySkillDatabaseSO skillDb)
+        private static float ResolveCastRange(EnemySkillSlotBinding slot)
         {
             if (slot == null)
                 return 3f;
@@ -213,62 +207,9 @@ namespace Game.Editor
             return slot.castRange > 0.01f ? slot.castRange : 3f;
         }
 
-        private static bool NormalizeRedundantSlotOverrides(EnemyArchetypeSO archetype, EnemySkillDatabaseSO skillDb)
+        private static bool NormalizeRedundantSlotOverrides(EnemyArchetypeSO archetype)
         {
-            // 新系统中槽位绑定字段为直接值，无需规范化覆盖字段，保留此方法以兼容旧调用。
             return false;
-        }
-
-        private static int ApplyRecommendedPostCastRecovery(EnemySkillDatabaseSO skillDb)
-        {
-            if (skillDb == null || skillDb.entries == null)
-                return 0;
-
-            var defaults = EnemySkillDatabaseDefaults.CreateRuntimeDefault();
-            if (defaults == null || defaults.entries == null)
-                return 0;
-
-            int updated = 0;
-            try
-            {
-                for (int i = 0; i < skillDb.entries.Count; i++)
-                {
-                    var definition = skillDb.entries[i];
-                    if (definition == null || string.IsNullOrWhiteSpace(definition.skillId))
-                        continue;
-
-                    var recommended = defaults.GetEntry(definition.skillId);
-                    if (recommended == null)
-                        continue;
-
-                    bool shouldEnterRecovery = recommended.enterIdleAfterCast && recommended.postCastIdleDuration > 0f;
-                    float recommendedDuration = shouldEnterRecovery
-                        ? Mathf.Max(0f, recommended.postCastIdleDuration)
-                        : 0f;
-
-                    bool changed = false;
-                    if (definition.enterIdleAfterCast != shouldEnterRecovery)
-                    {
-                        definition.enterIdleAfterCast = shouldEnterRecovery;
-                        changed = true;
-                    }
-
-                    if (Mathf.Abs(definition.postCastIdleDuration - recommendedDuration) > 0.0001f)
-                    {
-                        definition.postCastIdleDuration = recommendedDuration;
-                        changed = true;
-                    }
-
-                    if (changed)
-                        updated++;
-                }
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(defaults);
-            }
-
-            return updated;
         }
     }
 }

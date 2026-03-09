@@ -7,8 +7,12 @@ namespace Game.Editor
 {
     public class SharedSkillTimelineEditorWindow : EditorWindow
     {
-        private const float LeftPanelWidth = 220f;
-        private const float RightPanelWidth = 340f;
+        private const float DefaultLeftPanelWidth = 220f;
+        private const float DefaultRightPanelWidth = 340f;
+        private const float MinLeftPanelWidth = 140f;
+        private const float MinCenterPanelWidth = 180f;
+        private const float MinRightPanelWidth = 240f;
+        private const float PanelDividerWidth = 4f;
         private const float ToolbarHeight = 24f;
         private const float PreviewBarHeight = 28f;
         private const float ButtonBarHeight = 28f;
@@ -40,6 +44,9 @@ namespace Game.Editor
         private Vector2 _propertyScroll;
         private float _timelineScrollX;
         private float _zoom = 100f;
+        private float _leftPanelWidth = DefaultLeftPanelWidth;
+        private float _rightPanelWidth = DefaultRightPanelWidth;
+        private float _lastTimelinePanelWidth = 200f;
 
         private GameObject _previewTarget;
         private AnimationClip _previewClip;
@@ -54,12 +61,20 @@ namespace Game.Editor
         private float _dragStartMouseX;
         private float _dragStartTime;
         private float _dragStartDuration;
+        private SplitterHandle _activeSplitter;
+
+        private enum SplitterHandle
+        {
+            None,
+            Left,
+            Right,
+        }
 
         [MenuItem("游戏/技能时间轴编辑器")]
         public static void Open()
         {
             var window = GetWindow<SharedSkillTimelineEditorWindow>("技能时间轴编辑器");
-            window.minSize = new Vector2(980f, 560f);
+            window.minSize = new Vector2(MinLeftPanelWidth + MinCenterPanelWidth + MinRightPanelWidth + PanelDividerWidth * 2f, 420f);
             window.TryAutoLoadDatabase();
         }
 
@@ -108,20 +123,101 @@ namespace Game.Editor
 
             float totalWidth = position.width;
             float totalHeight = position.height;
-            float centerWidth = Mathf.Max(200f, totalWidth - LeftPanelWidth - RightPanelWidth);
 
             DrawToolbar(new Rect(0f, 0f, totalWidth, ToolbarHeight));
             DrawPreviewBar(new Rect(0f, ToolbarHeight, totalWidth, PreviewBarHeight));
 
             float contentY = ToolbarHeight + PreviewBarHeight;
             float contentHeight = totalHeight - contentY;
+            ClampPanelWidths(totalWidth);
 
-            DrawLeftPanel(new Rect(0f, contentY, LeftPanelWidth, contentHeight));
-            DrawTimelinePanel(new Rect(LeftPanelWidth, contentY, centerWidth, contentHeight));
-            DrawRightPanel(new Rect(totalWidth - RightPanelWidth, contentY, RightPanelWidth, contentHeight));
+            Rect leftRect = new Rect(0f, contentY, _leftPanelWidth, contentHeight);
+            Rect leftDividerRect = new Rect(leftRect.xMax, contentY, PanelDividerWidth, contentHeight);
+            Rect rightDividerRect = new Rect(totalWidth - _rightPanelWidth - PanelDividerWidth, contentY, PanelDividerWidth, contentHeight);
+            Rect centerRect = new Rect(leftDividerRect.xMax, contentY, Mathf.Max(MinCenterPanelWidth, rightDividerRect.x - leftDividerRect.xMax), contentHeight);
+            Rect rightRect = new Rect(rightDividerRect.xMax, contentY, _rightPanelWidth, contentHeight);
+
+            HandlePanelResizing(leftDividerRect, rightDividerRect, totalWidth);
+
+            ClampPanelWidths(totalWidth);
+            leftRect = new Rect(0f, contentY, _leftPanelWidth, contentHeight);
+            leftDividerRect = new Rect(leftRect.xMax, contentY, PanelDividerWidth, contentHeight);
+            rightDividerRect = new Rect(totalWidth - _rightPanelWidth - PanelDividerWidth, contentY, PanelDividerWidth, contentHeight);
+            centerRect = new Rect(leftDividerRect.xMax, contentY, Mathf.Max(MinCenterPanelWidth, rightDividerRect.x - leftDividerRect.xMax), contentHeight);
+            rightRect = new Rect(rightDividerRect.xMax, contentY, _rightPanelWidth, contentHeight);
+            _lastTimelinePanelWidth = centerRect.width;
+
+            DrawLeftPanel(leftRect);
+            DrawPanelDivider(leftDividerRect, _activeSplitter == SplitterHandle.Left);
+            DrawTimelinePanel(centerRect);
+            DrawPanelDivider(rightDividerRect, _activeSplitter == SplitterHandle.Right);
+            DrawRightPanel(rightRect);
 
             if (_serializedDb != null)
                 _serializedDb.ApplyModifiedProperties();
+        }
+
+        private void ClampPanelWidths(float totalWidth)
+        {
+            float maxLeft = Mathf.Max(MinLeftPanelWidth, totalWidth - MinCenterPanelWidth - MinRightPanelWidth - PanelDividerWidth * 2f);
+            _leftPanelWidth = Mathf.Clamp(_leftPanelWidth, MinLeftPanelWidth, maxLeft);
+
+            float maxRight = Mathf.Max(MinRightPanelWidth, totalWidth - _leftPanelWidth - MinCenterPanelWidth - PanelDividerWidth * 2f);
+            _rightPanelWidth = Mathf.Clamp(_rightPanelWidth, MinRightPanelWidth, maxRight);
+
+            maxLeft = Mathf.Max(MinLeftPanelWidth, totalWidth - _rightPanelWidth - MinCenterPanelWidth - PanelDividerWidth * 2f);
+            _leftPanelWidth = Mathf.Clamp(_leftPanelWidth, MinLeftPanelWidth, maxLeft);
+        }
+
+        private void HandlePanelResizing(Rect leftDividerRect, Rect rightDividerRect, float totalWidth)
+        {
+            Event evt = Event.current;
+            EditorGUIUtility.AddCursorRect(leftDividerRect, MouseCursor.ResizeHorizontal);
+            EditorGUIUtility.AddCursorRect(rightDividerRect, MouseCursor.ResizeHorizontal);
+
+            if (evt.type == EventType.MouseDown && evt.button == 0)
+            {
+                if (leftDividerRect.Contains(evt.mousePosition))
+                {
+                    _activeSplitter = SplitterHandle.Left;
+                    evt.Use();
+                }
+                else if (rightDividerRect.Contains(evt.mousePosition))
+                {
+                    _activeSplitter = SplitterHandle.Right;
+                    evt.Use();
+                }
+            }
+            else if (evt.type == EventType.MouseDrag && evt.button == 0)
+            {
+                if (_activeSplitter == SplitterHandle.Left)
+                {
+                    float maxLeft = Mathf.Max(MinLeftPanelWidth, totalWidth - _rightPanelWidth - MinCenterPanelWidth - PanelDividerWidth * 2f);
+                    _leftPanelWidth = Mathf.Clamp(evt.mousePosition.x, MinLeftPanelWidth, maxLeft);
+                    evt.Use();
+                    Repaint();
+                }
+                else if (_activeSplitter == SplitterHandle.Right)
+                {
+                    float maxRight = Mathf.Max(MinRightPanelWidth, totalWidth - _leftPanelWidth - MinCenterPanelWidth - PanelDividerWidth * 2f);
+                    _rightPanelWidth = Mathf.Clamp(totalWidth - evt.mousePosition.x - PanelDividerWidth, MinRightPanelWidth, maxRight);
+                    evt.Use();
+                    Repaint();
+                }
+            }
+            else if (evt.type == EventType.MouseUp && evt.button == 0 && _activeSplitter != SplitterHandle.None)
+            {
+                _activeSplitter = SplitterHandle.None;
+                evt.Use();
+            }
+        }
+
+        private static void DrawPanelDivider(Rect rect, bool active)
+        {
+            Color color = active
+                ? new Color(0.38f, 0.62f, 0.95f, 1f)
+                : new Color(0.12f, 0.12f, 0.12f, 1f);
+            EditorGUI.DrawRect(rect, color);
         }
 
         private void DrawToolbar(Rect rect)
@@ -346,8 +442,7 @@ namespace Game.Editor
 
             float contentWidth = GetTimelineContentWidth(skill);
             float maxScroll = Mathf.Max(0f, contentWidth - rect.width);
-            _timelineScrollX = GUI.HorizontalScrollbar(scrollbarRect, _timelineScrollX, rect.width, 0f, contentWidth);
-            _timelineScrollX = Mathf.Clamp(_timelineScrollX, 0f, maxScroll);
+            DrawTimelineScrollbar(scrollbarRect, contentWidth, maxScroll);
 
             if (Event.current.type == EventType.ScrollWheel && rect.Contains(Event.current.mousePosition))
             {
@@ -356,6 +451,31 @@ namespace Game.Editor
                 _timelineScrollX = Mathf.Max(0f, pivotTime * _zoom - (Event.current.mousePosition.x - rect.x));
                 Event.current.Use();
                 Repaint();
+            }
+        }
+
+        private void DrawTimelineScrollbar(Rect rect, float contentWidth, float maxScroll)
+        {
+            if (contentWidth <= rect.width + 0.01f)
+            {
+                _timelineScrollX = 0f;
+                EditorGUI.DrawRect(rect, new Color(0.19f, 0.19f, 0.19f, 1f));
+                Rect fillRect = new Rect(rect.x + 1f, rect.y + 2f, Mathf.Max(0f, rect.width - 2f), Mathf.Max(0f, rect.height - 4f));
+                EditorGUI.DrawRect(fillRect, new Color(0.42f, 0.42f, 0.42f, 1f));
+                return;
+            }
+
+            GUI.BeginGroup(rect);
+            try
+            {
+                float visibleSize = rect.width;
+                Rect localRect = new Rect(0f, 0f, rect.width, rect.height);
+                _timelineScrollX = GUI.HorizontalScrollbar(localRect, _timelineScrollX, visibleSize, 0f, contentWidth);
+                _timelineScrollX = Mathf.Clamp(_timelineScrollX, 0f, maxScroll);
+            }
+            finally
+            {
+                GUI.EndGroup();
             }
         }
 
@@ -656,6 +776,8 @@ namespace Game.Editor
             GUILayout.BeginArea(new Rect(rect.x, rect.y + 22f, rect.width, rect.height - 22f));
             try
             {
+                float oldLabelWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = Mathf.Clamp(rect.width * 0.34f, 88f, 150f);
                 _propertyScroll = EditorGUILayout.BeginScrollView(_propertyScroll);
                 try
                 {
@@ -678,6 +800,7 @@ namespace Game.Editor
                 finally
                 {
                     EditorGUILayout.EndScrollView();
+                    EditorGUIUtility.labelWidth = oldLabelWidth;
                 }
             }
             finally
@@ -691,7 +814,7 @@ namespace Game.Editor
             EditorGUILayout.LabelField("技能", EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
-            string newSkillId = EditorGUILayout.TextField("技能 ID", skill.skillId ?? string.Empty);
+            string newSkillId = EditorGUILayout.TextField("共享技能ID", skill.skillId ?? string.Empty);
             string newDisplayName = EditorGUILayout.TextField("显示名称", skill.displayName ?? string.Empty);
             bool newIgnoreAnimationDamageEvents = EditorGUILayout.Toggle("忽略动画帧伤害事件", skill.ignoreAnimationDamageEvents);
             if (!EditorGUI.EndChangeCheck())
@@ -724,8 +847,6 @@ namespace Game.Editor
                 newRepeatInterval = Mathf.Max(0.01f, EditorGUILayout.FloatField("重复触发间隔(秒)", evt.repeatInterval));
             }
 
-            string newHitDetectionName = EditorGUILayout.TextField("伤害检测名", evt.hitDetectionName ?? string.Empty);
-            float newDamageMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("伤害倍率", evt.damageMagnitude));
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(_database, "Edit Skill Event");
@@ -734,14 +855,64 @@ namespace Game.Editor
                 evt.triggerMode = newTriggerMode;
                 evt.activeDuration = newTriggerMode == SkillEventTriggerMode.Repeated ? newActiveDuration : 0f;
                 evt.repeatInterval = newTriggerMode == SkillEventTriggerMode.Repeated ? newRepeatInterval : 0.1f;
-                evt.hitDetectionName = newHitDetectionName;
-                evt.damageMagnitude = newDamageMagnitude;
                 MarkDatabaseDirty();
             }
 
+            DrawDamageEffectsEditor(evt);
             DrawPhysicsEffectsEditor(evt);
             DrawAttributeEffectsEditor(evt);
             DrawCueEffectsEditor(evt);
+        }
+
+        private void DrawDamageEffectsEditor(SkillTimelineEvent evt)
+        {
+            EnsureDamageEffects(evt);
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("伤害效果", EditorStyles.boldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                Undo.RecordObject(_database, "Add Damage Effect");
+                evt.damageEffects.Add(new SkillDamageEffect());
+                MarkDatabaseDirty();
+            }
+            GUILayout.EndHorizontal();
+
+            int removeIndex = -1;
+            for (int i = 0; i < evt.damageEffects.Count; i++)
+            {
+                SkillDamageEffect effect = evt.damageEffects[i] ?? (evt.damageEffects[i] = new SkillDamageEffect());
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"伤害效果 {i + 1}", EditorStyles.miniBoldLabel);
+                if (GUILayout.Button("删除", GUILayout.Width(48f)))
+                    removeIndex = i;
+                GUILayout.EndHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                string newDamageName = EditorGUILayout.TextField("伤害检测名", effect.damageName ?? string.Empty);
+                float newDamageMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("伤害倍率", effect.damageMagnitude));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_database, "Edit Damage Effect");
+                    effect.damageName = newDamageName;
+                    effect.damageMagnitude = newDamageMagnitude;
+                    MarkDatabaseDirty();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0)
+            {
+                Undo.RecordObject(_database, "Remove Damage Effect");
+                evt.damageEffects.RemoveAt(removeIndex);
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
         }
 
         private void DrawPhysicsEffectsEditor(SkillTimelineEvent evt)
@@ -773,8 +944,14 @@ namespace Game.Editor
 
                 EditorGUI.BeginChangeCheck();
                 PhysicsEffectType newEffectType = (PhysicsEffectType)EditorGUILayout.EnumPopup("效果类型", effect.effectType);
-                SkillTargetMode newTargetMode = (SkillTargetMode)EditorGUILayout.EnumPopup("作用目标", effect.targetMode);
-                SkillEffectDirection newDirection = (SkillEffectDirection)EditorGUILayout.EnumPopup("作用方向", effect.direction);
+                bool forceSelfTarget = newEffectType == PhysicsEffectType.DashSelf || newEffectType == PhysicsEffectType.Airborne;
+                bool forceUpDirection = newEffectType == PhysicsEffectType.Airborne;
+                SkillTargetMode newTargetMode = forceSelfTarget
+                    ? SkillTargetMode.Self
+                    : (SkillTargetMode)EditorGUILayout.EnumPopup("作用目标", effect.targetMode);
+                SkillEffectDirection newDirection = forceUpDirection
+                    ? SkillEffectDirection.Up
+                    : (SkillEffectDirection)EditorGUILayout.EnumPopup("作用方向", effect.direction);
                 float newMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("力度/距离", effect.magnitude));
                 float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
                 if (EditorGUI.EndChangeCheck())
@@ -833,7 +1010,10 @@ namespace Game.Editor
                 SkillTargetMode newTargetMode = (SkillTargetMode)EditorGUILayout.EnumPopup("作用目标", effect.targetMode);
                 float newMagnitude = EditorGUILayout.FloatField("数值", effect.magnitude);
                 bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
-                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
+                float newDuration = effect.duration;
+                bool showDuration = newStatField != SkillStatField.HP && newStatField != SkillStatField.MP;
+                if (showDuration)
+                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit Attribute Effect");
@@ -841,7 +1021,7 @@ namespace Game.Editor
                     effect.targetMode = newTargetMode;
                     effect.magnitude = newMagnitude;
                     effect.usePercent = newUsePercent;
-                    effect.duration = newDuration;
+                    effect.duration = showDuration ? newDuration : 0f;
                     MarkDatabaseDirty();
                 }
 
@@ -913,6 +1093,12 @@ namespace Game.Editor
             }
 
             EditorGUILayout.EndVertical();
+        }
+
+        private static void EnsureDamageEffects(SkillTimelineEvent evt)
+        {
+            if (evt.damageEffects == null)
+                evt.damageEffects = new List<SkillDamageEffect>();
         }
 
         private static void EnsurePhysicsEffects(SkillTimelineEvent evt)
@@ -990,7 +1176,6 @@ namespace Game.Editor
             {
                 eventId = $"evt_{skill.events.Count}",
                 startTime = startTime,
-                damageMagnitude = 1f,
             });
             _selectedEventIndex = skill.events.Count - 1;
             EditorUtility.SetDirty(_database);
@@ -1148,7 +1333,7 @@ namespace Game.Editor
             if (evt.triggerMode == SkillEventTriggerMode.Repeated)
                 return Mathf.Max(MinEventWidth, evt.activeDuration * _zoom);
 
-            return Mathf.Max(MinEventWidth, string.IsNullOrEmpty(evt.hitDetectionName) ? MinEventWidth : 12f);
+            return Mathf.Max(MinEventWidth, GetDamageEffectCount(evt) > 0 ? 12f : MinEventWidth);
         }
 
         private float GetTimelineContentWidth(SharedSkillDefinition skill)
@@ -1161,7 +1346,7 @@ namespace Game.Editor
         {
             if (evt == null)
                 return DefaultColor;
-            if (!string.IsNullOrEmpty(evt.hitDetectionName))
+            if (GetDamageEffectCount(evt) > 0)
                 return DamageColor;
             if (evt.physicsEffects != null && evt.physicsEffects.Count > 0)
                 return PhysicsColor;
@@ -1178,8 +1363,15 @@ namespace Game.Editor
                 return "evt";
             if (!string.IsNullOrEmpty(evt.eventId))
                 return evt.eventId;
-            if (!string.IsNullOrEmpty(evt.hitDetectionName))
-                return $"伤害 {evt.hitDetectionName}";
+
+            int damageCount = GetDamageEffectCount(evt);
+            if (damageCount > 0)
+            {
+                string firstName = GetFirstDamageEffectName(evt);
+                int extraCount = Mathf.Max(0, damageCount - 1);
+                return extraCount > 0 ? $"伤害 {firstName}+{extraCount}" : $"伤害 {firstName}";
+            }
+
             if (evt.physicsEffects != null && evt.physicsEffects.Count > 0)
                 return "物理";
             if (evt.attributeEffects != null && evt.attributeEffects.Count > 0)
@@ -1187,6 +1379,45 @@ namespace Game.Editor
             if (evt.cues != null && evt.cues.Count > 0)
                 return "特效";
             return "evt";
+        }
+
+        private static int GetDamageEffectCount(SkillTimelineEvent evt)
+        {
+            if (evt == null)
+                return 0;
+
+            if (evt.damageEffects == null || evt.damageEffects.Count == 0)
+                return 0;
+
+            int count = 0;
+            for (int i = 0; i < evt.damageEffects.Count; i++)
+            {
+                if (evt.damageEffects[i] != null)
+                    count++;
+            }
+
+            return count;
+        }
+
+        private static string GetFirstDamageEffectName(SkillTimelineEvent evt)
+        {
+            if (evt == null)
+                return "伤害";
+
+            if (evt.damageEffects != null)
+            {
+                for (int i = 0; i < evt.damageEffects.Count; i++)
+                {
+                    var effect = evt.damageEffects[i];
+                    if (effect == null)
+                        continue;
+
+                    if (!string.IsNullOrWhiteSpace(effect.damageName))
+                        return effect.damageName;
+                }
+            }
+
+            return "伤害";
         }
         private List<List<int>> AssignEventRows(List<SkillTimelineEvent> events)
         {
@@ -1244,7 +1475,7 @@ namespace Game.Editor
 
         private void FitZoomToWindow()
         {
-            float width = Mathf.Max(100f, position.width - LeftPanelWidth - RightPanelWidth - 40f);
+            float width = Mathf.Max(100f, _lastTimelinePanelWidth - 40f);
             float duration = Mathf.Max(GetPreviewTotalDuration(), 2f);
             _zoom = Mathf.Clamp(width / duration, 20f, 800f);
             _timelineScrollX = 0f;

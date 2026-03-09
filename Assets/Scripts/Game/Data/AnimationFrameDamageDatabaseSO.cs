@@ -34,7 +34,7 @@ namespace Game.Data
     /// 单次伤害检测配置。
     ///
     /// 使用方式：
-    /// 1. 时间轴技能事件填写 hitDetectionName，运行时按名称查这份表。
+    /// 1. 时间轴技能事件在 damageEffects 列表中填写 damageName，运行时按名称查这份表。
     /// 2. 动画事件 AnimEvent_DealDamage 传入名称，运行时按名称查这份表。
     ///
     /// 真正的最终伤害仍由战斗执行层决定：
@@ -45,7 +45,7 @@ namespace Game.Data
     {
         [Header("标识")]
         [InspectorLabel("伤害名")]
-        [Tooltip("全局唯一字符串，必须与技能事件的 hitDetectionName 或动画事件参数完全一致。")]
+        [Tooltip("全局唯一字符串，必须与技能事件 damageEffects 中的 damageName 或动画事件参数完全一致。")]
         public string damageName = "A1";
 
         [Header("检测方式")]
@@ -55,7 +55,7 @@ namespace Game.Data
 
         [Header("通用参数")]
         [InspectorLabel("伤害倍率")]
-        [Tooltip("乘以 CombatCalculator 基础伤害的系数，最终还会再乘以技能事件中的 damageMagnitude。")]
+        [Tooltip("乘以 CombatCalculator 基础伤害的系数，最终还会再乘以技能事件中对应伤害效果的 damageMagnitude。")]
         public float damageMultiplier = 1f;
 
         [InspectorLabel("命中层级名")]

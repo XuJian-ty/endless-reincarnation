@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -47,17 +47,17 @@ namespace Game.Editor
         [MenuItem("游戏/AI/审计敌人配置一致性", false, 11)]
         private static void AuditFromMenu()
         {
-            var archetypeDb = LoadFirstAsset<EnemyArchetypeDatabaseSO>("t:EnemyArchetypeDatabaseSO");
-            var skillDb = LoadFirstAsset<EnemySkillDatabaseSO>("t:EnemySkillDatabaseSO");
-            Audit(archetypeDb, skillDb, logResult: true);
+            var archetypes = LoadEnemyArchetypes();
+            var skillDb = LoadFirstAsset<SharedSkillDatabaseSO>("t:SharedSkillDatabaseSO");
+            Audit(archetypes, skillDb, logResult: true);
         }
 
-        internal static AuditResult Audit(EnemyArchetypeDatabaseSO archetypeDb, EnemySkillDatabaseSO skillDb, bool logResult)
+        internal static AuditResult Audit(IReadOnlyList<EnemyArchetypeSO> archetypes, SharedSkillDatabaseSO skillDb, bool logResult)
         {
-            if (archetypeDb == null || skillDb == null)
+            if (archetypes == null || skillDb == null)
             {
                 if (logResult)
-                    Debug.LogWarning("[AI][Audit] 缺少敌人行为库或敌人技能库，无法执行审计。");
+                    Debug.LogWarning("[AI][Audit] 缺少敌人行为配置或共享技能库，无法执行审计。");
                 return new AuditResult(0, 0, 0, 0, 0, 0, 0);
             }
 
@@ -86,42 +86,39 @@ namespace Game.Editor
             }
 
             var enemyIdSet = new HashSet<string>(StringComparer.Ordinal);
-            int archetypeCount = archetypeDb.entries != null ? archetypeDb.entries.Count : 0;
-            if (archetypeDb.entries != null)
+            int archetypeCount = archetypes.Count;
+            for (int i = 0; i < archetypes.Count; i++)
             {
-                for (int i = 0; i < archetypeDb.entries.Count; i++)
+                var archetype = archetypes[i];
+                if (archetype == null)
                 {
-                    var archetype = archetypeDb.entries[i];
-                    if (archetype == null)
-                    {
-                        nullArchetypes++;
+                    nullArchetypes++;
+                    continue;
+                }
+
+                string enemyId = NormalizeId(archetype.GetResolvedEnemyId());
+                if (!string.IsNullOrEmpty(enemyId) && !enemyIdSet.Add(enemyId))
+                    duplicateEnemyIds++;
+
+                if (archetype.skillSlots == null)
+                    continue;
+
+                var slotIndexSet = new HashSet<int>();
+                for (int slotIdx = 0; slotIdx < archetype.skillSlots.Count; slotIdx++)
+                {
+                    var slot = archetype.skillSlots[slotIdx];
+                    if (slot == null)
                         continue;
-                    }
 
-                    string enemyId = NormalizeId(archetype.GetResolvedEnemyId());
-                    if (!string.IsNullOrEmpty(enemyId) && !enemyIdSet.Add(enemyId))
-                        duplicateEnemyIds++;
+                    if (!slotIndexSet.Add(slot.slotIndex))
+                        duplicateSlotIndices++;
 
-                    if (archetype.skillSlots == null)
+                    string slotSkillId = NormalizeId(slot.skillId);
+                    if (string.IsNullOrEmpty(slotSkillId))
                         continue;
 
-                    var slotIndexSet = new HashSet<int>();
-                    for (int slotIdx = 0; slotIdx < archetype.skillSlots.Count; slotIdx++)
-                    {
-                        var slot = archetype.skillSlots[slotIdx];
-                        if (slot == null)
-                            continue;
-
-                        if (!slotIndexSet.Add(slot.slotIndex))
-                            duplicateSlotIndices++;
-
-                        string slotSkillId = NormalizeId(slot.skillId);
-                        if (string.IsNullOrEmpty(slotSkillId))
-                            continue;
-
-                        if (!skillIdSet.Contains(slotSkillId))
-                            missingSkillRefs++;
-                    }
+                    if (!skillIdSet.Contains(slotSkillId))
+                        missingSkillRefs++;
                 }
             }
 
@@ -137,7 +134,7 @@ namespace Game.Editor
             if (logResult)
             {
                 string summary =
-                    $"[AI][Audit] Skills={result.SkillCount}, Archetypes={result.ArchetypeCount}, " +
+                    $"[AI][Audit] SharedSkills={result.SkillCount}, Archetypes={result.ArchetypeCount}, " +
                     $"DuplicateSkillIds={result.DuplicateSkillIds}, NullArchetypes={result.NullArchetypes}, " +
                     $"DuplicateEnemyIds={result.DuplicateEnemyIds}, DuplicateSlotIndices={result.DuplicateSlotIndices}, " +
                     $"MissingSkillRefs={result.MissingSkillRefs}";
@@ -151,6 +148,11 @@ namespace Game.Editor
             return result;
         }
 
+        internal static List<EnemyArchetypeSO> LoadEnemyArchetypes()
+        {
+            return LoadAssets<EnemyArchetypeSO>("t:EnemyArchetypeSO");
+        }
+
         private static string NormalizeId(string value)
         {
             return string.IsNullOrWhiteSpace(value)
@@ -160,9 +162,16 @@ namespace Game.Editor
 
         internal static T LoadFirstAsset<T>(string filter) where T : UnityEngine.Object
         {
+            var assets = LoadAssets<T>(filter);
+            return assets.Count > 0 ? assets[0] : null;
+        }
+
+        internal static List<T> LoadAssets<T>(string filter) where T : UnityEngine.Object
+        {
+            var assets = new List<T>();
             string[] guids = AssetDatabase.FindAssets(filter);
             if (guids == null || guids.Length == 0)
-                return null;
+                return assets;
 
             for (int i = 0; i < guids.Length; i++)
             {
@@ -172,18 +181,21 @@ namespace Game.Editor
 
                 var asset = AssetDatabase.LoadAssetAtPath<T>(path);
                 if (asset != null)
-                    return asset;
+                    assets.Add(asset);
             }
+
+            if (assets.Count > 0)
+                return assets;
 
             for (int i = 0; i < guids.Length; i++)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guids[i]);
                 var asset = AssetDatabase.LoadAssetAtPath<T>(path);
                 if (asset != null)
-                    return asset;
+                    assets.Add(asset);
             }
 
-            return null;
+            return assets;
         }
     }
 }

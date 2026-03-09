@@ -42,8 +42,8 @@ MonoBehaviour:
     cooldown: 2.1
     castRange: 3.2
     castDuration: 1
-    postCastIdleDuration: 0
     enterIdleAfterCast: 0
+    postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
     phaseAvailability: 0
@@ -52,8 +52,8 @@ MonoBehaviour:
     cooldown: 2.7
     castRange: 15
     castDuration: 1.2
-    postCastIdleDuration: 0
     enterIdleAfterCast: 0
+    postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
     phaseAvailability: 0
@@ -62,8 +62,8 @@ MonoBehaviour:
     cooldown: 3.8
     castRange: 5.5
     castDuration: 1.05
-    postCastIdleDuration: 0.5
     enterIdleAfterCast: 1
+    postCastIdleDuration: 0.5
     rotateToTargetOnCast: 1
     animationTrigger: 
     phaseAvailability: 1
@@ -72,8 +72,8 @@ MonoBehaviour:
     cooldown: 4.8
     castRange: 8
     castDuration: 1.15
-    postCastIdleDuration: 0.55
     enterIdleAfterCast: 1
+    postCastIdleDuration: 0.55
     rotateToTargetOnCast: 0
     animationTrigger: 
     phaseAvailability: 1

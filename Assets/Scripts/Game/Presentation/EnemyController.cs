@@ -45,6 +45,9 @@ namespace Game.Presentation
         private float _bonusDefense;
         private float _bonusMoveSpeedRatio;
         private float _bonusHpRegen;
+        private float _bonusLifeSteal;
+        private float _bonusDamageBonus;
+        private float _bonusDamageReduce;
         private EnemyResolvedSkill _activeSkill;
         private Vector3? _activeSkillTargetPosition;
         private int _activeSkillSequence;
@@ -108,6 +111,36 @@ namespace Game.Presentation
                 EnsureInitialized();
                 RecalculateModifierCacheIfNeeded();
                 return Mathf.Max(0.1f, _stats.moveSpeed * (1f + _bonusMoveSpeedRatio));
+            }
+        }
+
+        public float LifeSteal
+        {
+            get
+            {
+                EnsureInitialized();
+                RecalculateModifierCacheIfNeeded();
+                return Mathf.Clamp01(_bonusLifeSteal);
+            }
+        }
+
+        public float DamageBonus
+        {
+            get
+            {
+                EnsureInitialized();
+                RecalculateModifierCacheIfNeeded();
+                return _bonusDamageBonus;
+            }
+        }
+
+        public float DamageReduce
+        {
+            get
+            {
+                EnsureInitialized();
+                RecalculateModifierCacheIfNeeded();
+                return Mathf.Clamp01(_bonusDamageReduce);
             }
         }
 
@@ -276,7 +309,7 @@ namespace Game.Presentation
         {
             EnsureInitialized();
             if (Archetype == null) return null;
-            return EnemySkillResolver.Resolve(Archetype, ConfigManager.GetInstance()?.GetEnemySkillDatabase(), slot);
+            return EnemySkillResolver.Resolve(Archetype, slot);
         }
 
         public float GetSkillRange(int slot)
@@ -567,6 +600,9 @@ namespace Game.Presentation
             _bonusDefense = 0f;
             _bonusMoveSpeedRatio = 0f;
             _bonusHpRegen = 0f;
+            _bonusLifeSteal = 0f;
+            _bonusDamageBonus = 0f;
+            _bonusDamageReduce = 0f;
 
             for (int i = 0; i < _runtimeModifiers.Count; i++)
             {
@@ -576,6 +612,9 @@ namespace Game.Presentation
                 _bonusDefense += modifier.defenseAdd;
                 _bonusMoveSpeedRatio += modifier.moveSpeedAdd;
                 _bonusHpRegen += modifier.hpRegenAdd;
+                _bonusLifeSteal += modifier.lifeStealAdd;
+                _bonusDamageBonus += modifier.damageBonusAdd;
+                _bonusDamageReduce += modifier.damageReduceAdd;
             }
         }
 
@@ -659,7 +698,7 @@ namespace Game.Presentation
             if (!string.IsNullOrEmpty(resolvedEnemyId) || _archetypeOverride != null)
                 return true;
 
-            int archetypeVariantCount = cfg?.GetEnemyArchetypeDatabase()?.CountByType(_enemyType) ?? 0;
+            int archetypeVariantCount = cfg != null ? cfg.CountEnemyArchetypesByType(_enemyType) : 0;
             if (archetypeVariantCount <= 1)
                 return true;
 

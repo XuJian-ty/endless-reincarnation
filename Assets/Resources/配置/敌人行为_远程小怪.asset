@@ -42,8 +42,8 @@ MonoBehaviour:
     cooldown: 1.2
     castRange: 12
     castDuration: 0.85
-    postCastIdleDuration: 0
     enterIdleAfterCast: 0
+    postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
     phaseAvailability: 0

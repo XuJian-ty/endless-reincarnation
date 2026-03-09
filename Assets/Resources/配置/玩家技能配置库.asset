@@ -18,110 +18,110 @@ MonoBehaviour:
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_2
     displayName: "\u88AB\u52A82"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_3
     displayName: "\u88AB\u52A83"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_4
     displayName: "\u88AB\u52A84"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_5
     displayName: "\u88AB\u52A85"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_6
     displayName: "\u88AB\u52A86"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_7
     displayName: "\u88AB\u52A87"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_8
     displayName: "\u88AB\u52A88"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_9
     displayName: "\u88AB\u52A89"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_10
     displayName: "\u88AB\u52A810"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_11
     displayName: "\u88AB\u52A811"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: passive_12
     displayName: "\u88AB\u52A812"
     isPassive: 1
     talentCost: 1
     mpCost: 0
-    sharedSkillId: 
     animationStateIndex: 0
+    sharedSkillId: 
   - skillId: active_1
     displayName: "\u4E3B\u52A81"
     isPassive: 0
     talentCost: 2
     mpCost: 10
-    sharedSkillId: player_skill_0
     animationStateIndex: 0
+    sharedSkillId: player_skill_0
   - skillId: active_2
     displayName: "\u4E3B\u52A82"
     isPassive: 0
     talentCost: 2
     mpCost: 10
-    sharedSkillId: player_skill_1
     animationStateIndex: 1
+    sharedSkillId: player_skill_1
   - skillId: active_3
     displayName: "\u4E3B\u52A83"
     isPassive: 0
     talentCost: 2
     mpCost: 10
-    sharedSkillId: player_skill_2
     animationStateIndex: 2
+    sharedSkillId: player_skill_2
   - skillId: active_4
     displayName: "\u4E3B\u52A84"
     isPassive: 0
     talentCost: 2
     mpCost: 10
-    sharedSkillId: player_skill_3
     animationStateIndex: 3
+    sharedSkillId: player_skill_3

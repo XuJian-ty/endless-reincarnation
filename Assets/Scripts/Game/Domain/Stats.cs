@@ -19,6 +19,7 @@ namespace Game.Domain
         public float hpRegenAdd;
         public float mpRegenAdd;
         public float damageBonusAdd;
+        public float damageReduceAdd;
 
         public StatModifier Clone()
         {
@@ -35,7 +36,8 @@ namespace Game.Domain
                 moveSpeedAdd = moveSpeedAdd,
                 hpRegenAdd = hpRegenAdd,
                 mpRegenAdd = mpRegenAdd,
-                damageBonusAdd = damageBonusAdd
+                damageBonusAdd = damageBonusAdd,
+                damageReduceAdd = damageReduceAdd
             };
         }
     }
@@ -54,6 +56,7 @@ namespace Game.Domain
         public float baseHpRegen;
         public float baseMpRegen;
         public float baseDamageBonus;
+        public float baseDamageReduce;
 
         private readonly List<StatModifier> _modifiers = new List<StatModifier>();
         private bool _dirty = true;
@@ -70,6 +73,7 @@ namespace Game.Domain
         private float _hpRegen;
         private float _mpRegen;
         private float _damageBonus;
+        private float _damageReduce;
 
         public void AddModifier(StatModifier mod)
         {
@@ -99,6 +103,7 @@ namespace Game.Domain
         public float HpRegen { get { Recalc(); return _hpRegen; } }
         public float MpRegen { get { Recalc(); return _mpRegen; } }
         public float DamageBonus { get { Recalc(); return _damageBonus; } }
+        public float DamageReduce { get { Recalc(); return _damageReduce; } }
 
         private void Recalc()
         {
@@ -117,6 +122,7 @@ namespace Game.Domain
             float sumHpRegen = 0f;
             float sumMpRegen = 0f;
             float sumDmgBonus = 0f;
+            float sumDmgReduce = 0f;
 
             foreach (var m in _modifiers)
             {
@@ -132,6 +138,7 @@ namespace Game.Domain
                 sumHpRegen += m.hpRegenAdd;
                 sumMpRegen += m.mpRegenAdd;
                 sumDmgBonus += m.damageBonusAdd;
+                sumDmgReduce += m.damageReduceAdd;
             }
 
             _maxHp = baseHp + sumHp;
@@ -146,6 +153,7 @@ namespace Game.Domain
             _hpRegen = Mathf.Max(0f, baseHpRegen + sumHpRegen);
             _mpRegen = Mathf.Max(0f, baseMpRegen + sumMpRegen);
             _damageBonus = baseDamageBonus + sumDmgBonus;
+            _damageReduce = Mathf.Clamp01(baseDamageReduce + sumDmgReduce);
         }
     }
 
@@ -156,6 +164,7 @@ namespace Game.Domain
             float skillMultiplier,
             float targetDefense,
             Func<float> nextFloat,
+            float targetDamageReduce,
             out float finalDamage,
             out bool isCrit,
             out float lifeStealHeal)
@@ -165,8 +174,8 @@ namespace Game.Domain
             float atk = Mathf.Max(0f, attacker.Attack);
             float baseDmg = atk * Mathf.Max(0f, skillMultiplier);
             float defFactor = Mathf.Max(0f, 0.1f + 270f / (targetDefense + 300f));
-            float dmgBonus = Mathf.Max(0f, 1f + attacker.DamageBonus);
-            float raw = baseDmg * defFactor * dmgBonus;
+            float damageBucket = Mathf.Max(0f, 1f + attacker.DamageBonus - Mathf.Clamp01(targetDamageReduce));
+            float raw = baseDmg * defFactor * damageBucket;
 
             isCrit = nextFloat() < attacker.CritRate;
             if (isCrit) raw *= (1f + attacker.CritDmg);
@@ -180,19 +189,25 @@ namespace Game.Domain
             float skillMultiplier,
             float targetDefense,
             System.Random rng,
+            float targetDamageReduce,
             out float finalDamage,
             out bool isCrit,
             out float lifeStealHeal)
         {
             Func<float> next = rng != null ? () => (float)rng.NextDouble() : null;
-            CalculateDamage(attacker, skillMultiplier, targetDefense, next, out finalDamage, out isCrit, out lifeStealHeal);
+            CalculateDamage(attacker, skillMultiplier, targetDefense, next, targetDamageReduce, out finalDamage, out isCrit, out lifeStealHeal);
         }
 
-        public static float CalculateDamageFromEnemy(float attackerAttack, float targetDefense)
+        public static float CalculateDamageFromEnemy(
+            float attackerAttack,
+            float targetDefense,
+            float attackerDamageBonus = 0f,
+            float targetDamageReduce = 0f)
         {
             float atk = Mathf.Max(0f, attackerAttack);
             float defFactor = Mathf.Max(0f, 0.1f + 270f / (targetDefense + 300f));
-            return Mathf.Max(0f, atk * defFactor);
+            float damageBucket = Mathf.Max(0f, 1f + attackerDamageBonus - Mathf.Clamp01(targetDamageReduce));
+            return Mathf.Max(0f, atk * defFactor * damageBucket);
         }
     }
 }

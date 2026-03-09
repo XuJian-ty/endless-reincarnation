@@ -85,6 +85,7 @@ namespace Game.Domain
             Stats.baseAttackSpeed = 1f;
             Stats.baseMoveSpeed   = 6f;
             Stats.baseDamageBonus = 0f;
+            Stats.baseDamageReduce = 0f;
             Stats.InvalidateCache();
         }
 
