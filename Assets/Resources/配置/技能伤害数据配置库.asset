@@ -20,7 +20,7 @@ MonoBehaviour:
     pushForce: 20
     pushDuration: 0.04
     shape: 1
-    centerOffsetX: 0
+    centerOffsetX: -1.2541432
     centerOffsetY: 0
     centerOffsetZ: 0
     sphereRadius: 1.5

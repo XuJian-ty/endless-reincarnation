@@ -346,12 +346,20 @@ namespace Game.Presentation
                 if (cue.particlePrefab != null)
                 {
                     Transform anchor = ResolveAnchorTransform(cue.anchor, caster, target);
-                    Vector3 position = (anchor != null ? anchor.position : caster.position) + cue.offset;
-                    Object.Instantiate(cue.particlePrefab, position, caster.rotation);
+                    Vector3 position = anchor != null ? anchor.TransformPoint(cue.offset) : caster.position + cue.offset;
+                    Quaternion rotation = anchor != null
+                        ? anchor.rotation * Quaternion.Euler(cue.rotationEuler)
+                        : caster.rotation * Quaternion.Euler(cue.rotationEuler);
+                    var instance = Object.Instantiate(cue.particlePrefab, position, rotation);
+                    instance.transform.localScale = Vector3.Scale(instance.transform.localScale, cue.scale);
                 }
 
                 if (cue.audioClip != null)
-                    AudioSource.PlayClipAtPoint(cue.audioClip, caster.position);
+                {
+                    Transform anchor = ResolveAnchorTransform(cue.anchor, caster, target);
+                    Vector3 position = anchor != null ? anchor.TransformPoint(cue.offset) : caster.position + cue.offset;
+                    AudioSource.PlayClipAtPoint(cue.audioClip, position);
+                }
             }
         }
 
