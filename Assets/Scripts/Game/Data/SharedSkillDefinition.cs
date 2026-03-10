@@ -110,6 +110,14 @@ namespace Game.Data
         [Tooltip("相对挂点的局部偏移，单位：米。")]
         public Vector3 offset = Vector3.zero;
 
+        [InspectorLabel("旋转偏移")]
+        [Tooltip("相对挂点的局部旋转欧拉角，单位：度。")]
+        public Vector3 rotationEuler = Vector3.zero;
+
+        [InspectorLabel("缩放")]
+        [Tooltip("生成特效时附加的局部缩放。")]
+        public Vector3 scale = Vector3.one;
+
         [Header("生命周期")]
         [InspectorLabel("强制持续时长(秒)")]
         [Tooltip("0 表示使用粒子自身生命周期；大于 0 时会在指定时间后结束。")]

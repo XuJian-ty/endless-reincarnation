@@ -98,28 +98,28 @@ MonoBehaviour:
     animationStateIndex: 0
     sharedSkillId: 
   - skillId: active_1
-    displayName: "\u4E3B\u52A81"
+    displayName: "\u4E3B\u52A8\u6280\u80FD0"
     isPassive: 0
     talentCost: 2
     mpCost: 10
     animationStateIndex: 0
     sharedSkillId: player_skill_0
   - skillId: active_2
-    displayName: "\u4E3B\u52A82"
+    displayName: "\u4E3B\u52A8\u6280\u80FD1"
     isPassive: 0
     talentCost: 2
     mpCost: 10
     animationStateIndex: 1
     sharedSkillId: player_skill_1
   - skillId: active_3
-    displayName: "\u4E3B\u52A83"
+    displayName: "\u4E3B\u52A8\u6280\u80FD2"
     isPassive: 0
     talentCost: 2
     mpCost: 10
     animationStateIndex: 2
     sharedSkillId: player_skill_2
   - skillId: active_4
-    displayName: "\u4E3B\u52A84"
+    displayName: "\u4E3B\u52A8\u6280\u80FD3"
     isPassive: 0
     talentCost: 2
     mpCost: 10

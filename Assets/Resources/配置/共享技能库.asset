@@ -16,7 +16,24 @@ MonoBehaviour:
   - skillId: player_skill_0
     displayName: "\u4E3B\u52A8\u6280\u80FD0"
     ignoreAnimationDamageEvents: 0
-    events: []
+    events:
+    - eventId: evt_0
+      startTime: 0.26666668
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects: []
+      physicsEffects: []
+      attributeEffects: []
+      cues:
+      - particlePrefab: {fileID: 7953274726775274605, guid: 011e27cfead306647a07e1c09d1cfeb9,
+          type: 3}
+        audioClip: {fileID: 0}
+        anchor: 0
+        offset: {x: 0, y: 0.9008138, z: 0}
+        rotationEuler: {x: -0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
   - skillId: player_skill_1
     displayName: "\u4E3B\u52A8\u6280\u80FD1"
     ignoreAnimationDamageEvents: 0
@@ -784,3 +801,23 @@ MonoBehaviour:
         usePercent: 0
         duration: 4.5
       cues: []
+  - skillId: new_skill_34
+    displayName: "\u65B0\u6280\u80FD34"
+    ignoreAnimationDamageEvents: 1
+    events: []
+  - skillId: new_skill_35
+    displayName: "\u65B0\u6280\u80FD35"
+    ignoreAnimationDamageEvents: 1
+    events: []
+  - skillId: new_skill_36
+    displayName: "\u65B0\u6280\u80FD36"
+    ignoreAnimationDamageEvents: 1
+    events: []
+  - skillId: new_skill_37
+    displayName: "\u65B0\u6280\u80FD37"
+    ignoreAnimationDamageEvents: 1
+    events: []
+  - skillId: new_skill_38
+    displayName: "\u65B0\u6280\u80FD38"
+    ignoreAnimationDamageEvents: 1
+    events: []
