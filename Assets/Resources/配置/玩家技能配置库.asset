@@ -13,115 +13,509 @@ MonoBehaviour:
   m_Name: "\u73A9\u5BB6\u6280\u80FD\u914D\u7F6E\u5E93"
   m_EditorClassIdentifier: 
   entries:
+  - skillId: Attack0
+    displayName: "\u666E\u653B1"
+    isPassive: 0
+    entryGroup: 0
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: Attack0
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: Attack1
+    displayName: "\u666E\u653B2"
+    isPassive: 0
+    entryGroup: 0
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: Attack1
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: Attack2
+    displayName: "\u666E\u653B3"
+    isPassive: 0
+    entryGroup: 0
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: Attack2
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: Attack3
+    displayName: "\u666E\u653B4"
+    isPassive: 0
+    entryGroup: 0
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: Attack3
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: AirAttack
+    displayName: "\u7A7A\u4E2D\u666E\u653B"
+    isPassive: 0
+    entryGroup: 0
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: AirAttack
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: FallAttack
+    displayName: "\u4E0B\u843D\u653B\u51FB"
+    isPassive: 0
+    entryGroup: 0
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: FallAttackLand
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: ChargeAttack
+    displayName: "\u84C4\u529B\u653B\u51FB"
+    isPassive: 0
+    entryGroup: 0
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: ChargeRelease
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_1
     displayName: "\u88AB\u52A81"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_2
     displayName: "\u88AB\u52A82"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_3
     displayName: "\u88AB\u52A83"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_4
     displayName: "\u88AB\u52A84"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_5
     displayName: "\u88AB\u52A85"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_6
     displayName: "\u88AB\u52A86"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_7
     displayName: "\u88AB\u52A87"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_8
     displayName: "\u88AB\u52A88"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_9
     displayName: "\u88AB\u52A89"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_10
     displayName: "\u88AB\u52A810"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_11
     displayName: "\u88AB\u52A811"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
   - skillId: passive_12
     displayName: "\u88AB\u52A812"
     isPassive: 1
+    entryGroup: 2
     talentCost: 1
     mpCost: 0
-    animationStateIndex: 0
-    sharedSkillId: 
-  - skillId: active_1
-    displayName: "\u4E3B\u52A8\u6280\u80FD0"
+    animationTrigger: 
+    activeSlotIndex: -1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: Skill0
+    displayName: "\u4E3B\u52A81"
     isPassive: 0
+    entryGroup: 1
     talentCost: 2
     mpCost: 10
-    animationStateIndex: 0
-    sharedSkillId: player_skill_0
-  - skillId: active_2
-    displayName: "\u4E3B\u52A8\u6280\u80FD1"
+    animationTrigger: Skill0
+    activeSlotIndex: 0
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: Skill1
+    displayName: "\u4E3B\u52A82"
     isPassive: 0
+    entryGroup: 1
     talentCost: 2
     mpCost: 10
-    animationStateIndex: 1
-    sharedSkillId: player_skill_1
-  - skillId: active_3
-    displayName: "\u4E3B\u52A8\u6280\u80FD2"
+    animationTrigger: Skill1
+    activeSlotIndex: 1
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: Skill2
+    displayName: "\u4E3B\u52A83"
     isPassive: 0
+    entryGroup: 1
     talentCost: 2
     mpCost: 10
-    animationStateIndex: 2
-    sharedSkillId: player_skill_2
-  - skillId: active_4
-    displayName: "\u4E3B\u52A8\u6280\u80FD3"
+    animationTrigger: Skill2
+    activeSlotIndex: 2
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+  - skillId: Skill3
+    displayName: "\u4E3B\u52A84"
     isPassive: 0
+    entryGroup: 1
     talentCost: 2
     mpCost: 10
-    animationStateIndex: 3
-    sharedSkillId: player_skill_3
+    animationTrigger: Skill3
+    activeSlotIndex: 3
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0

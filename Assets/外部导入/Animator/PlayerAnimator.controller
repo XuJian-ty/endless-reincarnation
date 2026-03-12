@@ -33,11 +33,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: AttackIndex
-    m_EventTreshold: 0
   - m_ConditionMode: 1
-    m_ConditionEvent: Attack
+    m_ConditionEvent: Attack0
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -5866549932509885670}
@@ -60,7 +57,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Skill_1
+  m_Name: SkillState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -137,7 +134,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FallAttackLand
+  m_Name: FallAttackLandState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -188,7 +185,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Skill_2
+  m_Name: Skill2State
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -214,7 +211,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ChargeLoop
+  m_Name: ChargeLoopState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -240,7 +237,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Fall
+  m_Name: FallState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -296,9 +293,6 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: Fall
     m_EventTreshold: 0
-  - m_ConditionMode: 2
-    m_ConditionEvent: IsGrounded
-    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -4291589765144097570}
   m_Solo: 0
@@ -346,7 +340,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Skill_0
+  m_Name: Skill0State
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -372,7 +366,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: AirAttack
+  m_Name: AirAttackState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -385,7 +379,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 232d9c61ac5d4364fa9b521f12ecfc63, type: 2}
+  m_Motion: {fileID: 7400000, guid: b0ae0baa716e5924b82d3a08aa751647, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -398,7 +392,7 @@ AnimatorStateMachine:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Skill
+  m_Name: SkillStateMachine
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: -3626470445969810019}
@@ -455,11 +449,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: SkillIndex
-    m_EventTreshold: 0
   - m_ConditionMode: 1
-    m_ConditionEvent: Skill
+    m_ConditionEvent: Skill0
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3626470445969810019}
@@ -508,11 +499,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: AttackIndex
-    m_EventTreshold: 1
   - m_ConditionMode: 1
-    m_ConditionEvent: Attack
+    m_ConditionEvent: Attack1
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 2913843563327035662}
@@ -536,11 +524,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: SkillIndex
-    m_EventTreshold: 1
   - m_ConditionMode: 1
-    m_ConditionEvent: Skill
+    m_ConditionEvent: Skill1
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -6485080109789234364}
@@ -563,7 +548,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Land
+  m_Name: LandState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -614,7 +599,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ChargeStart
+  m_Name: ChargeStartState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -654,14 +639,26 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 1
     m_Controller: {fileID: 9100000}
-  - m_Name: AttackIndex
-    m_Type: 3
+  - m_Name: Attack0
+    m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
-  - m_Name: SkillIndex
-    m_Type: 3
+  - m_Name: Attack1
+    m_Type: 9
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: Attack2
+    m_Type: 9
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: Attack3
+    m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
@@ -673,12 +670,6 @@ AnimatorController:
     m_DefaultBool: 1
     m_Controller: {fileID: 9100000}
   - m_Name: Dodge
-    m_Type: 9
-    m_DefaultFloat: 0
-    m_DefaultInt: 0
-    m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: Attack
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -726,7 +717,25 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
-  - m_Name: Skill
+  - m_Name: Skill0
+    m_Type: 9
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: Skill1
+    m_Type: 9
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: Skill2
+    m_Type: 9
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: Skill3
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -783,11 +792,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: SkillIndex
-    m_EventTreshold: 2
   - m_ConditionMode: 1
-    m_ConditionEvent: Skill
+    m_ConditionEvent: Skill2
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -4557354224010790540}
@@ -911,7 +917,7 @@ AnimatorStateMachine:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FallAttack
+  m_Name: FallAttackStateMachine
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 5596877391556590505}
@@ -1132,7 +1138,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Skill3
+  m_Name: Skill3State
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -1159,11 +1165,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: AttackIndex
-    m_EventTreshold: 3
   - m_ConditionMode: 1
-    m_ConditionEvent: Attack
+    m_ConditionEvent: Attack3
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3964158470017975937}
@@ -1186,7 +1189,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Jump
+  m_Name: JumpState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -1239,11 +1242,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: SkillIndex
-    m_EventTreshold: 3
   - m_ConditionMode: 1
-    m_ConditionEvent: Skill
+    m_ConditionEvent: Skill3
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4280760469266418870}
@@ -1266,7 +1266,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Dodge
+  m_Name: DodgeState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -1292,11 +1292,11 @@ AnimatorStateMachine:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ChargeAttack
+  m_Name: ChargeAttackStateMachine
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: -282488098210841985}
-    m_Position: {x: 385.392, y: -73.640594, z: 0}
+    m_Position: {x: 380, y: -80, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -4464323975770346413}
     m_Position: {x: 380, y: 0, z: 0}
@@ -1345,7 +1345,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FallAttackLoop
+  m_Name: FallAttackLoopState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -1371,7 +1371,7 @@ AnimatorStateMachine:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Attack
+  m_Name: AttackStateMachine
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: -5866549932509885670}
@@ -1452,7 +1452,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: HitStun
+  m_Name: HitStunState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -1478,7 +1478,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ChargeRelease
+  m_Name: ChargeReleaseState
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -1491,7 +1491,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 472dc079d47fd8c4fa01eade1ca18d76, type: 2}
+  m_Motion: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -1505,11 +1505,8 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 6
-    m_ConditionEvent: AttackIndex
-    m_EventTreshold: 2
   - m_ConditionMode: 1
-    m_ConditionEvent: Attack
+    m_ConditionEvent: Attack2
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 2288263327750785010}

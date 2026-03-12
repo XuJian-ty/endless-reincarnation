@@ -150,8 +150,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03663cf39f72b9146ad94acf7031c0d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _target: {fileID: 0}
-  _inputHandler: {fileID: 0}
   _sensitivityX: 0.3
   _sensitivityY: 0.3
   _minPitch: -25

@@ -5,12 +5,11 @@ namespace Game.Presentation
 {
     /// <summary>
     /// 技能状态基类。OnEnter 扣 MP、TriggerSkill；OnTick 等动画结束 → CompleteWithPending。
-    /// 技能伤害由动画事件触发（AnimEvent_DealDamage），或通过共享技能时间轴驱动（若配置了 sharedSkillId）。
+    /// 技能效果统一通过技能时间轴驱动。
     /// </summary>
     public abstract class SkillStateBase : PlayerStateBase
     {
-        protected abstract int   SkillIndex { get; }
-        protected abstract float MpCost     { get; }
+        protected abstract string SkillId { get; }
 
         public override GameAction CurrentActionId => GameAction.Skill;
 
@@ -18,23 +17,39 @@ namespace Game.Presentation
 
         protected override void OnEnter()
         {
-            if (!Ctx.PlayerModel.CanSpendMp(MpCost))
+            SkillConfigEntry entry = ResolveEntry();
+            if (entry == null || !entry.IsActiveSkill || !Ctx.PlayerModel.IsSkillAvailable(entry))
             {
                 GoTo<IdleState>();
                 return;
             }
-            Ctx.PlayerModel.SpendMp(MpCost);
+
+            if (!Ctx.PlayerModel.CanSpendMp(entry.mpCost))
+            {
+                GoTo<IdleState>();
+                return;
+            }
+            Ctx.PlayerModel.SpendMp(entry.mpCost);
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            Ctx.Anim.TriggerSkill(SkillIndex);
+            TriggerConfiguredAction(entry.skillId, entry.GetResolvedAnimationTrigger());
 
             // 启动共享技能时间轴（若有配置）
-            TryStartTimeline();
+            TryStartTimeline(entry);
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
             _timelineRunner?.Tick(dt);
-            if (AnimNearEnd()) CompleteWithPending(() => { if (IsGrounded) GoTo<IdleState>(); else GoTo<FallState>(); });
+            if (AnimNearConfiguredEnd())
+            {
+                CompleteWithPending(() =>
+                {
+                    if (IsGrounded)
+                        GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
+                    else
+                        GoTo<FallState>();
+                });
+            }
         }
 
         protected override void OnExit()
@@ -55,19 +70,14 @@ namespace Game.Presentation
 
         // ── 时间轴初始化 ─────────────────────────────────────────────────────
 
-        private void TryStartTimeline()
+        private void TryStartTimeline(SkillConfigEntry entry)
         {
-            var skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
-            if (skillDb == null) return;
+            if (entry == null || string.IsNullOrEmpty(entry.skillId)) return;
 
-            // 通过动画状态索引匹配当前技能条目
-            SkillConfigEntry entry = FindEntryByStateIndex(skillDb, SkillIndex);
-            if (entry == null || string.IsNullOrEmpty(entry.sharedSkillId)) return;
-
-            var sharedDb = ConfigManager.GetInstance()?.GetSharedSkillDatabase();
+            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
             if (sharedDb == null) return;
 
-            var def = sharedDb.GetEntry(entry.sharedSkillId);
+            var def = sharedDb.GetEntry(entry.skillId);
             if (def == null) return;
 
             var player = Ctx.Transform?.GetComponent<PlayerController>();
@@ -78,16 +88,10 @@ namespace Game.Presentation
             _timelineRunner.Begin(def, ctx);
         }
 
-        private static SkillConfigEntry FindEntryByStateIndex(SkillConfigDatabaseSO db, int stateIndex)
+        private SkillConfigEntry ResolveEntry()
         {
-            if (db?.entries == null) return null;
-            for (int i = 0; i < db.entries.Count; i++)
-            {
-                var e = db.entries[i];
-                if (e != null && !e.isPassive && e.animationStateIndex == stateIndex)
-                    return e;
-            }
-            return null;
+            var skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            return skillDb != null ? skillDb.GetEntry(SkillId) : null;
         }
     }
 }

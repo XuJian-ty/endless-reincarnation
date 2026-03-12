@@ -19,7 +19,8 @@ namespace Game.Presentation
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
-            if (AnimNearEnd()) GoTo<ChargeLoopState>();
+            if (AnimNearConfiguredEnd())
+                GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.ChargeLoopState);
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action) => action switch

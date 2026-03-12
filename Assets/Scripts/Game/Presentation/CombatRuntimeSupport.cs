@@ -44,6 +44,22 @@ namespace Game.Presentation
             }
         }
 
+        public void HoldStill(float duration)
+        {
+            if (duration <= 0.01f)
+                return;
+
+            _velocity = Vector3.zero;
+            _remainingTime = duration;
+
+            if (_navMeshAgent != null && _navMeshAgent.enabled && _navMeshAgent.isOnNavMesh && !_capturedAgentState)
+            {
+                _previousAgentStopped = _navMeshAgent.isStopped;
+                _navMeshAgent.isStopped = true;
+                _capturedAgentState = true;
+            }
+        }
+
         private void LateUpdate()
         {
             if (GameStateMachine.GetInstance()?.IsGameplayPaused == true)
@@ -138,31 +154,6 @@ namespace Game.Presentation
                 modifier = clone,
                 endTime = Time.time + Mathf.Max(0.01f, duration)
             });
-        }
-    }
-
-    public static class CombatCuePlayer
-    {
-        public static void PlayCue(string cueName, Transform actor)
-        {
-            if (actor == null || string.IsNullOrEmpty(cueName)) return;
-
-            var db = Game.ConfigManager.GetInstance()?.GetAnimationFrameVfxDatabase();
-            var entry = db?.GetEntry(cueName);
-            if (entry == null) return;
-
-            Transform mount = actor;
-            if (!string.IsNullOrEmpty(entry.mountPointName))
-            {
-                var found = actor.Find(entry.mountPointName);
-                if (found != null)
-                    mount = found;
-            }
-
-            if (entry.HasEffect)
-                UnityEngine.Object.Instantiate(entry.effectPrefab, mount.position, mount.rotation, mount);
-            if (entry.HasSound)
-                AudioSource.PlayClipAtPoint(entry.soundClip, mount.position);
         }
     }
 }

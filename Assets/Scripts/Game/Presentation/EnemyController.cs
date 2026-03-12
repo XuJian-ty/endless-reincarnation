@@ -14,7 +14,7 @@ namespace Game.Presentation
     /// Enemy presentation facade: stats, damage/death, runtime modifiers, and skill-slot casting state.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public class EnemyController : MonoBehaviour
+    public class EnemyController : MonoBehaviour, ICombatHardControlReceiver
     {
         [Serializable]
         private sealed class RuntimeStatModifier
@@ -464,6 +464,20 @@ namespace Game.Presentation
                 CurrentIntent = new EnemyIntent { Type = EnemyIntentType.Hurt };
         }
 
+        public void ApplyHardControl(float duration)
+        {
+            if (_dead)
+                return;
+
+            float validDuration = Mathf.Max(0f, duration);
+            if (validDuration <= 0f)
+                return;
+
+            CancelActiveSkill();
+            ClearPostCastRecoveryState();
+            SetHurt(validDuration);
+        }
+
         public void EnterIdle(float duration, bool lockDecision)
         {
             EnsureInitialized();
@@ -539,8 +553,7 @@ namespace Game.Presentation
                 return true;
             }
 
-            SetHurt(0.3f);
-            CancelActiveSkill();
+            ApplyHardControl(0.3f);
             return false;
         }
 

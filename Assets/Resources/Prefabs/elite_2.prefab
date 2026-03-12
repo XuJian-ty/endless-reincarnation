@@ -956,7 +956,7 @@ Transform:
   m_GameObject: {fileID: 5591571500888256035}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -2.99, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1657,11 +1657,11 @@ GameObject:
   - component: {fileID: 2135051611788155091}
   m_Layer: 6
   m_Name: elite_2
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1332266455723649984
 Transform:
   m_ObjectHideFlags: 0
@@ -1693,7 +1693,6 @@ MonoBehaviour:
   _enemyId: elite_2
   _enemyType: 2
   _archetypeOverride: {fileID: 11400000, guid: c3c9a44d3577430f83c5b1f740cff6ba, type: 2}
-  _defaultPostSkillIdleDuration: 0.25
   _deathDisableDelay: 1.2
 --- !u!114 &5269659478429984815
 MonoBehaviour:
@@ -1744,10 +1743,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b6ddf2ca5e74e64db4fd50a7e8591d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _paramSpeed: Speed
-  _triggerHurt: Hurt
-  _triggerDead: Dead
-  _damageDatabase: {fileID: 0}
 --- !u!136 &8072100666208390792
 CapsuleCollider:
   m_ObjectHideFlags: 0

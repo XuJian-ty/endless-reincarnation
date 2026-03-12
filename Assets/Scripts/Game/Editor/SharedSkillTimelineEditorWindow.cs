@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Game.Data;
+using Game.Domain;
+using Game.Presentation;
 
 namespace Game.Editor
 {
@@ -14,14 +18,18 @@ namespace Game.Editor
         private const float MinRightPanelWidth = 240f;
         private const float PanelDividerWidth = 4f;
         private const float ToolbarHeight = 24f;
-        private const float PreviewBarHeight = 28f;
-        private const float ButtonBarHeight = 50f;
+        private const float PreviewBarHeight = 0f;
+        private const float SelectionBarHeight = 54f;
+        private const float ButtonBarHeight = 58f;
         private const float RulerHeight = 22f;
+        private const float TrackHeaderHeight = 18f;
+        private const float TrackSpacing = 4f;
         private const float EventRowHeight = 28f;
         private const float ScrollbarHeight = 16f;
         private const float MinEventWidth = 10f;
         private const float ResizeHandleWidth = 6f;
         private const float PlayheadHitWidth = 6f;
+        private const bool ShowScenePreviewText = false;
 
         private static readonly Color TimelineBackground = new Color(0.18f, 0.18f, 0.18f, 1f);
         private static readonly Color RulerBackground = new Color(0.22f, 0.22f, 0.22f, 1f);
@@ -29,7 +37,8 @@ namespace Game.Editor
         private static readonly Color DamageColor = new Color(0.90f, 0.28f, 0.28f, 0.88f);
         private static readonly Color PhysicsColor = new Color(0.28f, 0.50f, 0.92f, 0.88f);
         private static readonly Color AttributeColor = new Color(0.28f, 0.78f, 0.38f, 0.88f);
-        private static readonly Color CueColor = new Color(0.92f, 0.80f, 0.18f, 0.88f);
+        private static readonly Color VfxColor = new Color(0.92f, 0.80f, 0.18f, 0.88f);
+        private static readonly Color SfxColor = new Color(0.92f, 0.55f, 0.18f, 0.88f);
         private static readonly Color DefaultColor = new Color(0.55f, 0.55f, 0.55f, 0.88f);
         private static readonly Color SelectedOverlay = new Color(1f, 1f, 1f, 0.30f);
         private static readonly Color PlayheadColor = new Color(1f, 0.25f, 0.25f, 1f);
@@ -37,8 +46,10 @@ namespace Game.Editor
         private SharedSkillDatabaseSO _database;
         private SerializedObject _serializedDb;
 
+        private int _selectedGroupIndex = -1;
         private int _selectedSkillIndex = -1;
         private int _selectedEventIndex = -1;
+        private TimelineTrackType _selectedEventTrackType = TimelineTrackType.Damage;
 
         private Vector2 _skillScroll;
         private Vector2 _propertyScroll;
@@ -58,6 +69,7 @@ namespace Game.Editor
         private bool _isDraggingEvent;
         private bool _isResizingEvent;
         private int _dragEventIndex = -1;
+        private TimelineTrackType _dragTrackType = TimelineTrackType.Damage;
         private float _dragStartMouseX;
         private float _dragStartTime;
         private float _dragStartDuration;
@@ -68,17 +80,41 @@ namespace Game.Editor
         private bool _showDamageEvents = true;
         private bool _showPhysicsEvents = true;
         private bool _showAttributeEvents = true;
-        private bool _showCueEvents = true;
+        private bool _showVfxEvents = true;
+        private bool _showSfxEvents = true;
+        private bool _filterDamageWithOnHitPhysics;
+        private bool _filterDamageWithOnHitAttribute;
+        private bool _filterDamageWithOnHitVfx;
+        private bool _filterDamageWithOnHitSfx;
+        private TimelineTrackType _newEventTrackType = TimelineTrackType.Damage;
         private bool _sceneHandlesEnabled = true;
         private int _activeSceneDamageIndex = -1;
         private int _activeSceneCueIndex = -1;
-        private AnimationFrameDamageDatabaseSO _damageDatabase;
+        private int _activeSceneHitVfxDamageIndex = -1;
+        private int _activeSceneHitVfxIndex = -1;
+        private CharacterAnimationLibrarySO _animationLibrary;
+        private int _selectedAnimationGroupIndex = -1;
+        private int _selectedAnimationEntryIndex = -1;
         private GameObject _scenePreviewCueInstance;
         private GameObject _scenePreviewCuePrefab;
         private int _scenePreviewCueEventIndex = -1;
         private int _scenePreviewCueListIndex = -1;
+        private TimelineTrackType _scenePreviewCueTrackType = TimelineTrackType.Vfx;
+        private PreviewTargetFilter _previewTargetFilter = PreviewTargetFilter.All;
+        private GameObject _previewVictimTarget;
+        private PreviewTargetFilter _previewVictimFilter = PreviewTargetFilter.Enemy;
+        private readonly List<TimelinePreviewVfxInstance> _timelinePreviewVfxInstances = new List<TimelinePreviewVfxInstance>();
+        private readonly HashSet<string> _timelinePreviewHitSfxKeys = new HashSet<string>();
+        private readonly Dictionary<Transform, Vector3> _previewPhysicsOriginalPositions = new Dictionary<Transform, Vector3>();
+        private LevelGrowthSO _previewLevelGrowth;
+        private EnemyStatsDatabaseSO _previewEnemyStatsDb;
+
+        private static readonly System.Type AudioUtilType = typeof(AudioImporter).Assembly.GetType("UnityEditor.AudioUtil");
+        private static readonly MethodInfo AudioUtilPlayPreviewClipMethod = ResolveAudioUtilMethod("PlayPreviewClip", typeof(AudioClip), typeof(int), typeof(bool));
+        private static readonly MethodInfo AudioUtilStopAllPreviewClipsMethod = ResolveAudioUtilMethod("StopAllPreviewClips");
 
         private static string s_eventClipboardJson;
+        private static TimelineTrackType s_eventClipboardTrackType = TimelineTrackType.Damage;
 
         private enum SplitterHandle
         {
@@ -101,6 +137,71 @@ namespace Game.Editor
             Grid,
         }
 
+        private enum PreviewTargetFilter
+        {
+            [InspectorName("全部")]
+            All,
+            [InspectorName("玩家")]
+            Player,
+            [InspectorName("敌人")]
+            Enemy,
+        }
+
+        private enum TimelineTrackType
+        {
+            Damage,
+            Physics,
+            Attribute,
+            Vfx,
+            Sfx,
+        }
+
+        private sealed class TimelineTrackLayout
+        {
+            public TimelineTrackType trackType;
+            public List<List<TimelineEventHandle>> rows;
+            public Rect headerRect;
+            public Rect bodyRect;
+        }
+
+        private sealed class TimelineEventHandle
+        {
+            public TimelineTrackType trackType;
+            public int eventIndex;
+            public SkillTimedEventBase timedEvent;
+        }
+
+        private sealed class TimelinePreviewVfxInstance
+        {
+            public string key;
+            public TimelineTrackType trackType;
+            public int eventIndex;
+            public int effectIndex;
+            public int triggerIndex;
+            public float triggerTime;
+            public GameObject prefab;
+            public GameObject instance;
+            public SkillVfxEffect effect;
+            public Transform explicitTarget;
+            public Vector3 baseScale;
+        }
+
+        private sealed class PreviewOverlayLine
+        {
+            public string text;
+            public Color color;
+        }
+
+        private sealed class PreviewDamageHitResult
+        {
+            public int eventIndex;
+            public int effectIndex;
+            public int triggerIndex;
+            public float triggerTime;
+            public SkillDamageEffect effect;
+            public List<Transform> hitTargets = new List<Transform>();
+        }
+
         [MenuItem("游戏/技能时间轴编辑器")]
         public static void Open()
         {
@@ -112,7 +213,7 @@ namespace Game.Editor
         private void OnEnable()
         {
             TryAutoLoadDatabase();
-            TryAutoLoadDamageDatabase();
+            TryAutoLoadAnimationLibrary();
             EditorApplication.update += OnEditorUpdate;
             SceneView.duringSceneGui += OnSceneGUI;
         }
@@ -140,6 +241,7 @@ namespace Game.Editor
             float deltaTime = (float)(now - _prevEditorTime);
             _prevEditorTime = now;
 
+            float previousTime = _previewTime;
             _previewTime += deltaTime;
             float totalDuration = GetPreviewTotalDuration();
             if (_previewTime >= totalDuration)
@@ -149,6 +251,8 @@ namespace Game.Editor
             }
 
             SampleAnimationAtTime(_previewTime);
+            TriggerTimelinePreviewSfx(previousTime, _previewTime);
+            TriggerTimelinePreviewHitSfx();
             UpdateScenePreviewCueInstance();
             SceneView.RepaintAll();
             Repaint();
@@ -156,7 +260,14 @@ namespace Game.Editor
 
         private void OnSceneGUI(SceneView sceneView)
         {
-            if (!_sceneHandlesEnabled || _previewTarget == null)
+            if (_previewTarget == null)
+                return;
+
+            DrawTimelinePreviewVfxBounds();
+            DrawTimelinePreviewDamageOverlays();
+            DrawTimelinePreviewStateOverlay();
+
+            if (!_sceneHandlesEnabled)
                 return;
 
             SkillTimelineEvent evt = GetSelectedSceneEvent();
@@ -165,11 +276,77 @@ namespace Game.Editor
 
             UpdateScenePreviewCueInstance();
 
-            if (_activeSceneCueIndex >= 0 && evt.cues != null && _activeSceneCueIndex < evt.cues.Count)
-                DrawCueSceneHandle(evt.cues[_activeSceneCueIndex]);
+            if (_activeSceneCueIndex >= 0 && evt.vfxEffects != null && _activeSceneCueIndex < evt.vfxEffects.Count)
+                DrawCueSceneHandle(evt.vfxEffects[_activeSceneCueIndex]);
 
-            if (_activeSceneDamageIndex >= 0 && evt.damageEffects != null && _activeSceneDamageIndex < evt.damageEffects.Count)
+            bool hasActiveHitVfx = _selectedEventTrackType == TimelineTrackType.Damage
+                && _activeSceneHitVfxDamageIndex >= 0
+                && _activeSceneHitVfxIndex >= 0;
+
+            if (_selectedEventTrackType == TimelineTrackType.Damage
+                && _activeSceneDamageIndex >= 0
+                && evt.damageEffects != null
+                && _activeSceneDamageIndex < evt.damageEffects.Count)
+            {
+                SkillDamageEffect damageEffect = evt.damageEffects[_activeSceneDamageIndex];
+                if (damageEffect?.onHitVfxEffects != null
+                    && _activeSceneHitVfxDamageIndex == _activeSceneDamageIndex
+                    && _activeSceneHitVfxIndex >= 0
+                    && _activeSceneHitVfxIndex < damageEffect.onHitVfxEffects.Count)
+                {
+                    DrawCueSceneHandle(damageEffect.onHitVfxEffects[_activeSceneHitVfxIndex]);
+                }
+            }
+
+            if (!hasActiveHitVfx && _activeSceneDamageIndex >= 0 && evt.damageEffects != null && _activeSceneDamageIndex < evt.damageEffects.Count)
                 DrawDamageSceneHandle(evt.damageEffects[_activeSceneDamageIndex]);
+        }
+
+        private void DrawTimelinePreviewVfxBounds()
+        {
+            if (_timelinePreviewVfxInstances == null || _timelinePreviewVfxInstances.Count == 0)
+                return;
+
+            Color oldColor = Handles.color;
+            for (int i = 0; i < _timelinePreviewVfxInstances.Count; i++)
+            {
+                TimelinePreviewVfxInstance playback = _timelinePreviewVfxInstances[i];
+                if (playback?.instance == null)
+                    continue;
+
+                Renderer[] renderers = playback.instance.GetComponentsInChildren<Renderer>(true);
+                if (renderers == null || renderers.Length == 0)
+                    continue;
+
+                bool hasBounds = false;
+                Bounds bounds = default;
+                for (int j = 0; j < renderers.Length; j++)
+                {
+                    Renderer renderer = renderers[j];
+                    if (renderer == null)
+                        continue;
+
+                    if (!hasBounds)
+                    {
+                        bounds = renderer.bounds;
+                        hasBounds = true;
+                    }
+                    else
+                    {
+                        bounds.Encapsulate(renderer.bounds);
+                    }
+                }
+
+                if (!hasBounds)
+                    continue;
+
+                Handles.color = playback.trackType == TimelineTrackType.Damage
+                    ? new Color(1f, 0.85f, 0.22f, 0.85f)
+                    : new Color(0.18f, 0.9f, 1f, 0.85f);
+                Handles.DrawWireCube(bounds.center, bounds.size);
+            }
+
+            Handles.color = oldColor;
         }
 
         private void OnGUI()
@@ -181,8 +358,9 @@ namespace Game.Editor
 
             DrawToolbar(new Rect(0f, 0f, totalWidth, ToolbarHeight));
             DrawPreviewBar(new Rect(0f, ToolbarHeight, totalWidth, PreviewBarHeight));
+            DrawSelectionBar(new Rect(0f, ToolbarHeight + PreviewBarHeight, totalWidth, SelectionBarHeight));
 
-            float contentY = ToolbarHeight + PreviewBarHeight;
+            float contentY = ToolbarHeight + PreviewBarHeight + SelectionBarHeight;
             float contentHeight = totalHeight - contentY;
             ClampPanelWidths(totalWidth);
 
@@ -284,19 +462,6 @@ namespace Game.Editor
                 GUILayout.BeginHorizontal(EditorStyles.toolbar);
                 try
                 {
-                    EditorGUI.BeginChangeCheck();
-                    var newDb = (SharedSkillDatabaseSO)EditorGUILayout.ObjectField(_database, typeof(SharedSkillDatabaseSO), false, GUILayout.Width(220f));
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        _database = newDb;
-                        RebuildSerializedDb();
-                        _selectedSkillIndex = -1;
-                        _selectedEventIndex = -1;
-                        _timelineScrollX = 0f;
-                        StopPreview();
-                    }
-
-                    GUILayout.Space(8f);
                     if (GUILayout.Button("保存资产", EditorStyles.toolbarButton, GUILayout.Width(64f)) && _database != null)
                     {
                         EditorUtility.SetDirty(_database);
@@ -338,87 +503,7 @@ namespace Game.Editor
 
         private void DrawPreviewBar(Rect rect)
         {
-            EditorGUI.DrawRect(rect, new Color(0.15f, 0.15f, 0.15f, 1f));
-            GUILayout.BeginArea(rect);
-            try
-            {
-                GUILayout.BeginHorizontal();
-                try
-                {
-                    GUILayout.Space(4f);
-                    GUILayout.Label("预览", EditorStyles.miniLabel, GUILayout.Width(28f));
-
-                    EditorGUI.BeginChangeCheck();
-                    _previewTarget = (GameObject)EditorGUILayout.ObjectField(_previewTarget, typeof(GameObject), true, GUILayout.Width(150f));
-                    if (EditorGUI.EndChangeCheck() && !_isPlaying)
-                        SampleAnimationAtTime(_previewTime);
-
-                    EditorGUI.BeginChangeCheck();
-                    _previewClip = (AnimationClip)EditorGUILayout.ObjectField(_previewClip, typeof(AnimationClip), false, GUILayout.Width(150f));
-                    if (EditorGUI.EndChangeCheck() && !_isPlaying)
-                        SampleAnimationAtTime(_previewTime);
-
-                    GUILayout.Space(8f);
-
-                    if (GUILayout.Button("|<", EditorStyles.miniButtonLeft, GUILayout.Width(24f)))
-                    {
-                        StopPreview();
-                        _previewTime = 0f;
-                        SampleAnimationAtTime(_previewTime);
-                    }
-
-                    if (GUILayout.Button(_isPlaying ? "||" : ">", EditorStyles.miniButtonMid, GUILayout.Width(24f)))
-                    {
-                        if (_isPlaying)
-                        {
-                            _isPlaying = false;
-                        }
-                        else
-                        {
-                            StartPreviewPlayback();
-                        }
-                    }
-
-                    if (GUILayout.Button("[]", EditorStyles.miniButtonRight, GUILayout.Width(24f)))
-                    {
-                        StopPreview();
-                        _previewTime = 0f;
-                        SampleAnimationAtTime(_previewTime);
-                    }
-
-                    GUILayout.Space(8f);
-                    GUILayout.Label($"{FormatTimelineTime(_previewTime)} / {FormatTimelineTime(GetPreviewTotalDuration())}", EditorStyles.miniLabel, GUILayout.Width(190f));
-                    EditorGUI.BeginChangeCheck();
-                    bool newSceneHandlesEnabled = GUILayout.Toggle(_sceneHandlesEnabled, "场景编辑", EditorStyles.miniButton, GUILayout.Width(68f));
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        _sceneHandlesEnabled = newSceneHandlesEnabled;
-                        if (_sceneHandlesEnabled)
-                            UpdateScenePreviewCueInstance();
-                        else
-                            DestroyScenePreviewCueInstance();
-                        SceneView.RepaintAll();
-                    }
-
-                    if (_isPlaying)
-                        GUILayout.Label("播放中", EditorStyles.miniLabel, GUILayout.Width(40f));
-                    else if (AnimationMode.InAnimationMode())
-                        GUILayout.Label("预览中", EditorStyles.miniLabel, GUILayout.Width(40f));
-
-                    if (_sceneHandlesEnabled && _previewTarget == null)
-                        GUILayout.Label("场景编辑需预览对象", EditorStyles.miniLabel, GUILayout.Width(100f));
-
-                    GUILayout.FlexibleSpace();
-                }
-                finally
-                {
-                    GUILayout.EndHorizontal();
-                }
-            }
-            finally
-            {
-                GUILayout.EndArea();
-            }
+            // Preview controls are drawn in the selection bar.
         }
         private void DrawLeftPanel(Rect rect)
         {
@@ -426,63 +511,94 @@ namespace Game.Editor
 
             Rect titleRect = new Rect(rect.x, rect.y, rect.width, 22f);
             EditorGUI.DrawRect(titleRect, new Color(0.20f, 0.20f, 0.20f, 1f));
-            GUI.Label(new Rect(rect.x + 6f, rect.y + 2f, rect.width - 12f, 18f), "技能列表", EditorStyles.boldLabel);
+            GUI.Label(new Rect(rect.x + 6f, rect.y + 2f, rect.width - 12f, 18f), "预览属性", EditorStyles.boldLabel);
 
-            Rect addRect = new Rect(rect.x, rect.y + 22f, rect.width * 0.5f, 22f);
-            Rect removeRect = new Rect(rect.x + rect.width * 0.5f, rect.y + 22f, rect.width * 0.5f, 22f);
-
-            bool hasDatabase = _database != null;
-            if (GUI.Button(addRect, "添加", EditorStyles.miniButtonLeft) && hasDatabase)
-                AddSkill();
-
-            EditorGUI.BeginDisabledGroup(!hasDatabase || !HasSelectedSkill());
+            GUILayout.BeginArea(new Rect(rect.x + 4f, rect.y + 24f, rect.width - 8f, rect.height - 28f));
             try
             {
-                if (GUI.Button(removeRect, "删除", EditorStyles.miniButtonRight))
-                    RemoveSelectedSkill();
+                _skillScroll = EditorGUILayout.BeginScrollView(_skillScroll);
+                try
+                {
+                    DrawLeftPreviewInspector();
+                }
+                finally
+                {
+                    EditorGUILayout.EndScrollView();
+                }
             }
             finally
             {
-                EditorGUI.EndDisabledGroup();
+                GUILayout.EndArea();
             }
+        }
 
-            Rect scrollRect = new Rect(rect.x, rect.y + 44f, rect.width, rect.height - 44f);
-            Rect viewRect = new Rect(0f, 0f, rect.width - 16f, hasDatabase ? Mathf.Max(24f, _database.entries.Count * 24f + 4f) : 24f);
-
-            _skillScroll = GUI.BeginScrollView(scrollRect, _skillScroll, viewRect);
+        private void DrawSelectionBar(Rect rect)
+        {
+            EditorGUI.DrawRect(rect, new Color(0.17f, 0.17f, 0.17f, 1f));
+            GUILayout.BeginArea(rect);
             try
             {
-                if (!hasDatabase)
+                EditorGUILayout.BeginHorizontal();
+                try
                 {
-                    GUI.Label(new Rect(4f, 4f, rect.width - 24f, 18f), "未选择共享技能库", EditorStyles.centeredGreyMiniLabel);
+                    DrawSkillLibrarySelectorCompact();
+                    GUILayout.Space(6f);
+                    DrawPreviewControlsCompact();
+                    GUILayout.Space(6f);
+                    DrawAnimationLibrarySelectorCompact();
+                    GUILayout.FlexibleSpace();
+                    if (_isPlaying)
+                        GUILayout.Label("播放中", EditorStyles.miniLabel, GUILayout.Width(40f));
+                    else if (AnimationMode.InAnimationMode())
+                        GUILayout.Label("预览中", EditorStyles.miniLabel, GUILayout.Width(40f));
                 }
-                else
+                finally
                 {
-                    EnsureEntryList();
-                    for (int i = 0; i < _database.entries.Count; i++)
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                GUILayout.Space(4f);
+
+                EditorGUILayout.BeginHorizontal();
+                try
+                {
+                    GUILayout.Label("预览对象", EditorStyles.miniLabel, GUILayout.Width(48f));
+                    GUILayout.Label("标签", EditorStyles.miniLabel, GUILayout.Width(24f));
+
+                    EditorGUI.BeginChangeCheck();
+                    _previewTargetFilter = (PreviewTargetFilter)EditorGUILayout.EnumPopup(_previewTargetFilter, EditorStyles.toolbarPopup, GUILayout.Width(56f));
+                    if (EditorGUI.EndChangeCheck())
                     {
-                        Rect rowRect = new Rect(0f, i * 24f + 2f, viewRect.width, 22f);
-                        bool selected = i == _selectedSkillIndex;
-                        if (selected)
-                            EditorGUI.DrawRect(rowRect, new Color(0.26f, 0.47f, 0.76f, 0.8f));
-
-                        var entry = _database.entries[i];
-                        string label = entry == null || string.IsNullOrEmpty(entry.skillId)
-                            ? $"[{i}] 未命名技能"
-                            : $"[{i}] {entry.skillId}";
-                        if (GUI.Button(rowRect, label, EditorStyles.label))
-                        {
-                            _selectedSkillIndex = i;
-                            _selectedEventIndex = -1;
-                            _timelineScrollX = 0f;
-                            StopPreview();
-                        }
+                        EnsurePreviewTargetIsValid();
+                        if (!_isPlaying)
+                            SampleAnimationAtTime(_previewTime);
                     }
+
+                    DrawPreviewTargetSelector();
+
+                    GUILayout.Space(8f);
+                    GUILayout.Label("目标", EditorStyles.miniLabel, GUILayout.Width(24f));
+                    GUILayout.Label("标签", EditorStyles.miniLabel, GUILayout.Width(24f));
+
+                    EditorGUI.BeginChangeCheck();
+                    _previewVictimFilter = (PreviewTargetFilter)EditorGUILayout.EnumPopup(_previewVictimFilter, EditorStyles.toolbarPopup, GUILayout.Width(56f));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        EnsurePreviewVictimIsValid();
+                        if (!_isPlaying)
+                            SampleAnimationAtTime(_previewTime);
+                    }
+
+                    DrawPreviewVictimSelector();
+                }
+                finally
+                {
+                    EditorGUILayout.EndHorizontal();
                 }
             }
             finally
             {
-                GUI.EndScrollView();
+                GUILayout.EndArea();
             }
         }
 
@@ -503,11 +619,9 @@ namespace Game.Editor
                 return;
             }
 
-            var rows = AssignEventRows(skill.events);
-            int rowCount = Mathf.Max(1, rows.Count);
-            float eventsHeight = rowCount * EventRowHeight;
-
             Rect rulerRect = new Rect(rect.x, timelineY, rect.width, RulerHeight);
+            List<TimelineTrackLayout> trackLayouts = BuildTrackLayouts(skill, rect.x, timelineY + RulerHeight, rect.width);
+            float eventsHeight = GetTrackLayoutsHeight(trackLayouts);
             Rect eventsRect = new Rect(rect.x, timelineY + RulerHeight, rect.width, eventsHeight);
             Rect scrollbarRect = new Rect(rect.x, eventsRect.yMax + 2f, rect.width, ScrollbarHeight);
 
@@ -517,8 +631,9 @@ namespace Game.Editor
 
             EditorGUI.DrawRect(eventsRect, TimelineBackground);
             DrawGridLines(eventsRect);
-            HandleTimelineMouse(Event.current, eventsRect, skill, rows);
-            DrawEventBlocks(eventsRect, skill, rows);
+            DrawTrackHeaders(trackLayouts);
+            HandleTimelineMouse(Event.current, skill, trackLayouts);
+            DrawEventBlocks(skill, trackLayouts);
             DrawPlayheadLine(eventsRect);
 
             float contentWidth = GetTimelineContentWidth(skill);
@@ -566,6 +681,11 @@ namespace Game.Editor
             GUILayout.BeginArea(rect);
             try
             {
+                GUIStyle compactPopupStyle = new GUIStyle(EditorStyles.toolbarPopup) { fontSize = 10 };
+                GUIStyle compactLeftButtonStyle = new GUIStyle(EditorStyles.miniButtonLeft) { fontSize = 10 };
+                GUIStyle compactMidButtonStyle = new GUIStyle(EditorStyles.miniButtonMid) { fontSize = 10 };
+                GUIStyle compactRightButtonStyle = new GUIStyle(EditorStyles.miniButtonRight) { fontSize = 10 };
+                GUIStyle compactLabelStyle = new GUIStyle(EditorStyles.miniLabel) { fontSize = 10 };
                 GUILayout.BeginVertical();
                 try
                 {
@@ -579,8 +699,9 @@ namespace Game.Editor
                         EditorGUI.BeginDisabledGroup(!hasSkill);
                         try
                         {
-                            if (GUILayout.Button("添加事件", EditorStyles.miniButtonLeft, GUILayout.Width(76f)))
-                                AddEvent(skill);
+                            _newEventTrackType = (TimelineTrackType)EditorGUILayout.EnumPopup(_newEventTrackType, compactPopupStyle, GUILayout.Width(58f));
+                            if (GUILayout.Button("添加事件", compactLeftButtonStyle, GUILayout.Width(66f)))
+                                AddEvent(skill, _newEventTrackType);
                         }
                         finally
                         {
@@ -590,12 +711,10 @@ namespace Game.Editor
                         EditorGUI.BeginDisabledGroup(!hasEvent);
                         try
                         {
-                            if (GUILayout.Button("删除事件", EditorStyles.miniButtonMid, GUILayout.Width(76f)))
+                            if (GUILayout.Button("删除事件", compactMidButtonStyle, GUILayout.Width(66f)))
                                 RemoveSelectedEvent(skill);
-                            if (GUILayout.Button("复制事件", EditorStyles.miniButtonMid, GUILayout.Width(76f)))
+                            if (GUILayout.Button("复制事件", compactMidButtonStyle, GUILayout.Width(66f)))
                                 CopySelectedEvent(skill);
-                            if (GUILayout.Button("重复事件", EditorStyles.miniButtonMid, GUILayout.Width(76f)))
-                                DuplicateSelectedEvent(skill);
                         }
                         finally
                         {
@@ -605,7 +724,7 @@ namespace Game.Editor
                         EditorGUI.BeginDisabledGroup(!hasSkill || !hasClipboard);
                         try
                         {
-                            if (GUILayout.Button("粘贴事件", EditorStyles.miniButtonMid, GUILayout.Width(76f)))
+                            if (GUILayout.Button("粘贴事件", compactMidButtonStyle, GUILayout.Width(66f)))
                                 PasteClipboardEvent(skill);
                         }
                         finally
@@ -616,8 +735,8 @@ namespace Game.Editor
                         EditorGUI.BeginDisabledGroup(!hasSkill);
                         try
                         {
-                            if (GUILayout.Button("按时间排序", EditorStyles.miniButtonRight, GUILayout.Width(80f)))
-                                SortEvents(skill);
+                            if (GUILayout.Button("清空事件", compactRightButtonStyle, GUILayout.Width(84f)))
+                                ClearAllEvents(skill);
                         }
                         finally
                         {
@@ -634,33 +753,49 @@ namespace Game.Editor
                     GUILayout.BeginHorizontal();
                     try
                     {
-                        GUILayout.Label("筛选", EditorStyles.miniLabel, GUILayout.Width(28f));
-                        if (GUILayout.Button("全部", EditorStyles.miniButtonLeft, GUILayout.Width(42f)))
+                        GUILayout.Label("筛选", compactLabelStyle, GUILayout.Width(26f));
+                        if (GUILayout.Button("全部", compactLeftButtonStyle, GUILayout.Width(38f)))
                         {
                             _showDamageEvents = true;
                             _showPhysicsEvents = true;
                             _showAttributeEvents = true;
-                            _showCueEvents = true;
+                            _showVfxEvents = true;
+                            _showSfxEvents = true;
+                            _filterDamageWithOnHitPhysics = false;
+                            _filterDamageWithOnHitAttribute = false;
+                            _filterDamageWithOnHitVfx = false;
+                            _filterDamageWithOnHitSfx = false;
                             Repaint();
                         }
 
-                        _showDamageEvents = GUILayout.Toggle(_showDamageEvents, "伤害", EditorStyles.miniButtonMid, GUILayout.Width(42f));
-                        _showPhysicsEvents = GUILayout.Toggle(_showPhysicsEvents, "物理", EditorStyles.miniButtonMid, GUILayout.Width(42f));
-                        _showAttributeEvents = GUILayout.Toggle(_showAttributeEvents, "属性", EditorStyles.miniButtonMid, GUILayout.Width(42f));
-                        _showCueEvents = GUILayout.Toggle(_showCueEvents, "表现", EditorStyles.miniButtonRight, GUILayout.Width(42f));
+                        _showDamageEvents = GUILayout.Toggle(_showDamageEvents, "伤害", compactMidButtonStyle, GUILayout.Width(38f));
+                        _showPhysicsEvents = GUILayout.Toggle(_showPhysicsEvents, "物理", compactMidButtonStyle, GUILayout.Width(38f));
+                        _showAttributeEvents = GUILayout.Toggle(_showAttributeEvents, "属性", compactMidButtonStyle, GUILayout.Width(38f));
+                        _showVfxEvents = GUILayout.Toggle(_showVfxEvents, "特效", compactMidButtonStyle, GUILayout.Width(38f));
+                        _showSfxEvents = GUILayout.Toggle(_showSfxEvents, "音效", compactRightButtonStyle, GUILayout.Width(38f));
 
-                        GUILayout.Space(8f);
-                        GUILayout.Label($"吸附: {GetSnapModeLabel()}", EditorStyles.miniLabel, GUILayout.Width(72f));
-                        GUILayout.Label($"步长: {FormatTimelineTime(GetActiveSnapStep())}", EditorStyles.miniLabel, GUILayout.Width(110f));
+                        GUILayout.Space(6f);
+                        GUILayout.Label($"吸附: {GetSnapModeLabel()}", compactLabelStyle, GUILayout.Width(64f));
+                        GUILayout.Label($"步长: {FormatTimelineTime(GetActiveSnapStep())}", compactLabelStyle, GUILayout.Width(96f));
 
                         GUILayout.FlexibleSpace();
                         if (hasSkill)
-                        {
-                            string label = string.IsNullOrEmpty(skill.displayName)
-                                ? skill.skillId
-                                : $"{skill.skillId} ({skill.displayName})";
-                            GUILayout.Label(label, EditorStyles.miniLabel);
-                        }
+                            GUILayout.Label(skill.skillId, compactLabelStyle);
+                    }
+                    finally
+                    {
+                        GUILayout.EndHorizontal();
+                    }
+
+                    GUILayout.BeginHorizontal();
+                    try
+                    {
+                        GUILayout.Label("伤害筛选", compactLabelStyle, GUILayout.Width(48f));
+                        _filterDamageWithOnHitPhysics = GUILayout.Toggle(_filterDamageWithOnHitPhysics, "有物理", compactLeftButtonStyle, GUILayout.Width(48f));
+                        _filterDamageWithOnHitAttribute = GUILayout.Toggle(_filterDamageWithOnHitAttribute, "有属性", compactMidButtonStyle, GUILayout.Width(48f));
+                        _filterDamageWithOnHitVfx = GUILayout.Toggle(_filterDamageWithOnHitVfx, "有特效", compactMidButtonStyle, GUILayout.Width(48f));
+                        _filterDamageWithOnHitSfx = GUILayout.Toggle(_filterDamageWithOnHitSfx, "有音效", compactRightButtonStyle, GUILayout.Width(48f));
+                        GUILayout.FlexibleSpace();
                     }
                     finally
                     {
@@ -712,70 +847,71 @@ namespace Game.Editor
                     EditorGUI.DrawRect(new Rect(x, rect.y, 1f, rect.height), GridColor);
             }
         }
-        private void DrawEventBlocks(Rect eventsRect, SharedSkillDefinition skill, List<List<int>> rows)
+        private void DrawEventBlocks(SharedSkillDefinition skill, List<TimelineTrackLayout> trackLayouts)
         {
-            if (skill == null || skill.events == null)
+            if (skill == null)
                 return;
 
-            for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+            for (int trackIndex = 0; trackIndex < trackLayouts.Count; trackIndex++)
             {
-                float rowY = eventsRect.y + rowIndex * EventRowHeight;
-                foreach (int eventIndex in rows[rowIndex])
+                TimelineTrackLayout layout = trackLayouts[trackIndex];
+                for (int rowIndex = 0; rowIndex < layout.rows.Count; rowIndex++)
                 {
-                    if (eventIndex < 0 || eventIndex >= skill.events.Count)
-                        continue;
-
-                    SkillTimelineEvent evt = skill.events[eventIndex];
-                    if (evt == null)
-                        continue;
-
-                    float x = eventsRect.x + TimeToX(evt.startTime);
-                    float width = GetEventDisplayWidth(evt);
-                    Rect blockRect = new Rect(x, rowY + 2f, width, EventRowHeight - 4f);
-                    if (blockRect.xMax < eventsRect.x || blockRect.x > eventsRect.xMax)
-                        continue;
-
-                    EditorGUI.DrawRect(blockRect, GetEventColor(evt));
-                    if (eventIndex == _selectedEventIndex)
-                        EditorGUI.DrawRect(blockRect, SelectedOverlay);
-
-                    if (blockRect.width > 18f)
+                    float rowY = layout.bodyRect.y + rowIndex * EventRowHeight;
+                    foreach (TimelineEventHandle handle in layout.rows[rowIndex])
                     {
-                        GUI.Label(new Rect(blockRect.x + 4f, blockRect.y + 1f, blockRect.width - 8f, blockRect.height - 2f), GetEventLabel(evt), EditorStyles.miniLabel);
-                    }
+                        SkillTimedEventBase evt = handle?.timedEvent;
+                        if (evt == null)
+                            continue;
 
-                    if (evt.triggerMode == SkillEventTriggerMode.Repeated && blockRect.width > ResizeHandleWidth * 2f)
-                    {
-                        Rect handleRect = new Rect(blockRect.xMax - ResizeHandleWidth, blockRect.y, ResizeHandleWidth, blockRect.height);
-                        EditorGUI.DrawRect(handleRect, new Color(1f, 1f, 1f, 0.25f));
-                        EditorGUIUtility.AddCursorRect(handleRect, MouseCursor.ResizeHorizontal);
+                        float x = layout.bodyRect.x + TimeToX(evt.startTime);
+                        float width = GetEventDisplayWidth(evt, layout.trackType);
+                        Rect blockRect = new Rect(x, rowY + 2f, width, EventRowHeight - 4f);
+                        if (blockRect.xMax < layout.bodyRect.x || blockRect.x > layout.bodyRect.xMax)
+                            continue;
+
+                        EditorGUI.DrawRect(blockRect, GetTrackColor(layout.trackType));
+                        if (handle.trackType == _selectedEventTrackType && handle.eventIndex == _selectedEventIndex)
+                            EditorGUI.DrawRect(blockRect, SelectedOverlay);
+                        if (IsCurrentPreviewEvent(evt, layout.trackType))
+                            DrawCurrentEventOutline(blockRect);
+
+                        if (blockRect.width > 18f)
+                        {
+                            GUI.Label(
+                                new Rect(blockRect.x + 4f, blockRect.y + 1f, blockRect.width - 8f, blockRect.height - 2f),
+                                GetTrackEventLabel(evt, layout.trackType),
+                                EditorStyles.miniLabel);
+                        }
+
+                        if (GetTrackDisplayDuration(evt, layout.trackType) > 0f && blockRect.width > ResizeHandleWidth * 2f)
+                        {
+                            Rect handleRect = new Rect(blockRect.xMax - ResizeHandleWidth, blockRect.y, ResizeHandleWidth, blockRect.height);
+                            EditorGUI.DrawRect(handleRect, new Color(1f, 1f, 1f, 0.25f));
+                            EditorGUIUtility.AddCursorRect(handleRect, MouseCursor.ResizeHorizontal);
+                        }
                     }
                 }
             }
         }
 
-        private void HandleTimelineMouse(Event evt, Rect eventsRect, SharedSkillDefinition skill, List<List<int>> rows)
+        private void HandleTimelineMouse(Event evt, SharedSkillDefinition skill, List<TimelineTrackLayout> trackLayouts)
         {
-            if (skill == null || skill.events == null)
+            if (skill == null)
                 return;
 
-            if (evt.type == EventType.MouseDown && evt.button == 0 && eventsRect.Contains(evt.mousePosition))
+            if (evt.type == EventType.MouseDown && evt.button == 0 && IsMouseInAnyTrackBody(evt.mousePosition, trackLayouts))
             {
                 bool hitEdge;
-                int hitIndex = HitTestEvent(evt.mousePosition, eventsRect, skill, rows, out hitEdge);
-                if (hitIndex >= 0)
+                TimelineEventHandle hitHandle = HitTestEvent(evt.mousePosition, skill, trackLayouts, out hitEdge);
+                if (hitHandle != null)
                 {
-                    if (_selectedEventIndex != hitIndex)
-                    {
-                        _activeSceneDamageIndex = -1;
-                        _activeSceneCueIndex = -1;
-                        DestroyScenePreviewCueInstance();
-                    }
-                    _selectedEventIndex = hitIndex;
-                    _dragEventIndex = hitIndex;
+                    SelectEvent(hitHandle.trackType, hitHandle.eventIndex);
+                    _dragEventIndex = hitHandle.eventIndex;
+                    _dragTrackType = hitHandle.trackType;
                     _dragStartMouseX = evt.mousePosition.x;
-                    _dragStartTime = skill.events[hitIndex].startTime;
-                    _dragStartDuration = skill.events[hitIndex].activeDuration;
+                    _dragStartTime = hitHandle.timedEvent.startTime;
+                    _dragStartDuration = GetTrackDisplayDuration(hitHandle.timedEvent, hitHandle.trackType);
                     _isDraggingEvent = true;
                     _isResizingEvent = hitEdge;
                     GUI.FocusControl(null);
@@ -784,30 +920,24 @@ namespace Game.Editor
                 }
                 else
                 {
-                    _selectedEventIndex = -1;
-                    _activeSceneDamageIndex = -1;
-                    _activeSceneCueIndex = -1;
-                    DestroyScenePreviewCueInstance();
+                    ClearSelectedEvent();
                     Repaint();
                 }
             }
             else if (evt.type == EventType.MouseDrag && _isDraggingEvent && evt.button == 0)
             {
-                if (_dragEventIndex < 0 || _dragEventIndex >= skill.events.Count)
-                    return;
-
-                SkillTimelineEvent draggedEvent = skill.events[_dragEventIndex];
+                SkillTimedEventBase draggedEvent = GetTrackEvent(skill, _dragTrackType, _dragEventIndex);
                 if (draggedEvent == null)
                     return;
 
                 float deltaTime = (evt.mousePosition.x - _dragStartMouseX) / _zoom;
                 Undo.RecordObject(_database, _isResizingEvent ? "Resize Skill Event" : "Move Skill Event");
                 if (_isResizingEvent)
-                    draggedEvent.activeDuration = SnapDuration(Mathf.Max(0.01f, _dragStartDuration + deltaTime));
+                    SetTrackDisplayDuration(draggedEvent, _dragTrackType, SnapDuration(Mathf.Max(0.01f, _dragStartDuration + deltaTime)));
                 else
                     draggedEvent.startTime = SnapTime(Mathf.Max(0f, _dragStartTime + deltaTime));
 
-                EditorUtility.SetDirty(_database);
+                MarkDatabaseDirty();
                 evt.Use();
                 Repaint();
             }
@@ -816,47 +946,49 @@ namespace Game.Editor
                 _isDraggingEvent = false;
                 _isResizingEvent = false;
                 _dragEventIndex = -1;
+                _dragTrackType = TimelineTrackType.Damage;
                 evt.Use();
                 Repaint();
             }
         }
 
-        private int HitTestEvent(Vector2 mousePosition, Rect eventsRect, SharedSkillDefinition skill, List<List<int>> rows, out bool hitEdge)
+        private TimelineEventHandle HitTestEvent(Vector2 mousePosition, SharedSkillDefinition skill, List<TimelineTrackLayout> trackLayouts, out bool hitEdge)
         {
             hitEdge = false;
-            for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+            for (int trackIndex = 0; trackIndex < trackLayouts.Count; trackIndex++)
             {
-                float rowY = eventsRect.y + rowIndex * EventRowHeight;
-                foreach (int eventIndex in rows[rowIndex])
+                TimelineTrackLayout layout = trackLayouts[trackIndex];
+                for (int rowIndex = 0; rowIndex < layout.rows.Count; rowIndex++)
                 {
-                    if (eventIndex < 0 || eventIndex >= skill.events.Count)
-                        continue;
-
-                    SkillTimelineEvent evt = skill.events[eventIndex];
-                    if (evt == null)
-                        continue;
-
-                    float x = eventsRect.x + TimeToX(evt.startTime);
-                    float width = GetEventDisplayWidth(evt);
-                    Rect blockRect = new Rect(x, rowY + 2f, width, EventRowHeight - 4f);
-                    if (!blockRect.Contains(mousePosition))
-                        continue;
-
-                    if (evt.triggerMode == SkillEventTriggerMode.Repeated && width > ResizeHandleWidth * 2f)
+                    float rowY = layout.bodyRect.y + rowIndex * EventRowHeight;
+                    foreach (TimelineEventHandle handle in layout.rows[rowIndex])
                     {
-                        Rect handleRect = new Rect(blockRect.xMax - ResizeHandleWidth, blockRect.y, ResizeHandleWidth, blockRect.height);
-                        if (handleRect.Contains(mousePosition))
-                        {
-                            hitEdge = true;
-                            return eventIndex;
-                        }
-                    }
+                        SkillTimedEventBase evt = handle?.timedEvent;
+                        if (evt == null)
+                            continue;
 
-                    return eventIndex;
+                        float x = layout.bodyRect.x + TimeToX(evt.startTime);
+                        float width = GetEventDisplayWidth(evt, layout.trackType);
+                        Rect blockRect = new Rect(x, rowY + 2f, width, EventRowHeight - 4f);
+                        if (!blockRect.Contains(mousePosition))
+                            continue;
+
+                        if (GetTrackDisplayDuration(evt, layout.trackType) > 0f && width > ResizeHandleWidth * 2f)
+                        {
+                            Rect handleRect = new Rect(blockRect.xMax - ResizeHandleWidth, blockRect.y, ResizeHandleWidth, blockRect.height);
+                            if (handleRect.Contains(mousePosition))
+                            {
+                                hitEdge = true;
+                                return handle;
+                            }
+                        }
+
+                        return handle;
+                    }
                 }
             }
 
-            return -1;
+            return null;
         }
 
         private void DrawPlayheadLine(Rect rect)
@@ -932,14 +1064,15 @@ namespace Game.Editor
                 try
                 {
                     DrawSkillInspector(skill);
+                    DrawSkillValidationWarnings(skill);
 
                     EditorGUILayout.Space(8f);
                     EditorGUILayout.LabelField("事件概览", EditorStyles.boldLabel);
-                    EditorGUILayout.LabelField("事件数量", skill.events != null ? skill.events.Count.ToString() : "0");
+                    EditorGUILayout.LabelField("事件数量", GetTotalEventCount(skill).ToString());
 
                     if (HasSelectedEvent())
                     {
-                        DrawEventInspector(skill.events[_selectedEventIndex]);
+                        DrawSelectedEventInspector();
                     }
                     else
                     {
@@ -964,57 +1097,760 @@ namespace Game.Editor
             EditorGUILayout.LabelField("技能", EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
-            string newSkillId = EditorGUILayout.TextField("共享技能ID", skill.skillId ?? string.Empty);
-            string newDisplayName = EditorGUILayout.TextField("显示名称", skill.displayName ?? string.Empty);
+            string newSkillId = EditorGUILayout.TextField("技能ID", skill.skillId ?? string.Empty);
             bool newIgnoreAnimationDamageEvents = EditorGUILayout.Toggle("忽略动画帧伤害事件", skill.ignoreAnimationDamageEvents);
             if (!EditorGUI.EndChangeCheck())
                 return;
 
             Undo.RecordObject(_database, "Edit Skill");
             skill.skillId = newSkillId;
-            skill.displayName = newDisplayName;
             skill.ignoreAnimationDamageEvents = newIgnoreAnimationDamageEvents;
             MarkDatabaseDirty();
         }
 
-        private void DrawEventInspector(SkillTimelineEvent evt)
+        private void DrawLeftPreviewInspector()
         {
-            if (evt == null)
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (_database == null)
+            {
+                EditorGUILayout.HelpBox("未选择技能库。", MessageType.Info);
+                return;
+            }
+
+            if (skill == null)
+            {
+                EditorGUILayout.HelpBox("当前分组下未选择技能。", MessageType.Info);
+                return;
+            }
+
+            if (_previewTarget == null)
+            {
+                EditorGUILayout.HelpBox("未选择预览对象。", MessageType.Info);
+            }
+
+            DrawPreviewStatsPanel(skill);
+        }
+
+        private void DrawPreviewStatsPanel(SharedSkillDefinition skill)
+        {
+            if (_previewTarget == null)
+                return;
+
+            List<PreviewDamageHitResult> damageHits = CollectPreviewDamageHitHistory(skill);
+
+            EditorGUILayout.LabelField("自身", EditorStyles.boldLabel);
+            DrawPreviewStatBlock(skill, _previewTarget.transform, damageHits, "属性");
+
+            Transform explicitVictim = ResolveRootPreviewTarget(_previewVictimTarget)?.transform;
+            Transform hitTarget = explicitVictim ?? ResolvePrimaryPreviewHitTarget();
+            if (hitTarget == null)
+                return;
+
+            if (explicitVictim == null && hitTarget == _previewTarget.transform)
+                return;
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("目标", EditorStyles.boldLabel);
+            DrawPreviewStatBlock(skill, hitTarget, damageHits, "属性");
+        }
+
+        private void DrawPreviewStatBlock(SharedSkillDefinition skill, Transform target, List<PreviewDamageHitResult> damageHits, string title)
+        {
+            List<KeyValuePair<string, string>> items = BuildDisplayStatItems(skill, target, damageHits);
+            if (items == null || items.Count == 0)
+                return;
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            try
+            {
+                EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+                DrawPreviewStatGrid(items);
+            }
+            finally
+            {
+                EditorGUILayout.EndVertical();
+            }
+        }
+
+        private List<KeyValuePair<string, string>> BuildDisplayStatItems(SharedSkillDefinition skill, Transform target, List<PreviewDamageHitResult> damageHits)
+        {
+            if (target == null)
+                return null;
+
+            target = ResolvePreviewStatTarget(target);
+            PlayerController player = target.GetComponentInChildren<PlayerController>();
+            if (player != null)
+            {
+                return new List<KeyValuePair<string, string>>
+                {
+                    BuildPreviewResourceStatItem(skill, target, damageHits, "生命", SkillStatField.HP),
+                    BuildPreviewResourceStatItem(skill, target, damageHits, "法力", SkillStatField.MP),
+                    BuildPreviewStatItem(skill, target, damageHits, "攻击", SkillStatField.Attack, false),
+                    BuildPreviewStatItem(skill, target, damageHits, "防御", SkillStatField.Defense, false),
+                    BuildPreviewStatItem(skill, target, damageHits, "生命回复", SkillStatField.HPRegen, false),
+                    BuildPreviewStatItem(skill, target, damageHits, "法力回复", SkillStatField.MPRegen, false),
+                    BuildPreviewStatItem(skill, target, damageHits, "暴击率", SkillStatField.CritRate, true),
+                    BuildPreviewStatItem(skill, target, damageHits, "暴击伤害", SkillStatField.CritDamage, true),
+                    BuildPreviewStatItem(skill, target, damageHits, "攻速", SkillStatField.AttackSpeed, false),
+                    BuildPreviewStatItem(skill, target, damageHits, "移速", SkillStatField.MoveSpeed, false),
+                    BuildPreviewStatItem(skill, target, damageHits, "吸血", SkillStatField.LifeSteal, true),
+                    BuildPreviewStatItem(skill, target, damageHits, "增伤", SkillStatField.SkillDamage, true),
+                };
+            }
+
+            EnemyController enemy = target.GetComponentInChildren<EnemyController>();
+            if (enemy != null)
+            {
+                return new List<KeyValuePair<string, string>>
+                {
+                    BuildPreviewResourceStatItem(skill, target, damageHits, "生命", SkillStatField.HP),
+                    BuildPreviewStatItem(skill, target, damageHits, "攻击", SkillStatField.Attack, false),
+                    BuildPreviewStatItem(skill, target, damageHits, "防御", SkillStatField.Defense, false),
+                    BuildPreviewStatItem(skill, target, damageHits, "移速", SkillStatField.MoveSpeed, false),
+                };
+            }
+
+            return null;
+        }
+
+        private KeyValuePair<string, string> BuildPreviewResourceStatItem(SharedSkillDefinition skill, Transform target, List<PreviewDamageHitResult> damageHits, string label, SkillStatField field)
+        {
+            if (!TryGetEffectivePreviewResourceValue(skill, target, damageHits, field, out float currentValue, out float maxValue))
+                return new KeyValuePair<string, string>(label, "--");
+
+            return new KeyValuePair<string, string>(label, $"{FormatValue(currentValue)}/{FormatValue(maxValue)}");
+        }
+
+        private KeyValuePair<string, string> BuildPreviewStatItem(SharedSkillDefinition skill, Transform target, List<PreviewDamageHitResult> damageHits, string label, SkillStatField field, bool treatAsPercent)
+        {
+            float value = GetEffectivePreviewStatValue(skill, target, damageHits, field, out bool found);
+            if (!found)
+                return new KeyValuePair<string, string>(label, "--");
+
+            return new KeyValuePair<string, string>(label, treatAsPercent ? FormatPercent(value) : FormatValue(value));
+        }
+
+        private void DrawPreviewStatGrid(List<KeyValuePair<string, string>> items)
+        {
+            for (int i = 0; i < items.Count; i += 2)
+            {
+                EditorGUILayout.BeginHorizontal();
+                try
+                {
+                    DrawPreviewStatCell(items[i]);
+                    GUILayout.Space(6f);
+                    if (i + 1 < items.Count)
+                        DrawPreviewStatCell(items[i + 1]);
+                    else
+                        GUILayout.FlexibleSpace();
+                }
+                finally
+                {
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+        }
+
+        private void DrawPreviewStatCell(KeyValuePair<string, string> item)
+        {
+            Rect rect = EditorGUILayout.GetControlRect(false, 18f, GUILayout.ExpandWidth(true));
+            GUI.Label(rect, $"{item.Key}: {item.Value}", EditorStyles.label);
+        }
+
+        private Transform GetPrimaryPreviewHitTarget(SharedSkillDefinition skill)
+        {
+            return ResolvePrimaryPreviewHitTarget();
+        }
+
+        private List<KeyValuePair<string, string>> BuildCurrentStatItems(Transform target)
+        {
+            if (target == null)
+                return null;
+
+            target = ResolvePreviewStatTarget(target);
+            PlayerController player = target.GetComponentInChildren<PlayerController>();
+            if (player?.PlayerModel != null)
+            {
+                Stats stats = player.PlayerModel.Stats;
+                return new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("生命", FormatValue(stats.MaxHp)),
+                    new KeyValuePair<string, string>("法力", FormatValue(stats.MaxMp)),
+                    new KeyValuePair<string, string>("攻击", FormatValue(stats.Attack)),
+                    new KeyValuePair<string, string>("防御", FormatValue(stats.Defense)),
+                    new KeyValuePair<string, string>("生命回复", FormatValue(stats.HpRegen)),
+                    new KeyValuePair<string, string>("法力回复", FormatValue(stats.MpRegen)),
+                    new KeyValuePair<string, string>("暴击率", FormatPercent(stats.CritRate)),
+                    new KeyValuePair<string, string>("暴击伤害", FormatPercent(stats.CritDmg)),
+                    new KeyValuePair<string, string>("攻速", FormatValue(stats.AttackSpeed)),
+                    new KeyValuePair<string, string>("移速", FormatValue(stats.MoveSpeed)),
+                    new KeyValuePair<string, string>("吸血", FormatPercent(stats.LifeSteal)),
+                    new KeyValuePair<string, string>("增伤", FormatPercent(stats.DamageBonus)),
+                };
+            }
+
+            EnemyController enemy = target.GetComponentInChildren<EnemyController>();
+            if (enemy != null)
+            {
+                return new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("生命", FormatValue(enemy.MaxHp)),
+                    new KeyValuePair<string, string>("攻击", FormatValue(enemy.Attack)),
+                    new KeyValuePair<string, string>("防御", FormatValue(enemy.Defense)),
+                    new KeyValuePair<string, string>("移速", FormatValue(enemy.MoveSpeed)),
+                };
+            }
+
+            return null;
+        }
+
+        private List<KeyValuePair<string, string>> BuildBaseStatItems(Transform target)
+        {
+            if (target == null)
+                return null;
+
+            target = ResolvePreviewStatTarget(target);
+            PlayerController player = target.GetComponentInChildren<PlayerController>();
+            if (player != null)
+            {
+                EnsurePreviewReferenceDatabases();
+                var stats = new Stats();
+                _previewLevelGrowth?.GetStatsForLevel(1, stats);
+                return new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("生命", FormatValue(stats.MaxHp)),
+                    new KeyValuePair<string, string>("法力", FormatValue(stats.MaxMp)),
+                    new KeyValuePair<string, string>("攻击", FormatValue(stats.Attack)),
+                    new KeyValuePair<string, string>("防御", FormatValue(stats.Defense)),
+                    new KeyValuePair<string, string>("生命回复", FormatValue(stats.HpRegen)),
+                    new KeyValuePair<string, string>("法力回复", FormatValue(stats.MpRegen)),
+                    new KeyValuePair<string, string>("暴击率", FormatPercent(stats.CritRate)),
+                    new KeyValuePair<string, string>("暴击伤害", FormatPercent(stats.CritDmg)),
+                    new KeyValuePair<string, string>("攻速", FormatValue(stats.AttackSpeed)),
+                    new KeyValuePair<string, string>("移速", FormatValue(stats.MoveSpeed)),
+                    new KeyValuePair<string, string>("吸血", FormatPercent(stats.LifeSteal)),
+                    new KeyValuePair<string, string>("增伤", FormatPercent(stats.DamageBonus)),
+                };
+            }
+
+            EnsurePreviewReferenceDatabases();
+            EnemyController enemy = target.GetComponentInChildren<EnemyController>();
+            if (enemy != null && _previewEnemyStatsDb != null)
+            {
+                EnemyStatsEntry entry = _previewEnemyStatsDb.GetEntry(enemy.EnemyId) ?? _previewEnemyStatsDb.GetEntry(enemy.EnemyCategory);
+                if (entry != null)
+                {
+                    return new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("生命", FormatValue(entry.baseHp)),
+                        new KeyValuePair<string, string>("攻击", FormatValue(entry.baseAttack)),
+                        new KeyValuePair<string, string>("防御", FormatValue(entry.baseDefense)),
+                        new KeyValuePair<string, string>("移速", FormatValue(entry.baseMoveSpeed)),
+                    };
+                }
+            }
+
+            return null;
+        }
+
+        private bool TryGetEffectivePreviewResourceValue(SharedSkillDefinition skill, Transform target, List<PreviewDamageHitResult> damageHits, SkillStatField field, out float currentValue, out float maxValue)
+        {
+            currentValue = 0f;
+            maxValue = 0f;
+            if (!TryGetPreviewBaselineStatValue(target, field, out currentValue, out maxValue))
+                return false;
+
+            ApplyPreviewAttributeEffects(ref currentValue, skill, target, damageHits, field, maxValue, resourceMode: true);
+            currentValue = Mathf.Clamp(currentValue, 0f, maxValue);
+            return true;
+        }
+
+        private float GetEffectivePreviewStatValue(SharedSkillDefinition skill, Transform target, List<PreviewDamageHitResult> damageHits, SkillStatField field, out bool found)
+        {
+            target = ResolvePreviewStatTarget(target);
+            float currentValue;
+            float referenceValue;
+            found = TryGetPreviewBaselineStatValue(target, field, out currentValue, out referenceValue);
+            if (!found)
+                return 0f;
+
+            float value = currentValue;
+            ApplyPreviewAttributeEffects(ref value, skill, target, damageHits, field, referenceValue, resourceMode: false);
+            return value;
+        }
+
+        private bool TryGetPreviewBaselineStatValue(Transform target, SkillStatField field, out float currentValue, out float referenceValue)
+        {
+            currentValue = 0f;
+            referenceValue = 0f;
+            target = ResolvePreviewStatTarget(target);
+            bool preferBaseStats = !Application.isPlaying;
+            bool hasPlayer = target != null && target.GetComponentInChildren<PlayerController>() != null;
+            bool hasEnemy = target != null && target.GetComponentInChildren<EnemyController>() != null;
+
+            bool found;
+            if (preferBaseStats && (hasPlayer || hasEnemy))
+                found = TryGetPreviewBaseStatValue(target, field, out currentValue, out referenceValue);
+            else
+                found = TryGetPreviewStatValue(target, field, out currentValue, out referenceValue);
+
+            if (!found)
+                found = TryGetPreviewStatValue(target, field, out currentValue, out referenceValue);
+            if (!found)
+                found = TryGetPreviewBaseStatValue(target, field, out currentValue, out referenceValue);
+            return found;
+        }
+
+        private void ApplyPreviewAttributeEffects(ref float value, SharedSkillDefinition skill, Transform target, List<PreviewDamageHitResult> damageHits, SkillStatField field, float referenceValue, bool resourceMode)
+        {
+            if (skill == null || target == null)
+                return;
+
+            List<SkillAttributeEvent> attributeEvents = GetAttributeEventList(skill);
+            if (attributeEvents != null)
+            {
+                for (int eventIndex = 0; eventIndex < attributeEvents.Count; eventIndex++)
+                {
+                    SkillAttributeEvent evt = attributeEvents[eventIndex];
+                    if (evt?.attributeEffects == null)
+                        continue;
+
+                    if (evt.triggerMode != SkillEventTriggerMode.Repeated)
+                    {
+                        float triggerTime = evt.startTime;
+                        if (triggerTime > _previewTime + 0.0001f)
+                            continue;
+
+                        for (int effectIndex = 0; effectIndex < evt.attributeEffects.Count; effectIndex++)
+                        {
+                            SkillAttributeEffect effect = evt.attributeEffects[effectIndex];
+                            if (!DoesAttributeEffectApplyToTarget(effect, target, isOnHitEffect: false))
+                                continue;
+
+                            ApplyPreviewAttributeEffect(ref value, effect, field, referenceValue, triggerTime, resourceMode);
+                        }
+                    }
+                    else
+                    {
+                        float interval = Mathf.Max(0.01f, evt.repeatInterval);
+                        float endTime = evt.startTime + Mathf.Max(0f, evt.activeDuration);
+                        for (float triggerTime = evt.startTime; triggerTime <= endTime + 0.0001f && triggerTime <= _previewTime + 0.0001f; triggerTime += interval)
+                        {
+                            for (int effectIndex = 0; effectIndex < evt.attributeEffects.Count; effectIndex++)
+                            {
+                                SkillAttributeEffect effect = evt.attributeEffects[effectIndex];
+                                if (!DoesAttributeEffectApplyToTarget(effect, target, isOnHitEffect: false))
+                                    continue;
+
+                                ApplyPreviewAttributeEffect(ref value, effect, field, referenceValue, triggerTime, resourceMode);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (damageHits == null)
+                return;
+
+            for (int hitIndex = 0; hitIndex < damageHits.Count; hitIndex++)
+            {
+                PreviewDamageHitResult hit = damageHits[hitIndex];
+                if (hit?.effect?.onHitAttributeEffects == null || hit.hitTargets == null || hit.hitTargets.Count <= 0)
+                    continue;
+
+                for (int effectIndex = 0; effectIndex < hit.effect.onHitAttributeEffects.Count; effectIndex++)
+                {
+                    SkillAttributeEffect effect = hit.effect.onHitAttributeEffects[effectIndex];
+                    if (!DoesOnHitAttributeEffectApplyToTarget(effect, target, hit.hitTargets))
+                        continue;
+
+                    ApplyPreviewAttributeEffect(ref value, effect, field, referenceValue, hit.triggerTime, resourceMode);
+                }
+            }
+        }
+
+        private void DrawPreviewControlsCompact()
+        {
+            GUILayout.Label("预览", EditorStyles.miniLabel, GUILayout.Width(28f));
+
+            if (GUILayout.Button("|<", EditorStyles.miniButtonLeft, GUILayout.Width(24f)))
+            {
+                StopPreview();
+                _previewTime = 0f;
+                SampleAnimationAtTime(_previewTime);
+            }
+
+            if (GUILayout.Button(_isPlaying ? "||" : ">", EditorStyles.miniButtonMid, GUILayout.Width(24f)))
+            {
+                if (_isPlaying)
+                {
+                    _isPlaying = false;
+                    StopAllTimelinePreviewAudio();
+                }
+                else
+                {
+                    StartPreviewPlayback();
+                }
+            }
+
+            if (GUILayout.Button("[]", EditorStyles.miniButtonRight, GUILayout.Width(24f)))
+            {
+                StopPreview();
+                _previewTime = 0f;
+                SampleAnimationAtTime(_previewTime);
+            }
+
+            GUILayout.Space(6f);
+            GUILayout.Label($"{FormatTimelineTime(_previewTime)} / {FormatTimelineTime(GetPreviewTotalDuration())}", EditorStyles.miniLabel, GUILayout.Width(168f));
+        }
+
+        private void IteratePreviewTriggerTimes(SkillTimedEventBase evt, System.Action<float> action)
+        {
+            if (evt == null || action == null)
+                return;
+
+            if (evt.triggerMode != SkillEventTriggerMode.Repeated)
+            {
+                if (evt.startTime <= _previewTime + 0.0001f)
+                    action(evt.startTime);
+                return;
+            }
+
+            float interval = Mathf.Max(0.01f, evt.repeatInterval);
+            float endTime = evt.startTime + Mathf.Max(0f, evt.activeDuration);
+            for (float triggerTime = evt.startTime; triggerTime <= endTime + 0.0001f && triggerTime <= _previewTime + 0.0001f; triggerTime += interval)
+                action(triggerTime);
+        }
+
+        private void ApplyPreviewAttributeEffect(ref float value, SkillAttributeEffect effect, SkillStatField field, float referenceValue, float triggerTime, bool resourceMode)
+        {
+            if (effect == null || effect.statField != field)
+                return;
+
+            if (triggerTime > _previewTime + 0.0001f)
+                return;
+
+            if (resourceMode)
+            {
+                value += GetPreviewAttributeDelta(effect, field, referenceValue);
+                return;
+            }
+
+            if (effect.duration > 0f && _previewTime > triggerTime + effect.duration + 0.0001f)
+                return;
+
+            value += GetPreviewAttributeDelta(effect, field, referenceValue);
+        }
+
+        private bool TryGetPreviewBaseStatValue(Transform target, SkillStatField statField, out float currentValue, out float referenceValue)
+        {
+            currentValue = 0f;
+            referenceValue = 0f;
+            if (target == null)
+                return false;
+
+            target = ResolvePreviewStatTarget(target);
+            EnsurePreviewReferenceDatabases();
+
+            PlayerController player = target.GetComponentInChildren<PlayerController>();
+            if (player != null)
+            {
+                var stats = new Stats();
+                _previewLevelGrowth?.GetStatsForLevel(1, stats);
+                switch (statField)
+                {
+                    case SkillStatField.HP:
+                        currentValue = stats.MaxHp;
+                        referenceValue = stats.MaxHp;
+                        return true;
+                    case SkillStatField.MP:
+                        currentValue = stats.MaxMp;
+                        referenceValue = stats.MaxMp;
+                        return true;
+                    case SkillStatField.Attack:
+                        currentValue = stats.Attack;
+                        referenceValue = stats.Attack;
+                        return true;
+                    case SkillStatField.Defense:
+                        currentValue = stats.Defense;
+                        referenceValue = stats.Defense;
+                        return true;
+                    case SkillStatField.MoveSpeed:
+                        currentValue = stats.MoveSpeed;
+                        referenceValue = stats.MoveSpeed;
+                        return true;
+                    case SkillStatField.HPRegen:
+                        currentValue = stats.HpRegen;
+                        referenceValue = stats.HpRegen;
+                        return true;
+                    case SkillStatField.MPRegen:
+                        currentValue = stats.MpRegen;
+                        referenceValue = stats.MpRegen;
+                        return true;
+                    case SkillStatField.CritRate:
+                        currentValue = stats.CritRate;
+                        referenceValue = stats.CritRate;
+                        return true;
+                    case SkillStatField.CritDamage:
+                        currentValue = stats.CritDmg;
+                        referenceValue = stats.CritDmg;
+                        return true;
+                    case SkillStatField.AttackSpeed:
+                        currentValue = stats.AttackSpeed;
+                        referenceValue = stats.AttackSpeed;
+                        return true;
+                    case SkillStatField.SkillDamage:
+                        currentValue = stats.DamageBonus;
+                        referenceValue = stats.DamageBonus;
+                        return true;
+                    case SkillStatField.DamageReduce:
+                        currentValue = stats.DamageReduce;
+                        referenceValue = stats.DamageReduce;
+                        return true;
+                    case SkillStatField.LifeSteal:
+                        currentValue = stats.LifeSteal;
+                        referenceValue = stats.LifeSteal;
+                        return true;
+                }
+            }
+
+            EnemyController enemy = target.GetComponentInChildren<EnemyController>();
+            if (enemy != null && _previewEnemyStatsDb != null)
+            {
+                EnemyStatsEntry entry = _previewEnemyStatsDb.GetEntry(enemy.EnemyId) ?? _previewEnemyStatsDb.GetEntry(enemy.EnemyCategory);
+                if (entry == null)
+                    return false;
+
+                switch (statField)
+                {
+                    case SkillStatField.HP:
+                        currentValue = entry.baseHp;
+                        referenceValue = entry.baseHp;
+                        return true;
+                    case SkillStatField.Attack:
+                        currentValue = entry.baseAttack;
+                        referenceValue = entry.baseAttack;
+                        return true;
+                    case SkillStatField.Defense:
+                        currentValue = entry.baseDefense;
+                        referenceValue = entry.baseDefense;
+                        return true;
+                    case SkillStatField.MoveSpeed:
+                        currentValue = entry.baseMoveSpeed;
+                        referenceValue = entry.baseMoveSpeed;
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool DoesAttributeEffectApplyToTarget(SkillAttributeEffect effect, Transform target, bool isOnHitEffect)
+        {
+            if (effect == null || target == null)
+                return false;
+
+            Transform selfTarget = _previewTarget != null ? ResolveRootPreviewTarget(_previewTarget)?.transform : null;
+            if (effect.targetMode == SkillTargetMode.Self)
+                return TargetsMatch(target, selfTarget);
+
+            if (!isOnHitEffect)
+                return false;
+
+            Transform explicitVictim = ResolveRootPreviewTarget(_previewVictimTarget)?.transform;
+            Transform hitTarget = explicitVictim ?? ResolvePrimaryPreviewHitTarget();
+            return effect.targetMode == SkillTargetMode.DetectedTargets && TargetsMatch(target, hitTarget);
+        }
+
+        private bool DoesOnHitAttributeEffectApplyToTarget(SkillAttributeEffect effect, Transform target, List<Transform> hitTargets)
+        {
+            if (effect == null || target == null)
+                return false;
+
+            if (effect.targetMode == SkillTargetMode.Self)
+                return TargetsMatch(target, _previewTarget != null ? ResolveRootPreviewTarget(_previewTarget)?.transform : null);
+
+            if (effect.targetMode != SkillTargetMode.DetectedTargets || hitTargets == null)
+                return false;
+
+            for (int i = 0; i < hitTargets.Count; i++)
+            {
+                if (TargetsMatch(target, hitTargets[i]))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool TargetsMatch(Transform left, Transform right)
+        {
+            if (left == null || right == null)
+                return false;
+
+            return left == right || left.root == right.root;
+        }
+
+        private static void DrawSceneTextLabel(Vector3 position, string text, GUIStyle style = null)
+        {
+            if (!ShowScenePreviewText || string.IsNullOrWhiteSpace(text))
+                return;
+
+            if (style != null)
+                Handles.Label(position, text, style);
+            else
+                Handles.Label(position, text);
+        }
+
+        private static float GetPreviewAttributeDelta(SkillAttributeEffect effect, SkillStatField field, float referenceValue)
+        {
+            if (effect == null || effect.statField != field)
+                return 0f;
+
+            return effect.usePercent ? referenceValue * effect.magnitude : effect.magnitude;
+        }
+
+        private static string FormatValue(float value)
+        {
+            return value.ToString("0.##");
+        }
+
+        private static string FormatPercent(float value)
+        {
+            return (value * 100f).ToString("0.##") + "%";
+        }
+
+        private string BuildCurrentStatSummary(Transform target)
+        {
+            if (target == null)
+                return string.Empty;
+
+            PlayerController player = target.GetComponentInChildren<PlayerController>();
+            if (player?.PlayerModel != null)
+            {
+                Stats stats = player.PlayerModel.Stats;
+                return $"HP {player.PlayerModel.CurrentHp:0.#}/{stats.MaxHp:0.#}\nMP {player.PlayerModel.CurrentMp:0.#}/{stats.MaxMp:0.#}\n攻击 {stats.Attack:0.#}  防御 {stats.Defense:0.#}\n移速 {stats.MoveSpeed:0.##}";
+            }
+
+            EnemyController enemy = target.GetComponentInChildren<EnemyController>();
+            if (enemy != null)
+                return $"HP {enemy.CurrentHp:0.#}/{enemy.MaxHp:0.#}\n攻击 {enemy.Attack:0.#}  防御 {enemy.Defense:0.#}\n移速 {enemy.MoveSpeed:0.##}";
+
+            return string.Empty;
+        }
+
+        private void DrawSkillValidationWarnings(SharedSkillDefinition skill)
+        {
+            List<string> warnings = CollectSkillWarnings(skill);
+            if (warnings.Count == 0)
+                return;
+
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.LabelField("技能校验", EditorStyles.boldLabel);
+            for (int i = 0; i < warnings.Count; i++)
+                EditorGUILayout.HelpBox(warnings[i], MessageType.Warning);
+        }
+
+        private void DrawPreviewStateInspector(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return;
+
+            List<PreviewOverlayLine> lines = BuildActivePreviewOverlayLines(skill);
+            AppendPreviewTargetStatLines(lines);
+            AppendPreviewBaseStatLines(lines, skill);
+            if (lines.Count == 0)
+                return;
+
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.LabelField("当前预览反馈", EditorStyles.boldLabel);
+            for (int i = 0; i < lines.Count; i++)
+                EditorGUILayout.HelpBox(lines[i].text, MessageType.None);
+        }
+
+        private void DrawSelectedEventInspector()
+        {
+            SkillTimedEventBase timedEvent = GetSelectedTimedEvent();
+            if (timedEvent == null)
+                return;
+
+            SkillTimelineEvent view = CreateLegacyEventView(timedEvent, _selectedEventTrackType);
+            if (view == null)
                 return;
 
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("选中事件", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("事件摘要", GetEventSummary(view), EditorStyles.miniLabel);
 
             EditorGUI.BeginChangeCheck();
-            string newEventId = EditorGUILayout.TextField("事件标识 ID", evt.eventId ?? string.Empty);
-            float newStartTime = Mathf.Max(0f, EditorGUILayout.FloatField("触发时间(秒)", evt.startTime));
+            string newEventId = EditorGUILayout.TextField("事件标识 ID", timedEvent.eventId ?? string.Empty);
+            float newStartTime = Mathf.Max(0f, EditorGUILayout.FloatField("触发时间(秒)", timedEvent.startTime));
             EditorGUILayout.LabelField("触发时间(帧)", FormatFrameOnly(newStartTime), EditorStyles.miniLabel);
-            SkillEventTriggerMode newTriggerMode = (SkillEventTriggerMode)EditorGUILayout.EnumPopup("触发模式", evt.triggerMode);
-            float newActiveDuration = evt.activeDuration;
-            float newRepeatInterval = evt.repeatInterval;
+            SkillEventTriggerMode newTriggerMode = (SkillEventTriggerMode)EditorGUILayout.EnumPopup("触发模式", timedEvent.triggerMode);
+            float newActiveDuration = timedEvent.activeDuration;
+            float newRepeatInterval = timedEvent.repeatInterval;
             if (newTriggerMode == SkillEventTriggerMode.Repeated)
             {
-                newActiveDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续触发时长(秒)", evt.activeDuration));
+                newActiveDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续触发时长(秒)", timedEvent.activeDuration));
                 EditorGUILayout.LabelField("持续触发时长(帧)", FormatFrameOnly(newActiveDuration), EditorStyles.miniLabel);
-                newRepeatInterval = Mathf.Max(0.01f, EditorGUILayout.FloatField("重复触发间隔(秒)", evt.repeatInterval));
+                newRepeatInterval = Mathf.Max(0.01f, EditorGUILayout.FloatField("重复触发间隔(秒)", timedEvent.repeatInterval));
                 EditorGUILayout.LabelField("重复触发间隔(帧)", FormatFrameOnly(newRepeatInterval), EditorStyles.miniLabel);
             }
 
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(_database, "Edit Skill Event");
-                evt.eventId = newEventId;
-                evt.startTime = SnapTime(newStartTime);
-                evt.triggerMode = newTriggerMode;
-                evt.activeDuration = newTriggerMode == SkillEventTriggerMode.Repeated ? SnapDuration(newActiveDuration) : 0f;
-                evt.repeatInterval = newTriggerMode == SkillEventTriggerMode.Repeated ? SnapDuration(newRepeatInterval) : 0.1f;
+                timedEvent.eventId = newEventId;
+                timedEvent.startTime = SnapTime(newStartTime);
+                timedEvent.triggerMode = newTriggerMode;
+                timedEvent.activeDuration = newTriggerMode == SkillEventTriggerMode.Repeated ? SnapDuration(newActiveDuration) : 0f;
+                timedEvent.repeatInterval = newTriggerMode == SkillEventTriggerMode.Repeated ? SnapDuration(newRepeatInterval) : 0.1f;
                 MarkDatabaseDirty();
+                view = CreateLegacyEventView(timedEvent, _selectedEventTrackType);
             }
 
-            DrawDamageEffectsEditor(evt);
-            DrawPhysicsEffectsEditor(evt);
-            DrawAttributeEffectsEditor(evt);
-            DrawCueEffectsEditor(evt);
+            DrawEventValidationWarnings(view);
+
+            if (_selectedEventTrackType == TimelineTrackType.Damage)
+                DrawDamageEffectsEditor(view);
+            else
+                DrawAddEventSection("伤害效果", TimelineTrackType.Damage, timedEvent.startTime);
+
+            if (_selectedEventTrackType == TimelineTrackType.Physics)
+                DrawPhysicsEffectsEditor(view);
+            else
+                DrawAddEventSection("物理效果", TimelineTrackType.Physics, timedEvent.startTime);
+
+            if (_selectedEventTrackType == TimelineTrackType.Attribute)
+                DrawAttributeEffectsEditor(view);
+            else
+                DrawAddEventSection("属性效果", TimelineTrackType.Attribute, timedEvent.startTime);
+
+            if (_selectedEventTrackType == TimelineTrackType.Vfx)
+                DrawVfxEffectsEditor(view);
+            else
+                DrawAddEventSection("特效效果", TimelineTrackType.Vfx, timedEvent.startTime);
+
+            if (_selectedEventTrackType == TimelineTrackType.Sfx)
+                DrawSfxEffectsEditor(view);
+            else
+                DrawAddEventSection("音效效果", TimelineTrackType.Sfx, timedEvent.startTime);
+        }
+
+        private void DrawAddEventSection(string title, TimelineTrackType trackType, float startTime)
+        {
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                SharedSkillDefinition skill = GetSelectedSkill();
+                if (skill != null)
+                    AddEvent(skill, trackType, startTime);
+            }
+            GUILayout.EndHorizontal();
+            EditorGUILayout.HelpBox("当前选中的是其他类型事件。点击添加会创建同一时间点的新事件，并自动切换选中。", MessageType.None);
+            EditorGUILayout.EndVertical();
         }
 
         private void DrawDamageEffectsEditor(SkillTimelineEvent evt)
@@ -1042,7 +1878,10 @@ namespace Game.Editor
                 EditorGUILayout.LabelField($"伤害效果 {i + 1}", EditorStyles.miniBoldLabel);
                 if (GUILayout.Button(_activeSceneDamageIndex == i ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
                 {
-                    _activeSceneDamageIndex = _activeSceneDamageIndex == i ? -1 : i;
+                    bool same = _activeSceneDamageIndex == i;
+                    _activeSceneDamageIndex = same ? -1 : i;
+                    _activeSceneHitVfxDamageIndex = -1;
+                    _activeSceneHitVfxIndex = -1;
                     SceneView.RepaintAll();
                 }
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
@@ -1050,15 +1889,73 @@ namespace Game.Editor
                 GUILayout.EndHorizontal();
 
                 EditorGUI.BeginChangeCheck();
-                string newDamageName = EditorGUILayout.TextField("伤害检测名", effect.damageName ?? string.Empty);
                 float newDamageMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("伤害倍率", effect.damageMagnitude));
+                float newDetectionDuration = Mathf.Max(0f, EditorGUILayout.FloatField("检测时长(秒)", effect.detectionDuration));
+                EditorGUILayout.LabelField("检测时长(帧)", FormatFrameOnly(newDetectionDuration), EditorStyles.miniLabel);
+                DamageDetectionType newDetectionType = (DamageDetectionType)EditorGUILayout.EnumPopup("检测方式", effect.detectionType);
+                string newHitLayerName = EditorGUILayout.TextField("命中层级名", effect.hitLayerName ?? string.Empty);
+                float newPushForce = Mathf.Max(0f, EditorGUILayout.FloatField("击退力", effect.pushForce));
+                float newPushDuration = Mathf.Max(0f, EditorGUILayout.FloatField("击退时长", effect.pushDuration));
+                AttackShapeType newShape = effect.shape;
+                Vector3 newCenterOffset = effect.centerOffset;
+                float newSphereRadius = effect.sphereRadius;
+                float newSectorAngle = effect.sectorAngle;
+                Vector3 newBoxSize = effect.boxSize;
+                string newColliderNodeName = effect.colliderNodeName ?? string.Empty;
+                Vector3 newRayOriginOffset = effect.rayOriginOffset;
+                float newRayMaxDistance = effect.rayMaxDistance;
+
+                switch (newDetectionType)
+                {
+                    case DamageDetectionType.RangeOverlap:
+                        newShape = (AttackShapeType)EditorGUILayout.EnumPopup("范围形状", effect.shape);
+                        newCenterOffset = EditorGUILayout.Vector3Field("中心偏移", effect.centerOffset);
+                        if (newShape == AttackShapeType.Sphere || newShape == AttackShapeType.Sector)
+                            newSphereRadius = Mathf.Max(0.01f, EditorGUILayout.FloatField("球体半径", effect.sphereRadius));
+                        if (newShape == AttackShapeType.Sector)
+                            newSectorAngle = Mathf.Clamp(EditorGUILayout.FloatField("扇形角度", effect.sectorAngle), 1f, 360f);
+                        if (newShape == AttackShapeType.Box)
+                            newBoxSize = ClampVector3(EditorGUILayout.Vector3Field("盒体尺寸", effect.boxSize), 0.01f);
+                        break;
+
+                    case DamageDetectionType.Collision:
+                        newColliderNodeName = EditorGUILayout.TextField("武器命中盒对象名", effect.colliderNodeName ?? string.Empty);
+                        break;
+
+                    case DamageDetectionType.Raycast:
+                        newRayOriginOffset = EditorGUILayout.Vector3Field("射线起点偏移", effect.rayOriginOffset);
+                        newRayMaxDistance = Mathf.Max(0.01f, EditorGUILayout.FloatField("射线最大距离", effect.rayMaxDistance));
+                        break;
+                }
+
+                float newHitStopDuration = Mathf.Max(0f, EditorGUILayout.FloatField("命中停顿时长(秒)", effect.hitStopDuration));
+                float newHitStopTimeScale = Mathf.Clamp01(EditorGUILayout.Slider("命中停顿速度", effect.hitStopTimeScale, 0f, 1f));
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit Damage Effect");
-                    effect.damageName = newDamageName;
                     effect.damageMagnitude = newDamageMagnitude;
+                    effect.detectionDuration = SnapDuration(newDetectionDuration);
+                    effect.detectionType = newDetectionType;
+                    effect.hitLayerName = newHitLayerName;
+                    effect.pushForce = newPushForce;
+                    effect.pushDuration = newPushDuration;
+                    effect.shape = newShape;
+                    effect.centerOffset = newCenterOffset;
+                    effect.sphereRadius = Mathf.Max(0.01f, newSphereRadius);
+                    effect.sectorAngle = Mathf.Clamp(newSectorAngle, 1f, 360f);
+                    effect.boxSize = ClampVector3(newBoxSize, 0.01f);
+                    effect.colliderNodeName = newColliderNodeName;
+                    effect.rayOriginOffset = newRayOriginOffset;
+                    effect.rayMaxDistance = Mathf.Max(0.01f, newRayMaxDistance);
+                    effect.hitStopDuration = newHitStopDuration;
+                    effect.hitStopTimeScale = newHitStopTimeScale;
                     MarkDatabaseDirty();
                 }
+
+                DrawNestedPhysicsEffectsEditor(effect);
+                DrawNestedAttributeEffectsEditor(effect);
+                DrawNestedVfxEffectsEditor(effect, i);
+                DrawNestedSfxEffectsEditor(effect);
 
                 EditorGUILayout.EndVertical();
             }
@@ -1071,6 +1968,14 @@ namespace Game.Editor
                     _activeSceneDamageIndex = -1;
                 else if (_activeSceneDamageIndex > removeIndex)
                     _activeSceneDamageIndex--;
+                if (_activeSceneHitVfxDamageIndex == removeIndex)
+                {
+                    _activeSceneHitVfxDamageIndex = -1;
+                    _activeSceneHitVfxIndex = -1;
+                    DestroyScenePreviewCueInstance();
+                }
+                else if (_activeSceneHitVfxDamageIndex > removeIndex)
+                    _activeSceneHitVfxDamageIndex--;
                 MarkDatabaseDirty();
             }
 
@@ -1088,7 +1993,7 @@ namespace Game.Editor
             if (GUILayout.Button("添加", GUILayout.Width(48f)))
             {
                 Undo.RecordObject(_database, "Add Physics Effect");
-                evt.physicsEffects.Add(new SkillPhysicsEffect());
+                evt.physicsEffects.Add(new SkillPhysicsEffect { effectType = PhysicsEffectType.DashSelf });
                 MarkDatabaseDirty();
             }
             GUILayout.EndHorizontal();
@@ -1105,24 +2010,20 @@ namespace Game.Editor
                 GUILayout.EndHorizontal();
 
                 EditorGUI.BeginChangeCheck();
-                PhysicsEffectType newEffectType = (PhysicsEffectType)EditorGUILayout.EnumPopup("效果类型", effect.effectType);
-                bool forceSelfTarget = newEffectType == PhysicsEffectType.DashSelf || newEffectType == PhysicsEffectType.Airborne;
-                bool forceUpDirection = newEffectType == PhysicsEffectType.Airborne;
-                SkillTargetMode newTargetMode = forceSelfTarget
-                    ? SkillTargetMode.Self
-                    : (SkillTargetMode)EditorGUILayout.EnumPopup("作用目标", effect.targetMode);
-                SkillEffectDirection newDirection = forceUpDirection
-                    ? SkillEffectDirection.Up
-                    : (SkillEffectDirection)EditorGUILayout.EnumPopup("作用方向", effect.direction);
-                float newMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("力度/距离", effect.magnitude));
+                PhysicsEffectType newEffectType = DrawPhysicsEffectTypePopup(effect.effectType, false);
+                float newDistance = effect.distance;
+                float newHeight = effect.height;
+                if (UsesPhysicsDistance(newEffectType))
+                    newDistance = Mathf.Max(0f, EditorGUILayout.FloatField("距离", effect.distance));
+                if (UsesPhysicsHeight(newEffectType))
+                    newHeight = Mathf.Max(0f, EditorGUILayout.FloatField("高度", effect.height));
                 float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit Physics Effect");
                     effect.effectType = newEffectType;
-                    effect.targetMode = newTargetMode;
-                    effect.direction = newDirection;
-                    effect.magnitude = newMagnitude;
+                    effect.distance = newDistance;
+                    effect.height = newHeight;
                     effect.duration = newDuration;
                     MarkDatabaseDirty();
                 }
@@ -1169,7 +2070,7 @@ namespace Game.Editor
 
                 EditorGUI.BeginChangeCheck();
                 SkillStatField newStatField = (SkillStatField)EditorGUILayout.EnumPopup("属性字段", effect.statField);
-                SkillTargetMode newTargetMode = (SkillTargetMode)EditorGUILayout.EnumPopup("作用目标", effect.targetMode);
+                SkillTargetMode newTargetMode = SkillTargetMode.Self;
                 float newMagnitude = EditorGUILayout.FloatField("数值", effect.magnitude);
                 bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
                 float newDuration = effect.duration;
@@ -1200,32 +2101,34 @@ namespace Game.Editor
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawCueEffectsEditor(SkillTimelineEvent evt)
+        private void DrawVfxEffectsEditor(SkillTimelineEvent evt)
         {
-            EnsureCueEffects(evt);
+            EnsureVfxEffects(evt);
 
             EditorGUILayout.Space(8f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("表现效果", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("特效效果", EditorStyles.boldLabel);
             if (GUILayout.Button("添加", GUILayout.Width(48f)))
             {
-                Undo.RecordObject(_database, "Add Cue Effect");
-                evt.cues.Add(new SkillCueEntry());
+                Undo.RecordObject(_database, "Add VFX Effect");
+                evt.vfxEffects.Add(new SkillVfxEffect());
                 MarkDatabaseDirty();
             }
             GUILayout.EndHorizontal();
 
             int removeIndex = -1;
-            for (int i = 0; i < evt.cues.Count; i++)
+            for (int i = 0; i < evt.vfxEffects.Count; i++)
             {
-                SkillCueEntry cue = evt.cues[i] ?? (evt.cues[i] = new SkillCueEntry());
+                SkillVfxEffect cue = evt.vfxEffects[i] ?? (evt.vfxEffects[i] = new SkillVfxEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"表现效果 {i + 1}", EditorStyles.miniBoldLabel);
+                EditorGUILayout.LabelField($"特效效果 {i + 1}", EditorStyles.miniBoldLabel);
                 if (GUILayout.Button(_activeSceneCueIndex == i ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
                 {
                     _activeSceneCueIndex = _activeSceneCueIndex == i ? -1 : i;
+                    _activeSceneHitVfxDamageIndex = -1;
+                    _activeSceneHitVfxIndex = -1;
                     if (_activeSceneCueIndex >= 0)
                         UpdateScenePreviewCueInstance();
                     else
@@ -1238,17 +2141,15 @@ namespace Game.Editor
 
                 EditorGUI.BeginChangeCheck();
                 GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", cue.particlePrefab, typeof(GameObject), false);
-                AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", cue.audioClip, typeof(AudioClip), false);
-                CueAnchor newAnchor = (CueAnchor)EditorGUILayout.EnumPopup("挂点", cue.anchor);
+                CueAnchor newAnchor = CueAnchor.Caster;
                 Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", cue.offset);
                 Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", cue.rotationEuler);
                 Vector3 newScale = EditorGUILayout.Vector3Field("缩放", cue.scale);
                 float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("强制持续时长(秒)", cue.duration));
                 if (EditorGUI.EndChangeCheck())
                 {
-                    Undo.RecordObject(_database, "Edit Cue Effect");
+                    Undo.RecordObject(_database, "Edit VFX Effect");
                     cue.particlePrefab = newParticlePrefab;
-                    cue.audioClip = newAudioClip;
                     cue.anchor = newAnchor;
                     cue.offset = newOffset;
                     cue.rotationEuler = newRotationEuler;
@@ -1265,8 +2166,8 @@ namespace Game.Editor
 
             if (removeIndex >= 0)
             {
-                Undo.RecordObject(_database, "Remove Cue Effect");
-                evt.cues.RemoveAt(removeIndex);
+                Undo.RecordObject(_database, "Remove VFX Effect");
+                evt.vfxEffects.RemoveAt(removeIndex);
                 if (_activeSceneCueIndex == removeIndex)
                 {
                     _activeSceneCueIndex = -1;
@@ -1274,6 +2175,61 @@ namespace Game.Editor
                 }
                 else if (_activeSceneCueIndex > removeIndex)
                     _activeSceneCueIndex--;
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawSfxEffectsEditor(SkillTimelineEvent evt)
+        {
+            EnsureSfxEffects(evt);
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("音效效果", EditorStyles.boldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                Undo.RecordObject(_database, "Add SFX Effect");
+                evt.sfxEffects.Add(new SkillSfxEffect());
+                MarkDatabaseDirty();
+            }
+            GUILayout.EndHorizontal();
+
+            int removeIndex = -1;
+            for (int i = 0; i < evt.sfxEffects.Count; i++)
+            {
+                SkillSfxEffect effect = evt.sfxEffects[i] ?? (evt.sfxEffects[i] = new SkillSfxEffect());
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"音效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                if (GUILayout.Button("删除", GUILayout.Width(48f)))
+                    removeIndex = i;
+                GUILayout.EndHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
+                CueAnchor newAnchor = CueAnchor.Caster;
+                Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
+                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("强制持续时长(秒)", effect.duration));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_database, "Edit SFX Effect");
+                    effect.audioClip = newAudioClip;
+                    effect.anchor = newAnchor;
+                    effect.offset = newOffset;
+                    effect.duration = newDuration;
+                    MarkDatabaseDirty();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0)
+            {
+                Undo.RecordObject(_database, "Remove SFX Effect");
+                evt.sfxEffects.RemoveAt(removeIndex);
                 MarkDatabaseDirty();
             }
 
@@ -1292,16 +2248,356 @@ namespace Game.Editor
                 evt.physicsEffects = new List<SkillPhysicsEffect>();
         }
 
+        private static void EnsurePhysicsEffects(SkillDamageEffect effect)
+        {
+            if (effect.onHitPhysicsEffects == null)
+                effect.onHitPhysicsEffects = new List<SkillPhysicsEffect>();
+        }
+
         private static void EnsureAttributeEffects(SkillTimelineEvent evt)
         {
             if (evt.attributeEffects == null)
                 evt.attributeEffects = new List<SkillAttributeEffect>();
         }
 
-        private static void EnsureCueEffects(SkillTimelineEvent evt)
+        private static void EnsureAttributeEffects(SkillDamageEffect effect)
         {
-            if (evt.cues == null)
-                evt.cues = new List<SkillCueEntry>();
+            if (effect.onHitAttributeEffects == null)
+                effect.onHitAttributeEffects = new List<SkillAttributeEffect>();
+        }
+
+        private static void EnsureVfxEffects(SkillTimelineEvent evt)
+        {
+            evt.UpgradeLegacyCueData();
+            if (evt.vfxEffects == null)
+                evt.vfxEffects = new List<SkillVfxEffect>();
+        }
+
+        private static void EnsureVfxEffects(SkillDamageEffect effect)
+        {
+            if (effect.onHitVfxEffects == null)
+                effect.onHitVfxEffects = new List<SkillVfxEffect>();
+        }
+
+        private static void EnsureSfxEffects(SkillTimelineEvent evt)
+        {
+            evt.UpgradeLegacyCueData();
+            if (evt.sfxEffects == null)
+                evt.sfxEffects = new List<SkillSfxEffect>();
+        }
+
+        private static void EnsureSfxEffects(SkillDamageEffect effect)
+        {
+            if (effect.onHitSfxEffects == null)
+                effect.onHitSfxEffects = new List<SkillSfxEffect>();
+        }
+
+        private void DrawNestedPhysicsEffectsEditor(SkillDamageEffect damageEffect)
+        {
+            EnsurePhysicsEffects(damageEffect);
+            DrawNestedPhysicsEffectsList("命中物理效果", damageEffect.onHitPhysicsEffects);
+        }
+
+        private void DrawNestedPhysicsEffectsList(string title, List<SkillPhysicsEffect> effects)
+        {
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                Undo.RecordObject(_database, "Add Nested Physics Effect");
+                effects.Add(new SkillPhysicsEffect { effectType = PhysicsEffectType.Knockback });
+                MarkDatabaseDirty();
+            }
+            GUILayout.EndHorizontal();
+
+            int removeIndex = -1;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillPhysicsEffect effect = effects[i] ?? (effects[i] = new SkillPhysicsEffect());
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"命中物理效果 {i + 1}", EditorStyles.miniBoldLabel);
+                if (GUILayout.Button("删除", GUILayout.Width(48f)))
+                    removeIndex = i;
+                GUILayout.EndHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                PhysicsEffectType newEffectType = DrawPhysicsEffectTypePopup(effect.effectType, true);
+                float newDistance = effect.distance;
+                float newHeight = effect.height;
+                if (UsesPhysicsDistance(newEffectType))
+                    newDistance = Mathf.Max(0f, EditorGUILayout.FloatField("距离", effect.distance));
+                if (UsesPhysicsHeight(newEffectType))
+                    newHeight = Mathf.Max(0f, EditorGUILayout.FloatField("高度", effect.height));
+                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_database, "Edit Nested Physics Effect");
+                    effect.effectType = newEffectType;
+                    effect.distance = newDistance;
+                    effect.height = newHeight;
+                    effect.duration = newDuration;
+                    MarkDatabaseDirty();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0)
+            {
+                Undo.RecordObject(_database, "Remove Nested Physics Effect");
+                effects.RemoveAt(removeIndex);
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        private static PhysicsEffectType DrawPhysicsEffectTypePopup(PhysicsEffectType currentType, bool isOnHit)
+        {
+            PhysicsEffectType[] allowedTypes = isOnHit
+                ? new[] { PhysicsEffectType.Knockback, PhysicsEffectType.Pull, PhysicsEffectType.Launch, PhysicsEffectType.Stun }
+                : new[] { PhysicsEffectType.DashSelf, PhysicsEffectType.Airborne, PhysicsEffectType.SuperArmor, PhysicsEffectType.Invincible };
+            string[] labels = isOnHit
+                ? new[] { "击退", "拉拽", "击飞", "眩晕" }
+                : new[] { "位移", "腾空", "霸体", "无敌" };
+
+            int selectedIndex = 0;
+            for (int i = 0; i < allowedTypes.Length; i++)
+            {
+                if (allowedTypes[i] == currentType)
+                {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+
+            selectedIndex = EditorGUILayout.Popup("效果类型", selectedIndex, labels);
+            return allowedTypes[Mathf.Clamp(selectedIndex, 0, allowedTypes.Length - 1)];
+        }
+
+        private static bool UsesPhysicsDistance(PhysicsEffectType effectType)
+        {
+            return effectType == PhysicsEffectType.Knockback
+                || effectType == PhysicsEffectType.Pull
+                || effectType == PhysicsEffectType.Launch
+                || effectType == PhysicsEffectType.DashSelf;
+        }
+
+        private static bool UsesPhysicsHeight(PhysicsEffectType effectType)
+        {
+            return effectType == PhysicsEffectType.Launch
+                || effectType == PhysicsEffectType.Airborne;
+        }
+
+        private void DrawNestedAttributeEffectsEditor(SkillDamageEffect damageEffect)
+        {
+            EnsureAttributeEffects(damageEffect);
+            DrawNestedAttributeEffectsList("命中属性效果", damageEffect.onHitAttributeEffects);
+        }
+
+        private void DrawNestedAttributeEffectsList(string title, List<SkillAttributeEffect> effects)
+        {
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                Undo.RecordObject(_database, "Add Nested Attribute Effect");
+                effects.Add(new SkillAttributeEffect());
+                MarkDatabaseDirty();
+            }
+            GUILayout.EndHorizontal();
+
+            int removeIndex = -1;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillAttributeEffect effect = effects[i] ?? (effects[i] = new SkillAttributeEffect());
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"命中属性效果 {i + 1}", EditorStyles.miniBoldLabel);
+                if (GUILayout.Button("删除", GUILayout.Width(48f)))
+                    removeIndex = i;
+                GUILayout.EndHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                SkillStatField newStatField = (SkillStatField)EditorGUILayout.EnumPopup("属性字段", effect.statField);
+                int targetModeIndex = effect.targetMode == SkillTargetMode.DetectedTargets ? 1 : 0;
+                targetModeIndex = EditorGUILayout.Popup("作用目标", targetModeIndex, new[] { "自身", "命中目标" });
+                SkillTargetMode newTargetMode = targetModeIndex == 1 ? SkillTargetMode.DetectedTargets : SkillTargetMode.Self;
+                float newMagnitude = EditorGUILayout.FloatField("数值", effect.magnitude);
+                bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
+                float newDuration = effect.duration;
+                bool showDuration = newStatField != SkillStatField.HP && newStatField != SkillStatField.MP;
+                if (showDuration)
+                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_database, "Edit Nested Attribute Effect");
+                    effect.statField = newStatField;
+                    effect.targetMode = newTargetMode;
+                    effect.magnitude = newMagnitude;
+                    effect.usePercent = newUsePercent;
+                    effect.duration = showDuration ? newDuration : 0f;
+                    MarkDatabaseDirty();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0)
+            {
+                Undo.RecordObject(_database, "Remove Nested Attribute Effect");
+                effects.RemoveAt(removeIndex);
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawNestedVfxEffectsEditor(SkillDamageEffect damageEffect, int damageIndex)
+        {
+            EnsureVfxEffects(damageEffect);
+            DrawNestedVfxEffectsList("命中特效效果", damageEffect.onHitVfxEffects, damageIndex);
+        }
+
+        private void DrawNestedVfxEffectsList(string title, List<SkillVfxEffect> effects, int damageIndex)
+        {
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                Undo.RecordObject(_database, "Add Nested VFX Effect");
+                effects.Add(new SkillVfxEffect());
+                MarkDatabaseDirty();
+            }
+            GUILayout.EndHorizontal();
+
+            int removeIndex = -1;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillVfxEffect effect = effects[i] ?? (effects[i] = new SkillVfxEffect());
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"命中特效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isEditingHitVfx = _selectedEventTrackType == TimelineTrackType.Damage
+                    && _activeSceneHitVfxDamageIndex == damageIndex
+                    && _activeSceneHitVfxIndex == i;
+                if (GUILayout.Button(isEditingHitVfx ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
+                {
+                    bool same = isEditingHitVfx;
+                    _activeSceneDamageIndex = same ? _activeSceneDamageIndex : damageIndex;
+                    _activeSceneHitVfxDamageIndex = same ? -1 : damageIndex;
+                    _activeSceneHitVfxIndex = same ? -1 : i;
+                    _activeSceneCueIndex = -1;
+                    if (!same)
+                        UpdateScenePreviewCueInstance();
+                    else
+                        DestroyScenePreviewCueInstance();
+                    Repaint();
+                    SceneView.RepaintAll();
+                }
+                if (GUILayout.Button("删除", GUILayout.Width(48f)))
+                    removeIndex = i;
+                GUILayout.EndHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", effect.particlePrefab, typeof(GameObject), false);
+                CueAnchor newAnchor = (CueAnchor)EditorGUILayout.EnumPopup("挂点", effect.anchor);
+                Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
+                Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
+                Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
+                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("强制持续时长(秒)", effect.duration));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_database, "Edit Nested VFX Effect");
+                    effect.particlePrefab = newParticlePrefab;
+                    effect.anchor = newAnchor;
+                    effect.offset = newOffset;
+                    effect.rotationEuler = newRotationEuler;
+                    effect.scale = new Vector3(
+                        Mathf.Max(0.01f, newScale.x),
+                        Mathf.Max(0.01f, newScale.y),
+                        Mathf.Max(0.01f, newScale.z));
+                    effect.duration = newDuration;
+                    MarkDatabaseDirty();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0)
+            {
+                Undo.RecordObject(_database, "Remove Nested VFX Effect");
+                effects.RemoveAt(removeIndex);
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawNestedSfxEffectsEditor(SkillDamageEffect damageEffect)
+        {
+            EnsureSfxEffects(damageEffect);
+            DrawNestedSfxEffectsList("命中音效效果", damageEffect.onHitSfxEffects);
+        }
+
+        private void DrawNestedSfxEffectsList(string title, List<SkillSfxEffect> effects)
+        {
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                Undo.RecordObject(_database, "Add Nested SFX Effect");
+                effects.Add(new SkillSfxEffect());
+                MarkDatabaseDirty();
+            }
+            GUILayout.EndHorizontal();
+
+            int removeIndex = -1;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillSfxEffect effect = effects[i] ?? (effects[i] = new SkillSfxEffect());
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"命中音效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                if (GUILayout.Button("删除", GUILayout.Width(48f)))
+                    removeIndex = i;
+                GUILayout.EndHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
+                CueAnchor newAnchor = (CueAnchor)EditorGUILayout.EnumPopup("挂点", effect.anchor);
+                Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
+                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("强制持续时长(秒)", effect.duration));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_database, "Edit Nested SFX Effect");
+                    effect.audioClip = newAudioClip;
+                    effect.anchor = newAnchor;
+                    effect.offset = newOffset;
+                    effect.duration = newDuration;
+                    MarkDatabaseDirty();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0)
+            {
+                Undo.RecordObject(_database, "Remove Nested SFX Effect");
+                effects.RemoveAt(removeIndex);
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
         }
 
         private void MarkDatabaseDirty()
@@ -1315,61 +2611,112 @@ namespace Game.Editor
         }
         private void AddSkill()
         {
-            EnsureEntryList();
+            EnsureGroupList();
+            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
             Undo.RecordObject(_database, "Add Skill");
-            _database.entries.Add(new SharedSkillDefinition
+            visibleSkills.Add(new SharedSkillDefinition
             {
-                skillId = $"new_skill_{_database.entries.Count}",
-                displayName = $"新技能{_database.entries.Count}",
-                events = new List<SkillTimelineEvent>(),
+                skillId = $"new_skill_{visibleSkills.Count}",
+                damageEvents = new List<SkillDamageEvent>(),
+                physicsEvents = new List<SkillPhysicsEvent>(),
+                attributeEvents = new List<SkillAttributeEvent>(),
+                vfxEvents = new List<SkillVfxEvent>(),
+                sfxEvents = new List<SkillSfxEvent>(),
             });
-            _selectedSkillIndex = _database.entries.Count - 1;
-            _selectedEventIndex = -1;
-            EditorUtility.SetDirty(_database);
-            RebuildSerializedDb();
-            Repaint();
+            _selectedSkillIndex = visibleSkills.Count - 1;
+            ClearSelectedEvent();
+            MarkDatabaseDirty();
         }
 
         private void RemoveSelectedSkill()
         {
-            if (!HasSelectedSkill())
+            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
+            if (!HasSelectedSkill() || _selectedSkillIndex < 0 || _selectedSkillIndex >= visibleSkills.Count)
                 return;
 
             Undo.RecordObject(_database, "Delete Skill");
-            _database.entries.RemoveAt(_selectedSkillIndex);
-            _selectedSkillIndex = Mathf.Clamp(_selectedSkillIndex - 1, -1, _database.entries.Count - 1);
-            _selectedEventIndex = -1;
-            EditorUtility.SetDirty(_database);
-            RebuildSerializedDb();
-            Repaint();
+            visibleSkills.RemoveAt(_selectedSkillIndex);
+            _selectedSkillIndex = Mathf.Clamp(_selectedSkillIndex - 1, -1, visibleSkills.Count - 1);
+            ClearSelectedEvent();
+            MarkDatabaseDirty();
         }
 
-        private void AddEvent(SharedSkillDefinition skill)
+        private void AddEvent(SharedSkillDefinition skill, TimelineTrackType trackType, float? explicitStartTime = null)
         {
             if (skill == null)
                 return;
 
-            if (skill.events == null)
-                skill.events = new List<SkillTimelineEvent>();
-
             Undo.RecordObject(_database, "Add Skill Event");
-            float startTime = HasSelectedEvent() && _selectedEventIndex < skill.events.Count
-                ? skill.events[_selectedEventIndex].startTime + Mathf.Max(0.1f, GetActiveSnapStep())
-                : _previewTime;
+            SkillTimedEventBase selectedEvent = GetSelectedTimedEvent();
+            float startTime = explicitStartTime ?? (selectedEvent != null
+                ? selectedEvent.startTime + Mathf.Max(0.1f, GetActiveSnapStep())
+                : _previewTime);
             startTime = SnapTime(startTime);
 
-            skill.events.Add(new SkillTimelineEvent
+            int newIndex = -1;
+            string eventId = $"evt_{GetTotalEventCount(skill)}";
+            switch (trackType)
             {
-                eventId = $"evt_{skill.events.Count}",
-                startTime = startTime,
-            });
-            _selectedEventIndex = skill.events.Count - 1;
-            _activeSceneDamageIndex = -1;
-            _activeSceneCueIndex = -1;
-            DestroyScenePreviewCueInstance();
-            EditorUtility.SetDirty(_database);
-            RebuildSerializedDb();
-            Repaint();
+                case TimelineTrackType.Damage:
+                    var damageEvent = new SkillDamageEvent
+                    {
+                        eventId = eventId,
+                        startTime = startTime,
+                        damageEffects = new List<SkillDamageEffect> { new SkillDamageEffect() },
+                    };
+                    GetDamageEventList(skill).Add(damageEvent);
+                    newIndex = GetDamageEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Physics:
+                    var physicsEvent = new SkillPhysicsEvent
+                    {
+                        eventId = eventId,
+                        startTime = startTime,
+                        physicsEffects = new List<SkillPhysicsEffect> { new SkillPhysicsEffect { effectType = PhysicsEffectType.DashSelf } },
+                    };
+                    GetPhysicsEventList(skill).Add(physicsEvent);
+                    newIndex = GetPhysicsEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Attribute:
+                    var attributeEvent = new SkillAttributeEvent
+                    {
+                        eventId = eventId,
+                        startTime = startTime,
+                        attributeEffects = new List<SkillAttributeEffect> { new SkillAttributeEffect { targetMode = SkillTargetMode.Self } },
+                    };
+                    GetAttributeEventList(skill).Add(attributeEvent);
+                    newIndex = GetAttributeEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Vfx:
+                    var vfxEvent = new SkillVfxEvent
+                    {
+                        eventId = eventId,
+                        startTime = startTime,
+                        vfxEffects = new List<SkillVfxEffect> { new SkillVfxEffect { anchor = CueAnchor.Caster, duration = 0f } },
+                    };
+                    GetVfxEventList(skill).Add(vfxEvent);
+                    newIndex = GetVfxEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Sfx:
+                    var sfxEvent = new SkillSfxEvent
+                    {
+                        eventId = eventId,
+                        startTime = startTime,
+                        sfxEffects = new List<SkillSfxEffect> { new SkillSfxEffect { anchor = CueAnchor.Caster, duration = 0f } },
+                    };
+                    GetSfxEventList(skill).Add(sfxEvent);
+                    newIndex = GetSfxEventList(skill).Count - 1;
+                    break;
+            }
+
+            if (newIndex >= 0)
+                SelectEvent(trackType, newIndex);
+
+            MarkDatabaseDirty();
         }
 
         private void CopySelectedEvent(SharedSkillDefinition skill)
@@ -1377,11 +2724,12 @@ namespace Game.Editor
             if (skill == null || !HasSelectedEvent())
                 return;
 
-            SkillTimelineEvent evt = skill.events[_selectedEventIndex];
+            SkillTimedEventBase evt = GetSelectedTimedEvent();
             if (evt == null)
                 return;
 
             s_eventClipboardJson = JsonUtility.ToJson(evt);
+            s_eventClipboardTrackType = _selectedEventTrackType;
         }
 
         private void PasteClipboardEvent(SharedSkillDefinition skill)
@@ -1389,20 +2737,59 @@ namespace Game.Editor
             if (skill == null || string.IsNullOrEmpty(s_eventClipboardJson))
                 return;
 
-            SkillTimelineEvent cloned = JsonUtility.FromJson<SkillTimelineEvent>(s_eventClipboardJson);
-            if (cloned == null)
-                return;
-
-            if (skill.events == null)
-                skill.events = new List<SkillTimelineEvent>();
-
             Undo.RecordObject(_database, "Paste Skill Event");
-            cloned.startTime = SnapTime(_previewTime);
-            skill.events.Add(cloned);
-            _selectedEventIndex = skill.events.Count - 1;
-            EditorUtility.SetDirty(_database);
-            RebuildSerializedDb();
-            Repaint();
+            int newIndex = -1;
+            switch (s_eventClipboardTrackType)
+            {
+                case TimelineTrackType.Damage:
+                    SkillDamageEvent damageEvent = JsonUtility.FromJson<SkillDamageEvent>(s_eventClipboardJson);
+                    if (damageEvent == null)
+                        return;
+                    damageEvent.startTime = SnapTime(_previewTime);
+                    GetDamageEventList(skill).Add(damageEvent);
+                    newIndex = GetDamageEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Physics:
+                    SkillPhysicsEvent physicsEvent = JsonUtility.FromJson<SkillPhysicsEvent>(s_eventClipboardJson);
+                    if (physicsEvent == null)
+                        return;
+                    physicsEvent.startTime = SnapTime(_previewTime);
+                    GetPhysicsEventList(skill).Add(physicsEvent);
+                    newIndex = GetPhysicsEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Attribute:
+                    SkillAttributeEvent attributeEvent = JsonUtility.FromJson<SkillAttributeEvent>(s_eventClipboardJson);
+                    if (attributeEvent == null)
+                        return;
+                    attributeEvent.startTime = SnapTime(_previewTime);
+                    GetAttributeEventList(skill).Add(attributeEvent);
+                    newIndex = GetAttributeEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Vfx:
+                    SkillVfxEvent vfxEvent = JsonUtility.FromJson<SkillVfxEvent>(s_eventClipboardJson);
+                    if (vfxEvent == null)
+                        return;
+                    vfxEvent.startTime = SnapTime(_previewTime);
+                    GetVfxEventList(skill).Add(vfxEvent);
+                    newIndex = GetVfxEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Sfx:
+                    SkillSfxEvent sfxEvent = JsonUtility.FromJson<SkillSfxEvent>(s_eventClipboardJson);
+                    if (sfxEvent == null)
+                        return;
+                    sfxEvent.startTime = SnapTime(_previewTime);
+                    GetSfxEventList(skill).Add(sfxEvent);
+                    newIndex = GetSfxEventList(skill).Count - 1;
+                    break;
+            }
+
+            if (newIndex >= 0)
+                SelectEvent(s_eventClipboardTrackType, newIndex);
+            MarkDatabaseDirty();
         }
 
         private void DuplicateSelectedEvent(SharedSkillDefinition skill)
@@ -1410,25 +2797,65 @@ namespace Game.Editor
             if (skill == null || !HasSelectedEvent())
                 return;
 
-            SkillTimelineEvent source = skill.events[_selectedEventIndex];
+            SkillTimedEventBase source = GetSelectedTimedEvent();
             if (source == null)
                 return;
 
-            SkillTimelineEvent cloned = JsonUtility.FromJson<SkillTimelineEvent>(JsonUtility.ToJson(source));
-            if (cloned == null)
-                return;
-
-            float offset = source.triggerMode == SkillEventTriggerMode.Repeated
-                ? Mathf.Max(source.activeDuration, GetActiveSnapStep())
-                : Mathf.Max(0.1f, GetActiveSnapStep());
+            float offset = Mathf.Max(GetTrackDisplayDuration(source, _selectedEventTrackType), Mathf.Max(0.1f, GetActiveSnapStep()));
 
             Undo.RecordObject(_database, "Duplicate Skill Event");
-            cloned.startTime = SnapTime(source.startTime + offset);
-            skill.events.Add(cloned);
-            _selectedEventIndex = skill.events.Count - 1;
-            EditorUtility.SetDirty(_database);
-            RebuildSerializedDb();
-            Repaint();
+            int newIndex = -1;
+            switch (_selectedEventTrackType)
+            {
+                case TimelineTrackType.Damage:
+                    SkillDamageEvent clonedDamage = JsonUtility.FromJson<SkillDamageEvent>(JsonUtility.ToJson((SkillDamageEvent)source));
+                    if (clonedDamage == null)
+                        return;
+                    clonedDamage.startTime = SnapTime(source.startTime + offset);
+                    GetDamageEventList(skill).Add(clonedDamage);
+                    newIndex = GetDamageEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Physics:
+                    SkillPhysicsEvent clonedPhysics = JsonUtility.FromJson<SkillPhysicsEvent>(JsonUtility.ToJson((SkillPhysicsEvent)source));
+                    if (clonedPhysics == null)
+                        return;
+                    clonedPhysics.startTime = SnapTime(source.startTime + offset);
+                    GetPhysicsEventList(skill).Add(clonedPhysics);
+                    newIndex = GetPhysicsEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Attribute:
+                    SkillAttributeEvent clonedAttribute = JsonUtility.FromJson<SkillAttributeEvent>(JsonUtility.ToJson((SkillAttributeEvent)source));
+                    if (clonedAttribute == null)
+                        return;
+                    clonedAttribute.startTime = SnapTime(source.startTime + offset);
+                    GetAttributeEventList(skill).Add(clonedAttribute);
+                    newIndex = GetAttributeEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Vfx:
+                    SkillVfxEvent clonedVfx = JsonUtility.FromJson<SkillVfxEvent>(JsonUtility.ToJson((SkillVfxEvent)source));
+                    if (clonedVfx == null)
+                        return;
+                    clonedVfx.startTime = SnapTime(source.startTime + offset);
+                    GetVfxEventList(skill).Add(clonedVfx);
+                    newIndex = GetVfxEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Sfx:
+                    SkillSfxEvent clonedSfx = JsonUtility.FromJson<SkillSfxEvent>(JsonUtility.ToJson((SkillSfxEvent)source));
+                    if (clonedSfx == null)
+                        return;
+                    clonedSfx.startTime = SnapTime(source.startTime + offset);
+                    GetSfxEventList(skill).Add(clonedSfx);
+                    newIndex = GetSfxEventList(skill).Count - 1;
+                    break;
+            }
+
+            if (newIndex >= 0)
+                SelectEvent(_selectedEventTrackType, newIndex);
+            MarkDatabaseDirty();
         }
 
         private void RemoveSelectedEvent(SharedSkillDefinition skill)
@@ -1437,23 +2864,87 @@ namespace Game.Editor
                 return;
 
             Undo.RecordObject(_database, "Delete Skill Event");
-            skill.events.RemoveAt(_selectedEventIndex);
-            _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, skill.events.Count - 1);
+            switch (_selectedEventTrackType)
+            {
+                case TimelineTrackType.Damage:
+                    GetDamageEventList(skill).RemoveAt(_selectedEventIndex);
+                    _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetDamageEventList(skill).Count - 1);
+                    break;
+                case TimelineTrackType.Physics:
+                    GetPhysicsEventList(skill).RemoveAt(_selectedEventIndex);
+                    _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetPhysicsEventList(skill).Count - 1);
+                    break;
+                case TimelineTrackType.Attribute:
+                    GetAttributeEventList(skill).RemoveAt(_selectedEventIndex);
+                    _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetAttributeEventList(skill).Count - 1);
+                    break;
+                case TimelineTrackType.Vfx:
+                    GetVfxEventList(skill).RemoveAt(_selectedEventIndex);
+                    _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetVfxEventList(skill).Count - 1);
+                    break;
+                case TimelineTrackType.Sfx:
+                    GetSfxEventList(skill).RemoveAt(_selectedEventIndex);
+                    _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetSfxEventList(skill).Count - 1);
+                    break;
+            }
+
             _activeSceneDamageIndex = -1;
             _activeSceneCueIndex = -1;
+            _activeSceneHitVfxDamageIndex = -1;
+            _activeSceneHitVfxIndex = -1;
             DestroyScenePreviewCueInstance();
-            EditorUtility.SetDirty(_database);
-            RebuildSerializedDb();
-            Repaint();
+            MarkDatabaseDirty();
+        }
+
+        private void ClearAllEvents(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return;
+
+            Undo.RecordObject(_database, "Clear Skill Events");
+            GetDamageEventList(skill).Clear();
+            GetPhysicsEventList(skill).Clear();
+            GetAttributeEventList(skill).Clear();
+            GetVfxEventList(skill).Clear();
+            GetSfxEventList(skill).Clear();
+
+            _selectedEventIndex = -1;
+            _activeSceneDamageIndex = -1;
+            _activeSceneCueIndex = -1;
+            _activeSceneHitVfxDamageIndex = -1;
+            _activeSceneHitVfxIndex = -1;
+            DestroyScenePreviewCueInstance();
+            MarkDatabaseDirty();
         }
 
         private void SortEvents(SharedSkillDefinition skill)
         {
-            if (skill == null || skill.events == null)
+            if (skill == null)
                 return;
 
             Undo.RecordObject(_database, "Sort Skill Events");
-            skill.events.Sort((left, right) =>
+            SkillTimedEventBase selectedEvent = GetSelectedTimedEvent();
+            SortTimedEventList(GetDamageEventList(skill));
+            SortTimedEventList(GetPhysicsEventList(skill));
+            SortTimedEventList(GetAttributeEventList(skill));
+            SortTimedEventList(GetVfxEventList(skill));
+            SortTimedEventList(GetSfxEventList(skill));
+
+            if (selectedEvent != null)
+            {
+                int newIndex = FindTrackEventIndex(skill, _selectedEventTrackType, selectedEvent);
+                if (newIndex >= 0)
+                    _selectedEventIndex = newIndex;
+            }
+            MarkDatabaseDirty();
+        }
+
+        private static void SortTimedEventList<T>(List<T> events) where T : SkillTimedEventBase
+        {
+            if (events == null)
+                return;
+
+            events.Sort((left, right) =>
             {
                 if (ReferenceEquals(left, right))
                     return 0;
@@ -1463,9 +2954,21 @@ namespace Game.Editor
                     return -1;
                 return left.startTime.CompareTo(right.startTime);
             });
-            EditorUtility.SetDirty(_database);
-            RebuildSerializedDb();
-            Repaint();
+        }
+
+        private int FindTrackEventIndex(SharedSkillDefinition skill, TimelineTrackType trackType, SkillTimedEventBase target)
+        {
+            if (skill == null || target == null)
+                return -1;
+
+            int count = GetTrackEventCount(skill, trackType);
+            for (int i = 0; i < count; i++)
+            {
+                if (ReferenceEquals(GetTrackEvent(skill, trackType, i), target))
+                    return i;
+            }
+
+            return -1;
         }
 
         private void StartPreviewPlayback()
@@ -1473,7 +2976,13 @@ namespace Game.Editor
             if (_previewTime >= GetPreviewTotalDuration() - 0.01f)
                 _previewTime = 0f;
 
+            StopAllTimelinePreviewAudio();
+            DestroyTimelinePreviewVfxInstances();
+            _timelinePreviewHitSfxKeys.Clear();
             StartAnimationMode();
+            SampleAnimationAtTime(_previewTime);
+            TriggerTimelinePreviewSfx(_previewTime - 0.0001f, _previewTime);
+            TriggerTimelinePreviewHitSfx();
             _isPlaying = true;
             _prevEditorTime = EditorApplication.timeSinceStartup;
         }
@@ -1490,38 +2999,2010 @@ namespace Game.Editor
         private void StopPreview()
         {
             _isPlaying = false;
+            StopAllTimelinePreviewAudio();
+            DestroyTimelinePreviewVfxInstances();
+            _timelinePreviewHitSfxKeys.Clear();
+            RestorePreviewPhysicsTransforms();
             if (AnimationMode.InAnimationMode())
                 AnimationMode.StopAnimationMode();
         }
 
         private void SampleAnimationAtTime(float time)
         {
-            if (_previewTarget == null || _previewClip == null)
+            RestorePreviewPhysicsTransforms();
+            if (_previewTarget == null)
+            {
+                DestroyTimelinePreviewVfxInstances();
+                _timelinePreviewHitSfxKeys.Clear();
                 return;
+            }
 
-            if (!AnimationMode.InAnimationMode())
-                AnimationMode.StartAnimationMode();
+            if (_previewClip != null)
+            {
+                if (!AnimationMode.InAnimationMode())
+                    AnimationMode.StartAnimationMode();
 
-            AnimationMode.BeginSampling();
-            AnimationMode.SampleAnimationClip(_previewTarget, _previewClip, time);
-            AnimationMode.EndSampling();
+                float sampleTime = Mathf.Clamp(time, 0f, _previewClip.length);
+                AnimationMode.BeginSampling();
+                AnimationMode.SampleAnimationClip(_previewTarget, _previewClip, sampleTime);
+                AnimationMode.EndSampling();
+            }
+
+            UpdateTimelinePreviewVfxInstances();
+            ApplyPreviewPhysicsTransforms();
         }
 
         private float GetPreviewTotalDuration()
         {
             SharedSkillDefinition skill = GetSelectedSkill();
-            float timelineDuration = skill != null ? skill.GetTimelineDuration() : 0f;
+            float timelineDuration = skill != null ? GetSkillPreviewDuration(skill) : 0f;
             float clipDuration = _previewClip != null ? _previewClip.length : 0f;
             return Mathf.Max(timelineDuration, clipDuration, 0.1f);
         }
 
+        private float GetSkillPreviewDuration(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return 0f;
+
+            float duration = skill.GetTimelineDuration();
+            duration = Mathf.Max(duration, GetTrackPreviewDuration(GetDamageEventList(skill), TimelineTrackType.Damage));
+            duration = Mathf.Max(duration, GetTrackPreviewDuration(GetPhysicsEventList(skill), TimelineTrackType.Physics));
+            duration = Mathf.Max(duration, GetTrackPreviewDuration(GetAttributeEventList(skill), TimelineTrackType.Attribute));
+            duration = Mathf.Max(duration, GetTrackPreviewDuration(GetVfxEventList(skill), TimelineTrackType.Vfx));
+            duration = Mathf.Max(duration, GetTrackPreviewDuration(GetSfxEventList(skill), TimelineTrackType.Sfx));
+            return duration;
+        }
+
+        private float GetTrackPreviewDuration<T>(List<T> events, TimelineTrackType trackType) where T : SkillTimedEventBase
+        {
+            float maxTime = 0f;
+            if (events == null)
+                return maxTime;
+
+            for (int i = 0; i < events.Count; i++)
+            {
+                T evt = events[i];
+                if (evt == null)
+                    continue;
+
+                maxTime = Mathf.Max(maxTime, evt.startTime + GetPreviewPlaybackDuration(evt, trackType));
+            }
+
+            return maxTime;
+        }
+
+        private float GetPreviewPlaybackDuration(SkillTimedEventBase evt, TimelineTrackType trackType)
+        {
+            float duration = Mathf.Max(0f, GetTrackDisplayDuration(evt, trackType));
+            switch (trackType)
+            {
+                case TimelineTrackType.Vfx:
+                    if (evt is SkillVfxEvent vfxEvent && vfxEvent.vfxEffects != null)
+                    {
+                        for (int i = 0; i < vfxEvent.vfxEffects.Count; i++)
+                            duration = Mathf.Max(duration, GetVfxPlaybackDuration(vfxEvent.vfxEffects[i]));
+                    }
+                    break;
+                case TimelineTrackType.Sfx:
+                    if (evt is SkillSfxEvent sfxEvent && sfxEvent.sfxEffects != null)
+                    {
+                        for (int i = 0; i < sfxEvent.sfxEffects.Count; i++)
+                            duration = Mathf.Max(duration, GetSfxPlaybackDuration(sfxEvent.sfxEffects[i]));
+                    }
+                    break;
+            }
+
+            return duration;
+        }
+
+        private static float GetTrackEffectTailDuration(SkillTimedEventBase evt, TimelineTrackType trackType)
+        {
+            if (evt == null)
+                return 0f;
+
+            float duration = 0f;
+            switch (trackType)
+            {
+                case TimelineTrackType.Damage:
+                    if (evt is SkillDamageEvent damageEvent && damageEvent.damageEffects != null)
+                    {
+                        for (int i = 0; i < damageEvent.damageEffects.Count; i++)
+                        {
+                            SkillDamageEffect effect = damageEvent.damageEffects[i];
+                            if (effect != null)
+                                duration = Mathf.Max(duration, effect.detectionDuration);
+                        }
+                    }
+                    break;
+                case TimelineTrackType.Physics:
+                    if (evt is SkillPhysicsEvent physicsEvent && physicsEvent.physicsEffects != null)
+                    {
+                        for (int i = 0; i < physicsEvent.physicsEffects.Count; i++)
+                        {
+                            SkillPhysicsEffect effect = physicsEvent.physicsEffects[i];
+                            if (effect != null)
+                                duration = Mathf.Max(duration, effect.duration);
+                        }
+                    }
+                    break;
+                case TimelineTrackType.Attribute:
+                    if (evt is SkillAttributeEvent attributeEvent && attributeEvent.attributeEffects != null)
+                    {
+                        for (int i = 0; i < attributeEvent.attributeEffects.Count; i++)
+                        {
+                            SkillAttributeEffect effect = attributeEvent.attributeEffects[i];
+                            if (effect != null)
+                                duration = Mathf.Max(duration, effect.duration);
+                        }
+                    }
+                    break;
+                case TimelineTrackType.Vfx:
+                    if (evt is SkillVfxEvent vfxEvent && vfxEvent.vfxEffects != null)
+                    {
+                        for (int i = 0; i < vfxEvent.vfxEffects.Count; i++)
+                        {
+                            SkillVfxEffect effect = vfxEvent.vfxEffects[i];
+                            if (effect != null)
+                                duration = Mathf.Max(duration, GetVfxPlaybackDuration(effect));
+                        }
+                    }
+                    break;
+                case TimelineTrackType.Sfx:
+                    if (evt is SkillSfxEvent sfxEvent && sfxEvent.sfxEffects != null)
+                    {
+                        for (int i = 0; i < sfxEvent.sfxEffects.Count; i++)
+                        {
+                            SkillSfxEffect effect = sfxEvent.sfxEffects[i];
+                            if (effect != null)
+                                duration = Mathf.Max(duration, GetSfxPlaybackDuration(effect));
+                        }
+                    }
+                    break;
+            }
+
+            return Mathf.Max(0f, duration);
+        }
+
+        private static float GetVfxPlaybackDuration(SkillVfxEffect effect)
+        {
+            if (effect == null)
+                return 0f;
+            if (effect.duration > 0f)
+                return effect.duration;
+            return EstimateParticlePrefabDuration(effect.particlePrefab);
+        }
+
+        private static float GetSfxPlaybackDuration(SkillSfxEffect effect)
+        {
+            if (effect == null)
+                return 0f;
+            if (effect.duration > 0f)
+                return effect.duration;
+            return effect.audioClip != null ? effect.audioClip.length : 0f;
+        }
+
+        private static float EstimateParticlePrefabDuration(GameObject prefab)
+        {
+            if (prefab == null)
+                return 0f;
+
+            float duration = 0f;
+            ParticleSystem[] particleSystems = prefab.GetComponentsInChildren<ParticleSystem>(true);
+            for (int i = 0; i < particleSystems.Length; i++)
+            {
+                ParticleSystem particleSystem = particleSystems[i];
+                if (particleSystem == null)
+                    continue;
+
+                ParticleSystem.MainModule main = particleSystem.main;
+                duration = Mathf.Max(duration, main.duration + GetMaxCurveValue(main.startLifetime));
+            }
+
+            return duration;
+        }
+
+        private static float GetMaxCurveValue(ParticleSystem.MinMaxCurve curve)
+        {
+            switch (curve.mode)
+            {
+                case ParticleSystemCurveMode.Constant:
+                    return curve.constant;
+                case ParticleSystemCurveMode.TwoConstants:
+                    return Mathf.Max(curve.constantMin, curve.constantMax);
+                case ParticleSystemCurveMode.Curve:
+                    return curve.curve != null && curve.curve.length > 0 ? curve.curve.keys[curve.curve.length - 1].value : 0f;
+                case ParticleSystemCurveMode.TwoCurves:
+                    float minValue = curve.curveMin != null && curve.curveMin.length > 0 ? curve.curveMin.keys[curve.curveMin.length - 1].value : 0f;
+                    float maxValue = curve.curveMax != null && curve.curveMax.length > 0 ? curve.curveMax.keys[curve.curveMax.length - 1].value : 0f;
+                    return Mathf.Max(minValue, maxValue);
+                default:
+                    return 0f;
+            }
+        }
+
+        private static MethodInfo ResolveAudioUtilMethod(string methodName, params System.Type[] parameterTypes)
+        {
+            if (AudioUtilType == null)
+                return null;
+
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+            if (parameterTypes != null && parameterTypes.Length > 0)
+            {
+                MethodInfo exact = AudioUtilType.GetMethod(methodName, flags, null, parameterTypes, null);
+                if (exact != null)
+                    return exact;
+            }
+
+            MethodInfo[] methods = AudioUtilType.GetMethods(flags);
+            for (int i = 0; i < methods.Length; i++)
+            {
+                MethodInfo method = methods[i];
+                if (method != null && method.Name == methodName)
+                    return method;
+            }
+
+            return null;
+        }
+
+        private void TriggerTimelinePreviewSfx(float previousTime, float currentTime)
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return;
+
+            List<SkillSfxEvent> events = GetSfxEventList(skill);
+            if (events == null)
+                return;
+
+            for (int eventIndex = 0; eventIndex < events.Count; eventIndex++)
+            {
+                SkillSfxEvent evt = events[eventIndex];
+                if (evt?.sfxEffects == null)
+                    continue;
+
+                int triggerCount = GetTriggeredOccurrenceCount(evt, previousTime, currentTime);
+                for (int triggerIndex = 0; triggerIndex < triggerCount; triggerIndex++)
+                {
+                    for (int effectIndex = 0; effectIndex < evt.sfxEffects.Count; effectIndex++)
+                    {
+                        SkillSfxEffect effect = evt.sfxEffects[effectIndex];
+                        if (effect?.audioClip == null)
+                            continue;
+
+                        PlayPreviewAudio(effect.audioClip);
+                    }
+                }
+            }
+        }
+
+        private int GetTriggeredOccurrenceCount(SkillTimedEventBase evt, float previousTime, float currentTime)
+        {
+            if (evt == null || currentTime + 0.0001f < evt.startTime)
+                return 0;
+
+            if (evt.triggerMode == SkillEventTriggerMode.Once)
+                return previousTime < evt.startTime && currentTime + 0.0001f >= evt.startTime ? 1 : 0;
+
+            float endTime = evt.GetEndTime();
+            if (previousTime > endTime + 0.0001f)
+                return 0;
+
+            float interval = Mathf.Max(0.01f, evt.repeatInterval);
+            int count = 0;
+            for (float triggerTime = evt.startTime; triggerTime <= endTime + 0.0001f; triggerTime += interval)
+            {
+                if (triggerTime > previousTime && triggerTime <= currentTime + 0.0001f)
+                    count++;
+            }
+
+            return count;
+        }
+
+        private void UpdateTimelinePreviewVfxInstances()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null || _previewTarget == null)
+            {
+                DestroyTimelinePreviewVfxInstances();
+                return;
+            }
+
+            var activeKeys = new HashSet<string>();
+            List<SkillVfxEvent> events = GetVfxEventList(skill);
+            if (events != null)
+            {
+                for (int eventIndex = 0; eventIndex < events.Count; eventIndex++)
+                {
+                    SkillVfxEvent evt = events[eventIndex];
+                    if (evt?.vfxEffects == null)
+                        continue;
+
+                    float endTime = evt.triggerMode == SkillEventTriggerMode.Repeated ? evt.GetEndTime() : evt.startTime;
+                    float interval = Mathf.Max(0.01f, evt.repeatInterval);
+                    int triggerIndex = 0;
+                    for (float triggerTime = evt.startTime; triggerTime <= endTime + 0.0001f; triggerTime += evt.triggerMode == SkillEventTriggerMode.Repeated ? interval : endTime + 1f)
+                    {
+                        for (int effectIndex = 0; effectIndex < evt.vfxEffects.Count; effectIndex++)
+                        {
+                            SkillVfxEffect effect = evt.vfxEffects[effectIndex];
+                            float duration = GetVfxPlaybackDuration(effect);
+                            if (effect?.particlePrefab == null || duration <= 0f)
+                                continue;
+
+                            if (_previewTime + 0.0001f < triggerTime || _previewTime > triggerTime + duration + 0.0001f)
+                                continue;
+
+                            string key = GetTimelinePreviewVfxKey(eventIndex, effectIndex, triggerIndex);
+                            activeKeys.Add(key);
+                            TimelinePreviewVfxInstance playback = EnsureTimelinePreviewVfxInstance(key, effect, TimelineTrackType.Vfx, eventIndex, effectIndex, triggerIndex, triggerTime, null);
+                            if (playback != null)
+                                SimulateTimelinePreviewVfx(playback, Mathf.Max(0f, _previewTime - triggerTime));
+                        }
+
+                        if (evt.triggerMode != SkillEventTriggerMode.Repeated)
+                            break;
+                        triggerIndex++;
+                    }
+                }
+            }
+
+            List<PreviewDamageHitResult> damageHits = CollectPreviewDamageHitHistory(skill);
+            for (int i = 0; i < damageHits.Count; i++)
+            {
+                PreviewDamageHitResult hit = damageHits[i];
+                if (hit?.effect?.onHitVfxEffects == null || hit.hitTargets == null || hit.hitTargets.Count == 0)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < hit.hitTargets.Count; targetIndex++)
+                {
+                    Transform target = hit.hitTargets[targetIndex];
+                    if (target == null)
+                        continue;
+
+                    for (int effectIndex = 0; effectIndex < hit.effect.onHitVfxEffects.Count; effectIndex++)
+                    {
+                        SkillVfxEffect effect = hit.effect.onHitVfxEffects[effectIndex];
+                        float duration = GetVfxPlaybackDuration(effect);
+                        if (effect?.particlePrefab == null || duration <= 0f)
+                            continue;
+
+                        string key = GetTimelinePreviewOnHitVfxKey(hit.eventIndex, hit.triggerIndex, hit.effectIndex, effectIndex, target);
+                        activeKeys.Add(key);
+                        TimelinePreviewVfxInstance playback = EnsureTimelinePreviewVfxInstance(key, effect, TimelineTrackType.Damage, hit.eventIndex, effectIndex, hit.triggerIndex, hit.triggerTime, target);
+                        if (playback != null)
+                            SimulateTimelinePreviewVfx(playback, Mathf.Max(0f, _previewTime - playback.triggerTime));
+                    }
+                }
+            }
+
+            for (int i = _timelinePreviewVfxInstances.Count - 1; i >= 0; i--)
+            {
+                TimelinePreviewVfxInstance playback = _timelinePreviewVfxInstances[i];
+                if (playback == null)
+                {
+                    _timelinePreviewVfxInstances.RemoveAt(i);
+                    continue;
+                }
+
+                if (activeKeys.Contains(playback.key))
+                    continue;
+
+                if (playback.trackType == TimelineTrackType.Damage && playback.effect != null)
+                {
+                    float playbackDuration = GetVfxPlaybackDuration(playback.effect);
+                    if (_previewTime <= playback.triggerTime + playbackDuration + 0.0001f)
+                        continue;
+                }
+
+                DestroyTimelinePreviewVfxInstance(playback);
+                _timelinePreviewVfxInstances.RemoveAt(i);
+            }
+        }
+
+        private TimelinePreviewVfxInstance EnsureTimelinePreviewVfxInstance(string key, SkillVfxEffect effect, TimelineTrackType trackType, int eventIndex, int effectIndex, int triggerIndex, float triggerTime, Transform explicitTarget)
+        {
+            for (int i = 0; i < _timelinePreviewVfxInstances.Count; i++)
+            {
+                TimelinePreviewVfxInstance playback = _timelinePreviewVfxInstances[i];
+                if (playback == null)
+                    continue;
+
+                if (playback.key == key)
+                {
+                    playback.effect = effect;
+                    playback.explicitTarget = explicitTarget;
+                    UpdateTimelinePreviewVfxTransform(playback);
+                    return playback;
+                }
+            }
+
+            GameObject instance = Object.Instantiate(effect.particlePrefab);
+            if (instance == null)
+                return null;
+
+            ApplyHideFlagsRecursively(instance, HideFlags.HideAndDontSave);
+            instance.name = $"[TimelinePreview]{effect.particlePrefab.name}";
+
+            TimelinePreviewVfxInstance created = new TimelinePreviewVfxInstance
+            {
+                key = key,
+                trackType = trackType,
+                eventIndex = eventIndex,
+                effectIndex = effectIndex,
+                triggerIndex = triggerIndex,
+                triggerTime = triggerTime,
+                prefab = effect.particlePrefab,
+                instance = instance,
+                effect = effect,
+                explicitTarget = explicitTarget,
+                baseScale = instance.transform.localScale,
+            };
+            _timelinePreviewVfxInstances.Add(created);
+            UpdateTimelinePreviewVfxTransform(created);
+            return created;
+        }
+
+        private static string GetTimelinePreviewVfxKey(int eventIndex, int effectIndex, int triggerIndex)
+        {
+            return $"{eventIndex}:{effectIndex}:{triggerIndex}";
+        }
+
+        private static string GetTimelinePreviewOnHitVfxKey(int eventIndex, int triggerIndex, int damageEffectIndex, int effectIndex, Transform target)
+        {
+            int targetId = target != null ? target.GetInstanceID() : 0;
+            return $"hit:{eventIndex}:{triggerIndex}:{damageEffectIndex}:{effectIndex}:{targetId}";
+        }
+
+        private void UpdateTimelinePreviewVfxTransform(TimelinePreviewVfxInstance playback)
+        {
+            if (playback?.instance == null || playback.effect == null)
+                return;
+
+            Transform anchor = ResolveCueAnchorTransform(playback.effect.anchor, playback.effect, playback.explicitTarget);
+            if (anchor == null)
+                anchor = _previewTarget != null ? _previewTarget.transform : null;
+            if (anchor == null)
+                return;
+
+            playback.instance.transform.position = anchor.TransformPoint(playback.effect.offset);
+            playback.instance.transform.rotation = anchor.rotation * Quaternion.Euler(playback.effect.rotationEuler);
+            playback.instance.transform.localScale = Vector3.Scale(playback.baseScale, playback.effect.scale);
+        }
+
+        private static void SimulateTimelinePreviewVfx(TimelinePreviewVfxInstance playback, float localTime)
+        {
+            if (playback?.instance == null)
+                return;
+
+            ParticleSystem[] particleSystems = playback.instance.GetComponentsInChildren<ParticleSystem>(true);
+            for (int i = 0; i < particleSystems.Length; i++)
+            {
+                ParticleSystem particleSystem = particleSystems[i];
+                if (particleSystem == null)
+                    continue;
+
+                particleSystem.Simulate(localTime, false, true, true);
+            }
+        }
+
+        private void DestroyTimelinePreviewVfxInstances()
+        {
+            for (int i = _timelinePreviewVfxInstances.Count - 1; i >= 0; i--)
+            {
+                DestroyTimelinePreviewVfxInstance(_timelinePreviewVfxInstances[i]);
+            }
+            _timelinePreviewVfxInstances.Clear();
+        }
+
+        private static void DestroyTimelinePreviewVfxInstance(TimelinePreviewVfxInstance playback)
+        {
+            if (playback?.instance != null)
+                Object.DestroyImmediate(playback.instance);
+        }
+
+        private static void PlayPreviewAudio(AudioClip clip)
+        {
+            if (clip == null || AudioUtilPlayPreviewClipMethod == null)
+                return;
+
+            ParameterInfo[] parameters = AudioUtilPlayPreviewClipMethod.GetParameters();
+            if (parameters.Length == 3)
+                AudioUtilPlayPreviewClipMethod.Invoke(null, new object[] { clip, 0, false });
+            else if (parameters.Length == 2)
+                AudioUtilPlayPreviewClipMethod.Invoke(null, new object[] { clip, 0 });
+            else if (parameters.Length == 1)
+                AudioUtilPlayPreviewClipMethod.Invoke(null, new object[] { clip });
+        }
+
+        private static void StopAllTimelinePreviewAudio()
+        {
+            AudioUtilStopAllPreviewClipsMethod?.Invoke(null, null);
+        }
+
+        private void TriggerTimelinePreviewHitSfx()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return;
+
+            List<PreviewDamageHitResult> damageHits = CollectPreviewDamageHitHistory(skill);
+            for (int i = 0; i < damageHits.Count; i++)
+            {
+                PreviewDamageHitResult hit = damageHits[i];
+                if (hit?.effect?.onHitSfxEffects == null || hit.hitTargets == null || hit.hitTargets.Count == 0)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < hit.hitTargets.Count; targetIndex++)
+                {
+                    Transform target = hit.hitTargets[targetIndex];
+                    if (target == null)
+                        continue;
+
+                    for (int effectIndex = 0; effectIndex < hit.effect.onHitSfxEffects.Count; effectIndex++)
+                    {
+                        SkillSfxEffect effect = hit.effect.onHitSfxEffects[effectIndex];
+                        if (effect?.audioClip == null)
+                            continue;
+
+                        string key = $"{hit.eventIndex}:{hit.triggerIndex}:{hit.effectIndex}:{effectIndex}:{target.GetInstanceID()}";
+                        if (_timelinePreviewHitSfxKeys.Add(key))
+                            PlayPreviewAudio(effect.audioClip);
+                    }
+                }
+            }
+        }
+
+        private void DrawTimelinePreviewDamageOverlays()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null || _previewTarget == null)
+                return;
+
+            List<SkillDamageEvent> damageEvents = GetDamageEventList(skill);
+            if (damageEvents == null)
+                return;
+
+            for (int eventIndex = 0; eventIndex < damageEvents.Count; eventIndex++)
+            {
+                SkillDamageEvent evt = damageEvents[eventIndex];
+                if (evt?.damageEffects == null)
+                    continue;
+
+                float activeDuration = Mathf.Max(evt.GetDetectionEndTime() - evt.startTime, 0.05f);
+                if (_previewTime + 0.0001f < evt.startTime || _previewTime > evt.startTime + activeDuration + 0.0001f)
+                    continue;
+
+                for (int effectIndex = 0; effectIndex < evt.damageEffects.Count; effectIndex++)
+                {
+                    SkillDamageEffect effect = evt.damageEffects[effectIndex];
+                    if (effect == null)
+                        continue;
+                    DrawDamageSceneHandle(effect);
+                }
+            }
+        }
+
+        private void DrawTimelinePreviewStateOverlay()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null || _previewTarget == null)
+                return;
+
+            List<PreviewOverlayLine> lines = BuildActivePreviewOverlayLines(skill);
+            List<PreviewDamageHitResult> damageHits = CollectPreviewDamageHitHistory(skill);
+            if (lines.Count == 0)
+            {
+                DrawPreviewPhysicsOverlays(skill, damageHits);
+                return;
+            }
+
+            Vector3 basePosition = _previewTarget.transform.position + Vector3.up * 2.4f;
+            float handleSize = HandleUtility.GetHandleSize(basePosition);
+            float lineOffset = handleSize * 0.12f;
+            Color oldColor = Handles.color;
+            GUIStyle style = new GUIStyle(EditorStyles.whiteMiniLabel)
+            {
+                fontStyle = FontStyle.Bold
+            };
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                PreviewOverlayLine line = lines[i];
+                Handles.color = line.color;
+                style.normal.textColor = line.color;
+                DrawSceneTextLabel(basePosition + Vector3.up * (lineOffset * (lines.Count - i)), line.text, style);
+            }
+
+            Handles.color = oldColor;
+            DrawPreviewPhysicsOverlays(skill, damageHits);
+        }
+
+        private void DrawPreviewPhysicsOverlays(SharedSkillDefinition skill, List<PreviewDamageHitResult> damageHits)
+        {
+            if (skill == null || _previewTarget == null)
+                return;
+
+            DrawTopLevelPhysicsPreviewOverlays(skill);
+            DrawTopLevelAttributePreviewOverlays(skill);
+            DrawDamageHitPreviewOverlays(damageHits);
+        }
+
+        private void ApplyPreviewPhysicsTransforms()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null || _previewTarget == null)
+                return;
+
+            List<SkillPhysicsEvent> physicsEvents = GetPhysicsEventList(skill);
+            if (physicsEvents != null)
+            {
+                for (int eventIndex = 0; eventIndex < physicsEvents.Count; eventIndex++)
+                {
+                    SkillPhysicsEvent evt = physicsEvents[eventIndex];
+                    if (evt?.physicsEffects == null)
+                        continue;
+
+                    int occurrenceIndex = 0;
+                    float eventEndTime = evt.GetEndTime();
+                    float interval = Mathf.Max(0.01f, evt.repeatInterval);
+                    for (float triggerTime = evt.startTime; triggerTime <= eventEndTime + 0.0001f; triggerTime += evt.triggerMode == SkillEventTriggerMode.Repeated ? interval : eventEndTime + 1f)
+                    {
+                        for (int effectIndex = 0; effectIndex < evt.physicsEffects.Count; effectIndex++)
+                        {
+                            SkillPhysicsEffect effect = evt.physicsEffects[effectIndex];
+                            if (effect == null)
+                                continue;
+
+                            ApplyPreviewPhysicsEffectToTarget(_previewTarget.transform, _previewTarget.transform.position, effect, triggerTime);
+                        }
+
+                        if (evt.triggerMode != SkillEventTriggerMode.Repeated)
+                            break;
+                        occurrenceIndex++;
+                    }
+                }
+            }
+
+            List<PreviewDamageHitResult> damageHits = CollectPreviewDamageHitHistory(skill);
+            for (int i = 0; i < damageHits.Count; i++)
+            {
+                PreviewDamageHitResult hit = damageHits[i];
+                if (hit?.effect?.onHitPhysicsEffects == null || hit.hitTargets == null)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < hit.hitTargets.Count; targetIndex++)
+                {
+                    Transform target = hit.hitTargets[targetIndex];
+                    if (target == null)
+                        continue;
+
+                    for (int effectIndex = 0; effectIndex < hit.effect.onHitPhysicsEffects.Count; effectIndex++)
+                    {
+                        SkillPhysicsEffect effect = hit.effect.onHitPhysicsEffects[effectIndex];
+                        if (effect == null)
+                            continue;
+
+                        ApplyPreviewPhysicsEffectToTarget(target, _previewTarget.transform.position, effect, hit.triggerTime);
+                    }
+                }
+            }
+        }
+
+        private void ApplyPreviewPhysicsEffectToTarget(Transform target, Vector3 attackerPosition, SkillPhysicsEffect effect, float triggerTime)
+        {
+            if (target == null || effect == null)
+                return;
+
+            float progress = GetPreviewPhysicsProgress(triggerTime, effect.duration);
+            if (progress < 0f)
+                return;
+
+            CachePreviewPhysicsBasePosition(target);
+            Vector3 offset = GetPreviewPhysicsOffset(target, attackerPosition, effect, progress);
+            if (offset == Vector3.zero)
+                return;
+
+            target.position += offset;
+        }
+
+        private float GetPreviewPhysicsProgress(float triggerTime, float duration)
+        {
+            if (duration > 0f)
+            {
+                if (_previewTime < triggerTime || _previewTime > triggerTime + duration)
+                    return -1f;
+                return Mathf.Clamp01((_previewTime - triggerTime) / duration);
+            }
+
+            float tolerance = Mathf.Max(0.02f, 0.5f / Mathf.Max(1, _frameRate));
+            return Mathf.Abs(_previewTime - triggerTime) <= tolerance ? 1f : -1f;
+        }
+
+        private Vector3 GetPreviewPhysicsOffset(Transform target, Vector3 attackerPosition, SkillPhysicsEffect effect, float progress)
+        {
+            Vector3 origin = _previewPhysicsOriginalPositions.TryGetValue(target, out Vector3 basePos) ? basePos : target.position;
+            Vector3 away = (origin - attackerPosition);
+            if (away.sqrMagnitude <= 0.0001f)
+                away = _previewTarget != null ? _previewTarget.transform.forward : Vector3.forward;
+            away.Normalize();
+
+            return effect.effectType switch
+            {
+                PhysicsEffectType.DashSelf => target.forward * effect.distance * progress,
+                PhysicsEffectType.Airborne => Vector3.up * effect.height * progress,
+                PhysicsEffectType.Knockback => away * effect.distance * progress,
+                PhysicsEffectType.Pull => -away * effect.distance * progress,
+                PhysicsEffectType.Launch => away * effect.distance * progress + Vector3.up * effect.height * progress,
+                _ => Vector3.zero,
+            };
+        }
+
+        private void CachePreviewPhysicsBasePosition(Transform target)
+        {
+            if (target == null || _previewPhysicsOriginalPositions.ContainsKey(target))
+                return;
+
+            _previewPhysicsOriginalPositions[target] = target.position;
+        }
+
+        private void RestorePreviewPhysicsTransforms()
+        {
+            if (_previewPhysicsOriginalPositions.Count == 0)
+                return;
+
+            foreach (var pair in _previewPhysicsOriginalPositions)
+            {
+                if (pair.Key != null)
+                    pair.Key.position = pair.Value;
+            }
+
+            _previewPhysicsOriginalPositions.Clear();
+        }
+
+        private void DrawTopLevelPhysicsPreviewOverlays(SharedSkillDefinition skill)
+        {
+            List<SkillPhysicsEvent> events = GetPhysicsEventList(skill);
+            if (events == null)
+                return;
+
+            for (int eventIndex = 0; eventIndex < events.Count; eventIndex++)
+            {
+                SkillPhysicsEvent evt = events[eventIndex];
+                if (evt?.physicsEffects == null || !IsCurrentPreviewEvent(evt, TimelineTrackType.Physics))
+                    continue;
+
+                for (int effectIndex = 0; effectIndex < evt.physicsEffects.Count; effectIndex++)
+                {
+                    SkillPhysicsEffect effect = evt.physicsEffects[effectIndex];
+                    if (effect == null)
+                        continue;
+
+                    DrawPhysicsPreviewVector(_previewTarget.transform.position, _previewTarget.transform.forward, effect, GetTrackColor(TimelineTrackType.Physics), $"顶层物理:{GetPhysicsEffectDisplayName(effect.effectType)}");
+                }
+            }
+        }
+
+        private void DrawDamageHitPreviewOverlays(List<PreviewDamageHitResult> damageHits)
+        {
+            if (damageHits == null)
+                return;
+
+            for (int i = 0; i < damageHits.Count; i++)
+            {
+                PreviewDamageHitResult hit = damageHits[i];
+                if (hit?.effect == null || hit.hitTargets == null)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < hit.hitTargets.Count; targetIndex++)
+                {
+                    Transform target = hit.hitTargets[targetIndex];
+                    if (target == null)
+                        continue;
+
+                    Vector3 targetPos = target.position;
+                    Color oldColor = Handles.color;
+                    Handles.color = GetTrackColor(TimelineTrackType.Damage);
+                    Handles.DrawDottedLine(_previewTarget.transform.position, targetPos, 4f);
+                    DrawSceneTextLabel(targetPos + Vector3.up * HandleUtility.GetHandleSize(targetPos) * 0.14f, $"命中:{target.name}");
+                    Handles.color = oldColor;
+
+                    if (hit.effect.onHitPhysicsEffects != null)
+                    {
+                        for (int j = 0; j < hit.effect.onHitPhysicsEffects.Count; j++)
+                        {
+                            SkillPhysicsEffect physics = hit.effect.onHitPhysicsEffects[j];
+                            if (physics == null)
+                                continue;
+                            DrawPhysicsPreviewVector(targetPos, (_previewTarget.transform.position - targetPos).normalized, physics, GetTrackColor(TimelineTrackType.Physics), $"命中物理:{GetPhysicsEffectDisplayName(physics.effectType)}");
+                        }
+                    }
+
+                    string attrSummary = BuildAttributePreviewSummary(target, hit.effect.onHitAttributeEffects);
+                    if (!string.IsNullOrWhiteSpace(attrSummary))
+                    {
+                        Color oldAttrColor = Handles.color;
+                        Handles.color = GetTrackColor(TimelineTrackType.Attribute);
+                        DrawSceneTextLabel(targetPos + Vector3.up * HandleUtility.GetHandleSize(targetPos) * 0.28f, $"命中属性:{attrSummary}");
+                        Handles.color = oldAttrColor;
+                    }
+
+                    string vfxSummary = JoinVfxEffectNames(hit.effect.onHitVfxEffects);
+                    if (!string.IsNullOrWhiteSpace(vfxSummary))
+                    {
+                        Color oldVfxColor = Handles.color;
+                        Handles.color = GetTrackColor(TimelineTrackType.Vfx);
+                        DrawSceneTextLabel(targetPos + Vector3.up * HandleUtility.GetHandleSize(targetPos) * 0.42f, $"命中特效:{vfxSummary}");
+                        Handles.color = oldVfxColor;
+                    }
+
+                    string sfxSummary = JoinSfxEffectNames(hit.effect.onHitSfxEffects);
+                    if (!string.IsNullOrWhiteSpace(sfxSummary))
+                    {
+                        Color oldSfxColor = Handles.color;
+                        Handles.color = GetTrackColor(TimelineTrackType.Sfx);
+                        DrawSceneTextLabel(targetPos + Vector3.up * HandleUtility.GetHandleSize(targetPos) * 0.56f, $"命中音效:{sfxSummary}");
+                        Handles.color = oldSfxColor;
+                    }
+                }
+            }
+        }
+
+        private void DrawTopLevelAttributePreviewOverlays(SharedSkillDefinition skill)
+        {
+            List<SkillAttributeEvent> events = GetAttributeEventList(skill);
+            if (events == null || _previewTarget == null)
+                return;
+
+            Vector3 labelPos = _previewTarget.transform.position + Vector3.up * HandleUtility.GetHandleSize(_previewTarget.transform.position) * 0.42f;
+            for (int eventIndex = 0; eventIndex < events.Count; eventIndex++)
+            {
+                SkillAttributeEvent evt = events[eventIndex];
+                if (evt?.attributeEffects == null || !IsCurrentPreviewEvent(evt, TimelineTrackType.Attribute))
+                    continue;
+
+                string summary = BuildAttributePreviewSummary(_previewTarget.transform, evt.attributeEffects);
+                if (string.IsNullOrWhiteSpace(summary))
+                    continue;
+
+                Color oldColor = Handles.color;
+                Handles.color = GetTrackColor(TimelineTrackType.Attribute);
+                DrawSceneTextLabel(labelPos, $"顶层属性:{summary}");
+                Handles.color = oldColor;
+                labelPos += Vector3.up * HandleUtility.GetHandleSize(labelPos) * 0.14f;
+            }
+        }
+
+        private void DrawPhysicsPreviewVector(Vector3 origin, Vector3 referenceDirection, SkillPhysicsEffect effect, Color color, string label)
+        {
+            if (effect == null)
+                return;
+
+            Vector3 direction = Vector3.zero;
+            switch (effect.effectType)
+            {
+                case PhysicsEffectType.DashSelf:
+                    direction = _previewTarget != null ? _previewTarget.transform.forward : referenceDirection;
+                    break;
+                case PhysicsEffectType.Airborne:
+                    direction = Vector3.up;
+                    break;
+                case PhysicsEffectType.Knockback:
+                    direction = (origin - _previewTarget.transform.position).normalized;
+                    break;
+                case PhysicsEffectType.Pull:
+                    direction = (_previewTarget.transform.position - origin).normalized;
+                    break;
+                case PhysicsEffectType.Launch:
+                    direction = ((origin - _previewTarget.transform.position).normalized + Vector3.up * Mathf.Max(0.2f, effect.height)).normalized;
+                    break;
+                case PhysicsEffectType.Stun:
+                case PhysicsEffectType.SuperArmor:
+                case PhysicsEffectType.Invincible:
+                    direction = Vector3.zero;
+                    break;
+            }
+
+            Color oldColor = Handles.color;
+            Handles.color = color;
+            float handleSize = HandleUtility.GetHandleSize(origin);
+
+            if (effect.effectType == PhysicsEffectType.Stun
+                || effect.effectType == PhysicsEffectType.SuperArmor
+                || effect.effectType == PhysicsEffectType.Invincible)
+            {
+                DrawSceneTextLabel(origin + Vector3.up * handleSize * 0.18f, $"{label} {effect.duration:0.##}s");
+                Handles.color = oldColor;
+                return;
+            }
+
+            float length = effect.effectType switch
+            {
+                PhysicsEffectType.Airborne => Mathf.Max(0.1f, effect.height),
+                PhysicsEffectType.Launch => Mathf.Max(0.1f, effect.distance + effect.height),
+                _ => Mathf.Max(0.1f, effect.distance),
+            };
+
+            Vector3 end = origin + direction.normalized * length;
+            Handles.DrawAAPolyLine(3f, origin, end);
+            Handles.ConeHandleCap(0, end, Quaternion.LookRotation(direction.normalized == Vector3.zero ? Vector3.forward : direction.normalized), handleSize * 0.08f, EventType.Repaint);
+            DrawSceneTextLabel(end + Vector3.up * handleSize * 0.08f, label);
+            Handles.color = oldColor;
+        }
+
+        private List<PreviewOverlayLine> BuildActivePreviewOverlayLines(SharedSkillDefinition skill)
+        {
+            var lines = new List<PreviewOverlayLine>();
+            if (skill == null)
+                return lines;
+
+            List<PreviewDamageHitResult> damageHits = CollectCurrentPreviewDamageHits(skill);
+            AppendActivePreviewDamageLines(lines, damageHits);
+            AppendActivePreviewLines(lines, GetPhysicsEventList(skill), TimelineTrackType.Physics);
+            AppendActivePreviewLines(lines, GetAttributeEventList(skill), TimelineTrackType.Attribute);
+            AppendActivePreviewLines(lines, GetVfxEventList(skill), TimelineTrackType.Vfx);
+            AppendActivePreviewLines(lines, GetSfxEventList(skill), TimelineTrackType.Sfx);
+            AppendPreviewAttributeDeltaLines(lines, skill, damageHits);
+            return lines;
+        }
+
+        private void AppendPreviewTargetStatLines(List<PreviewOverlayLine> lines)
+        {
+            if (_previewTarget == null)
+                return;
+
+            PlayerController player = _previewTarget.GetComponentInChildren<PlayerController>();
+            if (player?.PlayerModel != null)
+            {
+                Stats stats = player.PlayerModel.Stats;
+                lines.Insert(0, new PreviewOverlayLine
+                {
+                    text = $"[自身属性] HP {player.PlayerModel.CurrentHp:0.#}/{stats.MaxHp:0.#}  MP {player.PlayerModel.CurrentMp:0.#}/{stats.MaxMp:0.#}  攻击 {stats.Attack:0.#}  防御 {stats.Defense:0.#}  移速 {stats.MoveSpeed:0.##}",
+                    color = new Color(0.85f, 0.95f, 1f, 1f)
+                });
+                return;
+            }
+
+            EnemyController enemy = _previewTarget.GetComponentInChildren<EnemyController>();
+            if (enemy != null)
+            {
+                lines.Insert(0, new PreviewOverlayLine
+                {
+                    text = $"[自身属性] HP {enemy.CurrentHp:0.#}/{enemy.MaxHp:0.#}  攻击 {enemy.Attack:0.#}  防御 {enemy.Defense:0.#}  移速 {enemy.MoveSpeed:0.##}",
+                    color = new Color(1f, 0.92f, 0.82f, 1f)
+                });
+            }
+        }
+
+        private void AppendPreviewBaseStatLines(List<PreviewOverlayLine> lines, SharedSkillDefinition skill)
+        {
+            if (lines == null || _previewTarget == null)
+                return;
+
+            EnsurePreviewReferenceDatabases();
+
+            string selfBase = BuildBaseStatSummary(_previewTarget.transform);
+            if (!string.IsNullOrWhiteSpace(selfBase))
+            {
+                lines.Insert(Mathf.Min(1, lines.Count), new PreviewOverlayLine
+                {
+                    text = $"[基础属性(玩家1级/敌人难度1)] {selfBase}",
+                    color = new Color(0.92f, 0.92f, 0.92f, 1f)
+                });
+            }
+
+            List<PreviewDamageHitResult> damageHits = CollectCurrentPreviewDamageHits(skill);
+            var seen = new HashSet<Transform>();
+            for (int i = 0; i < damageHits.Count; i++)
+            {
+                PreviewDamageHitResult hit = damageHits[i];
+                if (hit?.hitTargets == null)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < hit.hitTargets.Count; targetIndex++)
+                {
+                    Transform target = hit.hitTargets[targetIndex];
+                    if (target == null || !seen.Add(target))
+                        continue;
+
+                    string summary = BuildBaseStatSummary(target);
+                    if (string.IsNullOrWhiteSpace(summary))
+                        continue;
+
+                    lines.Add(new PreviewOverlayLine
+                    {
+                        text = $"[命中目标基础属性] {target.name} -> {summary}",
+                        color = new Color(0.92f, 0.92f, 0.92f, 1f)
+                    });
+                }
+            }
+        }
+
+        private void EnsurePreviewReferenceDatabases()
+        {
+            if (_previewLevelGrowth == null)
+                _previewLevelGrowth = Resources.Load<LevelGrowthSO>("配置/玩家成长属性库");
+            if (_previewEnemyStatsDb == null)
+                _previewEnemyStatsDb = Resources.Load<EnemyStatsDatabaseSO>("配置/敌人属性库");
+        }
+
+        private string BuildBaseStatSummary(Transform target)
+        {
+            if (target == null)
+                return string.Empty;
+
+            PlayerController player = target.GetComponentInChildren<PlayerController>();
+            if (player != null)
+            {
+                EnsurePreviewReferenceDatabases();
+                var stats = new Stats();
+                _previewLevelGrowth?.GetStatsForLevel(1, stats);
+                return $"HP {stats.MaxHp:0.#}  MP {stats.MaxMp:0.#}  攻击 {stats.Attack:0.#}  防御 {stats.Defense:0.#}  移速 {stats.MoveSpeed:0.##}";
+            }
+
+            EnemyController enemy = target.GetComponentInChildren<EnemyController>();
+            if (enemy != null && _previewEnemyStatsDb != null)
+            {
+                EnemyStatsEntry entry = _previewEnemyStatsDb.GetEntry(enemy.EnemyId) ?? _previewEnemyStatsDb.GetEntry(enemy.EnemyCategory);
+                if (entry != null)
+                    return $"HP {entry.baseHp:0.#}  攻击 {entry.baseAttack:0.#}  防御 {entry.baseDefense:0.#}  移速 {entry.baseMoveSpeed:0.##}";
+            }
+
+            return string.Empty;
+        }
+
+        private void AppendPreviewAttributeDeltaLines(List<PreviewOverlayLine> lines, SharedSkillDefinition skill, List<PreviewDamageHitResult> damageHits)
+        {
+            if (_previewTarget == null || skill == null)
+                return;
+
+            List<SkillAttributeEvent> attributeEvents = GetAttributeEventList(skill);
+            if (attributeEvents != null)
+            {
+                for (int eventIndex = 0; eventIndex < attributeEvents.Count; eventIndex++)
+                {
+                    SkillAttributeEvent evt = attributeEvents[eventIndex];
+                    if (evt?.attributeEffects == null || !IsCurrentPreviewEvent(evt, TimelineTrackType.Attribute))
+                        continue;
+
+                    string summary = BuildAttributePreviewSummary(_previewTarget.transform, evt.attributeEffects);
+                    if (string.IsNullOrWhiteSpace(summary))
+                        continue;
+
+                    lines.Add(new PreviewOverlayLine
+                    {
+                        text = $"[属性变化] 自身 -> {summary}",
+                        color = GetTrackColor(TimelineTrackType.Attribute)
+                    });
+                }
+            }
+
+            if (damageHits == null)
+                return;
+
+            for (int i = 0; i < damageHits.Count; i++)
+            {
+                PreviewDamageHitResult hit = damageHits[i];
+                if (hit?.effect?.onHitAttributeEffects == null || hit.hitTargets == null)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < hit.hitTargets.Count; targetIndex++)
+                {
+                    Transform target = hit.hitTargets[targetIndex];
+                    if (target == null)
+                        continue;
+
+                    string summary = BuildAttributePreviewSummary(target, hit.effect.onHitAttributeEffects);
+                    if (string.IsNullOrWhiteSpace(summary))
+                        continue;
+
+                    lines.Add(new PreviewOverlayLine
+                    {
+                        text = $"[命中属性变化] {target.name} -> {summary}",
+                        color = GetTrackColor(TimelineTrackType.Attribute)
+                    });
+                }
+            }
+        }
+
+        private void AppendActivePreviewDamageLines(List<PreviewOverlayLine> lines, List<PreviewDamageHitResult> damageHits)
+        {
+            if (damageHits == null || damageHits.Count == 0)
+                return;
+
+            for (int i = 0; i < damageHits.Count; i++)
+            {
+                PreviewDamageHitResult hit = damageHits[i];
+                if (hit == null || hit.effect == null)
+                    continue;
+
+                string targetNames = hit.hitTargets.Count > 0
+                    ? string.Join("、", hit.hitTargets.ConvertAll(t => t != null ? t.name : "未知目标"))
+                    : "未命中";
+
+                string subSummary = BuildOnHitEffectSummary(hit.effect);
+                string text = $"[伤害轨] {GetDamageDetectionDisplayName(hit.effect)} -> {targetNames}";
+                if (!string.IsNullOrWhiteSpace(subSummary))
+                    text += $" / {subSummary}";
+
+                lines.Add(new PreviewOverlayLine
+                {
+                    text = text,
+                    color = GetTrackColor(TimelineTrackType.Damage)
+                });
+            }
+        }
+
+        private void AppendActivePreviewLines<T>(List<PreviewOverlayLine> lines, List<T> events, TimelineTrackType trackType) where T : SkillTimedEventBase
+        {
+            if (events == null)
+                return;
+
+            for (int i = 0; i < events.Count; i++)
+            {
+                T evt = events[i];
+                if (evt == null || !IsCurrentPreviewEvent(evt, trackType))
+                    continue;
+
+                string summary = BuildPreviewTrackSummary(evt, trackType);
+                if (string.IsNullOrWhiteSpace(summary))
+                    summary = GetTrackHeaderLabel(trackType);
+
+                lines.Add(new PreviewOverlayLine
+                {
+                    text = $"[{GetTrackHeaderLabel(trackType)}] {summary}",
+                    color = GetTrackColor(trackType)
+                });
+            }
+        }
+
+        private List<PreviewDamageHitResult> CollectCurrentPreviewDamageHits(SharedSkillDefinition skill)
+        {
+            var results = new List<PreviewDamageHitResult>();
+            if (skill == null || _previewTarget == null)
+                return results;
+
+            List<SkillDamageEvent> damageEvents = GetDamageEventList(skill);
+            if (damageEvents == null)
+                return results;
+
+            for (int eventIndex = 0; eventIndex < damageEvents.Count; eventIndex++)
+            {
+                SkillDamageEvent evt = damageEvents[eventIndex];
+                if (evt?.damageEffects == null)
+                    continue;
+
+                int occurrenceIndex = 0;
+                float eventEndTime = evt.GetEndTime();
+                float interval = Mathf.Max(0.01f, evt.repeatInterval);
+                for (float triggerTime = evt.startTime; triggerTime <= eventEndTime + 0.0001f; triggerTime += evt.triggerMode == SkillEventTriggerMode.Repeated ? interval : eventEndTime + 1f)
+                {
+                    if (!IsCurrentDamageOccurrence(evt, triggerTime))
+                    {
+                        if (evt.triggerMode != SkillEventTriggerMode.Repeated)
+                            break;
+                        occurrenceIndex++;
+                        continue;
+                    }
+
+                    for (int effectIndex = 0; effectIndex < evt.damageEffects.Count; effectIndex++)
+                    {
+                        SkillDamageEffect effect = evt.damageEffects[effectIndex];
+                        if (effect == null)
+                            continue;
+
+                        List<Transform> hitTargets = RunEditorPreviewDetection(effect);
+                        results.Add(new PreviewDamageHitResult
+                        {
+                            eventIndex = eventIndex,
+                            effectIndex = effectIndex,
+                            triggerIndex = occurrenceIndex,
+                            triggerTime = triggerTime,
+                            effect = effect,
+                            hitTargets = hitTargets
+                        });
+                    }
+
+                    if (evt.triggerMode != SkillEventTriggerMode.Repeated)
+                        break;
+                    occurrenceIndex++;
+                }
+            }
+
+            return results;
+        }
+
+        private List<PreviewDamageHitResult> CollectPreviewDamageHitHistory(SharedSkillDefinition skill)
+        {
+            var results = new List<PreviewDamageHitResult>();
+            if (skill == null || _previewTarget == null)
+                return results;
+
+            List<SkillDamageEvent> damageEvents = GetDamageEventList(skill);
+            if (damageEvents == null)
+                return results;
+
+            Transform explicitVictim = ResolveRootPreviewTarget(_previewVictimTarget)?.transform;
+            Transform previewRoot = _previewTarget.transform.root;
+
+            for (int eventIndex = 0; eventIndex < damageEvents.Count; eventIndex++)
+            {
+                SkillDamageEvent evt = damageEvents[eventIndex];
+                if (evt?.damageEffects == null)
+                    continue;
+
+                int occurrenceIndex = 0;
+                IteratePreviewTriggerTimes(evt, triggerTime =>
+                {
+                    for (int effectIndex = 0; effectIndex < evt.damageEffects.Count; effectIndex++)
+                    {
+                        SkillDamageEffect effect = evt.damageEffects[effectIndex];
+                        if (effect == null)
+                            continue;
+
+                        List<Transform> hitTargets;
+                        if (explicitVictim != null && explicitVictim != previewRoot)
+                        {
+                            hitTargets = new List<Transform> { explicitVictim };
+                        }
+                        else if (IsCurrentDamageOccurrence(evt, triggerTime))
+                        {
+                            hitTargets = RunEditorPreviewDetection(effect);
+                        }
+                        else
+                        {
+                            hitTargets = null;
+                        }
+
+                        if (hitTargets == null || hitTargets.Count == 0)
+                            continue;
+
+                        results.Add(new PreviewDamageHitResult
+                        {
+                            eventIndex = eventIndex,
+                            effectIndex = effectIndex,
+                            triggerIndex = occurrenceIndex,
+                            triggerTime = triggerTime,
+                            effect = effect,
+                            hitTargets = hitTargets
+                        });
+                    }
+
+                    occurrenceIndex++;
+                });
+            }
+
+            return results;
+        }
+
+        private bool IsCurrentDamageOccurrence(SkillDamageEvent evt, float triggerTime)
+        {
+            if (evt == null)
+                return false;
+
+            float endTime = triggerTime + GetMaxDamageDetectionDuration(evt);
+            if (endTime > triggerTime)
+                return _previewTime >= triggerTime && _previewTime <= endTime;
+
+            float tolerance = Mathf.Max(0.02f, 0.5f / Mathf.Max(1, _frameRate));
+            return Mathf.Abs(_previewTime - triggerTime) <= tolerance;
+        }
+
+        private List<Transform> RunEditorPreviewDetection(SkillDamageEffect effect)
+        {
+            var targets = new List<Transform>();
+            if (_previewTarget == null || effect == null)
+                return targets;
+
+            var buffer = new Collider[32];
+            int hitCount = 0;
+            bool ranDetection = false;
+
+            if (effect.detectionType == DamageDetectionType.Collision)
+            {
+                hitCount = RunEditorPreviewCollisionDetection(effect, buffer);
+                ranDetection = true;
+            }
+            else
+            {
+                ranDetection = DamageDetectionRunner.TryRunDetection(effect, _previewTarget.transform, null, null, buffer, out hitCount);
+            }
+
+            if (!ranDetection || hitCount <= 0)
+                return targets;
+
+            Transform previewRoot = _previewTarget.transform.root;
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider hit = buffer[i];
+                if (hit == null)
+                    continue;
+
+                Transform root = ResolvePreviewHitTargetRoot(hit.transform);
+                if (root == null || root == previewRoot || targets.Contains(root))
+                    continue;
+
+                targets.Add(root);
+            }
+
+            return targets;
+        }
+
+        private int RunEditorPreviewCollisionDetection(SkillDamageEffect effect, Collider[] outBuffer)
+        {
+            if (_previewTarget == null || effect == null || outBuffer == null || string.IsNullOrWhiteSpace(effect.colliderNodeName))
+                return 0;
+
+            Transform node = FindChildRecursive(_previewTarget.transform, effect.colliderNodeName);
+            if (node == null)
+                return 0;
+
+            Collider collider = node.GetComponent<Collider>();
+            if (collider == null)
+                collider = node.GetComponentInChildren<Collider>(true);
+            if (collider == null)
+                return 0;
+
+            int layerMask = LayerMask.GetMask(effect.hitLayerName);
+            if (layerMask == 0)
+                return 0;
+
+            if (collider is BoxCollider box)
+            {
+                Vector3 lossyScale = collider.transform.lossyScale;
+                Vector3 size = Vector3.Scale(box.size, new Vector3(Mathf.Abs(lossyScale.x), Mathf.Abs(lossyScale.y), Mathf.Abs(lossyScale.z)));
+                return Physics.OverlapBoxNonAlloc(collider.transform.TransformPoint(box.center), size * 0.5f, outBuffer, collider.transform.rotation, layerMask, QueryTriggerInteraction.Collide);
+            }
+
+            if (collider is SphereCollider sphere)
+            {
+                float radius = sphere.radius * Mathf.Max(Mathf.Abs(collider.transform.lossyScale.x), Mathf.Abs(collider.transform.lossyScale.y), Mathf.Abs(collider.transform.lossyScale.z));
+                return Physics.OverlapSphereNonAlloc(collider.transform.TransformPoint(sphere.center), radius, outBuffer, layerMask, QueryTriggerInteraction.Collide);
+            }
+
+            Bounds bounds = collider.bounds;
+            return Physics.OverlapBoxNonAlloc(bounds.center, bounds.extents, outBuffer, collider.transform.rotation, layerMask, QueryTriggerInteraction.Collide);
+        }
+
+        private static Transform ResolvePreviewHitTargetRoot(Transform target)
+        {
+            if (target == null)
+                return null;
+
+            PlayerController player = target.GetComponentInParent<PlayerController>();
+            if (player != null)
+                return player.transform;
+
+            EnemyController enemy = target.GetComponentInParent<EnemyController>();
+            if (enemy != null)
+                return enemy.transform;
+
+            return target.root;
+        }
+
+        private string BuildPreviewTrackSummary(SkillTimedEventBase evt, TimelineTrackType trackType)
+        {
+            switch (trackType)
+            {
+                case TimelineTrackType.Damage:
+                    if (evt is SkillDamageEvent damageEvent)
+                    {
+                        var parts = new List<string>();
+                        if (damageEvent.damageEffects != null)
+                        {
+                            for (int i = 0; i < damageEvent.damageEffects.Count; i++)
+                            {
+                                SkillDamageEffect effect = damageEvent.damageEffects[i];
+                                if (effect == null)
+                                    continue;
+
+                                string detectionLabel = effect.detectionType switch
+                                {
+                                    DamageDetectionType.RangeOverlap => effect.shape switch
+                                    {
+                                        AttackShapeType.Sphere => "球体检测",
+                                        AttackShapeType.Sector => "扇形检测",
+                                        AttackShapeType.Box => "盒体检测",
+                                        _ => "范围检测",
+                                    },
+                                    DamageDetectionType.Raycast => "射线检测",
+                                    DamageDetectionType.Collision => $"碰撞命中盒:{effect.colliderNodeName}",
+                                    _ => "伤害检测",
+                                };
+
+                                int onHitCount = (effect.onHitPhysicsEffects?.Count ?? 0)
+                                    + (effect.onHitAttributeEffects?.Count ?? 0)
+                                    + (effect.onHitVfxEffects?.Count ?? 0)
+                                    + (effect.onHitSfxEffects?.Count ?? 0);
+                                if (onHitCount > 0)
+                                    detectionLabel += $" / 命中附加{onHitCount}";
+
+                                parts.Add(detectionLabel);
+                            }
+                        }
+
+                        return string.Join("；", parts);
+                    }
+                    break;
+
+                case TimelineTrackType.Physics:
+                    if (evt is SkillPhysicsEvent physicsEvent)
+                        return JoinPhysicsEffectNames(physicsEvent.physicsEffects);
+                    break;
+
+                case TimelineTrackType.Attribute:
+                    if (evt is SkillAttributeEvent attributeEvent)
+                        return JoinAttributeEffectNames(attributeEvent.attributeEffects);
+                    break;
+
+                case TimelineTrackType.Vfx:
+                    if (evt is SkillVfxEvent vfxEvent)
+                        return JoinVfxEffectNames(vfxEvent.vfxEffects);
+                    break;
+
+                case TimelineTrackType.Sfx:
+                    if (evt is SkillSfxEvent sfxEvent)
+                        return JoinSfxEffectNames(sfxEvent.sfxEffects);
+                    break;
+            }
+
+            return string.Empty;
+        }
+
+        private static string JoinPhysicsEffectNames(List<SkillPhysicsEffect> effects)
+        {
+            if (effects == null || effects.Count == 0)
+                return string.Empty;
+
+            var names = new List<string>();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillPhysicsEffect effect = effects[i];
+                if (effect != null)
+                    names.Add(GetPhysicsEffectDisplayName(effect.effectType));
+            }
+
+            return string.Join("、", names);
+        }
+
+        private static string JoinAttributeEffectNames(List<SkillAttributeEffect> effects)
+        {
+            if (effects == null || effects.Count == 0)
+                return string.Empty;
+
+            var names = new List<string>();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillAttributeEffect effect = effects[i];
+                if (effect != null)
+                {
+                    string valueText = effect.usePercent
+                        ? $"{effect.magnitude * 100f:+0.##;-0.##;0}%"
+                        : $"{effect.magnitude:+0.##;-0.##;0}";
+                    string text = $"{GetStatFieldDisplayName(effect.statField)} {valueText}";
+                    if (effect.duration > 0f && effect.statField != SkillStatField.HP && effect.statField != SkillStatField.MP)
+                        text += $" {effect.duration:0.##}s";
+                    names.Add(text);
+                }
+            }
+
+            return string.Join("、", names);
+        }
+
+        private string BuildAttributePreviewSummary(Transform target, List<SkillAttributeEffect> effects)
+        {
+            if (target == null || effects == null || effects.Count == 0)
+                return string.Empty;
+
+            var parts = new List<string>();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillAttributeEffect effect = effects[i];
+                if (effect == null)
+                    continue;
+
+                string part = BuildSingleAttributePreviewText(target, effect);
+                if (!string.IsNullOrWhiteSpace(part))
+                    parts.Add(part);
+            }
+
+            return string.Join("、", parts);
+        }
+
+        private string BuildSingleAttributePreviewText(Transform target, SkillAttributeEffect effect)
+        {
+            if (effect == null)
+                return string.Empty;
+
+            string fieldName = GetStatFieldDisplayName(effect.statField);
+            string durationSuffix = effect.duration > 0f && effect.statField != SkillStatField.HP && effect.statField != SkillStatField.MP
+                ? $" {effect.duration:0.##}s"
+                : string.Empty;
+
+            if (TryGetPreviewStatValue(target, effect.statField, out float currentValue, out float referenceValue))
+            {
+                float delta = effect.usePercent ? referenceValue * effect.magnitude : effect.magnitude;
+                float after = currentValue + delta;
+                string valueText = effect.usePercent
+                    ? $"{effect.magnitude * 100f:+0.##;-0.##;0}%"
+                    : $"{delta:+0.##;-0.##;0}";
+                return $"{fieldName} {valueText} ({currentValue:0.##}->{after:0.##}){durationSuffix}";
+            }
+
+            string fallback = effect.usePercent
+                ? $"{effect.magnitude * 100f:+0.##;-0.##;0}%"
+                : $"{effect.magnitude:+0.##;-0.##;0}";
+            return $"{fieldName} {fallback}{durationSuffix}";
+        }
+
+        private bool TryGetPreviewStatValue(Transform target, SkillStatField statField, out float currentValue, out float referenceValue)
+        {
+            currentValue = 0f;
+            referenceValue = 0f;
+            if (target == null)
+                return false;
+
+            target = ResolvePreviewStatTarget(target);
+            PlayerController player = target.GetComponentInChildren<PlayerController>();
+            if (player?.PlayerModel != null)
+            {
+                Stats stats = player.PlayerModel.Stats;
+                switch (statField)
+                {
+                    case SkillStatField.HP:
+                        currentValue = player.PlayerModel.CurrentHp;
+                        referenceValue = stats.MaxHp;
+                        return true;
+                    case SkillStatField.MP:
+                        currentValue = player.PlayerModel.CurrentMp;
+                        referenceValue = stats.MaxMp;
+                        return true;
+                    case SkillStatField.Attack:
+                        currentValue = stats.Attack;
+                        referenceValue = stats.Attack;
+                        return true;
+                    case SkillStatField.Defense:
+                        currentValue = stats.Defense;
+                        referenceValue = stats.Defense;
+                        return true;
+                    case SkillStatField.MoveSpeed:
+                        currentValue = stats.MoveSpeed;
+                        referenceValue = stats.MoveSpeed;
+                        return true;
+                    case SkillStatField.HPRegen:
+                        currentValue = stats.HpRegen;
+                        referenceValue = stats.HpRegen;
+                        return true;
+                    case SkillStatField.MPRegen:
+                        currentValue = stats.MpRegen;
+                        referenceValue = stats.MpRegen;
+                        return true;
+                    case SkillStatField.CritRate:
+                        currentValue = stats.CritRate;
+                        referenceValue = stats.CritRate;
+                        return true;
+                    case SkillStatField.CritDamage:
+                        currentValue = stats.CritDmg;
+                        referenceValue = stats.CritDmg;
+                        return true;
+                    case SkillStatField.AttackSpeed:
+                        currentValue = stats.AttackSpeed;
+                        referenceValue = stats.AttackSpeed;
+                        return true;
+                    case SkillStatField.SkillDamage:
+                        currentValue = stats.DamageBonus;
+                        referenceValue = stats.DamageBonus;
+                        return true;
+                    case SkillStatField.DamageReduce:
+                        currentValue = stats.DamageReduce;
+                        referenceValue = stats.DamageReduce;
+                        return true;
+                    case SkillStatField.LifeSteal:
+                        currentValue = stats.LifeSteal;
+                        referenceValue = stats.LifeSteal;
+                        return true;
+                }
+            }
+
+            EnemyController enemy = target.GetComponentInChildren<EnemyController>();
+            if (enemy != null)
+            {
+                switch (statField)
+                {
+                    case SkillStatField.HP:
+                        currentValue = enemy.CurrentHp;
+                        referenceValue = enemy.MaxHp;
+                        return true;
+                    case SkillStatField.Attack:
+                        currentValue = enemy.Attack;
+                        referenceValue = enemy.Attack;
+                        return true;
+                    case SkillStatField.Defense:
+                        currentValue = enemy.Defense;
+                        referenceValue = enemy.Defense;
+                        return true;
+                    case SkillStatField.MoveSpeed:
+                        currentValue = enemy.MoveSpeed;
+                        referenceValue = enemy.MoveSpeed;
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static Transform ResolvePreviewStatTarget(Transform target)
+        {
+            if (target == null)
+                return null;
+
+            Transform root = target.root != null ? target.root : target;
+            if (root.GetComponentInChildren<PlayerController>() != null || root.GetComponentInChildren<EnemyController>() != null)
+                return root;
+
+            return target;
+        }
+
+        private static string GetPhysicsEffectDisplayName(PhysicsEffectType effectType)
+        {
+            return effectType switch
+            {
+                PhysicsEffectType.Knockback => "击退",
+                PhysicsEffectType.Pull => "拉拽",
+                PhysicsEffectType.Launch => "击飞",
+                PhysicsEffectType.DashSelf => "位移",
+                PhysicsEffectType.Stun => "眩晕",
+                PhysicsEffectType.Airborne => "腾空",
+                PhysicsEffectType.SuperArmor => "霸体",
+                PhysicsEffectType.Invincible => "无敌",
+                _ => effectType.ToString(),
+            };
+        }
+
+        private static string GetStatFieldDisplayName(SkillStatField statField)
+        {
+            return statField switch
+            {
+                SkillStatField.HP => "生命",
+                SkillStatField.MP => "法力",
+                SkillStatField.Attack => "攻击",
+                SkillStatField.Defense => "防御",
+                SkillStatField.MoveSpeed => "移速",
+                SkillStatField.HPRegen => "生命回复",
+                SkillStatField.MPRegen => "法力回复",
+                SkillStatField.CritRate => "暴击率",
+                SkillStatField.CritDamage => "暴击伤害",
+                SkillStatField.AttackSpeed => "攻速",
+                SkillStatField.SkillDamage => "增伤",
+                SkillStatField.DamageReduce => "减伤",
+                SkillStatField.LifeSteal => "吸血",
+                _ => statField.ToString(),
+            };
+        }
+
+        private static string GetDamageDetectionDisplayName(SkillDamageEffect effect)
+        {
+            if (effect == null)
+                return "伤害检测";
+
+            return effect.detectionType switch
+            {
+                DamageDetectionType.RangeOverlap => effect.shape switch
+                {
+                    AttackShapeType.Sphere => "球体检测",
+                    AttackShapeType.Sector => "扇形检测",
+                    AttackShapeType.Box => "盒体检测",
+                    _ => "范围检测",
+                },
+                DamageDetectionType.Raycast => "射线检测",
+                DamageDetectionType.Collision => string.IsNullOrWhiteSpace(effect.colliderNodeName)
+                    ? "碰撞命中盒"
+                    : $"碰撞命中盒:{effect.colliderNodeName}",
+                _ => "伤害检测",
+            };
+        }
+
+        private static string BuildOnHitEffectSummary(SkillDamageEffect effect)
+        {
+            if (effect == null)
+                return string.Empty;
+
+            var parts = new List<string>();
+            if (effect.onHitPhysicsEffects != null && effect.onHitPhysicsEffects.Count > 0)
+                parts.Add($"命中物理:{JoinPhysicsEffectNames(effect.onHitPhysicsEffects)}");
+            if (effect.onHitAttributeEffects != null && effect.onHitAttributeEffects.Count > 0)
+                parts.Add($"命中属性:{JoinAttributeEffectNames(effect.onHitAttributeEffects)}");
+            if (effect.onHitVfxEffects != null && effect.onHitVfxEffects.Count > 0)
+                parts.Add($"命中特效:{JoinVfxEffectNames(effect.onHitVfxEffects)}");
+            if (effect.onHitSfxEffects != null && effect.onHitSfxEffects.Count > 0)
+                parts.Add($"命中音效:{JoinSfxEffectNames(effect.onHitSfxEffects)}");
+            return string.Join(" / ", parts);
+        }
+
+        private static string JoinVfxEffectNames(List<SkillVfxEffect> effects)
+        {
+            if (effects == null || effects.Count == 0)
+                return string.Empty;
+
+            var names = new List<string>();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillVfxEffect effect = effects[i];
+                if (effect?.particlePrefab != null)
+                    names.Add(effect.particlePrefab.name);
+            }
+
+            return string.Join("、", names);
+        }
+
+        private static string JoinSfxEffectNames(List<SkillSfxEffect> effects)
+        {
+            if (effects == null || effects.Count == 0)
+                return string.Empty;
+
+            var names = new List<string>();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillSfxEffect effect = effects[i];
+                if (effect?.audioClip != null)
+                    names.Add(effect.audioClip.name);
+            }
+
+            return string.Join("、", names);
+        }
         private SharedSkillDefinition GetSelectedSkill()
         {
-            if (_database == null || _database.entries == null)
+            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
+            if (visibleSkills == null)
                 return null;
-            if (_selectedSkillIndex < 0 || _selectedSkillIndex >= _database.entries.Count)
+            if (_selectedSkillIndex < 0 || _selectedSkillIndex >= visibleSkills.Count)
                 return null;
-            return _database.entries[_selectedSkillIndex];
+            return visibleSkills[_selectedSkillIndex];
+        }
+
+        private void SelectEvent(TimelineTrackType trackType, int eventIndex)
+        {
+            bool changed = _selectedEventTrackType != trackType || _selectedEventIndex != eventIndex;
+            _selectedEventTrackType = trackType;
+            _selectedEventIndex = eventIndex;
+
+            if (!changed)
+                return;
+
+            _activeSceneDamageIndex = -1;
+            _activeSceneCueIndex = -1;
+            _activeSceneHitVfxDamageIndex = -1;
+            _activeSceneHitVfxIndex = -1;
+            DestroyScenePreviewCueInstance();
+        }
+
+        private void ClearSelectedEvent()
+        {
+            _selectedEventTrackType = TimelineTrackType.Damage;
+            _selectedEventIndex = -1;
+            _activeSceneDamageIndex = -1;
+            _activeSceneCueIndex = -1;
+            _activeSceneHitVfxDamageIndex = -1;
+            _activeSceneHitVfxIndex = -1;
+            DestroyScenePreviewCueInstance();
+        }
+
+        private List<SkillDamageEvent> GetDamageEventList(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return null;
+            if (skill.damageEvents == null)
+                skill.damageEvents = new List<SkillDamageEvent>();
+            return skill.damageEvents;
+        }
+
+        private List<SkillPhysicsEvent> GetPhysicsEventList(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return null;
+            if (skill.physicsEvents == null)
+                skill.physicsEvents = new List<SkillPhysicsEvent>();
+            return skill.physicsEvents;
+        }
+
+        private List<SkillAttributeEvent> GetAttributeEventList(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return null;
+            if (skill.attributeEvents == null)
+                skill.attributeEvents = new List<SkillAttributeEvent>();
+            return skill.attributeEvents;
+        }
+
+        private List<SkillVfxEvent> GetVfxEventList(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return null;
+            if (skill.vfxEvents == null)
+                skill.vfxEvents = new List<SkillVfxEvent>();
+            return skill.vfxEvents;
+        }
+
+        private List<SkillSfxEvent> GetSfxEventList(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return null;
+            if (skill.sfxEvents == null)
+                skill.sfxEvents = new List<SkillSfxEvent>();
+            return skill.sfxEvents;
+        }
+
+        private int GetTrackEventCount(SharedSkillDefinition skill, TimelineTrackType trackType)
+        {
+            return trackType switch
+            {
+                TimelineTrackType.Damage => GetDamageEventList(skill)?.Count ?? 0,
+                TimelineTrackType.Physics => GetPhysicsEventList(skill)?.Count ?? 0,
+                TimelineTrackType.Attribute => GetAttributeEventList(skill)?.Count ?? 0,
+                TimelineTrackType.Vfx => GetVfxEventList(skill)?.Count ?? 0,
+                TimelineTrackType.Sfx => GetSfxEventList(skill)?.Count ?? 0,
+                _ => 0,
+            };
+        }
+
+        private int GetTotalEventCount(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return 0;
+
+            return GetTrackEventCount(skill, TimelineTrackType.Damage)
+                + GetTrackEventCount(skill, TimelineTrackType.Physics)
+                + GetTrackEventCount(skill, TimelineTrackType.Attribute)
+                + GetTrackEventCount(skill, TimelineTrackType.Vfx)
+                + GetTrackEventCount(skill, TimelineTrackType.Sfx);
+        }
+
+        private SkillTimedEventBase GetTrackEvent(SharedSkillDefinition skill, TimelineTrackType trackType, int eventIndex)
+        {
+            if (skill == null || eventIndex < 0)
+                return null;
+
+            return trackType switch
+            {
+                TimelineTrackType.Damage => eventIndex < GetDamageEventList(skill).Count ? GetDamageEventList(skill)[eventIndex] : null,
+                TimelineTrackType.Physics => eventIndex < GetPhysicsEventList(skill).Count ? GetPhysicsEventList(skill)[eventIndex] : null,
+                TimelineTrackType.Attribute => eventIndex < GetAttributeEventList(skill).Count ? GetAttributeEventList(skill)[eventIndex] : null,
+                TimelineTrackType.Vfx => eventIndex < GetVfxEventList(skill).Count ? GetVfxEventList(skill)[eventIndex] : null,
+                TimelineTrackType.Sfx => eventIndex < GetSfxEventList(skill).Count ? GetSfxEventList(skill)[eventIndex] : null,
+                _ => null,
+            };
+        }
+
+        private SkillTimedEventBase GetSelectedTimedEvent()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return null;
+            return GetTrackEvent(skill, _selectedEventTrackType, _selectedEventIndex);
+        }
+
+        private List<TimelineEventHandle> GetTrackEventHandles(SharedSkillDefinition skill, TimelineTrackType trackType)
+        {
+            var handles = new List<TimelineEventHandle>();
+            if (skill == null)
+                return handles;
+
+            int count = GetTrackEventCount(skill, trackType);
+            for (int i = 0; i < count; i++)
+            {
+                SkillTimedEventBase timedEvent = GetTrackEvent(skill, trackType, i);
+                if (timedEvent == null)
+                    continue;
+                if (trackType == TimelineTrackType.Damage && timedEvent is SkillDamageEvent damageEvent && !PassesDamageSubFilters(damageEvent))
+                    continue;
+
+                handles.Add(new TimelineEventHandle
+                {
+                    trackType = trackType,
+                    eventIndex = i,
+                    timedEvent = timedEvent,
+                });
+            }
+
+            return handles;
+        }
+
+        private bool PassesDamageSubFilters(SkillDamageEvent evt)
+        {
+            if (evt == null)
+                return false;
+
+            bool needsFilter = _filterDamageWithOnHitPhysics
+                || _filterDamageWithOnHitAttribute
+                || _filterDamageWithOnHitVfx
+                || _filterDamageWithOnHitSfx;
+            if (!needsFilter)
+                return true;
+
+            bool hasPhysics = false;
+            bool hasAttribute = false;
+            bool hasVfx = false;
+            bool hasSfx = false;
+            if (evt.damageEffects != null)
+            {
+                for (int i = 0; i < evt.damageEffects.Count; i++)
+                {
+                    SkillDamageEffect effect = evt.damageEffects[i];
+                    if (effect == null)
+                        continue;
+
+                    hasPhysics |= effect.onHitPhysicsEffects != null && effect.onHitPhysicsEffects.Count > 0;
+                    hasAttribute |= effect.onHitAttributeEffects != null && effect.onHitAttributeEffects.Count > 0;
+                    hasVfx |= effect.onHitVfxEffects != null && effect.onHitVfxEffects.Count > 0;
+                    hasSfx |= effect.onHitSfxEffects != null && effect.onHitSfxEffects.Count > 0;
+                }
+            }
+
+            if (_filterDamageWithOnHitPhysics && !hasPhysics)
+                return false;
+            if (_filterDamageWithOnHitAttribute && !hasAttribute)
+                return false;
+            if (_filterDamageWithOnHitVfx && !hasVfx)
+                return false;
+            if (_filterDamageWithOnHitSfx && !hasSfx)
+                return false;
+            return true;
+        }
+
+        private SkillTimelineEvent CreateLegacyEventView(SkillTimedEventBase timedEvent, TimelineTrackType trackType)
+        {
+            if (timedEvent == null)
+                return null;
+
+            var view = new SkillTimelineEvent
+            {
+                eventId = timedEvent.eventId,
+                startTime = timedEvent.startTime,
+                triggerMode = timedEvent.triggerMode,
+                activeDuration = timedEvent.activeDuration,
+                repeatInterval = timedEvent.repeatInterval,
+                damageEffects = new List<SkillDamageEffect>(),
+                physicsEffects = new List<SkillPhysicsEffect>(),
+                attributeEffects = new List<SkillAttributeEffect>(),
+                vfxEffects = new List<SkillVfxEffect>(),
+                sfxEffects = new List<SkillSfxEffect>(),
+            };
+
+            switch (trackType)
+            {
+                case TimelineTrackType.Damage:
+                    SkillDamageEvent damageEvent = (SkillDamageEvent)timedEvent;
+                    if (damageEvent.damageEffects == null)
+                        damageEvent.damageEffects = new List<SkillDamageEffect>();
+                    view.damageEffects = damageEvent.damageEffects;
+                    break;
+                case TimelineTrackType.Physics:
+                    SkillPhysicsEvent physicsEvent = (SkillPhysicsEvent)timedEvent;
+                    if (physicsEvent.physicsEffects == null)
+                        physicsEvent.physicsEffects = new List<SkillPhysicsEffect>();
+                    view.physicsEffects = physicsEvent.physicsEffects;
+                    break;
+                case TimelineTrackType.Attribute:
+                    SkillAttributeEvent attributeEvent = (SkillAttributeEvent)timedEvent;
+                    if (attributeEvent.attributeEffects == null)
+                        attributeEvent.attributeEffects = new List<SkillAttributeEffect>();
+                    view.attributeEffects = attributeEvent.attributeEffects;
+                    break;
+                case TimelineTrackType.Vfx:
+                    SkillVfxEvent vfxEvent = (SkillVfxEvent)timedEvent;
+                    if (vfxEvent.vfxEffects == null)
+                        vfxEvent.vfxEffects = new List<SkillVfxEffect>();
+                    view.vfxEffects = vfxEvent.vfxEffects;
+                    break;
+                case TimelineTrackType.Sfx:
+                    SkillSfxEvent sfxEvent = (SkillSfxEvent)timedEvent;
+                    if (sfxEvent.sfxEffects == null)
+                        sfxEvent.sfxEffects = new List<SkillSfxEffect>();
+                    view.sfxEffects = sfxEvent.sfxEffects;
+                    break;
+            }
+
+            return view;
         }
 
         private bool HasSelectedSkill()
@@ -1532,7 +5013,9 @@ namespace Game.Editor
         private bool HasSelectedEvent()
         {
             SharedSkillDefinition skill = GetSelectedSkill();
-            return skill != null && skill.events != null && _selectedEventIndex >= 0 && _selectedEventIndex < skill.events.Count;
+            return skill != null
+                && _selectedEventIndex >= 0
+                && _selectedEventIndex < GetTrackEventCount(skill, _selectedEventTrackType);
         }
 
         private void EnsureSerializedDatabase()
@@ -1551,25 +5034,707 @@ namespace Game.Editor
             _serializedDb = _database != null ? new SerializedObject(_database) : null;
         }
 
-        private void EnsureEntryList()
+        private void EnsureGroupList()
         {
-            if (_database != null && _database.entries == null)
-                _database.entries = new List<SharedSkillDefinition>();
+            if (_database == null)
+                return;
+
+            if (_database.groups == null)
+                _database.groups = new List<SkillGroupDefinition>();
+
+            if (_database.groups.Count == 0)
+            {
+                if (_database.entries == null)
+                    _database.entries = new List<SharedSkillDefinition>();
+
+                _database.groups.Add(new SkillGroupDefinition
+                {
+                    groupId = "default",
+                    groupName = "默认分组",
+                    entries = _database.entries,
+                });
+                _selectedGroupIndex = 0;
+                return;
+            }
+
+            for (int i = 0; i < _database.groups.Count; i++)
+            {
+                if (_database.groups[i] == null)
+                    _database.groups[i] = new SkillGroupDefinition();
+                else if (_database.groups[i].entries == null)
+                    _database.groups[i].entries = new List<SharedSkillDefinition>();
+            }
+
+            if (_selectedGroupIndex < 0 || _selectedGroupIndex >= _database.groups.Count)
+                _selectedGroupIndex = 0;
+        }
+
+        private void DrawGroupSelector(Rect rect, bool hasDatabase)
+        {
+            EditorGUI.BeginDisabledGroup(!hasDatabase);
+            try
+            {
+                if (!hasDatabase)
+                {
+                    EditorGUI.Popup(rect, 0, new[] { "未选择技能库" });
+                    return;
+                }
+
+                EnsureGroupList();
+                string[] options = GetGroupDisplayOptions();
+                int newGroupIndex = EditorGUI.Popup(rect, Mathf.Clamp(_selectedGroupIndex, 0, Mathf.Max(0, options.Length - 1)), options);
+                if (newGroupIndex != _selectedGroupIndex)
+                {
+                    _selectedGroupIndex = newGroupIndex;
+                    _selectedSkillIndex = -1;
+                    ClearSelectedEvent();
+                    _timelineScrollX = 0f;
+                    StopPreview();
+                }
+            }
+            finally
+            {
+                EditorGUI.EndDisabledGroup();
+            }
+        }
+
+        private string[] GetGroupDisplayOptions()
+        {
+            EnsureGroupList();
+            if (_database?.groups == null || _database.groups.Count == 0)
+                return new[] { "默认分组" };
+
+            var labels = new string[_database.groups.Count];
+            for (int i = 0; i < _database.groups.Count; i++)
+            {
+                var group = _database.groups[i];
+                labels[i] = group == null
+                    ? $"分组{i}"
+                    : (!string.IsNullOrWhiteSpace(group.groupName) ? group.groupName : group.groupId);
+            }
+            return labels;
+        }
+
+        private string[] GetSkillEntryOptions()
+        {
+            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
+            if (visibleSkills == null || visibleSkills.Count == 0)
+                return new[] { "未选择技能" };
+
+            var labels = new string[visibleSkills.Count];
+            for (int i = 0; i < visibleSkills.Count; i++)
+            {
+                SharedSkillDefinition entry = visibleSkills[i];
+                labels[i] = entry == null || string.IsNullOrWhiteSpace(entry.skillId)
+                    ? $"技能{i + 1}"
+                    : entry.skillId;
+            }
+
+            return labels;
+        }
+
+        private List<SharedSkillDefinition> GetVisibleSkillList()
+        {
+            EnsureGroupList();
+            return _database?.GetEntriesInGroup(_selectedGroupIndex) ?? new List<SharedSkillDefinition>();
+        }
+
+        private void EnsureSkillSelectionIsValid()
+        {
+            EnsureGroupList();
+            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
+            if (visibleSkills == null || visibleSkills.Count == 0)
+            {
+                _selectedSkillIndex = -1;
+                return;
+            }
+
+            _selectedSkillIndex = Mathf.Clamp(_selectedSkillIndex, 0, visibleSkills.Count - 1);
+        }
+
+        private void DrawPreviewTargetSelector()
+        {
+            List<GameObject> candidates = GetPreviewRootCandidates(_previewTargetFilter);
+            GameObject currentRoot = ResolveRootPreviewTarget(_previewTarget);
+            int selectedIndex = 0;
+            string[] options = new string[candidates.Count + 1];
+            options[0] = "未选择对象";
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                options[i + 1] = candidates[i] != null ? candidates[i].name : "空对象";
+                if (candidates[i] == currentRoot)
+                    selectedIndex = i + 1;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            int newIndex = EditorGUILayout.Popup(selectedIndex, options, EditorStyles.toolbarPopup, GUILayout.ExpandWidth(true));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _previewTarget = newIndex <= 0 ? null : candidates[newIndex - 1];
+                if (!_isPlaying)
+                    SampleAnimationAtTime(_previewTime);
+                Repaint();
+                SceneView.RepaintAll();
+            }
+        }
+
+        private void DrawPreviewVictimSelector()
+        {
+            List<GameObject> candidates = GetPreviewRootCandidates(_previewVictimFilter);
+            GameObject currentRoot = ResolveRootPreviewTarget(_previewVictimTarget);
+            int selectedIndex = 0;
+            string[] options = new string[candidates.Count + 1];
+            options[0] = "未选择对象";
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                options[i + 1] = candidates[i] != null ? candidates[i].name : "空对象";
+                if (candidates[i] == currentRoot)
+                    selectedIndex = i + 1;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            int newIndex = EditorGUILayout.Popup(selectedIndex, options, EditorStyles.toolbarPopup, GUILayout.ExpandWidth(true));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _previewVictimTarget = newIndex <= 0 ? null : candidates[newIndex - 1];
+                if (!_isPlaying)
+                    SampleAnimationAtTime(_previewTime);
+                Repaint();
+                SceneView.RepaintAll();
+            }
+        }
+
+        private void DrawSkillLibrarySelectorCompact()
+        {
+            EditorGUI.BeginChangeCheck();
+            SharedSkillDatabaseSO newDatabase = (SharedSkillDatabaseSO)EditorGUILayout.ObjectField(
+                _database,
+                typeof(SharedSkillDatabaseSO),
+                false,
+                GUILayout.Width(150f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _database = newDatabase;
+                RebuildSerializedDb();
+                _selectedGroupIndex = 0;
+                _selectedSkillIndex = 0;
+                EnsureSkillSelectionIsValid();
+                ClearSelectedEvent();
+                _timelineScrollX = 0f;
+                StopPreview();
+            }
+
+            EnsureSkillSelectionIsValid();
+
+            string[] groupOptions = GetGroupDisplayOptions();
+            EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
+            EditorGUI.BeginChangeCheck();
+            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(88f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedGroupIndex = newGroupIndex;
+                _selectedSkillIndex = 0;
+                EnsureSkillSelectionIsValid();
+                ClearSelectedEvent();
+                _timelineScrollX = 0f;
+                StopPreview();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            string[] skillOptions = GetSkillEntryOptions();
+            EditorGUI.BeginDisabledGroup(skillOptions.Length <= 1);
+            EditorGUI.BeginChangeCheck();
+            int newSkillIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedSkillIndex), skillOptions, EditorStyles.toolbarPopup, GUILayout.Width(120f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedSkillIndex = newSkillIndex;
+                EnsureSkillSelectionIsValid();
+                ClearSelectedEvent();
+                _timelineScrollX = 0f;
+                StopPreview();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUI.BeginDisabledGroup(_database == null || _selectedGroupIndex < 0);
+            try
+            {
+                if (GUILayout.Button("+", EditorStyles.miniButtonLeft, GUILayout.Width(20f)))
+                    AddSkill();
+
+                EditorGUI.BeginDisabledGroup(!HasSelectedSkill());
+                try
+                {
+                    if (GUILayout.Button("-", EditorStyles.miniButtonRight, GUILayout.Width(20f)))
+                        RemoveSelectedSkill();
+                }
+                finally
+                {
+                    EditorGUI.EndDisabledGroup();
+                }
+            }
+            finally
+            {
+                EditorGUI.EndDisabledGroup();
+            }
+        }
+
+        private void DrawAnimationLibrarySelectorCompact()
+        {
+            EditorGUI.BeginChangeCheck();
+            CharacterAnimationLibrarySO newLibrary = (CharacterAnimationLibrarySO)EditorGUILayout.ObjectField(
+                _animationLibrary,
+                typeof(CharacterAnimationLibrarySO),
+                false,
+                GUILayout.Width(150f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _animationLibrary = newLibrary;
+                _selectedAnimationGroupIndex = 0;
+                _selectedAnimationEntryIndex = 0;
+                EnsureAnimationSelectionIsValid();
+                ApplySelectedPreviewClip();
+            }
+
+            EnsureAnimationSelectionIsValid();
+
+            string[] groupOptions = GetAnimationGroupOptions();
+            EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
+            EditorGUI.BeginChangeCheck();
+            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(88f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedAnimationGroupIndex = newGroupIndex;
+                _selectedAnimationEntryIndex = 0;
+                EnsureAnimationSelectionIsValid();
+                ApplySelectedPreviewClip();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            string[] entryOptions = GetAnimationEntryOptions();
+            EditorGUI.BeginDisabledGroup(entryOptions.Length <= 1);
+            EditorGUI.BeginChangeCheck();
+            int newEntryIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationEntryIndex), entryOptions, EditorStyles.toolbarPopup, GUILayout.Width(120f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedAnimationEntryIndex = newEntryIndex;
+                EnsureAnimationSelectionIsValid();
+                ApplySelectedPreviewClip();
+            }
+            EditorGUI.EndDisabledGroup();
+        }
+
+        private void DrawSkillLibrarySelectorPanel()
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.ExpandWidth(true));
+            try
+            {
+                EditorGUILayout.LabelField("技能库", EditorStyles.boldLabel);
+
+                EditorGUI.BeginChangeCheck();
+                SharedSkillDatabaseSO newDatabase = (SharedSkillDatabaseSO)EditorGUILayout.ObjectField(_database, typeof(SharedSkillDatabaseSO), false);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _database = newDatabase;
+                    RebuildSerializedDb();
+                    _selectedGroupIndex = 0;
+                    _selectedSkillIndex = 0;
+                    EnsureSkillSelectionIsValid();
+                    ClearSelectedEvent();
+                    _timelineScrollX = 0f;
+                    StopPreview();
+                }
+
+                EnsureSkillSelectionIsValid();
+
+                string[] groupOptions = GetGroupDisplayOptions();
+                EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
+                EditorGUI.BeginChangeCheck();
+                int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedGroupIndex), groupOptions);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _selectedGroupIndex = newGroupIndex;
+                    _selectedSkillIndex = 0;
+                    EnsureSkillSelectionIsValid();
+                    ClearSelectedEvent();
+                    _timelineScrollX = 0f;
+                    StopPreview();
+                }
+                EditorGUI.EndDisabledGroup();
+
+                string[] skillOptions = GetSkillEntryOptions();
+                EditorGUI.BeginDisabledGroup(skillOptions.Length <= 1);
+                EditorGUI.BeginChangeCheck();
+                int newSkillIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedSkillIndex), skillOptions);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _selectedSkillIndex = newSkillIndex;
+                    EnsureSkillSelectionIsValid();
+                    ClearSelectedEvent();
+                    _timelineScrollX = 0f;
+                    StopPreview();
+                }
+                EditorGUI.EndDisabledGroup();
+
+                EditorGUILayout.BeginHorizontal();
+                try
+                {
+                    EditorGUI.BeginDisabledGroup(_database == null);
+                    if (GUILayout.Button("+", GUILayout.Width(26f)))
+                        AddSkill();
+                    EditorGUI.EndDisabledGroup();
+
+                    EditorGUI.BeginDisabledGroup(_database == null || !HasSelectedSkill());
+                    if (GUILayout.Button("-", GUILayout.Width(26f)))
+                        RemoveSelectedSkill();
+                    EditorGUI.EndDisabledGroup();
+
+                    GUILayout.FlexibleSpace();
+                }
+                finally
+                {
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+            finally
+            {
+                EditorGUILayout.EndVertical();
+            }
+        }
+
+        private void DrawAnimationLibrarySelectorPanel()
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.ExpandWidth(true));
+            try
+            {
+                EditorGUILayout.LabelField("动画库", EditorStyles.boldLabel);
+
+                EditorGUI.BeginChangeCheck();
+                CharacterAnimationLibrarySO newLibrary = (CharacterAnimationLibrarySO)EditorGUILayout.ObjectField(_animationLibrary, typeof(CharacterAnimationLibrarySO), false);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _animationLibrary = newLibrary;
+                    _selectedAnimationGroupIndex = 0;
+                    _selectedAnimationEntryIndex = 0;
+                    EnsureAnimationSelectionIsValid();
+                    ApplySelectedPreviewClip();
+                }
+
+                EnsureAnimationSelectionIsValid();
+
+                string[] groupOptions = GetAnimationGroupOptions();
+                EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
+                EditorGUI.BeginChangeCheck();
+                int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationGroupIndex), groupOptions);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _selectedAnimationGroupIndex = newGroupIndex;
+                    _selectedAnimationEntryIndex = 0;
+                    EnsureAnimationSelectionIsValid();
+                    ApplySelectedPreviewClip();
+                }
+                EditorGUI.EndDisabledGroup();
+
+                string[] entryOptions = GetAnimationEntryOptions();
+                EditorGUI.BeginDisabledGroup(entryOptions.Length <= 1);
+                EditorGUI.BeginChangeCheck();
+                int newEntryIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationEntryIndex), entryOptions);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _selectedAnimationEntryIndex = newEntryIndex;
+                    EnsureAnimationSelectionIsValid();
+                    ApplySelectedPreviewClip();
+                }
+                EditorGUI.EndDisabledGroup();
+
+                GUILayout.Space(30f);
+            }
+            finally
+            {
+                EditorGUILayout.EndVertical();
+            }
+        }
+
+        private void DrawSkillLibrarySelector()
+        {
+            EditorGUI.BeginChangeCheck();
+            SharedSkillDatabaseSO newDatabase = (SharedSkillDatabaseSO)EditorGUILayout.ObjectField(
+                _database,
+                typeof(SharedSkillDatabaseSO),
+                false,
+                GUILayout.Width(150f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _database = newDatabase;
+                RebuildSerializedDb();
+                _selectedGroupIndex = 0;
+                _selectedSkillIndex = 0;
+                EnsureSkillSelectionIsValid();
+                ClearSelectedEvent();
+                _timelineScrollX = 0f;
+                StopPreview();
+            }
+
+            EnsureSkillSelectionIsValid();
+
+            string[] groupOptions = GetGroupDisplayOptions();
+            EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
+            EditorGUI.BeginChangeCheck();
+            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(88f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedGroupIndex = newGroupIndex;
+                _selectedSkillIndex = 0;
+                EnsureSkillSelectionIsValid();
+                ClearSelectedEvent();
+                _timelineScrollX = 0f;
+                StopPreview();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            string[] skillOptions = GetSkillEntryOptions();
+            EditorGUI.BeginDisabledGroup(skillOptions.Length <= 1);
+            EditorGUI.BeginChangeCheck();
+            int newSkillIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedSkillIndex), skillOptions, EditorStyles.toolbarPopup, GUILayout.Width(120f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedSkillIndex = newSkillIndex;
+                EnsureSkillSelectionIsValid();
+                ClearSelectedEvent();
+                _timelineScrollX = 0f;
+                StopPreview();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUI.BeginDisabledGroup(_database == null);
+            if (GUILayout.Button("+", EditorStyles.miniButtonLeft, GUILayout.Width(22f)))
+                AddSkill();
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUI.BeginDisabledGroup(_database == null || !HasSelectedSkill());
+            if (GUILayout.Button("-", EditorStyles.miniButtonRight, GUILayout.Width(22f)))
+                RemoveSelectedSkill();
+            EditorGUI.EndDisabledGroup();
+        }
+
+        private void DrawAnimationLibrarySelector()
+        {
+            EditorGUI.BeginChangeCheck();
+            CharacterAnimationLibrarySO newLibrary = (CharacterAnimationLibrarySO)EditorGUILayout.ObjectField(
+                _animationLibrary,
+                typeof(CharacterAnimationLibrarySO),
+                false,
+                GUILayout.Width(150f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _animationLibrary = newLibrary;
+                _selectedAnimationGroupIndex = 0;
+                _selectedAnimationEntryIndex = 0;
+                EnsureAnimationSelectionIsValid();
+                ApplySelectedPreviewClip();
+            }
+
+            EnsureAnimationSelectionIsValid();
+
+            string[] groupOptions = GetAnimationGroupOptions();
+            EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
+            EditorGUI.BeginChangeCheck();
+            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(88f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedAnimationGroupIndex = newGroupIndex;
+                _selectedAnimationEntryIndex = 0;
+                EnsureAnimationSelectionIsValid();
+                ApplySelectedPreviewClip();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            string[] entryOptions = GetAnimationEntryOptions();
+            EditorGUI.BeginDisabledGroup(entryOptions.Length <= 1);
+            EditorGUI.BeginChangeCheck();
+            int newEntryIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationEntryIndex), entryOptions, EditorStyles.toolbarPopup, GUILayout.Width(120f));
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedAnimationEntryIndex = newEntryIndex;
+                EnsureAnimationSelectionIsValid();
+                ApplySelectedPreviewClip();
+            }
+            EditorGUI.EndDisabledGroup();
+        }
+
+        private void EnsurePreviewTargetIsValid()
+        {
+            GameObject root = ResolveRootPreviewTarget(_previewTarget);
+            if (root != null && MatchesPreviewTargetFilter(root, _previewTargetFilter))
+            {
+                _previewTarget = root;
+                return;
+            }
+
+            List<GameObject> candidates = GetPreviewRootCandidates(_previewTargetFilter);
+            _previewTarget = candidates.Count > 0 ? candidates[0] : null;
+        }
+
+        private void EnsurePreviewVictimIsValid()
+        {
+            GameObject root = ResolveRootPreviewTarget(_previewVictimTarget);
+            if (root != null && MatchesPreviewTargetFilter(root, _previewVictimFilter))
+            {
+                _previewVictimTarget = root;
+                return;
+            }
+
+            List<GameObject> candidates = GetPreviewRootCandidates(_previewVictimFilter);
+            _previewVictimTarget = candidates.Count > 0 ? candidates[0] : null;
+        }
+
+        private List<GameObject> GetPreviewRootCandidates()
+        {
+            return GetPreviewRootCandidates(_previewTargetFilter);
+        }
+
+        private List<GameObject> GetPreviewRootCandidates(PreviewTargetFilter filter)
+        {
+            var result = new List<GameObject>();
+            Scene activeScene = SceneManager.GetActiveScene();
+            if (!activeScene.IsValid() || !activeScene.isLoaded)
+                return result;
+
+            GameObject[] roots = activeScene.GetRootGameObjects();
+            for (int i = 0; i < roots.Length; i++)
+            {
+                GameObject root = roots[i];
+                if (root != null && MatchesPreviewTargetFilter(root, filter))
+                    result.Add(root);
+            }
+
+            return result;
+        }
+
+        private bool MatchesPreviewTargetFilter(GameObject root)
+        {
+            return MatchesPreviewTargetFilter(root, _previewTargetFilter);
+        }
+
+        private bool MatchesPreviewTargetFilter(GameObject root, PreviewTargetFilter filter)
+        {
+            if (root == null)
+                return false;
+
+            return filter switch
+            {
+                PreviewTargetFilter.Player => root.tag == "Player",
+                PreviewTargetFilter.Enemy => root.tag == "Enemy",
+                _ => true,
+            };
+        }
+
+        private static GameObject ResolveRootPreviewTarget(GameObject target)
+        {
+            if (target == null)
+                return null;
+            return target.transform.root != null ? target.transform.root.gameObject : target;
+        }
+
+        private void TryAutoLoadAnimationLibrary()
+        {
+            if (_animationLibrary == null)
+                _animationLibrary = Resources.Load<CharacterAnimationLibrarySO>("配置/动画库");
+            if (_animationLibrary == null)
+                _animationLibrary = Resources.Load<CharacterAnimationLibrarySO>("配置/人物动画库");
+
+            EnsureAnimationSelectionIsValid();
+            if (_previewClip == null)
+                ApplySelectedPreviewClip();
+        }
+
+        private void EnsureAnimationSelectionIsValid()
+        {
+            if (_animationLibrary == null || _animationLibrary.groups == null || _animationLibrary.groups.Count == 0)
+            {
+                _selectedAnimationGroupIndex = -1;
+                _selectedAnimationEntryIndex = -1;
+                if (_animationLibrary == null)
+                    _previewClip = null;
+                return;
+            }
+
+            _selectedAnimationGroupIndex = Mathf.Clamp(_selectedAnimationGroupIndex < 0 ? 0 : _selectedAnimationGroupIndex, 0, _animationLibrary.groups.Count - 1);
+            var group = _animationLibrary.groups[_selectedAnimationGroupIndex];
+            int entryCount = group?.entries != null ? group.entries.Count : 0;
+            if (entryCount <= 0)
+            {
+                _selectedAnimationEntryIndex = -1;
+                _previewClip = null;
+                return;
+            }
+
+            _selectedAnimationEntryIndex = Mathf.Clamp(_selectedAnimationEntryIndex < 0 ? 0 : _selectedAnimationEntryIndex, 0, entryCount - 1);
+        }
+
+        private string[] GetAnimationGroupOptions()
+        {
+            if (_animationLibrary == null || _animationLibrary.groups == null || _animationLibrary.groups.Count == 0)
+                return new[] { "未选择动画库" };
+
+            var labels = new string[_animationLibrary.groups.Count];
+            for (int i = 0; i < _animationLibrary.groups.Count; i++)
+            {
+                var group = _animationLibrary.groups[i];
+                labels[i] = group != null && !string.IsNullOrWhiteSpace(group.groupName) ? group.groupName : $"分组{i + 1}";
+            }
+            return labels;
+        }
+
+        private string[] GetAnimationEntryOptions()
+        {
+            if (_animationLibrary == null || _animationLibrary.groups == null || _selectedAnimationGroupIndex < 0 || _selectedAnimationGroupIndex >= _animationLibrary.groups.Count)
+                return new[] { "未选择动画" };
+
+            var group = _animationLibrary.groups[_selectedAnimationGroupIndex];
+            if (group?.entries == null || group.entries.Count == 0)
+                return new[] { "分组无动画" };
+
+            var labels = new string[group.entries.Count];
+            for (int i = 0; i < group.entries.Count; i++)
+            {
+                var entry = group.entries[i];
+                labels[i] = entry != null && !string.IsNullOrWhiteSpace(entry.animationId) ? entry.animationId : $"动画{i + 1}";
+            }
+            return labels;
+        }
+
+        private CharacterAnimationEntry GetSelectedAnimationEntry()
+        {
+            if (_animationLibrary == null || _animationLibrary.groups == null || _selectedAnimationGroupIndex < 0 || _selectedAnimationGroupIndex >= _animationLibrary.groups.Count)
+                return null;
+
+            var group = _animationLibrary.groups[_selectedAnimationGroupIndex];
+            if (group?.entries == null || _selectedAnimationEntryIndex < 0 || _selectedAnimationEntryIndex >= group.entries.Count)
+                return null;
+
+            return group.entries[_selectedAnimationEntryIndex];
+        }
+
+        private void ApplySelectedPreviewClip()
+        {
+            CharacterAnimationEntry entry = GetSelectedAnimationEntry();
+            _previewClip = entry != null ? entry.clip : null;
+            if (!_isPlaying)
+                SampleAnimationAtTime(_previewTime);
         }
 
         private void TryAutoLoadDatabase()
         {
             if (_database == null)
-                _database = Resources.Load<SharedSkillDatabaseSO>("配置/共享技能库");
+            {
+                _database = Resources.Load<SharedSkillDatabaseSO>("配置/技能库");
+            }
 
             if (_database != null && _serializedDb == null)
+            {
                 _serializedDb = new SerializedObject(_database);
-        }
-
-        private void TryAutoLoadDamageDatabase()
-        {
-            if (_damageDatabase == null)
-                _damageDatabase = Resources.Load<AnimationFrameDamageDatabaseSO>("配置/技能伤害数据配置库");
+                EnsureGroupList();
+            }
         }
 
         private float TimeToX(float time)
@@ -1582,15 +5747,152 @@ namespace Game.Editor
             return (mouseX - panelX + _timelineScrollX) / _zoom;
         }
 
-        private float GetEventDisplayWidth(SkillTimelineEvent evt)
+        private float GetEventDisplayWidth(SkillTimedEventBase evt, TimelineTrackType trackType)
         {
             if (evt == null)
                 return MinEventWidth;
 
-            if (evt.triggerMode == SkillEventTriggerMode.Repeated)
-                return Mathf.Max(MinEventWidth, evt.activeDuration * _zoom);
+            float duration = GetTrackDisplayDuration(evt, trackType);
+            if (duration > 0f)
+                return Mathf.Max(MinEventWidth, duration * _zoom);
 
-            return Mathf.Max(MinEventWidth, GetDamageEffectCount(evt) > 0 ? 12f : MinEventWidth);
+            return Mathf.Max(MinEventWidth, 12f);
+        }
+
+        private static float GetTrackDisplayDuration(SkillTimedEventBase evt, TimelineTrackType trackType)
+        {
+            if (evt == null)
+                return 0f;
+
+            float tailDuration = GetTrackEffectTailDuration(evt, trackType);
+            if (evt.triggerMode == SkillEventTriggerMode.Repeated)
+                return Mathf.Max(0f, evt.activeDuration + tailDuration);
+            return tailDuration;
+        }
+
+        private static void SetTrackDisplayDuration(SkillTimedEventBase evt, TimelineTrackType trackType, float duration)
+        {
+            if (evt == null)
+                return;
+
+            float clampedDuration = Mathf.Max(0.01f, duration);
+
+            switch (trackType)
+            {
+                case TimelineTrackType.Damage:
+                    if (evt is not SkillDamageEvent damageEvent || damageEvent.damageEffects == null)
+                        return;
+
+                    float maxDetectionDuration = GetMaxDamageDetectionDuration(damageEvent);
+                    if (damageEvent.triggerMode == SkillEventTriggerMode.Repeated)
+                    {
+                        damageEvent.activeDuration = Mathf.Max(0f, clampedDuration - maxDetectionDuration);
+                        if (damageEvent.activeDuration > 0f)
+                            damageEvent.repeatInterval = Mathf.Clamp(damageEvent.repeatInterval, 0.01f, damageEvent.activeDuration);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < damageEvent.damageEffects.Count; i++)
+                        {
+                            SkillDamageEffect effect = damageEvent.damageEffects[i];
+                            if (effect != null)
+                                effect.detectionDuration = clampedDuration;
+                        }
+                    }
+                    break;
+
+                case TimelineTrackType.Physics:
+                    if (evt is not SkillPhysicsEvent physicsEvent || physicsEvent.physicsEffects == null)
+                        return;
+                    if (physicsEvent.triggerMode == SkillEventTriggerMode.Repeated)
+                    {
+                        float tailDuration = GetTrackEffectTailDuration(physicsEvent, trackType);
+                        physicsEvent.activeDuration = Mathf.Max(0f, clampedDuration - tailDuration);
+                        if (physicsEvent.activeDuration > 0f)
+                            physicsEvent.repeatInterval = Mathf.Clamp(physicsEvent.repeatInterval, 0.01f, physicsEvent.activeDuration);
+                        return;
+                    }
+                    for (int i = 0; i < physicsEvent.physicsEffects.Count; i++)
+                    {
+                        SkillPhysicsEffect effect = physicsEvent.physicsEffects[i];
+                        if (effect != null)
+                            effect.duration = clampedDuration;
+                    }
+                    break;
+
+                case TimelineTrackType.Attribute:
+                    if (evt is not SkillAttributeEvent attributeEvent || attributeEvent.attributeEffects == null)
+                        return;
+                    if (attributeEvent.triggerMode == SkillEventTriggerMode.Repeated)
+                    {
+                        float tailDuration = GetTrackEffectTailDuration(attributeEvent, trackType);
+                        attributeEvent.activeDuration = Mathf.Max(0f, clampedDuration - tailDuration);
+                        if (attributeEvent.activeDuration > 0f)
+                            attributeEvent.repeatInterval = Mathf.Clamp(attributeEvent.repeatInterval, 0.01f, attributeEvent.activeDuration);
+                        return;
+                    }
+                    for (int i = 0; i < attributeEvent.attributeEffects.Count; i++)
+                    {
+                        SkillAttributeEffect effect = attributeEvent.attributeEffects[i];
+                        if (effect != null && effect.statField != SkillStatField.HP && effect.statField != SkillStatField.MP)
+                            effect.duration = clampedDuration;
+                    }
+                    break;
+
+                case TimelineTrackType.Vfx:
+                    if (evt is not SkillVfxEvent vfxEvent || vfxEvent.vfxEffects == null)
+                        return;
+                    if (vfxEvent.triggerMode == SkillEventTriggerMode.Repeated)
+                    {
+                        float tailDuration = GetTrackEffectTailDuration(vfxEvent, trackType);
+                        vfxEvent.activeDuration = Mathf.Max(0f, clampedDuration - tailDuration);
+                        if (vfxEvent.activeDuration > 0f)
+                            vfxEvent.repeatInterval = Mathf.Clamp(vfxEvent.repeatInterval, 0.01f, vfxEvent.activeDuration);
+                        return;
+                    }
+                    for (int i = 0; i < vfxEvent.vfxEffects.Count; i++)
+                    {
+                        SkillVfxEffect effect = vfxEvent.vfxEffects[i];
+                        if (effect != null)
+                            effect.duration = clampedDuration;
+                    }
+                    break;
+
+                case TimelineTrackType.Sfx:
+                    if (evt is not SkillSfxEvent sfxEvent || sfxEvent.sfxEffects == null)
+                        return;
+                    if (sfxEvent.triggerMode == SkillEventTriggerMode.Repeated)
+                    {
+                        float tailDuration = GetTrackEffectTailDuration(sfxEvent, trackType);
+                        sfxEvent.activeDuration = Mathf.Max(0f, clampedDuration - tailDuration);
+                        if (sfxEvent.activeDuration > 0f)
+                            sfxEvent.repeatInterval = Mathf.Clamp(sfxEvent.repeatInterval, 0.01f, sfxEvent.activeDuration);
+                        return;
+                    }
+                    for (int i = 0; i < sfxEvent.sfxEffects.Count; i++)
+                    {
+                        SkillSfxEffect effect = sfxEvent.sfxEffects[i];
+                        if (effect != null)
+                            effect.duration = clampedDuration;
+                    }
+                    break;
+            }
+        }
+
+        private static float GetMaxDamageDetectionDuration(SkillDamageEvent evt)
+        {
+            if (evt?.damageEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < evt.damageEffects.Count; i++)
+            {
+                SkillDamageEffect effect = evt.damageEffects[i];
+                if (effect != null)
+                    duration = Mathf.Max(duration, effect.detectionDuration);
+            }
+
+            return duration;
         }
 
         private float GetTimelineContentWidth(SharedSkillDefinition skill)
@@ -1599,55 +5901,62 @@ namespace Game.Editor
             return duration * _zoom + 40f;
         }
 
-        private Color GetEventColor(SkillTimelineEvent evt)
+        private Color GetTrackColor(TimelineTrackType trackType)
         {
-            if (evt == null)
-                return DefaultColor;
-            int typeCount = 0;
-            if (GetDamageEffectCount(evt) > 0)
-                typeCount++;
-            if (evt.physicsEffects != null && evt.physicsEffects.Count > 0)
-                typeCount++;
-            if (evt.attributeEffects != null && evt.attributeEffects.Count > 0)
-                typeCount++;
-            if (evt.cues != null && evt.cues.Count > 0)
-                typeCount++;
-            if (typeCount > 1)
-                return new Color(0.72f, 0.46f, 0.88f, 0.90f);
-            if (GetDamageEffectCount(evt) > 0)
-                return DamageColor;
-            if (evt.physicsEffects != null && evt.physicsEffects.Count > 0)
-                return PhysicsColor;
-            if (evt.attributeEffects != null && evt.attributeEffects.Count > 0)
-                return AttributeColor;
-            if (evt.cues != null && evt.cues.Count > 0)
-                return CueColor;
-            return DefaultColor;
+            return trackType switch
+            {
+                TimelineTrackType.Damage => DamageColor,
+                TimelineTrackType.Physics => PhysicsColor,
+                TimelineTrackType.Attribute => AttributeColor,
+                TimelineTrackType.Vfx => VfxColor,
+                TimelineTrackType.Sfx => SfxColor,
+                _ => DefaultColor,
+            };
         }
 
-        private string GetEventLabel(SkillTimelineEvent evt)
+        private string GetTrackHeaderLabel(TimelineTrackType trackType)
+        {
+            return trackType switch
+            {
+                TimelineTrackType.Damage => "伤害轨",
+                TimelineTrackType.Physics => "物理轨",
+                TimelineTrackType.Attribute => "属性轨",
+                TimelineTrackType.Vfx => "特效轨",
+                TimelineTrackType.Sfx => "音效轨",
+                _ => "轨道",
+            };
+        }
+
+        private string GetTrackEventLabel(SkillTimedEventBase evt, TimelineTrackType trackType)
         {
             if (evt == null)
                 return "evt";
-            if (!string.IsNullOrEmpty(evt.eventId))
-                return $"{evt.eventId} {GetEventSummary(evt)}";
 
-            int damageCount = GetDamageEffectCount(evt);
-            if (damageCount > 0)
+            SkillTimelineEvent view = CreateLegacyEventView(evt, trackType);
+            if (view == null)
+                return "evt";
+
+            string prefix = !string.IsNullOrEmpty(view.eventId) ? view.eventId : trackType switch
             {
-                string firstName = GetFirstDamageEffectName(evt);
-                int extraCount = Mathf.Max(0, damageCount - 1);
-                string label = extraCount > 0 ? $"伤害 {firstName}+{extraCount}" : $"伤害 {firstName}";
-                return $"{label} {GetEventSummary(evt)}";
-            }
+                TimelineTrackType.Damage => "伤害",
+                TimelineTrackType.Physics => "物理",
+                TimelineTrackType.Attribute => "属性",
+                TimelineTrackType.Vfx => "特效",
+                TimelineTrackType.Sfx => "音效",
+                _ => "事件",
+            };
 
-            if (evt.physicsEffects != null && evt.physicsEffects.Count > 0)
-                return $"物理 {GetEventSummary(evt)}";
-            if (evt.attributeEffects != null && evt.attributeEffects.Count > 0)
-                return $"属性 {GetEventSummary(evt)}";
-            if (evt.cues != null && evt.cues.Count > 0)
-                return $"特效 {GetEventSummary(evt)}";
-            return "evt";
+            string detail = trackType switch
+            {
+                TimelineTrackType.Damage => GetFirstDamageEffectName(view),
+                TimelineTrackType.Physics => GetFirstPhysicsEffectName(view),
+                TimelineTrackType.Attribute => GetFirstAttributeEffectName(view),
+                TimelineTrackType.Vfx => GetFirstVfxEffectName(view),
+                TimelineTrackType.Sfx => GetFirstSfxEffectName(view),
+                _ => string.Empty,
+            };
+
+            return string.IsNullOrEmpty(detail) ? prefix : $"{prefix} {detail}";
         }
 
         private static string GetEventSummary(SkillTimelineEvent evt)
@@ -1658,8 +5967,9 @@ namespace Game.Editor
             int damageCount = GetDamageEffectCount(evt);
             int physicsCount = evt.physicsEffects != null ? evt.physicsEffects.Count : 0;
             int attributeCount = evt.attributeEffects != null ? evt.attributeEffects.Count : 0;
-            int cueCount = evt.cues != null ? evt.cues.Count : 0;
-            return $"[D{damageCount}/P{physicsCount}/A{attributeCount}/V{cueCount}]";
+            int vfxCount = evt.vfxEffects != null ? evt.vfxEffects.Count : 0;
+            int sfxCount = evt.sfxEffects != null ? evt.sfxEffects.Count : 0;
+            return $"[D{damageCount}/P{physicsCount}/A{attributeCount}/V{vfxCount}/S{sfxCount}]";
         }
 
         private static int GetDamageEffectCount(SkillTimelineEvent evt)
@@ -1692,32 +6002,502 @@ namespace Game.Editor
                     var effect = evt.damageEffects[i];
                     if (effect == null)
                         continue;
-
-                    if (!string.IsNullOrWhiteSpace(effect.damageName))
-                        return effect.damageName;
+                    return GetDamageEffectLabel(effect);
                 }
             }
 
             return "伤害";
         }
-        private List<List<int>> AssignEventRows(List<SkillTimelineEvent> events)
-        {
-            var rows = new List<List<int>>();
-            var rowEnds = new List<float>();
 
+        private static string GetDamageEffectLabel(SkillDamageEffect effect)
+        {
+            if (effect == null)
+                return "伤害";
+
+            return effect.detectionType switch
+            {
+                DamageDetectionType.Raycast => "射线",
+                DamageDetectionType.Collision => "碰撞",
+                _ => effect.shape switch
+                {
+                    AttackShapeType.Sector => "扇形",
+                    AttackShapeType.Box => "盒体",
+                    _ => "球形",
+                },
+            };
+        }
+
+        private static string GetFirstPhysicsEffectName(SkillTimelineEvent evt)
+        {
+            if (evt?.physicsEffects == null)
+                return string.Empty;
+
+            for (int i = 0; i < evt.physicsEffects.Count; i++)
+            {
+                var effect = evt.physicsEffects[i];
+                if (effect != null)
+                {
+                    return effect.effectType switch
+                    {
+                        PhysicsEffectType.Knockback => "击退",
+                        PhysicsEffectType.Pull => "拉拽",
+                        PhysicsEffectType.Launch => "击飞",
+                        PhysicsEffectType.DashSelf => "位移",
+                        PhysicsEffectType.Stun => "眩晕",
+                        PhysicsEffectType.Airborne => "腾空",
+                        PhysicsEffectType.SuperArmor => "霸体",
+                        PhysicsEffectType.Invincible => "无敌",
+                        _ => "物理",
+                    };
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private static string GetFirstAttributeEffectName(SkillTimelineEvent evt)
+        {
+            if (evt?.attributeEffects == null)
+                return string.Empty;
+
+            for (int i = 0; i < evt.attributeEffects.Count; i++)
+            {
+                var effect = evt.attributeEffects[i];
+                if (effect != null)
+                {
+                    return effect.statField switch
+                    {
+                        SkillStatField.HP => "生命",
+                        SkillStatField.MP => "法力",
+                        SkillStatField.Attack => "攻击",
+                        SkillStatField.Defense => "防御",
+                        SkillStatField.MoveSpeed => "移速",
+                        SkillStatField.HPRegen => "生命回复",
+                        SkillStatField.MPRegen => "法力回复",
+                        SkillStatField.CritRate => "暴击率",
+                        SkillStatField.CritDamage => "暴击伤害",
+                        SkillStatField.AttackSpeed => "攻速",
+                        SkillStatField.SkillDamage => "增伤",
+                        SkillStatField.DamageReduce => "减伤",
+                        SkillStatField.LifeSteal => "吸血",
+                        _ => "属性",
+                    };
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private static string GetFirstVfxEffectName(SkillTimelineEvent evt)
+        {
+            if (evt?.vfxEffects == null)
+                return string.Empty;
+
+            for (int i = 0; i < evt.vfxEffects.Count; i++)
+            {
+                var effect = evt.vfxEffects[i];
+                if (effect?.particlePrefab != null)
+                    return effect.particlePrefab.name;
+            }
+
+            return string.Empty;
+        }
+
+        private static string GetFirstSfxEffectName(SkillTimelineEvent evt)
+        {
+            if (evt?.sfxEffects == null)
+                return string.Empty;
+
+            for (int i = 0; i < evt.sfxEffects.Count; i++)
+            {
+                var effect = evt.sfxEffects[i];
+                if (effect?.audioClip != null)
+                    return effect.audioClip.name;
+            }
+
+            return string.Empty;
+        }
+
+        private void DrawEventValidationWarnings(SkillTimelineEvent evt)
+        {
+            List<string> warnings = CollectEventWarnings(evt);
+            for (int i = 0; i < warnings.Count; i++)
+                EditorGUILayout.HelpBox(warnings[i], MessageType.Warning);
+        }
+
+        private List<string> CollectEventWarnings(SkillTimelineEvent evt)
+        {
+            var warnings = new List<string>();
+            if (evt == null)
+                return warnings;
+
+            evt.UpgradeLegacyCueData();
+
+            if (GetDamageEffectCount(evt) == 0
+                && (evt.physicsEffects == null || evt.physicsEffects.Count == 0)
+                && (evt.attributeEffects == null || evt.attributeEffects.Count == 0)
+                && (evt.vfxEffects == null || evt.vfxEffects.Count == 0)
+                && (evt.sfxEffects == null || evt.sfxEffects.Count == 0))
+            {
+                warnings.Add("这个事件当前没有任何效果，运行时不会产生实际结果。");
+            }
+
+            int topLevelTypeCount = 0;
+            if (GetDamageEffectCount(evt) > 0) topLevelTypeCount++;
+            if (evt.physicsEffects != null && evt.physicsEffects.Count > 0) topLevelTypeCount++;
+            if (evt.attributeEffects != null && evt.attributeEffects.Count > 0) topLevelTypeCount++;
+            if (evt.vfxEffects != null && evt.vfxEffects.Count > 0) topLevelTypeCount++;
+            if (evt.sfxEffects != null && evt.sfxEffects.Count > 0) topLevelTypeCount++;
+            if (topLevelTypeCount > 1)
+                warnings.Add("当前事件混合了多种顶层类型。按新工作流，建议一条事件只负责一种顶层类型；命中后的附加效果请配在伤害效果内部。");
+
+            if (evt.triggerMode == SkillEventTriggerMode.Repeated)
+            {
+                float repeatedWindow = Mathf.Max(0f, evt.activeDuration);
+                if (repeatedWindow <= 0f)
+                    warnings.Add("重复触发模式的持续触发时长为 0，事件不会重复执行。");
+                if (evt.repeatInterval > repeatedWindow && repeatedWindow > 0f)
+                    warnings.Add("重复触发间隔大于持续触发时长，通常只会触发 1 次。");
+            }
+
+            if (_previewClip != null && evt.startTime > _previewClip.length + 0.0001f)
+                warnings.Add("事件触发时间超过了当前预览动画长度，预览时可能看不到效果。");
+
+            if (evt.damageEffects != null)
+            {
+                for (int i = 0; i < evt.damageEffects.Count; i++)
+                {
+                    var effect = evt.damageEffects[i];
+                    if (effect == null)
+                    {
+                        warnings.Add($"伤害效果 {i + 1} 为空引用。");
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(effect.hitLayerName))
+                        warnings.Add($"伤害效果 {i + 1} 没有填写命中层级名。");
+
+                    if (effect.detectionType == DamageDetectionType.RangeOverlap)
+                    {
+                        if ((effect.shape == AttackShapeType.Sphere || effect.shape == AttackShapeType.Sector) && effect.sphereRadius <= 0f)
+                            warnings.Add($"伤害效果 {i + 1} 的球体半径必须大于 0。");
+
+                        if (effect.shape == AttackShapeType.Sector && effect.sectorAngle <= 0f)
+                            warnings.Add($"伤害效果 {i + 1} 的扇形角度必须大于 0。");
+
+                        if (effect.shape == AttackShapeType.Box &&
+                            (effect.boxSize.x <= 0f || effect.boxSize.y <= 0f || effect.boxSize.z <= 0f))
+                        {
+                            warnings.Add($"伤害效果 {i + 1} 的盒体尺寸必须全部大于 0。");
+                        }
+                    }
+                    else if (effect.detectionType == DamageDetectionType.Collision)
+                    {
+                        if (string.IsNullOrWhiteSpace(effect.colliderNodeName))
+                            warnings.Add($"伤害效果 {i + 1} 使用碰撞检测时必须填写武器命中盒对象名。");
+                    }
+                    else if (effect.detectionType == DamageDetectionType.Raycast)
+                    {
+                        if (effect.rayMaxDistance <= 0f)
+                            warnings.Add($"伤害效果 {i + 1} 的射线最大距离必须大于 0。");
+                    }
+
+                    if (effect.hitStopDuration > 0f && effect.hitStopTimeScale >= 0.999f)
+                        warnings.Add($"伤害效果 {i + 1} 配了命中停顿时长，但命中停顿速度为 1，等于没有停顿效果。");
+
+                    if (effect.onHitPhysicsEffects != null)
+                    {
+                        for (int j = 0; j < effect.onHitPhysicsEffects.Count; j++)
+                        {
+                            SkillPhysicsEffect physics = effect.onHitPhysicsEffects[j];
+                            if (physics != null && physics.IsTopLevelOnly)
+                                warnings.Add($"伤害效果 {i + 1} 的命中物理效果 {j + 1} 使用了仅限顶层的 {physics.effectType}。");
+                        }
+                    }
+                }
+            }
+
+            if (evt.physicsEffects != null)
+            {
+                for (int i = 0; i < evt.physicsEffects.Count; i++)
+                {
+                    SkillPhysicsEffect effect = evt.physicsEffects[i];
+                    if (effect == null)
+                        continue;
+
+                    if (effect.IsOnHitOnly)
+                        warnings.Add($"物理效果 {i + 1} 使用了仅限命中物理的 {effect.effectType}。");
+
+                    if (effect.duration <= 0f)
+                        warnings.Add($"物理效果 {i + 1} 的持续时长必须大于 0。");
+                }
+            }
+
+            if (evt.attributeEffects != null)
+            {
+                for (int i = 0; i < evt.attributeEffects.Count; i++)
+                {
+                    SkillAttributeEffect effect = evt.attributeEffects[i];
+                    if (effect == null)
+                        continue;
+
+                    if (effect.targetMode != SkillTargetMode.Self)
+                        warnings.Add($"属性效果 {i + 1} 作为顶层属性事件时，作用目标应为自身。");
+
+                    if ((effect.statField == SkillStatField.HP || effect.statField == SkillStatField.MP) && effect.duration > 0f)
+                        warnings.Add($"属性效果 {i + 1} 的 {effect.statField} 不使用持续时长，当前持续时长会被忽略。");
+                }
+            }
+
+            if (evt.vfxEffects != null)
+            {
+                for (int i = 0; i < evt.vfxEffects.Count; i++)
+                {
+                    var cue = evt.vfxEffects[i];
+                    if (cue == null)
+                    {
+                        warnings.Add($"特效效果 {i + 1} 为空引用。");
+                        continue;
+                    }
+
+                    if (cue.particlePrefab == null)
+                        warnings.Add($"特效效果 {i + 1} 没有粒子特效 Prefab。");
+                }
+            }
+
+            if (evt.sfxEffects != null)
+            {
+                for (int i = 0; i < evt.sfxEffects.Count; i++)
+                {
+                    var cue = evt.sfxEffects[i];
+                    if (cue == null)
+                    {
+                        warnings.Add($"音效效果 {i + 1} 为空引用。");
+                        continue;
+                    }
+
+                    if (cue.audioClip == null)
+                        warnings.Add($"音效效果 {i + 1} 没有音效片段。");
+                }
+            }
+
+            return warnings;
+        }
+
+        private List<string> CollectSkillWarnings(SharedSkillDefinition skill)
+        {
+            var warnings = new List<string>();
+            if (skill == null)
+                return warnings;
+
+            if (string.IsNullOrWhiteSpace(skill.skillId))
+                warnings.Add("当前技能没有填写技能ID。");
+
+            if (GetTotalEventCount(skill) == 0)
+                warnings.Add("当前技能还没有任何事件。运行时不会产生任何效果。");
+
+            var eventIds = new Dictionary<string, List<string>>();
+            CollectEventIdWarnings(eventIds, GetDamageEventList(skill), TimelineTrackType.Damage);
+            CollectEventIdWarnings(eventIds, GetPhysicsEventList(skill), TimelineTrackType.Physics);
+            CollectEventIdWarnings(eventIds, GetAttributeEventList(skill), TimelineTrackType.Attribute);
+            CollectEventIdWarnings(eventIds, GetVfxEventList(skill), TimelineTrackType.Vfx);
+            CollectEventIdWarnings(eventIds, GetSfxEventList(skill), TimelineTrackType.Sfx);
+
+            foreach (var pair in eventIds)
+            {
+                if (pair.Value.Count > 1)
+                    warnings.Add($"事件标识 ID “{pair.Key}” 在多个事件中重复：{string.Join("、", pair.Value)}。");
+            }
+
+            if (_sceneHandlesEnabled && _previewTarget == null)
+                warnings.Add("已开启场景编辑，但当前没有预览对象。场景可视化编辑与部分预览反馈不会显示。");
+
+            if (_animationLibrary != null && _previewClip == null)
+                warnings.Add("已指定动画库，但当前没有选中预览动画。部分时间预览与时长校验会不准确。");
+
+            if (_previewTarget != null)
+                CollectPreviewTargetWarnings(warnings, skill);
+
+            return warnings;
+        }
+
+        private void CollectEventIdWarnings<T>(Dictionary<string, List<string>> map, List<T> events, TimelineTrackType trackType) where T : SkillTimedEventBase
+        {
             if (events == null)
-                return rows;
+                return;
 
             for (int i = 0; i < events.Count; i++)
             {
-                SkillTimelineEvent evt = events[i];
-                if (evt == null)
-                    continue;
-                if (!ShouldDisplayEvent(evt))
+                T evt = events[i];
+                if (evt == null || string.IsNullOrWhiteSpace(evt.eventId))
                     continue;
 
-                float endTime = evt.startTime + (evt.triggerMode == SkillEventTriggerMode.Repeated
-                    ? Mathf.Max(0.01f, evt.activeDuration)
+                if (!map.TryGetValue(evt.eventId, out var uses))
+                {
+                    uses = new List<string>();
+                    map.Add(evt.eventId, uses);
+                }
+
+                uses.Add($"{GetTrackHeaderLabel(trackType)}#{i + 1}");
+            }
+        }
+
+        private void CollectPreviewTargetWarnings(List<string> warnings, SharedSkillDefinition skill)
+        {
+            List<SkillDamageEvent> damageEvents = GetDamageEventList(skill);
+            if (damageEvents == null)
+                return;
+
+            for (int eventIndex = 0; eventIndex < damageEvents.Count; eventIndex++)
+            {
+                SkillDamageEvent evt = damageEvents[eventIndex];
+                if (evt?.damageEffects == null)
+                    continue;
+
+                for (int effectIndex = 0; effectIndex < evt.damageEffects.Count; effectIndex++)
+                {
+                    SkillDamageEffect effect = evt.damageEffects[effectIndex];
+                    if (effect == null || effect.detectionType != DamageDetectionType.Collision || string.IsNullOrWhiteSpace(effect.colliderNodeName))
+                        continue;
+
+                    Transform hitboxNode = FindChildRecursive(_previewTarget.transform, effect.colliderNodeName);
+                    if (hitboxNode == null)
+                    {
+                        warnings.Add($"伤害轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 在当前预览对象中不存在。");
+                        continue;
+                    }
+
+                    Collider hitboxCollider = hitboxNode.GetComponent<Collider>();
+                    if (hitboxCollider == null)
+                    {
+                        warnings.Add($"伤害轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 没有 Collider。");
+                        continue;
+                    }
+
+                    if (!hitboxCollider.isTrigger)
+                        warnings.Add($"伤害轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 当前未勾选 Is Trigger。运行时会自动改为 Trigger，但编辑时建议直接按 Trigger 配置。");
+                }
+            }
+        }
+
+        private bool IsCurrentPreviewEvent(SkillTimedEventBase evt, TimelineTrackType trackType)
+        {
+            if (evt == null)
+                return false;
+
+            float previewEndTime = evt.startTime + Mathf.Max(0f, GetTrackDisplayDuration(evt, trackType));
+            if (previewEndTime <= evt.startTime)
+                previewEndTime = evt.GetEndTime();
+            if (previewEndTime > evt.startTime)
+                return _previewTime >= evt.startTime && _previewTime <= previewEndTime;
+
+            float tolerance = Mathf.Max(0.02f, 0.5f / Mathf.Max(1, _frameRate));
+            return Mathf.Abs(_previewTime - evt.startTime) <= tolerance;
+        }
+
+        private static void DrawCurrentEventOutline(Rect rect)
+        {
+            Color oldColor = GUI.color;
+            GUI.color = new Color(1f, 0.92f, 0.35f, 1f);
+            GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width, 2f), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.x, rect.yMax - 2f, rect.width, 2f), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.x, rect.y, 2f, rect.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.xMax - 2f, rect.y, 2f, rect.height), Texture2D.whiteTexture);
+            GUI.color = oldColor;
+        }
+
+        private List<TimelineTrackLayout> BuildTrackLayouts(SharedSkillDefinition skill, float x, float y, float width)
+        {
+            var layouts = new List<TimelineTrackLayout>();
+            if (skill == null)
+                return layouts;
+
+            TimelineTrackType[] trackOrder =
+            {
+                TimelineTrackType.Damage,
+                TimelineTrackType.Physics,
+                TimelineTrackType.Attribute,
+                TimelineTrackType.Vfx,
+                TimelineTrackType.Sfx,
+            };
+
+            float currentY = y;
+            for (int i = 0; i < trackOrder.Length; i++)
+            {
+                TimelineTrackType trackType = trackOrder[i];
+                if (!IsTrackVisible(trackType))
+                    continue;
+
+                List<List<TimelineEventHandle>> rows = AssignEventRows(GetTrackEventHandles(skill, trackType), trackType);
+                int rowCount = Mathf.Max(1, rows.Count);
+                float bodyHeight = rowCount * EventRowHeight;
+                var layout = new TimelineTrackLayout
+                {
+                    trackType = trackType,
+                    rows = rows,
+                    headerRect = new Rect(x, currentY, width, TrackHeaderHeight),
+                    bodyRect = new Rect(x, currentY + TrackHeaderHeight, width, bodyHeight),
+                };
+                layouts.Add(layout);
+                currentY += TrackHeaderHeight + bodyHeight + TrackSpacing;
+            }
+
+            return layouts;
+        }
+
+        private static float GetTrackLayoutsHeight(List<TimelineTrackLayout> trackLayouts)
+        {
+            if (trackLayouts == null || trackLayouts.Count == 0)
+                return TrackHeaderHeight + EventRowHeight;
+
+            TimelineTrackLayout last = trackLayouts[trackLayouts.Count - 1];
+            return Mathf.Max(TrackHeaderHeight + EventRowHeight, last.bodyRect.yMax - trackLayouts[0].headerRect.y);
+        }
+
+        private void DrawTrackHeaders(List<TimelineTrackLayout> trackLayouts)
+        {
+            for (int i = 0; i < trackLayouts.Count; i++)
+            {
+                TimelineTrackLayout layout = trackLayouts[i];
+                Color headerColor = GetTrackColor(layout.trackType) * 0.65f;
+                headerColor.a = 1f;
+                EditorGUI.DrawRect(layout.headerRect, headerColor);
+                GUI.Label(
+                    new Rect(layout.headerRect.x + 6f, layout.headerRect.y + 1f, layout.headerRect.width - 12f, layout.headerRect.height - 2f),
+                    GetTrackHeaderLabel(layout.trackType),
+                    EditorStyles.miniBoldLabel);
+            }
+        }
+
+        private static bool IsMouseInAnyTrackBody(Vector2 mousePosition, List<TimelineTrackLayout> trackLayouts)
+        {
+            for (int i = 0; i < trackLayouts.Count; i++)
+            {
+                if (trackLayouts[i].bodyRect.Contains(mousePosition))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private List<List<TimelineEventHandle>> AssignEventRows(List<TimelineEventHandle> handles, TimelineTrackType trackType)
+        {
+            var rows = new List<List<TimelineEventHandle>>();
+            var rowEnds = new List<float>();
+
+            if (handles == null)
+                return rows;
+
+            for (int i = 0; i < handles.Count; i++)
+            {
+                TimelineEventHandle handle = handles[i];
+                SkillTimedEventBase evt = handle?.timedEvent;
+                if (evt == null)
+                    continue;
+
+                float displayDuration = GetTrackDisplayDuration(evt, trackType);
+                float endTime = evt.startTime + (displayDuration > 0f
+                    ? Mathf.Max(0.01f, displayDuration)
                     : MinEventWidth / _zoom);
 
                 int assignedRow = -1;
@@ -1732,16 +6512,29 @@ namespace Game.Editor
 
                 if (assignedRow < 0)
                 {
-                    rows.Add(new List<int>());
+                    rows.Add(new List<TimelineEventHandle>());
                     rowEnds.Add(0f);
                     assignedRow = rows.Count - 1;
                 }
 
-                rows[assignedRow].Add(i);
+                rows[assignedRow].Add(handle);
                 rowEnds[assignedRow] = Mathf.Max(rowEnds[assignedRow], endTime);
             }
 
             return rows;
+        }
+
+        private bool IsTrackVisible(TimelineTrackType trackType)
+        {
+            return trackType switch
+            {
+                TimelineTrackType.Damage => _showDamageEvents,
+                TimelineTrackType.Physics => _showPhysicsEvents,
+                TimelineTrackType.Attribute => _showAttributeEvents,
+                TimelineTrackType.Vfx => _showVfxEvents,
+                TimelineTrackType.Sfx => _showSfxEvents,
+                _ => true,
+            };
         }
 
         private static float ChooseTickInterval(float zoom)
@@ -1758,22 +6551,16 @@ namespace Game.Editor
 
         private SkillTimelineEvent GetSelectedSceneEvent()
         {
-            if (!HasSelectedEvent())
-                return null;
-
-            SharedSkillDefinition skill = GetSelectedSkill();
-            if (skill == null || skill.events == null || _selectedEventIndex < 0 || _selectedEventIndex >= skill.events.Count)
-                return null;
-
-            return skill.events[_selectedEventIndex];
+            SkillTimedEventBase timedEvent = GetSelectedTimedEvent();
+            return timedEvent != null ? CreateLegacyEventView(timedEvent, _selectedEventTrackType) : null;
         }
 
-        private void DrawCueSceneHandle(SkillCueEntry cue)
+        private void DrawCueSceneHandle(SkillVfxEffect cue)
         {
             if (cue == null || _previewTarget == null)
                 return;
 
-            Transform anchor = ResolveSceneCueAnchor(cue.anchor);
+            Transform anchor = ResolveSceneCueAnchor(cue.anchor, cue);
             if (anchor == null)
                 anchor = _previewTarget.transform;
 
@@ -1785,7 +6572,7 @@ namespace Game.Editor
 
             Color oldColor = Handles.color;
             Handles.color = new Color(0.18f, 0.9f, 1f, 1f);
-            Handles.Label(worldPosition + Vector3.up * handleSize * 0.15f, "表现效果");
+            DrawSceneTextLabel(worldPosition + Vector3.up * handleSize * 0.15f, "特效效果");
 
             EditorGUI.BeginChangeCheck();
             Vector3 newWorldPosition = Handles.PositionHandle(worldPosition, worldRotation);
@@ -1793,7 +6580,7 @@ namespace Game.Editor
             Vector3 newScale = Handles.ScaleHandle(scale, newWorldPosition, newWorldRotation, handleSize * 0.75f);
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObject(_database, "Edit Cue Scene Handle");
+                Undo.RecordObject(_database, "Edit VFX Scene Handle");
                 cue.offset = anchor.InverseTransformPoint(newWorldPosition);
                 cue.rotationEuler = (Quaternion.Inverse(anchorRotation) * newWorldRotation).eulerAngles;
                 cue.scale = ClampVector3(newScale, 0.01f);
@@ -1801,107 +6588,98 @@ namespace Game.Editor
                 SceneView.RepaintAll();
             }
 
+            DrawSceneCueBounds();
+
             Handles.color = oldColor;
         }
 
         private void DrawDamageSceneHandle(SkillDamageEffect effect)
         {
-            if (effect == null || string.IsNullOrWhiteSpace(effect.damageName) || _previewTarget == null)
+            if (effect == null || _previewTarget == null)
                 return;
 
-            TryAutoLoadDamageDatabase();
-            AnimationFrameDamageEntry entry = _damageDatabase?.GetEntry(effect.damageName);
-            if (entry == null)
-                return;
-
-            switch (entry.detectionType)
+            switch (effect.detectionType)
             {
                 case DamageDetectionType.RangeOverlap:
-                    DrawRangeDamageSceneHandle(entry);
+                    DrawRangeDamageSceneHandle(effect);
                     break;
                 case DamageDetectionType.Raycast:
-                    DrawRaycastDamageSceneHandle(entry);
+                    DrawRaycastDamageSceneHandle(effect);
                     break;
                 case DamageDetectionType.Collision:
-                    Handles.Label(_previewTarget.transform.position + Vector3.up * 2f, $"碰撞检测: {entry.colliderNodeName}");
+                    DrawCollisionDamageSceneHandle(effect);
                     break;
             }
         }
 
-        private void DrawRangeDamageSceneHandle(AnimationFrameDamageEntry entry)
+        private void DrawRangeDamageSceneHandle(SkillDamageEffect effect)
         {
             Transform preview = _previewTarget.transform;
-            Vector3 origin = preview.TransformPoint(entry.CenterOffset);
+            Vector3 origin = preview.TransformPoint(effect.centerOffset);
             Quaternion rotation = preview.rotation;
             float handleSize = HandleUtility.GetHandleSize(origin);
             bool changed = false;
 
             Color oldColor = Handles.color;
             Handles.color = new Color(1f, 0.25f, 0.25f, 1f);
-            Handles.Label(origin + Vector3.up * handleSize * 0.15f, $"伤害范围: {entry.damageName}");
+            DrawSceneTextLabel(origin + Vector3.up * handleSize * 0.15f, "伤害范围");
 
             EditorGUI.BeginChangeCheck();
             Vector3 newOrigin = Handles.PositionHandle(origin, rotation);
             if (EditorGUI.EndChangeCheck())
             {
-                Vector3 local = preview.InverseTransformPoint(newOrigin);
-                entry.centerOffsetX = local.x;
-                entry.centerOffsetY = local.y;
-                entry.centerOffsetZ = local.z;
+                effect.centerOffset = preview.InverseTransformPoint(newOrigin);
                 origin = newOrigin;
                 changed = true;
             }
 
-            switch (entry.shape)
+            switch (effect.shape)
             {
                 case AttackShapeType.Sphere:
-                    DrawWireSphere(origin, Mathf.Max(0.01f, entry.sphereRadius), preview);
+                    DrawWireSphere(origin, Mathf.Max(0.01f, effect.sphereRadius), preview);
                     EditorGUI.BeginChangeCheck();
-                    float newRadius = Handles.RadiusHandle(Quaternion.identity, origin, Mathf.Max(0.01f, entry.sphereRadius));
+                    float newRadius = Handles.RadiusHandle(Quaternion.identity, origin, Mathf.Max(0.01f, effect.sphereRadius));
                     if (EditorGUI.EndChangeCheck())
                     {
-                        entry.sphereRadius = Mathf.Max(0.01f, newRadius);
+                        effect.sphereRadius = Mathf.Max(0.01f, newRadius);
                         changed = true;
                     }
                     break;
 
                 case AttackShapeType.Sector:
-                    DrawWireSector(origin, preview.forward, preview.up, Mathf.Max(0.01f, entry.sphereRadius), entry.sectorAngle);
+                    DrawWireSector(origin, preview.forward, preview.up, Mathf.Max(0.01f, effect.sphereRadius), effect.sectorAngle);
                     EditorGUI.BeginChangeCheck();
-                    Vector3 radiusHandle = origin + preview.forward.normalized * Mathf.Max(0.01f, entry.sphereRadius);
+                    Vector3 radiusHandle = origin + preview.forward.normalized * Mathf.Max(0.01f, effect.sphereRadius);
                     Vector3 newRadiusHandle = Handles.Slider(radiusHandle, preview.forward, handleSize * 0.1f, Handles.ConeHandleCap, 0f);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        entry.sphereRadius = Mathf.Max(0.01f, Vector3.Dot(newRadiusHandle - origin, preview.forward.normalized));
+                        effect.sphereRadius = Mathf.Max(0.01f, Vector3.Dot(newRadiusHandle - origin, preview.forward.normalized));
                         changed = true;
                     }
                     break;
 
                 case AttackShapeType.Box:
-                    DrawWireBox(origin, rotation, entry.BoxSize);
+                    DrawWireBox(origin, rotation, effect.boxSize);
                     EditorGUI.BeginChangeCheck();
-                    Vector3 newSize = Handles.ScaleHandle(entry.BoxSize, origin, rotation, handleSize * 0.8f);
+                    Vector3 newSize = Handles.ScaleHandle(effect.boxSize, origin, rotation, handleSize * 0.8f);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        Vector3 clamped = ClampVector3(newSize, 0.01f);
-                        entry.boxSizeX = clamped.x;
-                        entry.boxSizeY = clamped.y;
-                        entry.boxSizeZ = clamped.z;
+                        effect.boxSize = ClampVector3(newSize, 0.01f);
                         changed = true;
                     }
                     break;
             }
 
             if (changed)
-                MarkDamageDatabaseDirty();
+                MarkDatabaseDirty();
 
             Handles.color = oldColor;
         }
 
-        private void DrawRaycastDamageSceneHandle(AnimationFrameDamageEntry entry)
+        private void DrawRaycastDamageSceneHandle(SkillDamageEffect effect)
         {
             Transform preview = _previewTarget.transform;
-            Vector3 origin = preview.TransformPoint(entry.RayOriginOffset);
+            Vector3 origin = preview.TransformPoint(effect.rayOriginOffset);
             Quaternion rotation = preview.rotation;
             Vector3 direction = preview.forward.normalized;
             float handleSize = HandleUtility.GetHandleSize(origin);
@@ -1909,52 +6687,98 @@ namespace Game.Editor
 
             Color oldColor = Handles.color;
             Handles.color = new Color(1f, 0.25f, 0.25f, 1f);
-            Handles.Label(origin + Vector3.up * handleSize * 0.15f, $"射线范围: {entry.damageName}");
+            DrawSceneTextLabel(origin + Vector3.up * handleSize * 0.15f, "射线范围");
 
             EditorGUI.BeginChangeCheck();
             Vector3 newOrigin = Handles.PositionHandle(origin, rotation);
             if (EditorGUI.EndChangeCheck())
             {
-                Vector3 local = preview.InverseTransformPoint(newOrigin);
-                entry.rayOriginOffsetX = local.x;
-                entry.rayOriginOffsetY = local.y;
-                entry.rayOriginOffsetZ = local.z;
+                effect.rayOriginOffset = preview.InverseTransformPoint(newOrigin);
                 origin = newOrigin;
                 changed = true;
             }
 
-            Vector3 end = origin + direction * Mathf.Max(0.01f, entry.rayMaxDistance);
+            Vector3 end = origin + direction * Mathf.Max(0.01f, effect.rayMaxDistance);
             Handles.DrawLine(origin, end);
             EditorGUI.BeginChangeCheck();
             Vector3 newEnd = Handles.Slider(end, direction, handleSize * 0.1f, Handles.ConeHandleCap, 0f);
             if (EditorGUI.EndChangeCheck())
             {
-                entry.rayMaxDistance = Mathf.Max(0.01f, Vector3.Dot(newEnd - origin, direction));
+                effect.rayMaxDistance = Mathf.Max(0.01f, Vector3.Dot(newEnd - origin, direction));
                 changed = true;
             }
 
             if (changed)
-                MarkDamageDatabaseDirty();
+                MarkDatabaseDirty();
+
+            Handles.color = oldColor;
+        }
+
+        private void DrawCollisionDamageSceneHandle(SkillDamageEffect effect)
+        {
+            if (_previewTarget == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(effect.colliderNodeName))
+            {
+                DrawSceneTextLabel(_previewTarget.transform.position + Vector3.up * 2f, "碰撞检测: 未填写武器命中盒对象名");
+                return;
+            }
+
+            Transform hitboxNode = FindChildRecursive(_previewTarget.transform, effect.colliderNodeName);
+            if (hitboxNode == null)
+            {
+                DrawSceneTextLabel(_previewTarget.transform.position + Vector3.up * 2f, $"碰撞检测: 找不到 {effect.colliderNodeName}");
+                return;
+            }
+
+            Collider hitboxCollider = hitboxNode.GetComponent<Collider>();
+            if (hitboxCollider == null)
+            {
+                DrawSceneTextLabel(hitboxNode.position + Vector3.up * 0.2f, $"碰撞检测: {effect.colliderNodeName} 没有 Collider");
+                return;
+            }
+
+            Color oldColor = Handles.color;
+            Handles.color = new Color(1f, 0.25f, 0.25f, 1f);
+            DrawSceneTextLabel(hitboxCollider.bounds.center + Vector3.up * HandleUtility.GetHandleSize(hitboxCollider.bounds.center) * 0.12f, $"命中盒: {effect.colliderNodeName}");
+
+            if (hitboxCollider is BoxCollider box)
+            {
+                Matrix4x4 oldMatrix = Handles.matrix;
+                Vector3 lossyScale = hitboxCollider.transform.lossyScale;
+                Handles.matrix = Matrix4x4.TRS(hitboxCollider.transform.TransformPoint(box.center), hitboxCollider.transform.rotation, new Vector3(Mathf.Abs(lossyScale.x), Mathf.Abs(lossyScale.y), Mathf.Abs(lossyScale.z)));
+                Handles.DrawWireCube(Vector3.zero, box.size);
+                Handles.matrix = oldMatrix;
+            }
+            else if (hitboxCollider is SphereCollider sphere)
+            {
+                float radius = sphere.radius * Mathf.Max(Mathf.Abs(hitboxCollider.transform.lossyScale.x), Mathf.Abs(hitboxCollider.transform.lossyScale.y), Mathf.Abs(hitboxCollider.transform.lossyScale.z));
+                DrawWireSphere(hitboxCollider.transform.TransformPoint(sphere.center), radius, hitboxCollider.transform);
+            }
+            else
+            {
+                Bounds bounds = hitboxCollider.bounds;
+                Handles.DrawWireCube(bounds.center, bounds.size);
+            }
 
             Handles.color = oldColor;
         }
 
         private void UpdateScenePreviewCueInstance()
         {
-            if (!_sceneHandlesEnabled || _previewTarget == null)
+            if (_isPlaying || !_sceneHandlesEnabled || _previewTarget == null)
             {
                 DestroyScenePreviewCueInstance();
                 return;
             }
 
             SkillTimelineEvent evt = GetSelectedSceneEvent();
-            if (evt == null || evt.cues == null || _activeSceneCueIndex < 0 || _activeSceneCueIndex >= evt.cues.Count)
+            if (!TryGetActiveSceneCue(evt, out SkillVfxEffect cue, out int cueEventIndex, out int cueListIndex, out TimelineTrackType cueTrackType))
             {
                 DestroyScenePreviewCueInstance();
                 return;
             }
-
-            SkillCueEntry cue = evt.cues[_activeSceneCueIndex];
             if (cue == null || cue.particlePrefab == null)
             {
                 DestroyScenePreviewCueInstance();
@@ -1963,11 +6787,12 @@ namespace Game.Editor
 
             bool needRecreate = _scenePreviewCueInstance == null
                 || _scenePreviewCuePrefab != cue.particlePrefab
-                || _scenePreviewCueEventIndex != _selectedEventIndex
-                || _scenePreviewCueListIndex != _activeSceneCueIndex;
+                || _scenePreviewCueTrackType != cueTrackType
+                || _scenePreviewCueEventIndex != cueEventIndex
+                || _scenePreviewCueListIndex != cueListIndex;
 
             if (needRecreate)
-                RecreateScenePreviewCueInstance(cue);
+                RecreateScenePreviewCueInstance(cue, cueTrackType, cueEventIndex, cueListIndex);
 
             if (_scenePreviewCueInstance == null)
                 return;
@@ -1983,7 +6808,48 @@ namespace Game.Editor
             SimulateScenePreviewParticles(localTime);
         }
 
-        private void RecreateScenePreviewCueInstance(SkillCueEntry cue)
+        private bool TryGetActiveSceneCue(SkillTimelineEvent evt, out SkillVfxEffect cue, out int cueEventIndex, out int cueListIndex, out TimelineTrackType cueTrackType)
+        {
+            cue = null;
+            cueEventIndex = -1;
+            cueListIndex = -1;
+            cueTrackType = TimelineTrackType.Vfx;
+
+            if (evt == null)
+                return false;
+
+            if (_selectedEventTrackType == TimelineTrackType.Damage
+                && _activeSceneDamageIndex >= 0
+                && evt.damageEffects != null
+                && _activeSceneDamageIndex < evt.damageEffects.Count)
+            {
+                SkillDamageEffect damageEffect = evt.damageEffects[_activeSceneDamageIndex];
+                if (damageEffect?.onHitVfxEffects != null
+                    && _activeSceneHitVfxDamageIndex == _activeSceneDamageIndex
+                    && _activeSceneHitVfxIndex >= 0
+                    && _activeSceneHitVfxIndex < damageEffect.onHitVfxEffects.Count)
+                {
+                    cue = damageEffect.onHitVfxEffects[_activeSceneHitVfxIndex];
+                    cueEventIndex = _selectedEventIndex;
+                    cueListIndex = _activeSceneHitVfxIndex;
+                    cueTrackType = TimelineTrackType.Damage;
+                    return cue != null;
+                }
+            }
+
+            if (evt.vfxEffects != null && _activeSceneCueIndex >= 0 && _activeSceneCueIndex < evt.vfxEffects.Count)
+            {
+                cue = evt.vfxEffects[_activeSceneCueIndex];
+                cueEventIndex = _selectedEventIndex;
+                cueListIndex = _activeSceneCueIndex;
+                cueTrackType = _selectedEventTrackType;
+                return cue != null;
+            }
+
+            return false;
+        }
+
+        private void RecreateScenePreviewCueInstance(SkillVfxEffect cue, TimelineTrackType cueTrackType, int cueEventIndex, int cueListIndex)
         {
             DestroyScenePreviewCueInstance();
             if (cue?.particlePrefab == null)
@@ -1996,22 +6862,60 @@ namespace Game.Editor
             ApplyHideFlagsRecursively(_scenePreviewCueInstance, HideFlags.HideAndDontSave);
             _scenePreviewCueInstance.name = $"[SkillPreview]{cue.particlePrefab.name}";
             _scenePreviewCuePrefab = cue.particlePrefab;
-            _scenePreviewCueEventIndex = _selectedEventIndex;
-            _scenePreviewCueListIndex = _activeSceneCueIndex;
+            _scenePreviewCueTrackType = cueTrackType;
+            _scenePreviewCueEventIndex = cueEventIndex;
+            _scenePreviewCueListIndex = cueListIndex;
         }
 
-        private void UpdateScenePreviewCueTransform(SkillCueEntry cue)
+        private void UpdateScenePreviewCueTransform(SkillVfxEffect cue)
         {
             if (_scenePreviewCueInstance == null || cue == null)
                 return;
 
-            Transform anchor = ResolveSceneCueAnchor(cue.anchor);
+            Transform anchor = ResolveSceneCueAnchor(cue.anchor, cue);
             if (anchor == null)
                 anchor = _previewTarget.transform;
 
             _scenePreviewCueInstance.transform.position = anchor.TransformPoint(cue.offset);
             _scenePreviewCueInstance.transform.rotation = anchor.rotation * Quaternion.Euler(cue.rotationEuler);
             _scenePreviewCueInstance.transform.localScale = cue.scale;
+        }
+
+        private void DrawSceneCueBounds()
+        {
+            if (_scenePreviewCueInstance == null)
+                return;
+
+            Renderer[] renderers = _scenePreviewCueInstance.GetComponentsInChildren<Renderer>(true);
+            if (renderers == null || renderers.Length == 0)
+                return;
+
+            bool hasBounds = false;
+            Bounds bounds = default;
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer renderer = renderers[i];
+                if (renderer == null)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            if (!hasBounds)
+                return;
+
+            Color oldColor = Handles.color;
+            Handles.color = new Color(0.18f, 0.9f, 1f, 0.9f);
+            Handles.DrawWireCube(bounds.center, bounds.size);
+            Handles.color = oldColor;
         }
 
         private void SimulateScenePreviewParticles(float localTime)
@@ -2037,6 +6941,7 @@ namespace Game.Editor
 
             _scenePreviewCueInstance = null;
             _scenePreviewCuePrefab = null;
+            _scenePreviewCueTrackType = TimelineTrackType.Vfx;
             _scenePreviewCueEventIndex = -1;
             _scenePreviewCueListIndex = -1;
         }
@@ -2092,7 +6997,12 @@ namespace Game.Editor
             }
         }
 
-        private Transform ResolveSceneCueAnchor(CueAnchor anchor)
+        private Transform ResolveSceneCueAnchor(CueAnchor anchor, SkillVfxEffect cue = null)
+        {
+            return ResolveCueAnchorTransform(anchor, cue, null);
+        }
+
+        private Transform ResolveCueAnchorTransform(CueAnchor anchor, SkillVfxEffect cue, Transform explicitTarget)
         {
             if (_previewTarget == null)
                 return null;
@@ -2100,20 +7010,63 @@ namespace Game.Editor
             switch (anchor)
             {
                 case CueAnchor.Target:
-                    return _previewTarget.transform;
+                    return explicitTarget ?? ResolvePrimaryPreviewHitTarget() ?? _previewTarget.transform;
                 default:
                     return _previewTarget.transform;
             }
         }
 
-        private void MarkDamageDatabaseDirty()
+        private Transform ResolvePrimaryPreviewHitTarget()
         {
-            if (_damageDatabase == null)
-                return;
+            GameObject explicitVictim = ResolveRootPreviewTarget(_previewVictimTarget);
+            if (explicitVictim != null)
+                return explicitVictim.transform;
 
-            EditorUtility.SetDirty(_damageDatabase);
-            Repaint();
-            SceneView.RepaintAll();
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return null;
+
+            List<PreviewDamageHitResult> hits = CollectPreviewDamageHitHistory(skill);
+            for (int i = 0; i < hits.Count; i++)
+            {
+                PreviewDamageHitResult hit = hits[i];
+                if (hit?.hitTargets == null || hit.hitTargets.Count == 0)
+                    continue;
+
+                if (_selectedEventTrackType == TimelineTrackType.Damage
+                    && _selectedEventIndex == hit.eventIndex
+                    && (_activeSceneDamageIndex < 0 || _activeSceneDamageIndex == hit.effectIndex))
+                {
+                    return hit.hitTargets[0];
+                }
+            }
+
+            for (int i = 0; i < hits.Count; i++)
+            {
+                PreviewDamageHitResult hit = hits[i];
+                if (hit?.hitTargets != null && hit.hitTargets.Count > 0)
+                    return hit.hitTargets[0];
+            }
+
+            return null;
+        }
+
+        private static Transform FindChildRecursive(Transform root, string childName)
+        {
+            if (root == null || string.IsNullOrWhiteSpace(childName))
+                return null;
+
+            if (root.name == childName)
+                return root;
+
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform found = FindChildRecursive(root.GetChild(i), childName);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
         }
 
         private void FitZoomToWindow()
@@ -2123,28 +7076,6 @@ namespace Game.Editor
             _zoom = Mathf.Clamp(width / duration, 20f, 800f);
             _timelineScrollX = 0f;
             Repaint();
-        }
-
-        private bool ShouldDisplayEvent(SkillTimelineEvent evt)
-        {
-            if (evt == null)
-                return false;
-
-            bool hasDamage = GetDamageEffectCount(evt) > 0;
-            bool hasPhysics = evt.physicsEffects != null && evt.physicsEffects.Count > 0;
-            bool hasAttribute = evt.attributeEffects != null && evt.attributeEffects.Count > 0;
-            bool hasCue = evt.cues != null && evt.cues.Count > 0;
-
-            if (hasDamage && _showDamageEvents)
-                return true;
-            if (hasPhysics && _showPhysicsEvents)
-                return true;
-            if (hasAttribute && _showAttributeEvents)
-                return true;
-            if (hasCue && _showCueEvents)
-                return true;
-
-            return !hasDamage && !hasPhysics && !hasAttribute && !hasCue;
         }
 
         private float GetActiveSnapStep()

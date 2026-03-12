@@ -27,8 +27,8 @@ namespace Game.Presentation
                 GoTo<FallAttackLandState>();
                 return;
             }
-            if (AnimNearEnd())
-                GoTo<FallAttackLoopState>();
+            if (AnimNearConfiguredEnd())
+                GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.FallAttackLoopState);
             else if (StateAge > 0.25f && Ctx.Anim.IsCurrentStateLooping())
                 GoTo<FallAttackLoopState>();
         }

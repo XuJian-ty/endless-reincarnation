@@ -31,13 +31,25 @@ namespace Game.Presentation
         {
             var pending = Ctx.StateMachine.PeekPending();
             bool hasMovePending = !pending.IsEmpty && (pending.Action == GameAction.Walk || pending.Action == GameAction.Run);
-            if (hasMovePending && AnimNearEnd(0.80f))
+            if (hasMovePending && AnimNearEnd(GetConfiguredPendingReleaseThreshold(pending.Action, 0.80f)))
             {
-                CompleteWithPending(() => { if (IsGrounded) GoTo<IdleState>(); else GoTo<FallState>(); });
+                CompleteWithPending(() =>
+                {
+                    if (IsGrounded)
+                        GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
+                    else
+                        GoTo<FallState>();
+                });
                 return;
             }
-            if (AnimNearEnd())
-                CompleteWithPending(() => { if (IsGrounded) GoTo<IdleState>(); else GoTo<FallState>(); });
+            if (AnimNearConfiguredEnd())
+                CompleteWithPending(() =>
+                {
+                    if (IsGrounded)
+                        GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
+                    else
+                        GoTo<FallState>();
+                });
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action) => action switch

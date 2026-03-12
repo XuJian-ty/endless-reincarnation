@@ -466,7 +466,7 @@ GameObject:
   - component: {fileID: 3694025988617898618}
   m_Layer: 6
   m_Name: boss_1
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -480,7 +480,7 @@ Transform:
   m_GameObject: {fileID: 2778253956479529645}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.99, y: 0, z: 0}
+  m_LocalPosition: {x: 3.49, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -502,7 +502,6 @@ MonoBehaviour:
   _enemyId: boss_1
   _enemyType: 4
   _archetypeOverride: {fileID: 11400000, guid: e0415fb63a604b2d9633b86bc3500cfd, type: 2}
-  _defaultPostSkillIdleDuration: 0.25
   _deathDisableDelay: 1.2
 --- !u!114 &5470972486754962690
 MonoBehaviour:
@@ -553,10 +552,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b6ddf2ca5e74e64db4fd50a7e8591d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _paramSpeed: Speed
-  _triggerHurt: Hurt
-  _triggerDead: Dead
-  _damageDatabase: {fileID: 0}
 --- !u!136 &1420718946788550276
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1901,7 +1896,7 @@ Transform:
   m_GameObject: {fileID: 8565855727718784634}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -2.99, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

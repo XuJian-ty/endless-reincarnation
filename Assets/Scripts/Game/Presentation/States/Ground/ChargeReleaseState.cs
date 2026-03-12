@@ -13,12 +13,22 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            Ctx.Anim.TriggerChargeRelease();
+            TriggerConfiguredAction("ChargeAttack", "ChargeRelease");
+            StartTimelineSkill("ChargeAttack");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
-            if (AnimNearEnd()) CompleteWithPending(() => { if (IsGrounded) GoTo<IdleState>(); else GoTo<FallState>(); });
+            if (AnimNearConfiguredEnd())
+            {
+                CompleteWithPending(() =>
+                {
+                    if (IsGrounded)
+                        GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
+                    else
+                        GoTo<FallState>();
+                });
+            }
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action) => action switch

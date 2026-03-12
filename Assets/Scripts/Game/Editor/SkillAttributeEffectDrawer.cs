@@ -7,6 +7,12 @@ namespace Game.Editor
     [CustomPropertyDrawer(typeof(SkillAttributeEffect))]
     public class SkillAttributeEffectDrawer : PropertyDrawer
     {
+        private static readonly string[] TargetLabels =
+        {
+            "自身",
+            "命中目标",
+        };
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
@@ -22,8 +28,9 @@ namespace Game.Editor
                 float y = position.y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
                 var statField = property.FindPropertyRelative("statField");
+                var targetMode = property.FindPropertyRelative("targetMode");
                 y = DrawProperty(y, position, statField);
-                y = DrawProperty(y, position, property.FindPropertyRelative("targetMode"));
+                y = DrawTargetMode(y, position, targetMode, IsOnHitContext(property));
                 y = DrawProperty(y, position, property.FindPropertyRelative("magnitude"));
                 y = DrawProperty(y, position, property.FindPropertyRelative("usePercent"));
 
@@ -53,7 +60,7 @@ namespace Game.Editor
 
             var statField = property.FindPropertyRelative("statField");
             height += GetChildHeight(statField);
-            height += GetChildHeight(property.FindPropertyRelative("targetMode"));
+            height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
             height += GetChildHeight(property.FindPropertyRelative("magnitude"));
             height += GetChildHeight(property.FindPropertyRelative("usePercent"));
 
@@ -70,6 +77,27 @@ namespace Game.Editor
 
             int value = statField.enumValueIndex;
             return value != (int)SkillStatField.HP && value != (int)SkillStatField.MP;
+        }
+
+        private static float DrawTargetMode(float y, Rect totalRect, SerializedProperty property, bool isOnHit)
+        {
+            if (property == null)
+                return y;
+
+            Rect rect = new Rect(totalRect.x, y, totalRect.width, EditorGUIUtility.singleLineHeight);
+            if (!isOnHit)
+            {
+                property.enumValueIndex = (int)SkillTargetMode.Self;
+                EditorGUI.LabelField(rect, "作用目标", "自身");
+            }
+            else
+            {
+                int selected = property.enumValueIndex == (int)SkillTargetMode.DetectedTargets ? 1 : 0;
+                selected = EditorGUI.Popup(rect, "作用目标", selected, TargetLabels);
+                property.enumValueIndex = selected == 1 ? (int)SkillTargetMode.DetectedTargets : (int)SkillTargetMode.Self;
+            }
+
+            return y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         }
 
         private static float DrawProperty(float y, Rect totalRect, SerializedProperty property)
@@ -89,6 +117,11 @@ namespace Game.Editor
                 return 0f;
 
             return EditorGUI.GetPropertyHeight(property, true) + EditorGUIUtility.standardVerticalSpacing;
+        }
+
+        private static bool IsOnHitContext(SerializedProperty property)
+        {
+            return property.propertyPath.Contains("onHitAttributeEffects");
         }
     }
 }

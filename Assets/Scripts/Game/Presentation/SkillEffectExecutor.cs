@@ -11,80 +11,132 @@ namespace Game.Presentation
         private static readonly HashSet<Transform> DetectedTargetSet = new HashSet<Transform>();
         private static readonly List<Transform> DamageTargetsScratch = new List<Transform>(16);
         private static readonly HashSet<Transform> DamageTargetSet = new HashSet<Transform>();
+        private static HitStopRunner _hitStopRunner;
 
-        public static void ExecuteEvent(SkillTimelineEvent evt, ISkillExecutionContext ctx)
+        public static void ExecuteDamageEvent(SkillDamageEvent evt, ISkillExecutionContext ctx)
         {
             if (evt == null || ctx == null)
                 return;
 
-            PlayCues(evt.cues, ctx.CasterTransform, null);
-
-            AnimationFrameDamageEntry primaryDetectorEntry = null;
-            DetectedTargetsScratch.Clear();
-            DetectedTargetSet.Clear();
-
-            if (evt.damageEffects != null && ctx.DamageDatabase != null)
+            if (evt.damageEffects != null)
             {
                 for (int damageIndex = 0; damageIndex < evt.damageEffects.Count; damageIndex++)
                 {
                     var damageEffect = evt.damageEffects[damageIndex];
-                    if (damageEffect == null || string.IsNullOrEmpty(damageEffect.damageName))
+                    if (damageEffect == null)
                         continue;
-
-                    if (!DamageDetectionRunner.TryRunDetection(
-                            damageEffect.damageName,
-                            ctx.CasterTransform,
-                            ctx.DamageDatabase,
-                            ctx.OverlapBuffer,
-                            out var detectorEntry,
-                            out int hitCount))
-                    {
-                        continue;
-                    }
-
-                    if (primaryDetectorEntry == null && detectorEntry != null)
-                        primaryDetectorEntry = detectorEntry;
-
-                    DamageTargetsScratch.Clear();
-                    DamageTargetSet.Clear();
-
-                    for (int i = 0; i < hitCount; i++)
-                    {
-                        var target = ExtractTargetTransform(ctx.OverlapBuffer[i]);
-                        if (target == null)
-                            continue;
-
-                        if (DamageTargetSet.Add(target))
-                            DamageTargetsScratch.Add(target);
-
-                        if (DetectedTargetSet.Add(target))
-                            DetectedTargetsScratch.Add(target);
-                    }
-
-                    float detectorMultiplier = detectorEntry != null ? detectorEntry.damageMultiplier : 1f;
-                    float finalMultiplier = damageEffect.damageMagnitude > 0f
-                        ? damageEffect.damageMagnitude * detectorMultiplier
-                        : detectorMultiplier;
-                    float stunDuration = detectorEntry != null && detectorEntry.pushDuration > 0.01f
-                        ? detectorEntry.pushDuration
-                        : 0.2f;
-
-                    for (int i = 0; i < DamageTargetsScratch.Count; i++)
-                        ApplyDamageToTarget(DamageTargetsScratch[i], ctx, finalMultiplier, stunDuration);
+                    ExecuteDamageEffect(damageEffect, ctx, null);
                 }
             }
+        }
 
-            if (evt.physicsEffects != null)
+        public static void ExecuteDamageEffect(
+            SkillDamageEffect damageEffect,
+            ISkillExecutionContext ctx,
+            HashSet<Transform> alreadyHitTargets)
+        {
+            ExecuteDamageEffect(damageEffect, ctx, alreadyHitTargets, null, null);
+        }
+
+        public static void ExecuteDamageEffect(
+            SkillDamageEffect damageEffect,
+            ISkillExecutionContext ctx,
+            HashSet<Transform> alreadyHitTargets,
+            SkillCollisionHitbox collisionHitbox,
+            object collisionToken)
+        {
+            if (damageEffect == null || ctx == null)
+                return;
+
+            DetectedTargetsScratch.Clear();
+            DetectedTargetSet.Clear();
+
+            if (!DamageDetectionRunner.TryRunDetection(
+                    damageEffect,
+                    ctx.CasterTransform,
+                    collisionHitbox,
+                    collisionToken,
+                    ctx.OverlapBuffer,
+                    out int hitCount))
             {
-                for (int i = 0; i < evt.physicsEffects.Count; i++)
-                    ApplyPhysicsEffect(evt.physicsEffects[i], ctx, DetectedTargetsScratch, primaryDetectorEntry);
+                return;
             }
 
-            if (evt.attributeEffects != null)
+            DamageTargetsScratch.Clear();
+            DamageTargetSet.Clear();
+
+            for (int i = 0; i < hitCount; i++)
             {
-                for (int i = 0; i < evt.attributeEffects.Count; i++)
-                    ApplyAttributeEffect(evt.attributeEffects[i], ctx, DetectedTargetsScratch);
+                var target = ExtractTargetTransform(ctx.OverlapBuffer[i]);
+                if (target == null)
+                    continue;
+
+                if (alreadyHitTargets != null && alreadyHitTargets.Contains(target))
+                    continue;
+
+                if (DamageTargetSet.Add(target))
+                    DamageTargetsScratch.Add(target);
+
+                if (DetectedTargetSet.Add(target))
+                    DetectedTargetsScratch.Add(target);
             }
+
+            if (DamageTargetsScratch.Count <= 0)
+                return;
+
+            if (alreadyHitTargets != null)
+            {
+                for (int i = 0; i < DamageTargetsScratch.Count; i++)
+                    alreadyHitTargets.Add(DamageTargetsScratch[i]);
+            }
+
+            float finalMultiplier = Mathf.Max(0f, damageEffect.damageMagnitude);
+            float stunDuration = damageEffect.pushDuration > 0.01f
+                ? damageEffect.pushDuration
+                : 0.2f;
+
+            if (finalMultiplier > 0f)
+            {
+                for (int i = 0; i < DamageTargetsScratch.Count; i++)
+                    ApplyDamageToTarget(DamageTargetsScratch[i], ctx, finalMultiplier, stunDuration);
+            }
+
+            RequestHitStop(damageEffect.hitStopDuration, damageEffect.hitStopTimeScale);
+            ApplyOnHitEffects(damageEffect, ctx, DamageTargetsScratch);
+        }
+
+        public static void ExecutePhysicsEvent(SkillPhysicsEvent evt, ISkillExecutionContext ctx)
+        {
+            if (evt?.physicsEffects == null || ctx == null)
+                return;
+
+            for (int i = 0; i < evt.physicsEffects.Count; i++)
+                ApplyIndependentPhysicsEffect(evt.physicsEffects[i], ctx);
+        }
+
+        public static void ExecuteAttributeEvent(SkillAttributeEvent evt, ISkillExecutionContext ctx)
+        {
+            if (evt?.attributeEffects == null || ctx == null)
+                return;
+
+            for (int i = 0; i < evt.attributeEffects.Count; i++)
+                ApplyIndependentAttributeEffect(evt.attributeEffects[i], ctx);
+        }
+
+        public static void ExecuteVfxEvent(SkillVfxEvent evt, ISkillExecutionContext ctx)
+        {
+            if (evt == null || ctx?.CasterTransform == null)
+                return;
+
+            PlayVfxEffects(evt.vfxEffects, ctx.CasterTransform, ctx.CasterTransform);
+        }
+
+        public static void ExecuteSfxEvent(SkillSfxEvent evt, ISkillExecutionContext ctx)
+        {
+            if (evt == null || ctx?.CasterTransform == null)
+                return;
+
+            PlaySfxEffects(evt.sfxEffects, ctx.CasterTransform, ctx.CasterTransform);
         }
 
         private static void ApplyDamageToTarget(
@@ -127,13 +179,62 @@ namespace Game.Presentation
             }
         }
 
-        private static void ApplyPhysicsEffect(
-            SkillPhysicsEffect effect,
-            ISkillExecutionContext ctx,
-            List<Transform> detectedTargets,
-            AnimationFrameDamageEntry detectorEntry)
+        private static void RequestHitStop(float duration, float timeScale)
         {
-            if (effect == null)
+            if (duration <= 0f)
+                return;
+
+            float clampedScale = Mathf.Clamp01(timeScale);
+            if (clampedScale >= 0.999f || Time.timeScale <= 0f)
+                return;
+
+            if (_hitStopRunner == null)
+            {
+                var go = new GameObject("[SkillHitStopRunner]");
+                go.hideFlags = HideFlags.HideAndDontSave;
+                Object.DontDestroyOnLoad(go);
+                _hitStopRunner = go.AddComponent<HitStopRunner>();
+            }
+
+            _hitStopRunner.Apply(duration, clampedScale);
+        }
+
+        private static void ApplyOnHitEffects(
+            SkillDamageEffect damageEffect,
+            ISkillExecutionContext ctx,
+            List<Transform> damageTargets)
+        {
+            if (damageEffect == null || ctx == null || damageTargets == null || damageTargets.Count == 0)
+                return;
+
+            if (damageEffect.onHitVfxEffects != null)
+            {
+                for (int targetIndex = 0; targetIndex < damageTargets.Count; targetIndex++)
+                    PlayVfxEffects(damageEffect.onHitVfxEffects, ctx.CasterTransform, damageTargets[targetIndex]);
+            }
+
+            if (damageEffect.onHitSfxEffects != null)
+            {
+                for (int targetIndex = 0; targetIndex < damageTargets.Count; targetIndex++)
+                    PlaySfxEffects(damageEffect.onHitSfxEffects, ctx.CasterTransform, damageTargets[targetIndex]);
+            }
+
+            if (damageEffect.onHitPhysicsEffects != null)
+            {
+                for (int i = 0; i < damageEffect.onHitPhysicsEffects.Count; i++)
+                    ApplyPhysicsEffect(damageEffect.onHitPhysicsEffects[i], ctx, damageTargets, damageEffect);
+            }
+
+            if (damageEffect.onHitAttributeEffects != null)
+            {
+                for (int i = 0; i < damageEffect.onHitAttributeEffects.Count; i++)
+                    ApplyAttributeEffect(damageEffect.onHitAttributeEffects[i], ctx, damageTargets);
+            }
+        }
+
+        private static void ApplyIndependentPhysicsEffect(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
+        {
+            if (effect == null || ctx?.CasterTransform == null)
                 return;
 
             if (effect.effectType == PhysicsEffectType.DashSelf)
@@ -148,90 +249,139 @@ namespace Game.Presentation
                 return;
             }
 
-            var targets = ResolveTargets(effect.targetMode, ctx, detectedTargets);
-            for (int i = 0; i < targets.Count; i++)
-                ApplyTargetPhysicsEffect(targets[i], effect, ctx, detectorEntry);
+            if (effect.effectType == PhysicsEffectType.SuperArmor)
+            {
+                ApplySelfSuperArmor(effect, ctx);
+                return;
+            }
+
+            if (effect.effectType == PhysicsEffectType.Invincible)
+            {
+                ApplySelfInvincibility(effect, ctx);
+                return;
+            }
+
+        }
+
+        private static void ApplyIndependentAttributeEffect(SkillAttributeEffect effect, ISkillExecutionContext ctx)
+        {
+            if (effect == null || ctx?.CasterTransform == null)
+                return;
+
+            ApplyAttributeToTarget(ctx.CasterTransform, effect);
+        }
+
+        private static void ApplyPhysicsEffect(
+            SkillPhysicsEffect effect,
+            ISkillExecutionContext ctx,
+            List<Transform> detectedTargets,
+            SkillDamageEffect damageEffect)
+        {
+            if (effect == null)
+                return;
+
+            if (effect.effectType == PhysicsEffectType.DashSelf || effect.effectType == PhysicsEffectType.Airborne)
+                return;
+
+            for (int i = 0; i < detectedTargets.Count; i++)
+            {
+                Transform target = detectedTargets[i];
+                if (target == null)
+                    continue;
+
+                ApplyTargetPhysicsEffect(target, effect, ctx, damageEffect);
+            }
         }
 
         private static void ApplySelfDisplacement(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
         {
-            if (effect.magnitude <= 0f || ctx.CasterTransform == null)
+            if (effect.distance <= 0f || ctx.CasterTransform == null)
                 return;
 
             float duration = effect.duration > 0f ? effect.duration : 0.12f;
-            Vector3 direction = ResolveDirection(ctx.CasterTransform, null, effect.direction, ctx);
+            Vector3 direction = ctx.CasterTransform.forward;
+            direction.y = 0f;
             if (direction.sqrMagnitude <= 0.0001f)
                 return;
 
             var motion = ctx.CasterTransform.GetComponent<CombatMotionController>()
                          ?? ctx.CasterTransform.gameObject.AddComponent<CombatMotionController>();
-            motion.ApplyDisplacement(direction.normalized * effect.magnitude, duration);
+            motion.ApplyDisplacement(direction.normalized * effect.distance, duration);
         }
 
         private static void ApplySelfAirborne(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
         {
-            if (effect.magnitude <= 0f || ctx.CasterTransform == null)
+            if (effect.height <= 0f || ctx.CasterTransform == null)
                 return;
 
             float duration = effect.duration > 0f ? effect.duration : 0.12f;
             var motion = ctx.CasterTransform.GetComponent<CombatMotionController>()
                          ?? ctx.CasterTransform.gameObject.AddComponent<CombatMotionController>();
-            motion.ApplyDisplacement(Vector3.up * effect.magnitude, duration);
+            motion.ApplyDisplacement(Vector3.up * effect.height, duration);
+        }
+
+        private static void ApplySelfSuperArmor(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
+        {
+            if (effect.duration <= 0f || ctx.CasterTransform == null)
+                return;
+
+            PlayerController player = ctx.CasterTransform.GetComponent<PlayerController>();
+            player?.ApplyTemporarySuperArmor(effect.duration);
+        }
+
+        private static void ApplySelfInvincibility(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
+        {
+            if (effect.duration <= 0f || ctx.CasterTransform == null)
+                return;
+
+            PlayerController player = ctx.CasterTransform.GetComponent<PlayerController>();
+            player?.ApplyTemporaryInvincibility(effect.duration);
         }
 
         private static void ApplyTargetPhysicsEffect(
             Transform target,
             SkillPhysicsEffect effect,
             ISkillExecutionContext ctx,
-            AnimationFrameDamageEntry detectorEntry)
+            SkillDamageEffect damageEffect)
         {
-            if (target == null || effect.magnitude <= 0f)
+            if (target == null)
                 return;
 
             float duration = effect.duration > 0f
                 ? effect.duration
-                : (detectorEntry != null && detectorEntry.pushDuration > 0.01f
-                    ? detectorEntry.pushDuration
+                : (damageEffect != null && damageEffect.pushDuration > 0.01f
+                    ? damageEffect.pushDuration
                     : 0.12f);
 
-            Vector3 direction = ResolveDirection(ctx.CasterTransform, target, effect.direction, ctx);
+            if (effect.effectType == PhysicsEffectType.Stun)
+            {
+                ICombatHardControlReceiver hardControl =
+                    target.GetComponentInParent<PlayerController>() as ICombatHardControlReceiver
+                    ?? target.GetComponentInParent<EnemyController>() as ICombatHardControlReceiver;
+                hardControl?.ApplyHardControl(duration);
 
-            if (effect.effectType == PhysicsEffectType.Pull)
-            {
-                direction = -direction;
-            }
-            else if (effect.effectType == PhysicsEffectType.Launch)
-            {
-                Vector3 horizontal = ResolveHorizontalDirection(ctx.CasterTransform, target, effect.direction, ctx);
-                direction = (Vector3.up + horizontal * 0.35f).normalized;
-            }
-            else if (effect.effectType == PhysicsEffectType.Stun)
-            {
                 var stun = target.GetComponent<CombatMotionController>()
                            ?? target.gameObject.AddComponent<CombatMotionController>();
-                stun.ApplyDisplacement(Vector3.zero, duration);
+                stun.HoldStill(duration);
                 return;
             }
-
-            if (direction.sqrMagnitude <= 0.0001f)
-                return;
 
             var motion = target.GetComponent<CombatMotionController>()
                          ?? target.gameObject.AddComponent<CombatMotionController>();
-            motion.ApplyDisplacement(direction.normalized * effect.magnitude, duration);
-        }
+            Vector3 horizontal = ResolveHorizontalTargetDirection(ctx.CasterTransform, target, effect.effectType);
+            Vector3 displacement = Vector3.zero;
 
-        private static Vector3 ResolveHorizontalDirection(
-            Transform caster,
-            Transform target,
-            SkillEffectDirection direction,
-            ISkillExecutionContext ctx)
-        {
-            Vector3 resolved = ResolveDirection(caster, target, direction, ctx);
-            resolved.y = 0f;
-            if (resolved.sqrMagnitude <= 0.0001f)
-                return Vector3.zero;
-            return resolved.normalized;
+            if (effect.effectType == PhysicsEffectType.Knockback)
+                displacement = horizontal * effect.distance;
+            else if (effect.effectType == PhysicsEffectType.Pull)
+                displacement = horizontal * effect.distance;
+            else if (effect.effectType == PhysicsEffectType.Launch)
+                displacement = horizontal * effect.distance + Vector3.up * effect.height;
+
+            if (displacement.sqrMagnitude <= 0.0001f)
+                return;
+
+            motion.ApplyDisplacement(displacement, duration);
         }
 
         private static void ApplyAttributeEffect(
@@ -332,34 +482,41 @@ namespace Game.Presentation
                 enemy.ApplyTimedStatModifier(modifier, float.MaxValue);
         }
 
-        private static void PlayCues(List<SkillCueEntry> cues, Transform caster, Transform target)
+        private static void PlayVfxEffects(List<SkillVfxEffect> effects, Transform caster, Transform target)
         {
-            if (cues == null || caster == null)
+            if (effects == null || caster == null)
                 return;
 
-            for (int i = 0; i < cues.Count; i++)
+            for (int i = 0; i < effects.Count; i++)
             {
-                var cue = cues[i];
-                if (cue == null)
+                var effect = effects[i];
+                if (effect == null || effect.particlePrefab == null)
                     continue;
 
-                if (cue.particlePrefab != null)
-                {
-                    Transform anchor = ResolveAnchorTransform(cue.anchor, caster, target);
-                    Vector3 position = anchor != null ? anchor.TransformPoint(cue.offset) : caster.position + cue.offset;
-                    Quaternion rotation = anchor != null
-                        ? anchor.rotation * Quaternion.Euler(cue.rotationEuler)
-                        : caster.rotation * Quaternion.Euler(cue.rotationEuler);
-                    var instance = Object.Instantiate(cue.particlePrefab, position, rotation);
-                    instance.transform.localScale = Vector3.Scale(instance.transform.localScale, cue.scale);
-                }
+                Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
+                Vector3 position = anchor != null ? anchor.TransformPoint(effect.offset) : caster.position + effect.offset;
+                Quaternion rotation = anchor != null
+                    ? anchor.rotation * Quaternion.Euler(effect.rotationEuler)
+                    : caster.rotation * Quaternion.Euler(effect.rotationEuler);
+                var instance = Object.Instantiate(effect.particlePrefab, position, rotation);
+                instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale);
+            }
+        }
 
-                if (cue.audioClip != null)
-                {
-                    Transform anchor = ResolveAnchorTransform(cue.anchor, caster, target);
-                    Vector3 position = anchor != null ? anchor.TransformPoint(cue.offset) : caster.position + cue.offset;
-                    AudioSource.PlayClipAtPoint(cue.audioClip, position);
-                }
+        private static void PlaySfxEffects(List<SkillSfxEffect> effects, Transform caster, Transform target)
+        {
+            if (effects == null || caster == null)
+                return;
+
+            for (int i = 0; i < effects.Count; i++)
+            {
+                var effect = effects[i];
+                if (effect == null || effect.audioClip == null)
+                    continue;
+
+                Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
+                Vector3 position = anchor != null ? anchor.TransformPoint(effect.offset) : caster.position + effect.offset;
+                AudioSource.PlayClipAtPoint(effect.audioClip, position);
             }
         }
 
@@ -376,10 +533,6 @@ namespace Game.Presentation
                     if (ctx.CasterTransform != null)
                         result.Add(ctx.CasterTransform);
                     break;
-                case SkillTargetMode.CurrentTarget:
-                    if (ctx.CurrentTarget != null)
-                        result.Add(ctx.CurrentTarget);
-                    break;
                 default:
                     result.AddRange(detectedTargets);
                     break;
@@ -388,40 +541,24 @@ namespace Game.Presentation
             return result;
         }
 
-        private static Vector3 ResolveDirection(
+        private static Vector3 ResolveHorizontalTargetDirection(
             Transform caster,
             Transform target,
-            SkillEffectDirection direction,
-            ISkillExecutionContext ctx)
+            PhysicsEffectType effectType)
         {
-            if (direction == SkillEffectDirection.TowardTarget)
-            {
-                var resolvedTarget = target ?? ctx.CurrentTarget;
-                if (resolvedTarget != null && caster != null)
-                {
-                    var vector = resolvedTarget.position - caster.position;
-                    vector.y = 0f;
-                    if (vector.sqrMagnitude > 0.0001f)
-                        return vector.normalized;
-                }
-            }
-            else if (direction == SkillEffectDirection.AwayFromTarget)
-            {
-                var resolvedTarget = target ?? ctx.CurrentTarget;
-                if (resolvedTarget != null && caster != null)
-                {
-                    var vector = caster.position - resolvedTarget.position;
-                    vector.y = 0f;
-                    if (vector.sqrMagnitude > 0.0001f)
-                        return vector.normalized;
-                }
-            }
-            else if (direction == SkillEffectDirection.Up)
-            {
-                return Vector3.up;
-            }
+            if (caster == null || target == null)
+                return Vector3.zero;
 
-            return caster != null ? caster.forward : Vector3.forward;
+            Vector3 vector = target.position - caster.position;
+            vector.y = 0f;
+            if (vector.sqrMagnitude <= 0.0001f)
+                return Vector3.zero;
+
+            Vector3 away = vector.normalized;
+            if (effectType == PhysicsEffectType.Pull)
+                return -away;
+
+            return away;
         }
 
         private static Transform ResolveAnchorTransform(CueAnchor anchor, Transform caster, Transform target)
@@ -492,6 +629,58 @@ namespace Game.Presentation
             }
 
             return modifier;
+        }
+
+        private sealed class HitStopRunner : MonoBehaviour
+        {
+            private bool _active;
+            private float _remainingUnscaled;
+            private float _restoreScale = 1f;
+            private float _appliedScale = 1f;
+
+            public void Apply(float duration, float timeScale)
+            {
+                if (duration <= 0f || Time.timeScale <= 0f)
+                    return;
+
+                float clampedScale = Mathf.Clamp01(timeScale);
+                if (!_active)
+                {
+                    _restoreScale = Time.timeScale;
+                    _remainingUnscaled = duration;
+                    _appliedScale = clampedScale;
+                    Time.timeScale = _appliedScale;
+                    _active = true;
+                    return;
+                }
+
+                _remainingUnscaled = Mathf.Max(_remainingUnscaled, duration);
+                _appliedScale = Mathf.Min(_appliedScale, clampedScale);
+                if (Time.timeScale > 0f)
+                    Time.timeScale = _appliedScale;
+            }
+
+            private void Update()
+            {
+                if (!_active)
+                    return;
+
+                if (Mathf.Approximately(Time.timeScale, 0f))
+                    return;
+
+                if (!Mathf.Approximately(Time.timeScale, _appliedScale))
+                {
+                    _active = false;
+                    return;
+                }
+
+                _remainingUnscaled -= Time.unscaledDeltaTime;
+                if (_remainingUnscaled > 0f)
+                    return;
+
+                Time.timeScale = _restoreScale;
+                _active = false;
+            }
         }
 
     }

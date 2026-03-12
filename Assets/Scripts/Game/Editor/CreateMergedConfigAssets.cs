@@ -7,7 +7,8 @@ using System.IO;
 namespace Game.Editor
 {
     /// <summary>
-    /// Creates/updates all config assets under Resources/配置 for one-click setup.
+    /// Creates config assets under Resources/配置 for one-click setup.
+    /// Existing config assets are treated as the default source of truth; code defaults are only used when assets are missing.
     /// Menu: 游戏/一键创建全部配置（需求书默认数据）
     /// </summary>
     public static class CreateMergedConfigAssets
@@ -62,10 +63,7 @@ namespace Game.Editor
                 return source;
             }
 
-            EditorUtility.CopySerialized(source, existing);
-            existing.name = objectName;
             UnityEngine.Object.DestroyImmediate(source);
-            EditorUtility.SetDirty(existing);
             return existing;
         }
 
@@ -80,46 +78,7 @@ namespace Game.Editor
                 AssetDatabase.CreateAsset(source, assetPath);
                 return source;
             }
-
-            var existingById = new Dictionary<string, WeaponEntryData>();
-            if (existing.entries != null)
-            {
-                for (int i = 0; i < existing.entries.Count; i++)
-                {
-                    var entry = existing.entries[i];
-                    if (entry == null || string.IsNullOrEmpty(entry.weaponId) || existingById.ContainsKey(entry.weaponId))
-                        continue;
-
-                    existingById.Add(entry.weaponId, entry);
-                }
-            }
-
-            var mergedEntries = new List<WeaponEntryData>();
-            if (source.entries != null)
-            {
-                for (int i = 0; i < source.entries.Count; i++)
-                {
-                    var entry = source.entries[i];
-                    if (entry == null)
-                        continue;
-
-                    if (!string.IsNullOrEmpty(entry.weaponId) && existingById.TryGetValue(entry.weaponId, out var existingEntry))
-                    {
-                        entry.icon = existingEntry.icon;
-                        existingById.Remove(entry.weaponId);
-                    }
-
-                    mergedEntries.Add(entry);
-                }
-            }
-
-            foreach (var kv in existingById)
-                mergedEntries.Add(kv.Value);
-
-            existing.entries = mergedEntries;
-            existing.name = objectName;
             UnityEngine.Object.DestroyImmediate(source);
-            EditorUtility.SetDirty(existing);
             return existing;
         }
 
@@ -134,46 +93,37 @@ namespace Game.Editor
                 AssetDatabase.CreateAsset(source, assetPath);
                 return source;
             }
-
-            var existingById = new Dictionary<string, ItemDisplayEntry>();
-            if (existing.entries != null)
-            {
-                for (int i = 0; i < existing.entries.Count; i++)
-                {
-                    var entry = existing.entries[i];
-                    if (entry == null || string.IsNullOrEmpty(entry.itemId) || existingById.ContainsKey(entry.itemId))
-                        continue;
-
-                    existingById.Add(entry.itemId, entry);
-                }
-            }
-
-            var mergedEntries = new List<ItemDisplayEntry>();
-            if (source.entries != null)
-            {
-                for (int i = 0; i < source.entries.Count; i++)
-                {
-                    var entry = source.entries[i];
-                    if (entry == null)
-                        continue;
-
-                    if (!string.IsNullOrEmpty(entry.itemId) && existingById.TryGetValue(entry.itemId, out var existingEntry))
-                    {
-                        entry.icon = existingEntry.icon;
-                        existingById.Remove(entry.itemId);
-                    }
-
-                    mergedEntries.Add(entry);
-                }
-            }
-
-            foreach (var kv in existingById)
-                mergedEntries.Add(kv.Value);
-
-            existing.entries = mergedEntries;
-            existing.name = objectName;
             UnityEngine.Object.DestroyImmediate(source);
-            EditorUtility.SetDirty(existing);
+            return existing;
+        }
+
+        private static SharedSkillDatabaseSO CreateOrMergeSharedSkillDatabaseAsset(SharedSkillDatabaseSO source, string assetPath)
+        {
+            string objectName = Path.GetFileNameWithoutExtension(assetPath);
+            source.name = objectName;
+
+            var existing = AssetDatabase.LoadAssetAtPath<SharedSkillDatabaseSO>(assetPath);
+            if (existing == null)
+            {
+                AssetDatabase.CreateAsset(source, assetPath);
+                return source;
+            }
+            UnityEngine.Object.DestroyImmediate(source);
+            return existing;
+        }
+
+        private static CharacterAnimationLibrarySO CreateOrMergeCharacterAnimationLibraryAsset(CharacterAnimationLibrarySO source, string assetPath)
+        {
+            string objectName = Path.GetFileNameWithoutExtension(assetPath);
+            source.name = objectName;
+
+            var existing = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(assetPath);
+            if (existing == null)
+            {
+                AssetDatabase.CreateAsset(source, assetPath);
+                return source;
+            }
+            UnityEngine.Object.DestroyImmediate(source);
             return existing;
         }
 
@@ -337,60 +287,6 @@ namespace Game.Editor
             // 新系统中槽位绑定字段为直接值（无覆盖语义），此方法保留签名以免调用处报错。
         }
 
-        private static AnimationFrameDamageEntry BuildRangeDamage(
-            string damageName,
-            string hitLayerName,
-            AttackShapeType shape,
-            float damageMultiplier,
-            float pushForce,
-            float pushDuration,
-            float sphereRadius,
-            float sectorAngle = 180f,
-            float centerOffsetZ = 0f,
-            float boxSizeX = 1f,
-            float boxSizeY = 1f,
-            float boxSizeZ = 1f)
-        {
-            return new AnimationFrameDamageEntry
-            {
-                damageName = damageName,
-                detectionType = DamageDetectionType.RangeOverlap,
-                damageMultiplier = damageMultiplier,
-                hitLayerName = hitLayerName,
-                pushForce = pushForce,
-                pushDuration = pushDuration,
-                shape = shape,
-                sphereRadius = sphereRadius,
-                sectorAngle = sectorAngle,
-                centerOffsetZ = centerOffsetZ,
-                boxSizeX = boxSizeX,
-                boxSizeY = boxSizeY,
-                boxSizeZ = boxSizeZ,
-            };
-        }
-
-        private static AnimationFrameDamageEntry BuildRayDamage(
-            string damageName,
-            string hitLayerName,
-            float damageMultiplier,
-            float pushForce,
-            float pushDuration,
-            float rayMaxDistance,
-            float rayOriginOffsetY = 1f)
-        {
-            return new AnimationFrameDamageEntry
-            {
-                damageName = damageName,
-                detectionType = DamageDetectionType.Raycast,
-                damageMultiplier = damageMultiplier,
-                hitLayerName = hitLayerName,
-                pushForce = pushForce,
-                pushDuration = pushDuration,
-                rayOriginOffsetY = rayOriginOffsetY,
-                rayMaxDistance = rayMaxDistance,
-            };
-        }
-
         private static void CreateEnemyStatsDatabase()
         {
             EnsureConfigFolder();
@@ -508,7 +404,8 @@ namespace Game.Editor
             CreateShopPriceConfig();
             CreatePotionConfig();
             CreateSkillConfigDatabase();
-            CreateAnimationFrameDamageDatabase();
+            CreateCharacterAnimationLibrary();
+            DeleteLegacyAnimationFrameDamageDatabaseAsset();
             CreateItemDisplayConfig();
             CreateKeyRebindConfig();
             CreateBackpackUIConfig();
@@ -516,7 +413,7 @@ namespace Game.Editor
             CreateBgmTrackListAssets.Create();
             NormalizeConfigAssetNames();
             AssetDatabase.SaveAssets();
-            Debug.Log("[配置] 已创建/覆盖全部核心配置与敌人行为配置。");
+            Debug.Log("[配置] 已完成一键创建。已有配置文件优先保留；仅在缺失时回退到代码默认值。");
         }
 
         private static void CreateKeyRebindConfig()
@@ -611,7 +508,7 @@ namespace Game.Editor
         {
             EnsureConfigFolder();
             var db = SharedSkillDatabaseDefaults.CreateRuntimeDefault();
-            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/共享技能库.asset");
+            CreateOrMergeSharedSkillDatabaseAsset(db, $"{ResourcesConfigDir}/技能库.asset");
             AssetDatabase.SaveAssets();
         }
 
@@ -620,53 +517,169 @@ namespace Game.Editor
             EnsureConfigFolder();
             var db = ScriptableObject.CreateInstance<SkillConfigDatabaseSO>();
             db.entries = new List<SkillConfigEntry>();
-            for (int i = 1; i <= 12; i++)
-                db.entries.Add(new SkillConfigEntry { skillId = $"passive_{i}", displayName = $"被动{i}", isPassive = true, talentCost = 1, mpCost = 0 });
+
+            db.entries.Add(new SkillConfigEntry { skillId = "Attack0",      displayName = "普攻1",     isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "Attack0" });
+            db.entries.Add(new SkillConfigEntry { skillId = "Attack1",      displayName = "普攻2",     isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "Attack1" });
+            db.entries.Add(new SkillConfigEntry { skillId = "Attack2",      displayName = "普攻3",     isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "Attack2" });
+            db.entries.Add(new SkillConfigEntry { skillId = "Attack3",      displayName = "普攻4",     isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "Attack3" });
+            db.entries.Add(new SkillConfigEntry { skillId = "AirAttack",    displayName = "空中普攻",   isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "AirAttack" });
+            db.entries.Add(new SkillConfigEntry { skillId = "FallAttack",   displayName = "下落攻击",   isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "FallAttackLand" });
+            db.entries.Add(new SkillConfigEntry { skillId = "ChargeAttack", displayName = "蓄力攻击",   isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "ChargeRelease" });
+
             for (int i = 0; i < 4; i++)
                 db.entries.Add(new SkillConfigEntry
                 {
-                    skillId            = $"active_{i + 1}",
+                    skillId            = $"Skill{i}",
                     displayName        = $"主动{i + 1}",
                     isPassive          = false,
+                    entryGroup         = PlayerSkillEntryGroup.ActiveSkill,
                     talentCost         = 2,
                     mpCost             = 10,
-                    sharedSkillId      = $"player_skill_{i}",
-                    animationStateIndex = i,
+                    animationTrigger   = $"Skill{i}",
+                    activeSlotIndex    = i,
+                });
+            for (int i = 1; i <= 12; i++)
+                db.entries.Add(new SkillConfigEntry
+                {
+                    skillId     = $"passive_{i}",
+                    displayName = $"被动{i}",
+                    isPassive   = true,
+                    entryGroup  = PlayerSkillEntryGroup.PassiveSkill,
+                    talentCost  = 1,
+                    mpCost      = 0,
                 });
             CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/玩家技能配置库.asset");
             AssetDatabase.SaveAssets();
         }
 
-        private static void CreateAnimationFrameDamageDatabase()
+        private static void CreateCharacterAnimationLibrary()
         {
             EnsureConfigFolder();
-            var db = ScriptableObject.CreateInstance<AnimationFrameDamageDatabaseSO>();
-            db.entries = new List<AnimationFrameDamageEntry>
-            {
-                BuildRangeDamage("A1", "Enemy", AttackShapeType.Sphere, 1f, 20f, 0.04f, 1.5f),
-                BuildRangeDamage("A2", "Enemy", AttackShapeType.Sphere, 1f, 20f, 0.04f, 1.5f),
-                BuildRangeDamage("A3", "Enemy", AttackShapeType.Sphere, 1f, 20f, 0.04f, 1.5f),
-                BuildRangeDamage("A4", "Enemy", AttackShapeType.Sphere, 1.2f, 20f, 0.04f, 1.5f),
-                BuildRangeDamage("AirAttack", "Enemy", AttackShapeType.Sphere, 1f, 15f, 0.04f, 1.5f),
-                BuildRangeDamage("FallAttack", "Enemy", AttackShapeType.Sphere, 1.5f, 25f, 0.05f, 2f),
-                BuildRangeDamage("ChargeRelease", "Enemy", AttackShapeType.Sector, 2f, 30f, 0.06f, 2f, 180f),
-
-                BuildRangeDamage("EnemyMelee", "Player", AttackShapeType.Sphere, 1f, 10f, 0.04f, 1.6f),
-                BuildRangeDamage("EnemyRanged", "Player", AttackShapeType.Sphere, 1f, 8f, 0.04f, 1.6f),
-                BuildRangeDamage("EnemyMeleeLight", "Player", AttackShapeType.Sphere, 0.95f, 8f, 0.05f, 1.45f),
-                BuildRangeDamage("EnemyMeleeArc", "Player", AttackShapeType.Sector, 1.05f, 10f, 0.06f, 2.4f, 110f),
-                BuildRangeDamage("EnemyMeleeHeavy", "Player", AttackShapeType.Box, 1.25f, 18f, 0.1f, 1f, 180f, 1.4f, 2.2f, 1.8f, 3.2f),
-                BuildRangeDamage("EnemyMeleeSpin", "Player", AttackShapeType.Sphere, 0.8f, 10f, 0.05f, 2.6f),
-                BuildRangeDamage("EnemyPullWave", "Player", AttackShapeType.Sector, 1f, 0f, 0.05f, 4.2f, 80f),
-                BuildRangeDamage("EnemyChargeImpact", "Player", AttackShapeType.Box, 1.4f, 18f, 0.12f, 1f, 180f, 2f, 2.4f, 1.8f, 4.4f),
-                BuildRangeDamage("EnemyBossCleave", "Player", AttackShapeType.Sector, 1.6f, 16f, 0.08f, 3.4f, 140f),
-                BuildRangeDamage("EnemyBossRoar", "Player", AttackShapeType.Sphere, 1f, 6f, 0.05f, 4.5f),
-                BuildRayDamage("EnemyRangedShot", "Player", 1f, 6f, 0.05f, 14f),
-                BuildRayDamage("EnemyRangedBurst", "Player", 0.85f, 4f, 0.04f, 16f),
-                BuildRayDamage("EnemyRangedHeavy", "Player", 1.35f, 10f, 0.07f, 20f),
-            };
-            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/技能伤害数据配置库.asset");
+            var db = ScriptableObject.CreateInstance<CharacterAnimationLibrarySO>();
+            db.groups = CloneExistingAnimationGroupsOrDefault();
+            CreateOrMergeCharacterAnimationLibraryAsset(db, $"{ResourcesConfigDir}/动画库.asset");
             AssetDatabase.SaveAssets();
+        }
+
+        private static List<CharacterAnimationGroupDefinition> CloneExistingAnimationGroupsOrDefault()
+        {
+            string assetPath = $"{ResourcesConfigDir}/动画库.asset";
+            var existing = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(assetPath);
+            if (existing != null && existing.groups != null && existing.groups.Count > 0)
+                return CloneAnimationGroups(existing.groups);
+
+            return new List<CharacterAnimationGroupDefinition>
+            {
+                CreateAnimationGroup("player", "玩家", CreatePlayerAnimationEntries()),
+                CreateAnimationGroup("melee_minion", "近战小怪"),
+                CreateAnimationGroup("ranged_minion", "远程小怪"),
+                CreateAnimationGroup("elite_1", "精英1"),
+                CreateAnimationGroup("elite_2", "精英2"),
+                CreateAnimationGroup("guardian_1", "守卫者1"),
+                CreateAnimationGroup("guardian_2", "守卫者2"),
+                CreateAnimationGroup("boss_1", "Boss1"),
+                CreateAnimationGroup("boss_2", "Boss2"),
+                CreateAnimationGroup("boss_3", "Boss3"),
+                CreateAnimationGroup("boss_4", "Boss4"),
+                CreateAnimationGroup("boss_5", "Boss5"),
+            };
+        }
+
+        private static List<CharacterAnimationGroupDefinition> CloneAnimationGroups(List<CharacterAnimationGroupDefinition> groups)
+        {
+            var result = new List<CharacterAnimationGroupDefinition>();
+            if (groups == null)
+                return result;
+
+            for (int i = 0; i < groups.Count; i++)
+            {
+                CharacterAnimationGroupDefinition group = groups[i];
+                if (group == null)
+                    continue;
+
+                var clonedGroup = new CharacterAnimationGroupDefinition
+                {
+                    groupId = group.groupId,
+                    groupName = group.groupName,
+                    entries = new List<CharacterAnimationEntry>(),
+                };
+
+                if (group.entries != null)
+                {
+                    for (int entryIndex = 0; entryIndex < group.entries.Count; entryIndex++)
+                    {
+                        CharacterAnimationEntry entry = group.entries[entryIndex];
+                        if (entry == null)
+                            continue;
+
+                        clonedGroup.entries.Add(new CharacterAnimationEntry
+                        {
+                            animationId = entry.animationId,
+                            clip = entry.clip,
+                        });
+                    }
+                }
+
+                result.Add(clonedGroup);
+            }
+
+            return result;
+        }
+
+        private static CharacterAnimationGroupDefinition CreateAnimationGroup(
+            string groupId,
+            string groupName,
+            List<CharacterAnimationEntry> entries = null)
+        {
+            return new CharacterAnimationGroupDefinition
+            {
+                groupId = groupId,
+                groupName = groupName,
+                entries = entries ?? new List<CharacterAnimationEntry>(),
+            };
+        }
+
+        private static List<CharacterAnimationEntry> CreatePlayerAnimationEntries()
+        {
+            return new List<CharacterAnimationEntry>
+            {
+                CreateAnimationEntry("Attack0"),
+                CreateAnimationEntry("Attack1"),
+                CreateAnimationEntry("Attack2"),
+                CreateAnimationEntry("Attack3"),
+                CreateAnimationEntry("Skill0"),
+                CreateAnimationEntry("Skill1"),
+                CreateAnimationEntry("Skill2"),
+                CreateAnimationEntry("Skill3"),
+                CreateAnimationEntry("AirAttack"),
+                CreateAnimationEntry("FallAttack"),
+                CreateAnimationEntry("ChargeRelease"),
+            };
+        }
+
+        private static CharacterAnimationEntry CreateAnimationEntry(string animationId)
+        {
+            return new CharacterAnimationEntry
+            {
+                animationId = animationId,
+                clip = null,
+            };
+        }
+
+        private static void DeleteLegacyAnimationFrameDamageDatabaseAsset()
+        {
+            string[] assetPaths =
+            {
+                $"{ResourcesConfigDir}/技能伤害数据配置库.asset",
+                $"{ResourcesConfigDir}/动画帧伤害数据配置库.asset",
+            };
+
+            for (int i = 0; i < assetPaths.Length; i++)
+            {
+                string assetPath = assetPaths[i];
+                if (AssetDatabase.LoadMainAssetAtPath(assetPath) != null)
+                    AssetDatabase.DeleteAsset(assetPath);
+            }
         }
 
         private static void CreateEnemyArchetypeDatabase(Game.AI.BehaviorTreeAsset defaultBehaviorTree)
@@ -850,10 +863,3 @@ namespace Game.Editor
         }
     }
 }
-
-
-
-
-
-
-

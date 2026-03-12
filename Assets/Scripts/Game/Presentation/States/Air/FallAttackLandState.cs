@@ -12,16 +12,17 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Anim.SetGrounded(true);
-            Ctx.Anim.TriggerFallAttackLand();
+            TriggerConfiguredAction("FallAttack", "FallAttackLand");
+            StartTimelineSkill("FallAttack");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
-            if (!AnimNearEnd()) return;
+            if (!AnimNearConfiguredEnd()) return;
             CompleteWithPending(() =>
             {
                 if (IsGrounded)
-                    GoTo<IdleState>();
+                    GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
                 else
                     GoTo<FallAttackLoopState>();
             });

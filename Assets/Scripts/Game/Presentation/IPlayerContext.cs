@@ -26,15 +26,6 @@ namespace Game.Presentation
         /// <summary>角色朝向旋转速度（度/秒），传入 PlayerMover.RotateToward()</summary>
         float RotateSpeed { get; }
 
-        /// <summary>普攻第 1～3 段有普攻预输入时，动画播放到此进度（0～1）即提前结束。</summary>
-        float ComboEarlyExitThresholdSegment1To3 { get; }
-        /// <summary>普攻第 4 段有普攻预输入时，动画播放到此进度（0～1）即提前结束。</summary>
-        float ComboEarlyExitThresholdSegment4 { get; }
-        /// <summary>普攻第 1～3 段有移动预输入时，动画播放到此进度（0～1）即提前结束。</summary>
-        float MoveComboEarlyExitThresholdSegment1To3 { get; }
-        /// <summary>普攻第 4 段有移动预输入时，动画播放到此进度（0～1）即提前结束。</summary>
-        float MoveComboEarlyExitThresholdSegment4 { get; }
-
         // ── 当前状态查询（HUD / 调试 / UI 用）──────────────────────────────
         /// <summary>当前状态类名，如 "IdleState"、"DodgeState"</summary>
         string CurrentStateName { get; }

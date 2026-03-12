@@ -1,18 +1,29 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Domain;
 
 namespace Game.Data
 {
+    public enum PlayerSkillEntryGroup
+    {
+        [InspectorName("基础技能")]
+        BaseSkill,
+        [InspectorName("主动技能")]
+        ActiveSkill,
+        [InspectorName("被动技能")]
+        PassiveSkill,
+    }
+
     /// <summary>
     /// 玩家单条技能配置。
     ///
     /// 被动技能：isPassive=true，只需 skillId / displayName / talentCost，运行时由被动系统读取。
-    /// 主动技能：isPassive=false，还需填写 mpCost / animationStateIndex / sharedSkillId。
+    /// 主动/基础技能：按 animationTrigger 与 skillId 绑定动画与技能逻辑。
     ///
-    /// 触发链（主动技能）：
-    ///   玩家按技能键 → Skill[N]State 进入 → TriggerSkill(animationStateIndex) → 播动画
-    ///   → SkillTimelineRunner 按 sharedSkillId 找到 SharedSkillDefinition → 逐帧触发事件
+    /// 触发链（主动/基础技能）：
+    ///   玩家按键 → 先检查玩家技能配置库中的条目是否可用/已解锁 → 向 Animator 发送 animationTrigger
+    ///   → SkillTimelineRunner 按 skillId 找到技能库中的定义 → 逐帧触发事件
     ///   → SkillEffectExecutor 执行伤害/特效/属性效果
     /// </summary>
     [Serializable]
@@ -20,7 +31,7 @@ namespace Game.Data
     {
         [Header("─ 基础信息 ──────────────────────────")]
         [InspectorLabel("技能 ID（全局唯一）")]
-        [Tooltip("技能的唯一标识符，供技能树系统和存档引用。\n建议规则：passive_atk_1、active_skill_0 等。")]
+        [Tooltip("技能的唯一标识符，供技能树系统、存档和技能库引用。\n主动技能请直接填写技能库中的 skillId；被动技能填写自己的被动 skillId。")]
         public string skillId = "";
 
         [InspectorLabel("显示名称")]
@@ -31,6 +42,10 @@ namespace Game.Data
         [Tooltip("勾选 = 被动技能（仅增强属性，不消耗 MP，无动画）\n不勾选 = 主动技能（需填写下方主动技能参数）")]
         public bool isPassive = true;
 
+        [InspectorLabel("技能分组")]
+        [Tooltip("基础技能=走路跑步跳跃闪避普攻等基础动作；主动技能=技能树主动技能；被动技能=技能树被动技能。")]
+        public PlayerSkillEntryGroup entryGroup = PlayerSkillEntryGroup.PassiveSkill;
+
         [InspectorLabel("天赋点消耗")]
         [Tooltip("在技能树中解锁此技能需要消耗的天赋点数。")]
         public int talentCost = 1;
@@ -40,13 +55,43 @@ namespace Game.Data
         [Tooltip("释放技能时消耗的 MP 量。若 MP 不足则无法进入技能状态。")]
         public int mpCost = 0;
 
-        [InspectorLabel("动画状态索引")]
-        [Tooltip("决定释放哪个技能动画：\n0 = Skill0State（PlayerAnimatorController.TriggerSkill(0)）\n1 = Skill1State\n2 = Skill2State\n3 = Skill3State\n与动画控制器中的 SkillIndex 参数对应。")]
-        public int animationStateIndex = 0;
+        [InspectorLabel("动画 Trigger")]
+        [Tooltip("播放该技能/动作时发送给 Animator 的 Trigger 名。留空时默认使用 skillId。")]
+        public string animationTrigger = "";
 
-        [InspectorLabel("关联共享技能 ID")]
-        [Tooltip("填写「共享技能库」中某条 SharedSkillDefinition 的 skillId。\n系统会在释放此技能时加载对应的时间轴定义，按事件列表执行伤害/特效/Buff。\n留空 = 只依靠动画帧的 AnimEvent_DealDamage 结算伤害（无时间轴控制）。")]
-        public string sharedSkillId = "";
+        [InspectorLabel("主动技能槽位")]
+        [Tooltip("仅主动技能使用。0~3 对应四个主动技能按键；-1 表示不参与主动技能按键触发。")]
+        public int activeSlotIndex = -1;
+
+        [Header("─ 被动技能参数（PassiveSkill 时填写）─")]
+        [InspectorLabel("被动属性加成")]
+        [Tooltip("被动技能解锁后永久附加到玩家基础属性上的加成。")]
+        public StatModifier passiveStatModifier = new StatModifier();
+
+        public string GetResolvedAnimationTrigger()
+        {
+            return string.IsNullOrWhiteSpace(animationTrigger) ? skillId : animationTrigger.Trim();
+        }
+
+        public bool IsPassiveSkill =>
+            isPassive || entryGroup == PlayerSkillEntryGroup.PassiveSkill;
+
+        public bool IsActiveSkill
+        {
+            get
+            {
+                if (IsPassiveSkill)
+                    return false;
+
+                if (entryGroup == PlayerSkillEntryGroup.ActiveSkill || activeSlotIndex >= 0)
+                    return true;
+
+                return !string.IsNullOrEmpty(skillId) &&
+                       skillId.StartsWith("Skill", StringComparison.Ordinal);
+            }
+        }
+
+        public bool IsBaseSkill => !IsPassiveSkill && !IsActiveSkill;
     }
 
     /// <summary>
@@ -74,6 +119,39 @@ namespace Game.Data
         {
             if (entries == null || index < 0 || index >= entries.Count) return null;
             return entries[index];
+        }
+
+        public SkillConfigEntry GetEntryByTrigger(string triggerName)
+        {
+            if (entries == null || string.IsNullOrWhiteSpace(triggerName)) return null;
+            string normalized = triggerName.Trim();
+            foreach (var e in entries)
+            {
+                if (e == null || e.IsPassiveSkill) continue;
+                if (string.Equals(e.GetResolvedAnimationTrigger(), normalized, StringComparison.Ordinal))
+                    return e;
+            }
+            return null;
+        }
+
+        public SkillConfigEntry GetActiveEntryBySlot(int slotIndex)
+        {
+            if (entries == null || slotIndex < 0) return null;
+            foreach (var e in entries)
+            {
+                if (e == null || !e.IsActiveSkill) continue;
+                if (e.activeSlotIndex == slotIndex)
+                    return e;
+            }
+
+            string fallbackSkillId = $"Skill{slotIndex}";
+            return GetEntry(fallbackSkillId);
+        }
+
+        public SkillConfigEntry GetBaseEntry(string skillId)
+        {
+            var entry = GetEntry(skillId);
+            return entry != null && entry.IsBaseSkill ? entry : null;
         }
     }
 }

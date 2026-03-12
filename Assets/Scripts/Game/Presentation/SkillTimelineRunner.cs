@@ -6,7 +6,7 @@ namespace Game.Presentation
 {
     /// <summary>
     /// 技能时间轴运行器：接受 <see cref="SharedSkillDefinition"/> 并逐帧推进，
-    /// 在合适的时间点调用 <see cref="SkillEffectExecutor.ExecuteEvent"/>。
+    /// 在合适的时间点调用 <see cref="SkillEffectExecutor"/> 中对应的五类事件执行入口。
     /// 玩家状态机和敌人战斗组件均可持有此实例。
     /// </summary>
     public sealed class SkillTimelineRunner
@@ -20,11 +20,25 @@ namespace Game.Presentation
             public float nextTriggerTime;
         }
 
+        [Serializable]
+        private sealed class ActiveDamageWindow
+        {
+            public SkillDamageEffect effect;
+            public float endTime;
+            public SkillCollisionHitbox collisionHitbox;
+            public readonly HashSet<UnityEngine.Transform> hitTargets = new HashSet<UnityEngine.Transform>();
+        }
+
         private SharedSkillDefinition _definition;
         private ISkillExecutionContext _context;
         private float _elapsed;
         private float _castDuration;
-        private EventState[] _eventStates;
+        private EventState[] _damageStates;
+        private EventState[] _physicsStates;
+        private EventState[] _attributeStates;
+        private EventState[] _vfxStates;
+        private EventState[] _sfxStates;
+        private readonly List<ActiveDamageWindow> _activeDamageWindows = new List<ActiveDamageWindow>();
         private bool _started;
 
         // ── 公开属性 ──────────────────────────────────────────────────────────
@@ -69,24 +83,12 @@ namespace Game.Presentation
             _started      = true;
             IsComplete    = false;
 
-            if (_definition?.events != null && _definition.events.Count > 0)
-            {
-                _eventStates = new EventState[_definition.events.Count];
-                for (int i = 0; i < _eventStates.Length; i++)
-                {
-                    _eventStates[i] = new EventState
-                    {
-                        hasTriggered = false,
-                        nextTriggerTime = _definition.events[i] != null
-                            ? _definition.events[i].startTime
-                            : float.MaxValue,
-                    };
-                }
-            }
-            else
-            {
-                _eventStates = Array.Empty<EventState>();
-            }
+            _damageStates = BuildStates(_definition?.damageEvents);
+            _physicsStates = BuildStates(_definition?.physicsEvents);
+            _attributeStates = BuildStates(_definition?.attributeEvents);
+            _vfxStates = BuildStates(_definition?.vfxEvents);
+            _sfxStates = BuildStates(_definition?.sfxEvents);
+            ClearActiveDamageWindows();
 
             // 立即评估 t=0 的事件
             EvaluateEvents();
@@ -112,38 +114,194 @@ namespace Game.Presentation
         {
             _started = false;
             IsComplete = true;
+            ClearActiveDamageWindows();
         }
 
         // ── 内部评估 ──────────────────────────────────────────────────────────
 
         private void EvaluateEvents()
         {
-            if (_definition?.events == null || _eventStates == null) return;
+            EvaluateDamageTrack();
+            UpdateActiveDamageWindows();
+            EvaluateTrack(_definition?.physicsEvents, _physicsStates, SkillEffectExecutor.ExecutePhysicsEvent);
+            EvaluateTrack(_definition?.attributeEvents, _attributeStates, SkillEffectExecutor.ExecuteAttributeEvent);
+            EvaluateTrack(_definition?.vfxEvents, _vfxStates, SkillEffectExecutor.ExecuteVfxEvent);
+            EvaluateTrack(_definition?.sfxEvents, _sfxStates, SkillEffectExecutor.ExecuteSfxEvent);
+        }
 
-            for (int i = 0; i < _definition.events.Count; i++)
+        private void EvaluateDamageTrack()
+        {
+            var events = _definition?.damageEvents;
+            var states = _damageStates;
+            if (events == null || states == null)
+                return;
+
+            int count = UnityEngine.Mathf.Min(events.Count, states.Length);
+            for (int i = 0; i < count; i++)
             {
-                var evt = _definition.events[i];
-                var state = _eventStates[i];
-                if (evt == null || state == null) continue;
+                SkillDamageEvent evt = events[i];
+                EventState state = states[i];
+                if (evt == null || state == null)
+                    continue;
 
                 if (evt.triggerMode == SkillEventTriggerMode.Once)
                 {
                     if (!state.hasTriggered && _elapsed >= evt.startTime)
                     {
-                        SkillEffectExecutor.ExecuteEvent(evt, _context);
+                        TriggerDamageEvent(evt);
                         state.hasTriggered = true;
                     }
                     continue;
                 }
 
-                // Repeated 模式
-                float endTime = evt.startTime + UnityEngine.Mathf.Max(0f, evt.activeDuration);
+                float endTime = evt.GetEndTime();
                 float interval = UnityEngine.Mathf.Max(0.01f, evt.repeatInterval);
-
                 while (_elapsed >= state.nextTriggerTime
                        && state.nextTriggerTime <= endTime + 0.0001f)
                 {
-                    SkillEffectExecutor.ExecuteEvent(evt, _context);
+                    TriggerDamageEvent(evt);
+                    state.hasTriggered = true;
+                    state.nextTriggerTime += interval;
+                }
+            }
+        }
+
+        private void TriggerDamageEvent(SkillDamageEvent evt)
+        {
+            if (evt?.damageEffects == null || _context == null)
+                return;
+
+            for (int i = 0; i < evt.damageEffects.Count; i++)
+            {
+                SkillDamageEffect effect = evt.damageEffects[i];
+                if (effect == null)
+                    continue;
+
+                if (effect.detectionType == DamageDetectionType.Collision)
+                {
+                    float detectionDuration = effect.detectionDuration > 0f
+                        ? effect.detectionDuration
+                        : UnityEngine.Mathf.Max(0.0001f, UnityEngine.Time.fixedDeltaTime);
+                    var collisionWindow = new ActiveDamageWindow
+                    {
+                        effect = effect,
+                        endTime = _elapsed + detectionDuration,
+                    };
+                    collisionWindow.collisionHitbox = DamageDetectionRunner.BeginCollisionWindow(_context.CasterTransform, effect, collisionWindow);
+                    if (collisionWindow.collisionHitbox != null)
+                        _activeDamageWindows.Add(collisionWindow);
+                    continue;
+                }
+
+                if (effect.detectionDuration <= 0f)
+                {
+                    SkillEffectExecutor.ExecuteDamageEffect(effect, _context, null);
+                    continue;
+                }
+
+                var detectionWindow = new ActiveDamageWindow
+                {
+                    effect = effect,
+                    endTime = _elapsed + effect.detectionDuration,
+                };
+                _activeDamageWindows.Add(detectionWindow);
+                SkillEffectExecutor.ExecuteDamageEffect(effect, _context, detectionWindow.hitTargets);
+            }
+        }
+
+        private void UpdateActiveDamageWindows()
+        {
+            if (_activeDamageWindows.Count <= 0)
+                return;
+
+            for (int i = _activeDamageWindows.Count - 1; i >= 0; i--)
+            {
+                ActiveDamageWindow window = _activeDamageWindows[i];
+                if (window?.effect == null)
+                {
+                    CloseCollisionWindow(window);
+                    _activeDamageWindows.RemoveAt(i);
+                    continue;
+                }
+
+                if (_elapsed > window.endTime + 0.0001f)
+                {
+                    CloseCollisionWindow(window);
+                    _activeDamageWindows.RemoveAt(i);
+                    continue;
+                }
+
+                SkillEffectExecutor.ExecuteDamageEffect(window.effect, _context, window.hitTargets, window.collisionHitbox, window);
+            }
+        }
+
+        private void ClearActiveDamageWindows()
+        {
+            for (int i = _activeDamageWindows.Count - 1; i >= 0; i--)
+                CloseCollisionWindow(_activeDamageWindows[i]);
+
+            _activeDamageWindows.Clear();
+        }
+
+        private static void CloseCollisionWindow(ActiveDamageWindow window)
+        {
+            if (window?.collisionHitbox == null)
+                return;
+
+            DamageDetectionRunner.EndCollisionWindow(window.collisionHitbox, window);
+            window.collisionHitbox = null;
+        }
+
+        private static EventState[] BuildStates<T>(List<T> events) where T : SkillTimedEventBase
+        {
+            if (events == null || events.Count <= 0)
+                return Array.Empty<EventState>();
+
+            var states = new EventState[events.Count];
+            for (int i = 0; i < states.Length; i++)
+            {
+                states[i] = new EventState
+                {
+                    hasTriggered = false,
+                    nextTriggerTime = events[i] != null
+                        ? events[i].startTime
+                        : float.MaxValue,
+                };
+            }
+
+            return states;
+        }
+
+        private void EvaluateTrack<T>(List<T> events, EventState[] states, Action<T, ISkillExecutionContext> executor)
+            where T : SkillTimedEventBase
+        {
+            if (events == null || states == null || executor == null)
+                return;
+
+            int count = UnityEngine.Mathf.Min(events.Count, states.Length);
+            for (int i = 0; i < count; i++)
+            {
+                T evt = events[i];
+                EventState state = states[i];
+                if (evt == null || state == null)
+                    continue;
+
+                if (evt.triggerMode == SkillEventTriggerMode.Once)
+                {
+                    if (!state.hasTriggered && _elapsed >= evt.startTime)
+                    {
+                        executor(evt, _context);
+                        state.hasTriggered = true;
+                    }
+                    continue;
+                }
+
+                float endTime = evt.GetEndTime();
+                float interval = UnityEngine.Mathf.Max(0.01f, evt.repeatInterval);
+                while (_elapsed >= state.nextTriggerTime
+                       && state.nextTriggerTime <= endTime + 0.0001f)
+                {
+                    executor(evt, _context);
                     state.hasTriggered = true;
                     state.nextTriggerTime += interval;
                 }

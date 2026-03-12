@@ -18,8 +18,8 @@ namespace Game.Data
         [Tooltip("从 0 开始的槽位编号。同一敌人的槽位索引必须唯一。")]
         [Min(0)] public int slotIndex;
 
-        [InspectorLabel("关联共享技能ID")]
-        [Tooltip("引用共享技能库中的 skillId。敌人通过这个 ID 绑定共享技能时间轴定义。")]
+        [InspectorLabel("技能ID")]
+        [Tooltip("引用技能库中的 skillId。敌人通过这个 ID 绑定技能时间轴定义。")]
         public string skillId = "";
 
         [Header("AI 战斗参数")]

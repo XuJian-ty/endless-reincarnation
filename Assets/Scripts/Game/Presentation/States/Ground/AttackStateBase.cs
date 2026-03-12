@@ -12,13 +12,15 @@ namespace Game.Presentation
     public abstract class AttackStateBase : PlayerStateBase
     {
         protected abstract int ComboIndex { get; }
+        private string TimelineSkillId => $"Attack{ComboIndex}";
 
         public override GameAction CurrentActionId => GameAction.NormalAttack;
 
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            Ctx.Anim.TriggerAttack(ComboIndex);
+            TriggerConfiguredAction(TimelineSkillId, $"Attack{ComboIndex}");
+            StartTimelineSkill(TimelineSkillId);
         }
 
         protected override void OnExit() { }
@@ -38,15 +40,14 @@ namespace Game.Presentation
             // 普攻预输入：使用普攻专用阈值
             if (hasNormalAttackPending)
             {
-                if (ComboIndex <= 2 && AnimNearEnd(Ctx.ComboEarlyExitThresholdSegment1To3))
+                float normalAttackThreshold = GetConfiguredPendingReleaseThreshold(
+                    GameAction.NormalAttack,
+                    ComboIndex <= 2 ? 0.70f : 0.60f);
+
+                if (AnimNearEnd(normalAttackThreshold))
                 {
                     if (ComboIndex < 3)
                         Ctx.StateMachine.OpenComboWindow(ComboIndex + 1);
-                    CompleteWithPending(() => { });
-                    return;
-                }
-                if (ComboIndex == 3 && AnimNearEnd(Ctx.ComboEarlyExitThresholdSegment4))
-                {
                     CompleteWithPending(() => { });
                     return;
                 }
@@ -55,27 +56,32 @@ namespace Game.Presentation
             // 移动预输入：使用移动专用阈值（在编辑器中可调）
             if (hasMovePending)
             {
-                if (ComboIndex <= 2 && AnimNearEnd(Ctx.MoveComboEarlyExitThresholdSegment1To3))
+                float moveThreshold = GetConfiguredPendingReleaseThreshold(
+                    pending.Action,
+                    ComboIndex <= 2 ? 0.80f : 0.70f);
+
+                if (AnimNearEnd(moveThreshold))
                 {
                     if (ComboIndex < 3)
                         Ctx.StateMachine.OpenComboWindow(ComboIndex + 1);
                     CompleteWithPending(() => { });
                     return;
                 }
-                if (ComboIndex == 3 && AnimNearEnd(Ctx.MoveComboEarlyExitThresholdSegment4))
-                {
-                    CompleteWithPending(() => { });
-                    return;
-                }
             }
 
             // 自然结束：动画结束时退出，1～3 段开启连击窗口 0.3s
-            if (!AnimNearEnd()) return;
+            if (!AnimNearConfiguredEnd()) return;
 
             if (ComboIndex < 3)
                 Ctx.StateMachine.OpenComboWindow(ComboIndex + 1);
 
-            CompleteWithPending(() => { if (IsGrounded) GoTo<IdleState>(); else GoTo<FallState>(); });
+            CompleteWithPending(() =>
+            {
+                if (IsGrounded)
+                    GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
+                else
+                    GoTo<FallState>();
+            });
         }
     }
 }

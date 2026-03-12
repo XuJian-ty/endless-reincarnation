@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Data;
 
 namespace Game.Presentation
 {
@@ -116,10 +117,10 @@ namespace Game.Presentation
             ClearComboWindow();
             switch (idx)
             {
-                case 1:  ChangeState<Attack2State>(); break;
-                case 2:  ChangeState<Attack3State>(); break;
-                case 3:  ChangeState<Attack4State>(); break;
-                default: ChangeState<Attack1State>(); break;
+                case 1:  ChangeState<Attack1State>(); break;
+                case 2:  ChangeState<Attack2State>(); break;
+                case 3:  ChangeState<Attack3State>(); break;
+                default: ChangeState<Attack0State>(); break;
             }
         }
 
@@ -131,7 +132,7 @@ namespace Game.Presentation
             foreach (var candidate in _candidates)
             {
                 if (CurrentState == null) return;
-                switch (CurrentState.GetPolicyFor(candidate.Action))
+                switch (ResolveTransitionPolicy(candidate.Action))
                 {
                     case TransitionPolicy.Interrupt:
                         ExecuteAction(candidate);
@@ -146,15 +147,27 @@ namespace Game.Presentation
             }
         }
 
+        private TransitionPolicy ResolveTransitionPolicy(GameAction action)
+        {
+            if (CurrentState == null)
+                return TransitionPolicy.Ignore;
+
+            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
+            if (ruleDb != null && ruleDb.TryGetPolicy(CurrentState.GetType().Name, action, out TransitionPolicy configured))
+                return configured;
+
+            return CurrentState.GetPolicyFor(action);
+        }
+
         private void CollectCandidateActions(in PlayerInputData input)
         {
             _candidates.Clear();
 
             if (input.DodgePressed)         _candidates.Add(new PendingActionData(GameAction.Dodge));
-            if (input.Skill0Pressed)        _candidates.Add(new PendingActionData(GameAction.Skill, 0));
-            if (input.Skill1Pressed)        _candidates.Add(new PendingActionData(GameAction.Skill, 1));
-            if (input.Skill2Pressed)        _candidates.Add(new PendingActionData(GameAction.Skill, 2));
-            if (input.Skill3Pressed)        _candidates.Add(new PendingActionData(GameAction.Skill, 3));
+            if (input.Skill0Pressed && CanTriggerActiveSkill(0)) _candidates.Add(new PendingActionData(GameAction.Skill, 0));
+            if (input.Skill1Pressed && CanTriggerActiveSkill(1)) _candidates.Add(new PendingActionData(GameAction.Skill, 1));
+            if (input.Skill2Pressed && CanTriggerActiveSkill(2)) _candidates.Add(new PendingActionData(GameAction.Skill, 2));
+            if (input.Skill3Pressed && CanTriggerActiveSkill(3)) _candidates.Add(new PendingActionData(GameAction.Skill, 3));
             if (input.ChargeReleasePressed) _candidates.Add(new PendingActionData(GameAction.ChargeRelease));
             if (input.AltAttackPressed)     _candidates.Add(new PendingActionData(GameAction.FallAttack));
             if (input.ChargeStartPressed)   _candidates.Add(new PendingActionData(GameAction.ChargeStart));
@@ -181,6 +194,9 @@ namespace Game.Presentation
 
         private void ExecuteSkill(int skillIndex)
         {
+            if (!CanTriggerActiveSkill(skillIndex))
+                return;
+
             switch (skillIndex)
             {
                 case 0: ChangeState<Skill0State>(); break;
@@ -188,6 +204,19 @@ namespace Game.Presentation
                 case 2: ChangeState<Skill2State>(); break;
                 case 3: ChangeState<Skill3State>(); break;
             }
+        }
+
+        private bool CanTriggerActiveSkill(int slotIndex)
+        {
+            if (slotIndex < 0 || _ctx?.PlayerModel == null)
+                return false;
+
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (skillDb == null)
+                return true;
+
+            SkillConfigEntry entry = skillDb.GetActiveEntryBySlot(slotIndex);
+            return entry != null && _ctx.PlayerModel.IsSkillAvailable(entry);
         }
 
         private void TransitionTo(PlayerStateBase next)

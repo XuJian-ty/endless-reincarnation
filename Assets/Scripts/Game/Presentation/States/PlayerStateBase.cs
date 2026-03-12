@@ -1,4 +1,5 @@
 using UnityEngine;
+using Game.Data;
 
 namespace Game.Presentation
 {
@@ -23,8 +24,10 @@ namespace Game.Presentation
     public abstract class PlayerStateBase
     {
         protected IPlayerContext Ctx { get; private set; }
+        protected string StateRuleId => GetType().Name;
 
         private float _stateAge;
+        private SkillTimelineRunner _timelineRunner;
 
         /// <summary>当前状态已持续运行的时间（秒）。子类可用于时序/首帧保护。</summary>
         protected float StateAge => _stateAge;
@@ -39,6 +42,7 @@ namespace Game.Presentation
 
         internal void Exit()
         {
+            StopTimelineSkill();
             OnExit();
             Ctx = null;
         }
@@ -46,6 +50,7 @@ namespace Game.Presentation
         internal void Tick(float dt, in PlayerInputData input)
         {
             _stateAge += dt;
+            TickTimeline(dt);
             OnTick(dt, in input);
         }
 
@@ -77,6 +82,9 @@ namespace Game.Presentation
         protected bool AnimNearEnd(float threshold = 0.9f)
             => _stateAge > 0.1f && Ctx.Anim.IsCurrentStateNearEnd(threshold);
 
+        protected bool AnimNearConfiguredEnd(float fallbackThreshold = 0.9f)
+            => AnimNearEnd(GetConfiguredNaturalExitThreshold(fallbackThreshold));
+
         /// <summary>状态自然结束时调用。优先消费预输入并执行；若无预输入，执行 fallback。</summary>
         protected void CompleteWithPending(System.Action fallback)
         {
@@ -94,5 +102,122 @@ namespace Game.Presentation
             => Ctx.StateMachine.ChangeState(configure);
 
         protected bool IsGrounded => Ctx.Mover.IsGrounded;
+
+        protected SkillConfigEntry ResolvePlayerSkillEntry(string skillId)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return null;
+
+            var skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            return skillDb != null ? skillDb.GetEntry(skillId) : null;
+        }
+
+        protected bool IsPlayerSkillAvailable(string skillId)
+        {
+            SkillConfigEntry entry = ResolvePlayerSkillEntry(skillId);
+            if (entry == null)
+                return true;
+            return Ctx.PlayerModel != null && Ctx.PlayerModel.IsSkillAvailable(entry);
+        }
+
+        protected bool TriggerConfiguredAction(string skillId, string fallbackTrigger = null)
+        {
+            SkillConfigEntry entry = ResolvePlayerSkillEntry(skillId);
+            string triggerName = entry != null ? entry.GetResolvedAnimationTrigger() : fallbackTrigger;
+            if (string.IsNullOrWhiteSpace(triggerName))
+                triggerName = skillId;
+            return Ctx.Anim.TriggerAction(triggerName);
+        }
+
+        protected void StartTimelineSkill(string skillId, float overrideDuration = -1f)
+        {
+            StopTimelineSkill();
+
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
+            if (sharedDb == null)
+                return;
+
+            var def = sharedDb.GetEntry(skillId);
+            if (def == null)
+                return;
+
+            var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
+            if (player == null)
+                return;
+
+            var ctx = new PlayerSkillExecutionContext(player);
+            _timelineRunner = new SkillTimelineRunner();
+            _timelineRunner.Begin(def, ctx, overrideDuration);
+        }
+
+        protected void StopTimelineSkill()
+        {
+            _timelineRunner?.Stop();
+            _timelineRunner = null;
+        }
+
+        protected TransitionPolicy ResolveConfiguredPolicy(GameAction action, TransitionPolicy fallback)
+        {
+            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
+            if (ruleDb != null && ruleDb.TryGetPolicy(StateRuleId, action, out TransitionPolicy configured))
+                return configured;
+
+            return fallback;
+        }
+
+        protected float GetConfiguredPendingReleaseThreshold(GameAction pendingAction, float fallbackThreshold)
+        {
+            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
+            if (ruleDb != null && ruleDb.TryGetPendingReleaseThreshold(StateRuleId, pendingAction, out float configured))
+                return configured;
+
+            return fallbackThreshold;
+        }
+
+        protected float GetConfiguredNaturalExitThreshold(float fallbackThreshold)
+        {
+            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
+            if (ruleDb != null && ruleDb.TryGetNaturalExitThreshold(StateRuleId, out float configured))
+                return configured;
+
+            return fallbackThreshold;
+        }
+
+        protected PlayerStateNaturalExitTarget GetConfiguredNaturalExitTarget(PlayerStateNaturalExitTarget fallbackTarget)
+        {
+            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
+            if (ruleDb == null)
+                return fallbackTarget;
+
+            PlayerStateNaturalExitTarget configured = ruleDb.GetNaturalExitTarget(StateRuleId);
+            return configured != PlayerStateNaturalExitTarget.None ? configured : fallbackTarget;
+        }
+
+        protected void GoToConfiguredNaturalExit(PlayerStateNaturalExitTarget fallbackTarget)
+        {
+            switch (GetConfiguredNaturalExitTarget(fallbackTarget))
+            {
+                case PlayerStateNaturalExitTarget.IdleState:
+                    GoTo<IdleState>();
+                    break;
+                case PlayerStateNaturalExitTarget.ChargeLoopState:
+                    GoTo<ChargeLoopState>();
+                    break;
+                case PlayerStateNaturalExitTarget.FallState:
+                    GoTo<FallState>();
+                    break;
+                case PlayerStateNaturalExitTarget.FallAttackLoopState:
+                    GoTo<FallAttackLoopState>();
+                    break;
+            }
+        }
+
+        private void TickTimeline(float dt)
+        {
+            _timelineRunner?.Tick(dt);
+        }
     }
 }

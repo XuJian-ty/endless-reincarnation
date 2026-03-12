@@ -751,11 +751,11 @@ GameObject:
   - component: {fileID: 6767787055169650781}
   m_Layer: 6
   m_Name: guardian_2
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3923880566355958034
 Transform:
   m_ObjectHideFlags: 0
@@ -787,7 +787,6 @@ MonoBehaviour:
   _enemyId: guardian_2
   _enemyType: 3
   _archetypeOverride: {fileID: 11400000, guid: 7dd3ff0aa38a4bab86cad1826222617c, type: 2}
-  _defaultPostSkillIdleDuration: 0.25
   _deathDisableDelay: 1.2
 --- !u!114 &7830349519527122408
 MonoBehaviour:
@@ -838,10 +837,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b6ddf2ca5e74e64db4fd50a7e8591d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _paramSpeed: Speed
-  _triggerHurt: Hurt
-  _triggerDead: Dead
-  _damageDatabase: {fileID: 0}
 --- !u!136 &3693729000685319557
 CapsuleCollider:
   m_ObjectHideFlags: 0
