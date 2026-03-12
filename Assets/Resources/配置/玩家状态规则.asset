@@ -1,0 +1,641 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b82f5e1ccdd24ed2a9b4b20bd47d3b11, type: 3}
+  m_Name: "\u73A9\u5BB6\u72B6\u6001\u89C4\u5219"
+  m_EditorClassIdentifier: 
+  entries:
+  - stateId: IdleState
+    actionPolicies:
+    - action: 1
+      policy: 0
+    - action: 2
+      policy: 0
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 0
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - stateId: MoveState
+    actionPolicies:
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 0
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - stateId: DodgeState
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 1
+    - action: 5
+      policy: 1
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 1
+    - action: 8
+      policy: 1
+    - action: 9
+      policy: 2
+    - action: 10
+      policy: 2
+    pendingReleaseRules:
+    - pendingAction: 1
+      normalizedTime: 0.8
+    - pendingAction: 2
+      normalizedTime: 0.8
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: Attack0State
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 1
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules:
+    - pendingAction: 4
+      normalizedTime: 0.7
+    - pendingAction: 1
+      normalizedTime: 0.8
+    - pendingAction: 2
+      normalizedTime: 0.8
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: Attack1State
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 1
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules:
+    - pendingAction: 4
+      normalizedTime: 0.7
+    - pendingAction: 1
+      normalizedTime: 0.8
+    - pendingAction: 2
+      normalizedTime: 0.8
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: Attack2State
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 1
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules:
+    - pendingAction: 4
+      normalizedTime: 0.7
+    - pendingAction: 1
+      normalizedTime: 0.8
+    - pendingAction: 2
+      normalizedTime: 0.8
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: Attack3State
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 1
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules:
+    - pendingAction: 4
+      normalizedTime: 0.6
+    - pendingAction: 1
+      normalizedTime: 0.7
+    - pendingAction: 2
+      normalizedTime: 0.7
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: ChargeStartState
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 0
+    - action: 7
+      policy: 1
+    - action: 8
+      policy: 1
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 2
+  - stateId: ChargeLoopState
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 0
+    - action: 7
+      policy: 1
+    - action: 8
+      policy: 1
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - stateId: ChargeReleaseState
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 1
+    - action: 5
+      policy: 1
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: JumpState
+    actionPolicies:
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    - action: 3
+      policy: 2
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 0
+    - action: 8
+      policy: 0
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - stateId: FallState
+    actionPolicies:
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    - action: 3
+      policy: 2
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 0
+    - action: 8
+      policy: 0
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - stateId: AirAttackState
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 2
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 0
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 3
+  - stateId: FallAttackStartState
+    actionPolicies:
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    - action: 3
+      policy: 2
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 2
+    - action: 10
+      policy: 2
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 4
+  - stateId: FallAttackLoopState
+    actionPolicies:
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    - action: 3
+      policy: 2
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 2
+    - action: 10
+      policy: 2
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - stateId: FallAttackLandState
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 1
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: LandState
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 1
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: Skill0State
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 1
+    - action: 8
+      policy: 1
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: Skill1State
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 1
+    - action: 8
+      policy: 1
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: Skill2State
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 1
+    - action: 8
+      policy: 1
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: Skill3State
+    actionPolicies:
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
+    - action: 3
+      policy: 1
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 1
+    - action: 8
+      policy: 1
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 1
+  - stateId: HitStunState
+    actionPolicies:
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    - action: 3
+      policy: 2
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 2
+    - action: 10
+      policy: 2
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - stateId: PlayerDeathState
+    actionPolicies:
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    - action: 3
+      policy: 2
+    - action: 4
+      policy: 2
+    - action: 5
+      policy: 2
+    - action: 6
+      policy: 2
+    - action: 7
+      policy: 2
+    - action: 8
+      policy: 2
+    - action: 9
+      policy: 2
+    - action: 10
+      policy: 2
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.95
+    naturalExitTarget: 0

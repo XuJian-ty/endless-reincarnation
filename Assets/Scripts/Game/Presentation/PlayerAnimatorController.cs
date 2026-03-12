@@ -1,11 +1,10 @@
-using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Game.Presentation
 {
     /// <summary>
-    /// 封装 Animator API，提供类型安全的参数设置与触发方法。
-    /// 将 Animation Event（AnimEvent_Xxx）转为 C# 事件，供状态订阅，
+    /// 封装 Animator API，统一参数设置、Trigger 触发与动画进度查询，
     /// 避免状态直接依赖 Animator 字符串魔法值。
     /// </summary>
     [RequireComponent(typeof(Animator))]
@@ -14,11 +13,8 @@ namespace Game.Presentation
         // ── Animator Parameter Hashes（在静态字段预计算，零 GC）──────────
         private static readonly int SpeedHash        = Animator.StringToHash("Speed");
         private static readonly int IsGroundedHash   = Animator.StringToHash("IsGrounded");
-        private static readonly int AttackIndexHash  = Animator.StringToHash("AttackIndex");
-        private static readonly int SkillIndexHash   = Animator.StringToHash("SkillIndex");
         private static readonly int JumpTrigger      = Animator.StringToHash("Jump");
         private static readonly int DodgeTrigger     = Animator.StringToHash("Dodge");
-        private static readonly int AttackTrigger    = Animator.StringToHash("Attack");
         private static readonly int ChargeStartHash  = Animator.StringToHash("ChargeStart");
         private static readonly int ChargeLoopHash   = Animator.StringToHash("ChargeLoop");
         private static readonly int ChargeRelHash    = Animator.StringToHash("ChargeRelease");
@@ -27,16 +23,15 @@ namespace Game.Presentation
         private static readonly int FallAttLoopHash  = Animator.StringToHash("FallAttackLoop");
         private static readonly int FallAttLandHash  = Animator.StringToHash("FallAttackLand");
         private static readonly int LocomotionHash   = Animator.StringToHash("Locomotion");
-        private static readonly int SkillTrigger     = Animator.StringToHash("Skill");
         private static readonly int LandTrigger      = Animator.StringToHash("Land");
         private static readonly int HitStunTrigger   = Animator.StringToHash("HitStun");
         private static readonly int FallTrigger      = Animator.StringToHash("Fall");
         private static readonly int DeadTrigger      = Animator.StringToHash("Dead");
-
-        // ── 伤害检测事件（动画里统一调用 AnimEvent_DealDamage，参数填配置中的伤害名如 A1/AirAttack/FallAttack/ChargeRelease）─
-        public event Action<string> OnDealDamage;
+        private static readonly string[] AttackTriggerNames = { "Attack0", "Attack1", "Attack2", "Attack3" };
+        private static readonly string[] SkillTriggerNames  = { "Skill0", "Skill1", "Skill2", "Skill3" };
 
         private Animator _animator;
+        private readonly HashSet<string> _parameterNames = new HashSet<string>();
         private void Awake() => _animator = GetComponent<Animator>();
 
         // ── 参数设置与查询 ───────────────────────────────────────────────
@@ -54,8 +49,10 @@ namespace Game.Presentation
 
         public void TriggerAttack(int comboIndex)
         {
-            _animator.SetInteger(AttackIndexHash, comboIndex);
-            _animator.SetTrigger(AttackTrigger);
+            if (comboIndex < 0 || comboIndex >= AttackTriggerNames.Length)
+                return;
+
+            TriggerAction(AttackTriggerNames[comboIndex]);
         }
 
         public void TriggerLocomotion()      => _animator.SetTrigger(LocomotionHash);
@@ -69,8 +66,27 @@ namespace Game.Presentation
 
         public void TriggerSkill(int skillIndex)
         {
-            _animator.SetInteger(SkillIndexHash, skillIndex);
-            _animator.SetTrigger(SkillTrigger);
+            if (skillIndex < 0 || skillIndex >= SkillTriggerNames.Length)
+                return;
+
+            TriggerAction(SkillTriggerNames[skillIndex]);
+        }
+
+        public bool TriggerAction(string triggerName)
+        {
+            if (string.IsNullOrWhiteSpace(triggerName) || _animator == null)
+                return false;
+
+            CacheParametersIfNeeded();
+            string normalized = triggerName.Trim();
+            if (_parameterNames.Contains(normalized))
+            {
+                _animator.ResetTrigger(normalized);
+                _animator.SetTrigger(normalized);
+                return true;
+            }
+
+            return false;
         }
 
         // ── 动画进度查询 ──────────────────────────────────────────────────
@@ -98,7 +114,13 @@ namespace Game.Presentation
             return _animator.GetCurrentAnimatorStateInfo(layer).loop;
         }
 
-        /// <summary>动画事件接收：在每段攻击动画的命中帧添加 Event，Function 填本方法名，String 参数填配置中的伤害名（如 A1、A2、A3、A4、AirAttack、FallAttack、ChargeRelease）。</summary>
-        private void AnimEvent_DealDamage(string damageName) => OnDealDamage?.Invoke(damageName);
+        private void CacheParametersIfNeeded()
+        {
+            if (_parameterNames.Count > 0 || _animator == null)
+                return;
+
+            foreach (var parameter in _animator.parameters)
+                _parameterNames.Add(parameter.name);
+        }
     }
 }

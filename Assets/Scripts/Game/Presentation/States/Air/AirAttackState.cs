@@ -13,14 +13,15 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            Ctx.Anim.TriggerAirAttack();
+            TriggerConfiguredAction("AirAttack", "AirAttack");
+            StartTimelineSkill("AirAttack");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
             if (StateAge <= 0.1f) return;
             // 本状态特例：空中普攻为一次性动画，播完后 Animator 会切到 Fall（循环）；仅在 AirAttackState 内显式处理“已切到循环则视为结束”，不通过通用 API 影响其它状态
-            bool oneShotNearEnd = AnimNearEnd();
+            bool oneShotNearEnd = AnimNearConfiguredEnd();
             bool alreadyMovedToLoop = Ctx.Anim.IsCurrentStateLooping();
             if (!oneShotNearEnd && !alreadyMovedToLoop) return;
 

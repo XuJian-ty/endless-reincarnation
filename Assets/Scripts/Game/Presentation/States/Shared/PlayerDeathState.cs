@@ -28,7 +28,7 @@ namespace Game.Presentation
         protected override void OnTick(float dt, in PlayerInputData input)
         {
             _timer -= dt;
-            if (AnimNearEnd(0.95f) || _timer <= 0f)
+            if (AnimNearConfiguredEnd(0.95f) || _timer <= 0f)
                 Ctx.CompleteDeathSequence();
         }
 

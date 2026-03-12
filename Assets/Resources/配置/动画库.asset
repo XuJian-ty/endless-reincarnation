@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdd92e7ea0fdeae449b4ca1f5964fb4d, type: 3}
+  m_Name: "\u52A8\u753B\u5E93"
+  m_EditorClassIdentifier: 
+  groups:
+  - groupId: player
+    groupName: "\u73A9\u5BB6"
+    entries:
+    - animationId: Attack0
+      clip: {fileID: 7400000, guid: 232d9c61ac5d4364fa9b521f12ecfc63, type: 2}
+    - animationId: Attack1
+      clip: {fileID: 7400000, guid: e49a1dbcc27de334da3aa6e2a7cdef33, type: 2}
+    - animationId: Attack2
+      clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+    - animationId: Attack3
+      clip: {fileID: 7400000, guid: 8c61509d4e3f9ab448b5de547fe2f96e, type: 2}
+    - animationId: Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - animationId: Skill2
+      clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - animationId: Skill3
+      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+    - animationId: AirAttack
+      clip: {fileID: 7400000, guid: b0ae0baa716e5924b82d3a08aa751647, type: 2}
+    - animationId: FallAttack
+      clip: {fileID: 7400000, guid: d2f96f562e7e1644f835f1afd7fc3ed0, type: 2}
+    - animationId: ChargeRelease
+      clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
+  - groupId: melee_minion
+    groupName: "\u8FD1\u6218\u5C0F\u602A"
+    entries: []
+  - groupId: ranged_minion
+    groupName: "\u8FDC\u7A0B\u5C0F\u602A"
+    entries: []
+  - groupId: elite_1
+    groupName: "\u7CBE\u82F11"
+    entries: []
+  - groupId: elite_2
+    groupName: "\u7CBE\u82F12"
+    entries: []
+  - groupId: guardian_1
+    groupName: "\u5B88\u536B\u80051"
+    entries: []
+  - groupId: guardian_2
+    groupName: "\u5B88\u536B\u80052"
+    entries: []
+  - groupId: boss_1
+    groupName: Boss1
+    entries: []
+  - groupId: boss_2
+    groupName: Boss2
+    entries: []
+  - groupId: boss_3
+    groupName: Boss3
+    entries: []
+  - groupId: boss_4
+    groupName: Boss4
+    entries: []
+  - groupId: boss_5
+    groupName: Boss5
+    entries: []

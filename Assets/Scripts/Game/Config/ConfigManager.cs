@@ -24,13 +24,13 @@ namespace Game
         private ShopPriceConfigSO _shopPriceConfig;
         private PotionConfigSO _potionConfig;
         private SkillConfigDatabaseSO _skillConfigDatabase;
-        private AnimationFrameDamageDatabaseSO _animationFrameDamageDatabase;
-        private AnimationFrameVfxDatabaseSO _animationFrameVfxDatabase;
+        private CharacterAnimationLibrarySO _characterAnimationLibrary;
         private ItemDisplayDatabaseSO _itemDisplayDatabase;
         private SlotBackgroundConfigSO _slotBackgroundConfig;
         private KeyRebindConfigSO _keyRebindConfig;
         private BackpackUIConfigSO _backpackUIConfig;
         private BuffConfigSO _buffConfig;
+        private PlayerStateRuleDatabaseSO _playerStateRuleDatabase;
         private EnemyArchetypeSO[] _enemyArchetypes;
         private Dictionary<string, EnemyArchetypeSO> _enemyArchetypesById;
         private Dictionary<EnemyType, List<EnemyArchetypeSO>> _enemyArchetypesByType;
@@ -69,15 +69,20 @@ namespace Game
                 : 0;
         }
 
-        public SharedSkillDatabaseSO GetSharedSkillDatabase()
+        public SharedSkillDatabaseSO GetSkillDatabase()
         {
             if (_sharedSkillDatabase == null)
             {
-                _sharedSkillDatabase = Resources.Load<SharedSkillDatabaseSO>(ConfigPathPrefix + "共享技能库");
+                _sharedSkillDatabase = Resources.Load<SharedSkillDatabaseSO>(ConfigPathPrefix + "技能库");
                 if (_sharedSkillDatabase == null)
                     _sharedSkillDatabase = SharedSkillDatabaseDefaults.CreateRuntimeDefault();
             }
             return _sharedSkillDatabase;
+        }
+
+        public SharedSkillDatabaseSO GetSharedSkillDatabase()
+        {
+            return GetSkillDatabase();
         }
 
         public LevelConfigDatabaseSO GetLevelConfigDatabase()
@@ -144,22 +149,15 @@ namespace Game
             return _skillConfigDatabase;
         }
 
-        public AnimationFrameDamageDatabaseSO GetAnimationFrameDamageDatabase()
+        public CharacterAnimationLibrarySO GetCharacterAnimationLibrary()
         {
-            if (_animationFrameDamageDatabase == null)
+            if (_characterAnimationLibrary == null)
             {
-                _animationFrameDamageDatabase = Resources.Load<AnimationFrameDamageDatabaseSO>(ConfigPathPrefix + "技能伤害数据配置库");
-                if (_animationFrameDamageDatabase == null)
-                    _animationFrameDamageDatabase = Resources.Load<AnimationFrameDamageDatabaseSO>(ConfigPathPrefix + "动画帧伤害数据配置库");
+                _characterAnimationLibrary = Resources.Load<CharacterAnimationLibrarySO>(ConfigPathPrefix + "动画库");
+                if (_characterAnimationLibrary == null)
+                    _characterAnimationLibrary = Resources.Load<CharacterAnimationLibrarySO>(ConfigPathPrefix + "人物动画库");
             }
-            return _animationFrameDamageDatabase;
-        }
-
-        public AnimationFrameVfxDatabaseSO GetAnimationFrameVfxDatabase()
-        {
-            if (_animationFrameVfxDatabase == null)
-                _animationFrameVfxDatabase = Resources.Load<AnimationFrameVfxDatabaseSO>(ConfigPathPrefix + "动画帧特效数据配置库");
-            return _animationFrameVfxDatabase;
+            return _characterAnimationLibrary;
         }
 
         public ItemDisplayDatabaseSO GetItemDisplayDatabase()
@@ -195,6 +193,13 @@ namespace Game
             if (_buffConfig == null)
                 _buffConfig = Resources.Load<BuffConfigSO>(ConfigPathPrefix + "Buff配置");
             return _buffConfig;
+        }
+
+        public PlayerStateRuleDatabaseSO GetPlayerStateRuleDatabase()
+        {
+            if (_playerStateRuleDatabase == null)
+                _playerStateRuleDatabase = Resources.Load<PlayerStateRuleDatabaseSO>(ConfigPathPrefix + "玩家状态规则");
+            return _playerStateRuleDatabase;
         }
 
         private void EnsureEnemyArchetypeCache()

@@ -41,7 +41,7 @@ namespace Game.Presentation
         private static readonly HashSet<string> MissingSkillWarnings = new HashSet<string>();
 
         /// <summary>
-        /// 解析敌人技能槽位，只从共享技能库读取技能定义。
+        /// 解析敌人技能槽位，只从技能库读取技能定义。
         /// </summary>
         public static EnemyResolvedSkill Resolve(EnemyArchetypeSO archetype, int slot)
         {
@@ -52,12 +52,12 @@ namespace Game.Presentation
             if (binding == null || string.IsNullOrWhiteSpace(binding.skillId))
                 return null;
 
-            var sharedDb = ConfigManager.GetInstance()?.GetSharedSkillDatabase();
+            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
             var sharedDef = sharedDb != null ? sharedDb.GetEntry(binding.skillId) : null;
             if (sharedDef == null)
             {
                 if (MissingSkillWarnings.Add(binding.skillId))
-                    Debug.LogWarning($"[EnemySkill] 未在共享技能库中找到技能定义: {binding.skillId}");
+                    Debug.LogWarning($"[EnemySkill] 未在技能库中找到技能定义: {binding.skillId}");
                 return null;
             }
 

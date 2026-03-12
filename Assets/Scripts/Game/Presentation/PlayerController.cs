@@ -28,7 +28,7 @@ namespace Game.Presentation
     [RequireComponent(typeof(PlayerMover))]
     [RequireComponent(typeof(PlayerAnimatorController))]
     [RequireComponent(typeof(PlayerInputHandler))]
-    public class PlayerController : MonoBehaviour, IPlayerContext
+    public class PlayerController : MonoBehaviour, IPlayerContext, ICombatHardControlReceiver
     {
         // ── IPlayerContext 组件引用 ────────────────────────────────────────
         public PlayerMover              Mover        { get; private set; }
@@ -43,24 +43,6 @@ namespace Game.Presentation
         public float JumpHeight  => 2f;
         public float DodgeSpeed  => 12f;
         public float RotateSpeed => 720f;
-
-        // ── 普攻连击：有普攻预输入时提前结束的动画进度（0～1）────────────
-        [Header("普攻连击 - 普攻预输入（提前结束的动画进度 0～1）")]
-        [SerializeField] [Range(0f, 1f)] [Tooltip("第 1～3 段：有普攻预输入时，动画播放到此比例即提前切下一段")]
-        private float _comboEarlyExitThresholdSegment1To3 = 0.70f;
-        [SerializeField] [Range(0f, 1f)] [Tooltip("第 4 段：有普攻预输入时，动画播放到此比例即提前结束")]
-        private float _comboEarlyExitThresholdSegment4 = 0.60f;
-        public float ComboEarlyExitThresholdSegment1To3 => _comboEarlyExitThresholdSegment1To3;
-        public float ComboEarlyExitThresholdSegment4   => _comboEarlyExitThresholdSegment4;
-
-        // ── 普攻连击：有移动预输入时提前结束的动画进度（0～1）────────────
-        [Header("普攻连击 - 移动预输入（提前结束的动画进度 0～1）")]
-        [SerializeField] [Range(0f, 1f)] [Tooltip("第 1～3 段：有移动预输入时，动画播放到此比例即提前结束")]
-        private float _moveComboEarlyExitThresholdSegment1To3 = 0.80f;
-        [SerializeField] [Range(0f, 1f)] [Tooltip("第 4 段：有移动预输入时，动画播放到此比例即提前结束")]
-        private float _moveComboEarlyExitThresholdSegment4 = 0.70f;
-        public float MoveComboEarlyExitThresholdSegment1To3 => _moveComboEarlyExitThresholdSegment1To3;
-        public float MoveComboEarlyExitThresholdSegment4   => _moveComboEarlyExitThresholdSegment4;
 
         // ── 连续受击保护 ──────────────────────────────────────────────────
         [Header("连续受击保护")]
@@ -78,6 +60,8 @@ namespace Game.Presentation
         private bool               _loggedMissingCameraWarning;
         private bool               _deathSequenceStarted;
         private bool               _deathSequenceCompleted;
+        private float              _temporarySuperArmorTimer;
+        private float              _temporaryInvincibleTimer;
 
         // ── 连续受击保护状态 ──────────────────────────────────────────────
         private HitProtectionSystem _hitProtectionSystem;
@@ -100,9 +84,13 @@ namespace Game.Presentation
         public void Init(PlayerModel playerModel)
         {
             PlayerModel  = playerModel;
+            var skillConfig = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            PlayerModel?.RefreshUnlockedSkillEffects(skillConfig);
             StateMachine = new PlayerStateMachine(this);
             _deathSequenceStarted = false;
             _deathSequenceCompleted = false;
+            _temporarySuperArmorTimer = 0f;
+            _temporaryInvincibleTimer = 0f;
             _hitProtectionSystem = new HitProtectionSystem(_hitProtectionWindow, _hitProtectionThreshold, _hitProtectionDuration);
             ResolveCameraReference();
 
@@ -123,6 +111,7 @@ namespace Game.Presentation
             if (!_initialized || _inputHandler == null || StateMachine == null) return;
             if (GameStateMachine.GetInstance()?.IsGameplayPaused == true) return;
 
+            TickTemporaryCombatFlags(Time.deltaTime);
             _inputHandler.ManualUpdate();
             var input = _inputHandler.CurrentInput;
             StateMachine.Tick(Time.deltaTime, input);
@@ -205,10 +194,11 @@ namespace Game.Presentation
             if (!_initialized) return;
             if (_deathSequenceStarted) return;
             if (StateMachine.CurrentState is DodgeState) return;
+            if (_temporaryInvincibleTimer > 0f) return;
 
             // 检查是否处于霸体状态（Buff或连续受击保护）
             bool hasHitProtection = _hitProtectionSystem.IsProtected;
-            bool hasSuperArmor = PlayerModel.HasBuff(Game.Data.BuffIds.SuperArmor);
+            bool hasSuperArmor = PlayerModel.HasBuff(Game.Data.BuffIds.SuperArmor) || _temporarySuperArmorTimer > 0f;
 
             PlayerModel.TakeDamage(damage);
 
@@ -220,10 +210,38 @@ namespace Game.Presentation
 
             // 判断是否进入硬直状态（霸体Buff或连续受击保护可以免疫硬直）
             if (!hasSuperArmor && !hasHitProtection)
-                StateMachine.ChangeState<HitStunState>(s => s.Duration = stunDuration);
+                ApplyHardControl(stunDuration);
 
             if (PlayerModel.CurrentHp <= 0f)
                 HandleDeath();
+        }
+
+        public void ApplyHardControl(float duration)
+        {
+            if (!_initialized || _deathSequenceStarted)
+                return;
+
+            float validDuration = Mathf.Max(0f, duration);
+            if (validDuration <= 0f || StateMachine == null)
+                return;
+
+            StateMachine.ChangeState<HitStunState>(s => s.Duration = validDuration);
+        }
+
+        public void ApplyTemporarySuperArmor(float duration)
+        {
+            if (duration <= 0f)
+                return;
+
+            _temporarySuperArmorTimer = Mathf.Max(_temporarySuperArmorTimer, duration);
+        }
+
+        public void ApplyTemporaryInvincibility(float duration)
+        {
+            if (duration <= 0f)
+                return;
+
+            _temporaryInvincibleTimer = Mathf.Max(_temporaryInvincibleTimer, duration);
         }
 
         private void HandleDeath()
@@ -242,6 +260,15 @@ namespace Game.Presentation
             _deathSequenceCompleted = true;
             _initialized = false;
             OnPlayerDied?.Invoke();
+        }
+
+        private void TickTemporaryCombatFlags(float dt)
+        {
+            if (_temporarySuperArmorTimer > 0f)
+                _temporarySuperArmorTimer = Mathf.Max(0f, _temporarySuperArmorTimer - dt);
+
+            if (_temporaryInvincibleTimer > 0f)
+                _temporaryInvincibleTimer = Mathf.Max(0f, _temporaryInvincibleTimer - dt);
         }
     }
 }

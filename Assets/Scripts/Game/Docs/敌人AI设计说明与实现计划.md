@@ -230,7 +230,7 @@ EnemyCombat / EnemyAbilityRunner（执行）
 | 项目 | 决策 |
 |------|------|
 | **同屏多敌人** | **不**做 Tick 降频与按距离 LOD；所有敌人每帧正常 Tick 行为树。 |
-| **敌人对玩家伤害** | 采用**与玩家伤害管线对称**的方式：敌人攻击动画在命中帧触发检测，使用 **DamageDetectionRunner**（或同一套几何检测），**hitLayerName = "Player"**；伤害名与配置可放在现有 **AnimationFrameDamageDatabaseSO** 中（同一库内不同条目，部分 hitLayer=Enemy、部分 hitLayer=Player），由 EnemyCombat 或敌人动画事件调用，再调 **CombatCalculator.CalculateDamageFromEnemy** 对玩家扣血。 |
+| **敌人对玩家伤害** | 采用**与玩家伤害管线对称**的方式：敌人攻击动画在命中帧触发检测，使用 **DamageDetectionRunner**（或同一套几何检测），**hitLayerName = "Player"**；伤害检测参数已经内嵌在 **技能库** 的伤害事件中，由 EnemyCombat 或敌人动画事件调用，再调 **CombatCalculator.CalculateDamageFromEnemy** 对玩家扣血。 |
 | **玩家引用** | 由 **GameStateMachine** 或 **LevelBootstrapper** 提供「当前关卡玩家 Transform」的访问点，EnemyAI 在 Init 或每帧从该处取并写入黑板。 |
 | **音效与特效** | **动画事件**触发攻击命中、受击、死亡时的表现；可选在执行层或动画事件中发 **EventCenter** 事件（如 EnemyAttackHit、EnemyDied）供全局音效/镜头等订阅，便于解耦。 |
 | **调试** | 可选：开发阶段在 HUD 或 Gizmos 中显示当前敌人意图（如「追击/巡逻/攻击」），按需在阶段 4 实现。 |
@@ -269,7 +269,7 @@ EnemyCombat / EnemyAbilityRunner（执行）
 ### 14.2 敌人对玩家的伤害检测（§十二已定：复用 DamageDetectionRunner，hitLayer=Player）
 
 - **现有管线**：玩家打敌人由 `PlayerCombat` + 动画事件 + `DamageDetectionRunner` + `EnemyController.ApplyDamage` 完成；`hitLayerName = "Enemy"`。
-- **敌人打玩家**：敌人攻击动画在命中帧触发检测；调用 **DamageDetectionRunner**，配置中敌人伤害条目 **hitLayerName = "Player"**；可由 EnemyCombat 或动画事件发起，再调 **CombatCalculator.CalculateDamageFromEnemy** 扣玩家血。配置可与玩家共用 **AnimationFrameDamageDatabaseSO**（不同 damageName、不同 hitLayer），或单独敌人伤害库。
+- **敌人打玩家**：敌人攻击动画在命中帧触发检测；调用 **DamageDetectionRunner**，配置中敌人伤害条目 **hitLayerName = "Player"**；可由 EnemyCombat 或动画事件发起，再调 **CombatCalculator.CalculateDamageFromEnemy** 扣玩家血。伤害检测参数统一放在 **技能库** 的伤害事件里，不再依赖外部伤害配置库。
 
 ### 14.3 巡逻的具体形态（§十二已定：半径内随机）
 

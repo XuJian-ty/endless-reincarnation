@@ -16,8 +16,16 @@ namespace Game.Presentation
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
-            if (AnimNearEnd())
-                CompleteWithPending(() => { if (IsGrounded) GoTo<IdleState>(); else GoTo<FallState>(); });
+            if (AnimNearConfiguredEnd())
+            {
+                CompleteWithPending(() =>
+                {
+                    if (IsGrounded)
+                        GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
+                    else
+                        GoTo<FallState>();
+                });
+            }
         }
     }
 }

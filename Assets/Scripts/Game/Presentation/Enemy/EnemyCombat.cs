@@ -22,10 +22,6 @@ namespace Game.Presentation
         private const string TriggerHurt     = "Hurt";
         private const string TriggerDead     = "Dead";
 
-        [Header("Detection Config")]
-        [Tooltip("If empty, loads from ConfigManager at Start")]
-        [SerializeField] private AnimationFrameDamageDatabaseSO _damageDatabase;
-
         private Animator _anim;
         private EnemyController _controller;
         private EnemyPerception _perception;
@@ -44,12 +40,6 @@ namespace Game.Presentation
             _controller = GetComponent<EnemyController>();
             _perception = GetComponent<EnemyPerception>();
             CacheAnimatorParameters();
-        }
-
-        private void Start()
-        {
-            if (_damageDatabase == null)
-                _damageDatabase = ConfigManager.GetInstance()?.GetAnimationFrameDamageDatabase();
         }
 
         private void Update()
@@ -87,36 +77,12 @@ namespace Game.Presentation
             _wasHurtLastFrame = _controller.IsHurt;
         }
 
-        /// <summary>动画事件伤害：仅当当前技能未声明忽略动画事件时生效。</summary>
+        /// <summary>
+        /// 旧动画事件入口已停用。敌人伤害统一由技能时间轴驱动，
+        /// 保留此方法仅为兼容旧动画片段中残留的 Animation Event。
+        /// </summary>
         public void OnDealDamage(string damageName)
         {
-            if (_controller == null || !_controller.IsAlive) return;
-            if (_runningSkill != null && _runningSkill.IgnoreAnimationDamageEvents) return;
-
-            var db = _damageDatabase ?? ConfigManager.GetInstance()?.GetAnimationFrameDamageDatabase();
-            if (db == null) return;
-
-            string resolvedName = !string.IsNullOrEmpty(damageName) ? damageName
-                : _runningSkill?.Binding?.skillId;
-            if (string.IsNullOrEmpty(resolvedName)) return;
-
-            if (db.GetEntry(resolvedName) == null)
-            {
-                string warnKey = $"{name}:{resolvedName}";
-                if (MissingAnimationDamageWarnings.Add(warnKey))
-                {
-                    Debug.LogWarning(
-                        $"[EnemyCombat] {name}: 动画伤害事件未找到检测配置 '{resolvedName}'。" +
-                        "若技能完全由时间轴驱动，请设 ignoreAnimationDamageEvents = true。", this);
-                }
-                return;
-            }
-
-            if (!DamageDetectionRunner.TryRunDetection(resolvedName, transform, db, _overlapBuffer, out var entry, out int hitCount))
-                return;
-            if (entry == null || hitCount <= 0) return;
-
-            ApplyDamageToPlayerTargets(hitCount, entry.damageMultiplier, entry.pushDuration);
         }
 
         // ── 内部 ─────────────────────────────────────────────────────────────
@@ -136,7 +102,6 @@ namespace Game.Presentation
             var ctx = new EnemySkillExecutionContext(
                 _controller,
                 _perception,
-                _damageDatabase ?? ConfigManager.GetInstance()?.GetAnimationFrameDamageDatabase(),
                 _overlapBuffer);
 
             _timelineRunner.Begin(_runningSkill.Definition, ctx, _runningSkill.CastDuration);

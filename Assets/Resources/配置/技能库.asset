@@ -1,0 +1,4160 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d166a875a80b6a347a3a335babfa589a, type: 3}
+  m_Name: "\u6280\u80FD\u5E93"
+  m_EditorClassIdentifier: 
+  groups:
+  - groupId: player
+    groupName: "\u73A9\u5BB6"
+    entries:
+    - skillId: Skill0
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0.13333334
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 3.858257}
+          sphereRadius: 3.0156636
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects:
+          - effectType: 0
+            distance: 2
+            height: 1
+            duration: 0.2
+          onHitAttributeEffects:
+          - statField: 2
+            targetMode: 0
+            magnitude: 5555
+            usePercent: 0
+            duration: 8
+          onHitVfxEffects:
+          - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            duration: 0
+          onHitSfxEffects:
+          - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            duration: 0
+      physicsEvents:
+      - eventId: evt_3
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 7
+          distance: 1
+          height: 1
+          duration: 0.2
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 8372332783136226562, guid: 426d5a46bb731d542b637d4e046fecb4,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 8072efeecc8957949aca9a8ece2971ab, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: Skill1
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0.13333334
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 3
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects:
+          - statField: 0
+            targetMode: 1
+            magnitude: 111
+            usePercent: 0
+            duration: 0
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: Skill2
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: Skill3
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: cd5261ff219a3e44b8550d58337e4cc2, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: Attack0
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 84ab36586c267c24ab1d95cd45e271ed, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: Attack1
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 8008210279060486150, guid: 5a970aecdd97bb24f8f68f4a327c07c3,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 84ab36586c267c24ab1d95cd45e271ed, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: Attack2
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 2001595592669538821, guid: 432b6d8f6c1c7df4695b90df6c8db7c7,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 35622d15990f4e24ab8a556649c2e607, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: Attack3
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_2
+        startTime: 0.20000002
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0.10000001
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 6663020237317949801, guid: 1f0754f224af04141b10edc780c129e6,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 74e13c117190cc34f8ee0e9256ea43c6, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: AirAttack
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_4
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: evt_3
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 3
+          distance: 1
+          height: 1
+          duration: 0.2
+      attributeEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        attributeEffects:
+        - statField: 2
+          targetMode: 0
+          magnitude: 50
+          usePercent: 0
+          duration: 10
+      vfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 1
+        activeDuration: 0.20000002
+        repeatInterval: 0.10000001
+        vfxEffects:
+        - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 1
+        activeDuration: 0.20000002
+        repeatInterval: 0.10000001
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: FallAttack
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 00393121fe79c974e92d6337f4eccdef, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    - skillId: ChargeAttack
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          pushForce: 20
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 8372332783136226562, guid: 426d5a46bb731d542b637d4e046fecb4,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+        - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+        - particlePrefab: {fileID: 2071025297289623881, guid: 448772dc5fb1251449d5027dcd08b3ec,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+      sfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 68d3f9dcffd103449ad459b58b7564e7, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+  - groupId: melee_minion
+    groupName: "\u8FD1\u6218\u5C0F\u602A"
+    entries:
+    - skillId: melee_minion_chop
+      displayName: Melee Minion Chop
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: hit
+        startTime: 0.24
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 0.95
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 8
+          pushDuration: 0.05
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.45
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: hit
+        startTime: 0.24
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.08
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: ranged_minion
+    groupName: "\u8FDC\u7A0B\u5C0F\u602A"
+    entries:
+    - skillId: ranged_minion_shot
+      displayName: Ranged Minion Shot
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: shot
+        startTime: 0.28
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1
+          detectionDuration: 0
+          detectionType: 2
+          hitLayerName: Player
+          pushForce: 6
+          pushDuration: 0.05
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 14
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: new_skill_1
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: elite_1
+    groupName: "\u7CBE\u82F11"
+    entries:
+    - skillId: elite_1_combo
+      displayName: Elite 1 Combo
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: hit_a
+        startTime: 0.2
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 0.8925
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 10
+          pushDuration: 0.06
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 2.4
+          sectorAngle: 110
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      - eventId: hit_b
+        startTime: 0.45
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1.05
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 10
+          pushDuration: 0.06
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 2.4
+          sectorAngle: 110
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: hit_b
+        startTime: 0.45
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.1
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: elite_1_slam
+      displayName: Elite 1 Slam
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: slam
+        startTime: 0.48
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1.6875
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 18
+          pushDuration: 0.1
+          shape: 2
+          centerOffset: {x: 0, y: 0, z: 1.4}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 2.2, y: 1.8, z: 3.2}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: slam
+        startTime: 0.48
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.14
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: elite_2
+    groupName: "\u7CBE\u82F12"
+    entries:
+    - skillId: elite_2_burst_shot
+      displayName: Elite 2 Burst Shot
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: burst
+        startTime: 0.2
+        triggerMode: 1
+        activeDuration: 0.36
+        repeatInterval: 0.18
+        damageEffects:
+        - damageMagnitude: 0.5525
+          detectionDuration: 0
+          detectionType: 2
+          hitLayerName: Player
+          pushForce: 4
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 16
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: elite_2_hook_pull
+      displayName: Elite 2 Hook Pull
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: hook
+        startTime: 0.35
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 0.8
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 0
+          pushDuration: 0.05
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 4.2
+          sectorAngle: 80
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: hook
+        startTime: 0.35
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 1
+          distance: 1
+          height: 1
+          duration: 0.18
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: guardian_1
+    groupName: "\u5B88\u536B\u80051"
+    entries:
+    - skillId: guardian_1_crush
+      displayName: Guardian 1 Crush
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: crush
+        startTime: 0.5
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1.875
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 18
+          pushDuration: 0.1
+          shape: 2
+          centerOffset: {x: 0, y: 0, z: 1.4}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 2.2, y: 1.8, z: 3.2}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: crush
+        startTime: 0.5
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.18
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: guardian_1_fortify
+      displayName: Guardian 1 Fortify
+      ignoreAnimationDamageEvents: 1
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents:
+      - eventId: fortify
+        startTime: 0.15
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        attributeEffects:
+        - statField: 2
+          targetMode: 0
+          magnitude: 4
+          usePercent: 0
+          duration: 4
+        - statField: 3
+          targetMode: 0
+          magnitude: 8
+          usePercent: 0
+          duration: 4
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: guardian_2
+    groupName: "\u5B88\u536B\u80052"
+    entries:
+    - skillId: guardian_2_bash
+      displayName: Guardian 2 Bash
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: impact
+        startTime: 0.28
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.03
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 18
+          pushDuration: 0.12
+          shape: 2
+          centerOffset: {x: 0, y: 0, z: 2}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 2.4, y: 1.8, z: 4.4}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: step
+        startTime: 0.05
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 3
+          distance: 1
+          height: 1
+          duration: 0.18
+      - eventId: impact
+        startTime: 0.28
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.14
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: guardian_2_chain_pull
+      displayName: Guardian 2 Chain Pull
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: chain
+        startTime: 0.32
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 0.95
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 0
+          pushDuration: 0.05
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 4.2
+          sectorAngle: 80
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: chain
+        startTime: 0.32
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 1
+          distance: 1
+          height: 1
+          duration: 0.2
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: boss_1
+    groupName: Boss1
+    entries:
+    - skillId: boss_1_slash
+      displayName: Boss 1 Slash
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: slash
+        startTime: 0.34
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.3200002
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 16
+          pushDuration: 0.08
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 3.4
+          sectorAngle: 140
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: slash
+        startTime: 0.34
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.1
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_1_shot
+      displayName: Boss 1 Shot
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: shot
+        startTime: 0.28
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1.5525
+          detectionDuration: 0
+          detectionType: 2
+          hitLayerName: Player
+          pushForce: 10
+          pushDuration: 0.07
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 20
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_1_charge
+      displayName: Boss 1 Charge
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: impact
+        startTime: 0.3
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.52
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 18
+          pushDuration: 0.12
+          shape: 2
+          centerOffset: {x: 0, y: 0, z: 2}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 2.4, y: 1.8, z: 4.4}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: dash
+        startTime: 0.05
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 3
+          distance: 1
+          height: 1
+          duration: 0.2
+      - eventId: impact
+        startTime: 0.3
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.16
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_1_roar
+      displayName: Boss 1 Roar
+      ignoreAnimationDamageEvents: 1
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents:
+      - eventId: buff
+        startTime: 0.2
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        attributeEffects:
+        - statField: 2
+          targetMode: 0
+          magnitude: 6
+          usePercent: 0
+          duration: 3.5
+        - statField: 3
+          targetMode: 0
+          magnitude: 4
+          usePercent: 0
+          duration: 3.5
+        - statField: 4
+          targetMode: 0
+          magnitude: 0.2
+          usePercent: 0
+          duration: 3.5
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: boss_2
+    groupName: Boss2
+    entries:
+    - skillId: boss_2_cross_slash
+      displayName: Boss 2 Cross Slash
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: cut_a
+        startTime: 0.22
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 0.94499993
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 10
+          pushDuration: 0.06
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 2.4
+          sectorAngle: 110
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      - eventId: cut_b
+        startTime: 0.48
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1.7600001
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 16
+          pushDuration: 0.08
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 3.4
+          sectorAngle: 140
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: cut_b
+        startTime: 0.48
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.1
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_2_volley
+      displayName: Boss 2 Volley
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: volley
+        startTime: 0.22
+        triggerMode: 1
+        activeDuration: 0.45
+        repeatInterval: 0.15
+        damageEffects:
+        - damageMagnitude: 0.61200005
+          detectionDuration: 0
+          detectionType: 2
+          hitLayerName: Player
+          pushForce: 4
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 16
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_2_crash
+      displayName: Boss 2 Crash
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: crash
+        startTime: 0.32
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.8
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 18
+          pushDuration: 0.12
+          shape: 2
+          centerOffset: {x: 0, y: 0, z: 2}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 2.4, y: 1.8, z: 4.4}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: dash
+        startTime: 0.05
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 3
+          distance: 1
+          height: 1
+          duration: 0.2
+      - eventId: crash
+        startTime: 0.32
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.18
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_2_rage
+      displayName: Boss 2 Rage
+      ignoreAnimationDamageEvents: 1
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents:
+      - eventId: rage
+        startTime: 0.18
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        attributeEffects:
+        - statField: 2
+          targetMode: 0
+          magnitude: 8
+          usePercent: 0
+          duration: 4
+        - statField: 4
+          targetMode: 0
+          magnitude: 0.35
+          usePercent: 0
+          duration: 4
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: boss_3
+    groupName: Boss3
+    entries:
+    - skillId: boss_3_pull_cleave
+      displayName: Boss 3 Pull Cleave
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: cleave
+        startTime: 0.46
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.16
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 16
+          pushDuration: 0.08
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 3.4
+          sectorAngle: 140
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: pull
+        startTime: 0.14
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 1
+          distance: 1
+          height: 1
+          duration: 0.18
+      - eventId: cleave
+        startTime: 0.46
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.1
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_3_barrage
+      displayName: Boss 3 Barrage
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: barrage
+        startTime: 0.25
+        triggerMode: 1
+        activeDuration: 0.6
+        repeatInterval: 0.15
+        damageEffects:
+        - damageMagnitude: 0.578
+          detectionDuration: 0
+          detectionType: 2
+          hitLayerName: Player
+          pushForce: 4
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 16
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_3_lunge
+      displayName: Boss 3 Lunge
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: impact
+        startTime: 0.3
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.45
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 18
+          pushDuration: 0.12
+          shape: 2
+          centerOffset: {x: 0, y: 0, z: 2}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 2.4, y: 1.8, z: 4.4}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: lunge
+        startTime: 0.05
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 3
+          distance: 1
+          height: 1
+          duration: 0.22
+      - eventId: impact
+        startTime: 0.3
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.16
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_3_drain
+      displayName: Boss 3 Drain
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: drain_hit
+        startTime: 0.28
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 0.75
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 6
+          pushDuration: 0.05
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 4.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: drain_hit
+        startTime: 0.28
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 1
+          distance: 1
+          height: 1
+          duration: 0.12
+      attributeEvents:
+      - eventId: heal
+        startTime: 0.45
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        attributeEffects:
+        - statField: 0
+          targetMode: 0
+          magnitude: 0.08
+          usePercent: 1
+          duration: 0
+        - statField: 3
+          targetMode: 0
+          magnitude: 5
+          usePercent: 0
+          duration: 3
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: boss_4
+    groupName: Boss4
+    entries:
+    - skillId: boss_4_spin
+      displayName: Boss 4 Spin
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: spin
+        startTime: 0.2
+        triggerMode: 1
+        activeDuration: 0.5
+        repeatInterval: 0.16
+        damageEffects:
+        - damageMagnitude: 0.56
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 10
+          pushDuration: 0.05
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 2.6
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: spin
+        startTime: 0.2
+        triggerMode: 1
+        activeDuration: 0.5
+        repeatInterval: 0.16
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.08
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_4_piercing_shot
+      displayName: Boss 4 Piercing Shot
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: pierce
+        startTime: 0.28
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 1.89
+          detectionDuration: 0
+          detectionType: 2
+          hitLayerName: Player
+          pushForce: 10
+          pushDuration: 0.07
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 20
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: pierce
+        startTime: 0.28
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.12
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_4_pursuit
+      displayName: Boss 4 Pursuit
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: finish
+        startTime: 0.26
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.73
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 18
+          pushDuration: 0.12
+          shape: 2
+          centerOffset: {x: 0, y: 0, z: 2}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 2.4, y: 1.8, z: 4.4}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: rush
+        startTime: 0.04
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 3
+          distance: 1
+          height: 1
+          duration: 0.22
+      - eventId: finish
+        startTime: 0.26
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.18
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_4_battlecry
+      displayName: Boss 4 Battlecry
+      ignoreAnimationDamageEvents: 1
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents:
+      - eventId: battlecry
+        startTime: 0.18
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        attributeEffects:
+        - statField: 2
+          targetMode: 0
+          magnitude: 6
+          usePercent: 0
+          duration: 4
+        - statField: 4
+          targetMode: 0
+          magnitude: 0.45
+          usePercent: 0
+          duration: 4
+        - statField: 5
+          targetMode: 0
+          magnitude: 1.2
+          usePercent: 0
+          duration: 4
+      vfxEvents: []
+      sfxEvents: []
+  - groupId: boss_5
+    groupName: Boss5
+    entries:
+    - skillId: boss_5_cleave
+      displayName: Boss 5 Cleave
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: cleave
+        startTime: 0.38
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.72
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 16
+          pushDuration: 0.08
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 3.4
+          sectorAngle: 140
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: cleave
+        startTime: 0.38
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.12
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_5_storm
+      displayName: Boss 5 Storm
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: storm
+        startTime: 0.2
+        triggerMode: 1
+        activeDuration: 0.75
+        repeatInterval: 0.15
+        damageEffects:
+        - damageMagnitude: 0.63750005
+          detectionDuration: 0
+          detectionType: 2
+          hitLayerName: Player
+          pushForce: 4
+          pushDuration: 0.04
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 16
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_5_stampede
+      displayName: Boss 5 Stampede
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: stomp
+        startTime: 0.3
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 2.9399998
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 18
+          pushDuration: 0.12
+          shape: 2
+          centerOffset: {x: 0, y: 0, z: 2}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 2.4, y: 1.8, z: 4.4}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: charge
+        startTime: 0.04
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 3
+          distance: 1
+          height: 1
+          duration: 0.24
+      - eventId: stomp
+        startTime: 0.3
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          duration: 0.2
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: boss_5_regen_roar
+      displayName: Boss 5 Regen Roar
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: roar_hit
+        startTime: 0.25
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        damageEffects:
+        - damageMagnitude: 0.85
+          detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Player
+          pushForce: 6
+          pushDuration: 0.05
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          sphereRadius: 4.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: roar_hit
+        startTime: 0.25
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 1
+          distance: 1
+          height: 1
+          duration: 0.1
+      attributeEvents:
+      - eventId: regen
+        startTime: 0.42
+        triggerMode: 0
+        activeDuration: 0
+        repeatInterval: 0.1
+        attributeEffects:
+        - statField: 0
+          targetMode: 0
+          magnitude: 0.12
+          usePercent: 1
+          duration: 0
+        - statField: 2
+          targetMode: 0
+          magnitude: 5
+          usePercent: 0
+          duration: 4.5
+        - statField: 3
+          targetMode: 0
+          magnitude: 6
+          usePercent: 0
+          duration: 4.5
+      vfxEvents: []
+      sfxEvents: []
+  entries:
+  - skillId: Skill0
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0.13333334
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 3.858257}
+        sphereRadius: 3.0156636
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects:
+        - effectType: 0
+          distance: 2
+          height: 1
+          duration: 0.2
+        onHitAttributeEffects:
+        - statField: 2
+          targetMode: 0
+          magnitude: 5555
+          usePercent: 0
+          duration: 8
+        onHitVfxEffects:
+        - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: -0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          duration: 0
+        onHitSfxEffects:
+        - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          duration: 0
+    physicsEvents:
+    - eventId: evt_3
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 7
+        distance: 1
+        height: 1
+        duration: 0.2
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 8372332783136226562, guid: 426d5a46bb731d542b637d4e046fecb4,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 8072efeecc8957949aca9a8ece2971ab, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: Skill1
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0.13333334
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 3
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects:
+        - statField: 0
+          targetMode: 1
+          magnitude: 111
+          usePercent: 0
+          duration: 0
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: Skill2
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: Skill3
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: cd5261ff219a3e44b8550d58337e4cc2, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: Attack0
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 84ab36586c267c24ab1d95cd45e271ed, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: Attack1
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 8008210279060486150, guid: 5a970aecdd97bb24f8f68f4a327c07c3,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 84ab36586c267c24ab1d95cd45e271ed, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: Attack2
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 2001595592669538821, guid: 432b6d8f6c1c7df4695b90df6c8db7c7,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 35622d15990f4e24ab8a556649c2e607, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: Attack3
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_2
+      startTime: 0.20000002
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0.10000001
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 6663020237317949801, guid: 1f0754f224af04141b10edc780c129e6,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 74e13c117190cc34f8ee0e9256ea43c6, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: AirAttack
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_4
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: evt_3
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 3
+        distance: 1
+        height: 1
+        duration: 0.2
+    attributeEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 50
+        usePercent: 0
+        duration: 10
+    vfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 1
+      activeDuration: 0.20000002
+      repeatInterval: 0.10000001
+      vfxEffects:
+      - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 1
+      activeDuration: 0.20000002
+      repeatInterval: 0.10000001
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: FallAttack
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 00393121fe79c974e92d6337f4eccdef, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: ChargeAttack
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        pushForce: 20
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 8372332783136226562, guid: 426d5a46bb731d542b637d4e046fecb4,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+      - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+      - particlePrefab: {fileID: 2071025297289623881, guid: 448772dc5fb1251449d5027dcd08b3ec,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        duration: 0
+    sfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 68d3f9dcffd103449ad459b58b7564e7, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        duration: 0
+  - skillId: melee_minion_chop
+    displayName: Melee Minion Chop
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: hit
+      startTime: 0.24
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 0.95
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 8
+        pushDuration: 0.05
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.45
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: hit
+      startTime: 0.24
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.08
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: ranged_minion_shot
+    displayName: Ranged Minion Shot
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: shot
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1
+        detectionDuration: 0
+        detectionType: 2
+        hitLayerName: Player
+        pushForce: 6
+        pushDuration: 0.05
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 14
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: new_skill_1
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: elite_1_combo
+    displayName: Elite 1 Combo
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: hit_a
+      startTime: 0.2
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 0.8925
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 10
+        pushDuration: 0.06
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 2.4
+        sectorAngle: 110
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    - eventId: hit_b
+      startTime: 0.45
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1.05
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 10
+        pushDuration: 0.06
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 2.4
+        sectorAngle: 110
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: hit_b
+      startTime: 0.45
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.1
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: elite_1_slam
+    displayName: Elite 1 Slam
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: slam
+      startTime: 0.48
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1.6875
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 18
+        pushDuration: 0.1
+        shape: 2
+        centerOffset: {x: 0, y: 0, z: 1.4}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 2.2, y: 1.8, z: 3.2}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: slam
+      startTime: 0.48
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.14
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: elite_2_burst_shot
+    displayName: Elite 2 Burst Shot
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: burst
+      startTime: 0.2
+      triggerMode: 1
+      activeDuration: 0.36
+      repeatInterval: 0.18
+      damageEffects:
+      - damageMagnitude: 0.5525
+        detectionDuration: 0
+        detectionType: 2
+        hitLayerName: Player
+        pushForce: 4
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 16
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: elite_2_hook_pull
+    displayName: Elite 2 Hook Pull
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: hook
+      startTime: 0.35
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 0.8
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 0
+        pushDuration: 0.05
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 4.2
+        sectorAngle: 80
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: hook
+      startTime: 0.35
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 1
+        distance: 1
+        height: 1
+        duration: 0.18
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: guardian_1_crush
+    displayName: Guardian 1 Crush
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: crush
+      startTime: 0.5
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1.875
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 18
+        pushDuration: 0.1
+        shape: 2
+        centerOffset: {x: 0, y: 0, z: 1.4}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 2.2, y: 1.8, z: 3.2}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: crush
+      startTime: 0.5
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.18
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: guardian_1_fortify
+    displayName: Guardian 1 Fortify
+    ignoreAnimationDamageEvents: 1
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents:
+    - eventId: fortify
+      startTime: 0.15
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 4
+        usePercent: 0
+        duration: 4
+      - statField: 3
+        targetMode: 0
+        magnitude: 8
+        usePercent: 0
+        duration: 4
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: guardian_2_bash
+    displayName: Guardian 2 Bash
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: impact
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.03
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 18
+        pushDuration: 0.12
+        shape: 2
+        centerOffset: {x: 0, y: 0, z: 2}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 2.4, y: 1.8, z: 4.4}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: step
+      startTime: 0.05
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 3
+        distance: 1
+        height: 1
+        duration: 0.18
+    - eventId: impact
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.14
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: guardian_2_chain_pull
+    displayName: Guardian 2 Chain Pull
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: chain
+      startTime: 0.32
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 0.95
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 0
+        pushDuration: 0.05
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 4.2
+        sectorAngle: 80
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: chain
+      startTime: 0.32
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 1
+        distance: 1
+        height: 1
+        duration: 0.2
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_1_slash
+    displayName: Boss 1 Slash
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: slash
+      startTime: 0.34
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.3200002
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 16
+        pushDuration: 0.08
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 3.4
+        sectorAngle: 140
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: slash
+      startTime: 0.34
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.1
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_1_shot
+    displayName: Boss 1 Shot
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: shot
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1.5525
+        detectionDuration: 0
+        detectionType: 2
+        hitLayerName: Player
+        pushForce: 10
+        pushDuration: 0.07
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 20
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_1_charge
+    displayName: Boss 1 Charge
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: impact
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.52
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 18
+        pushDuration: 0.12
+        shape: 2
+        centerOffset: {x: 0, y: 0, z: 2}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 2.4, y: 1.8, z: 4.4}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: dash
+      startTime: 0.05
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 3
+        distance: 1
+        height: 1
+        duration: 0.2
+    - eventId: impact
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.16
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_1_roar
+    displayName: Boss 1 Roar
+    ignoreAnimationDamageEvents: 1
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents:
+    - eventId: buff
+      startTime: 0.2
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 6
+        usePercent: 0
+        duration: 3.5
+      - statField: 3
+        targetMode: 0
+        magnitude: 4
+        usePercent: 0
+        duration: 3.5
+      - statField: 4
+        targetMode: 0
+        magnitude: 0.2
+        usePercent: 0
+        duration: 3.5
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_2_cross_slash
+    displayName: Boss 2 Cross Slash
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: cut_a
+      startTime: 0.22
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 0.94499993
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 10
+        pushDuration: 0.06
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 2.4
+        sectorAngle: 110
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    - eventId: cut_b
+      startTime: 0.48
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1.7600001
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 16
+        pushDuration: 0.08
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 3.4
+        sectorAngle: 140
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: cut_b
+      startTime: 0.48
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.1
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_2_volley
+    displayName: Boss 2 Volley
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: volley
+      startTime: 0.22
+      triggerMode: 1
+      activeDuration: 0.45
+      repeatInterval: 0.15
+      damageEffects:
+      - damageMagnitude: 0.61200005
+        detectionDuration: 0
+        detectionType: 2
+        hitLayerName: Player
+        pushForce: 4
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 16
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_2_crash
+    displayName: Boss 2 Crash
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: crash
+      startTime: 0.32
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.8
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 18
+        pushDuration: 0.12
+        shape: 2
+        centerOffset: {x: 0, y: 0, z: 2}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 2.4, y: 1.8, z: 4.4}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: dash
+      startTime: 0.05
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 3
+        distance: 1
+        height: 1
+        duration: 0.2
+    - eventId: crash
+      startTime: 0.32
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.18
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_2_rage
+    displayName: Boss 2 Rage
+    ignoreAnimationDamageEvents: 1
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents:
+    - eventId: rage
+      startTime: 0.18
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 8
+        usePercent: 0
+        duration: 4
+      - statField: 4
+        targetMode: 0
+        magnitude: 0.35
+        usePercent: 0
+        duration: 4
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_3_pull_cleave
+    displayName: Boss 3 Pull Cleave
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: cleave
+      startTime: 0.46
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.16
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 16
+        pushDuration: 0.08
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 3.4
+        sectorAngle: 140
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: pull
+      startTime: 0.14
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 1
+        distance: 1
+        height: 1
+        duration: 0.18
+    - eventId: cleave
+      startTime: 0.46
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.1
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_3_barrage
+    displayName: Boss 3 Barrage
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: barrage
+      startTime: 0.25
+      triggerMode: 1
+      activeDuration: 0.6
+      repeatInterval: 0.15
+      damageEffects:
+      - damageMagnitude: 0.578
+        detectionDuration: 0
+        detectionType: 2
+        hitLayerName: Player
+        pushForce: 4
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 16
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_3_lunge
+    displayName: Boss 3 Lunge
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: impact
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.45
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 18
+        pushDuration: 0.12
+        shape: 2
+        centerOffset: {x: 0, y: 0, z: 2}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 2.4, y: 1.8, z: 4.4}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: lunge
+      startTime: 0.05
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 3
+        distance: 1
+        height: 1
+        duration: 0.22
+    - eventId: impact
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.16
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_3_drain
+    displayName: Boss 3 Drain
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: drain_hit
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 0.75
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 6
+        pushDuration: 0.05
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 4.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: drain_hit
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 1
+        distance: 1
+        height: 1
+        duration: 0.12
+    attributeEvents:
+    - eventId: heal
+      startTime: 0.45
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      attributeEffects:
+      - statField: 0
+        targetMode: 0
+        magnitude: 0.08
+        usePercent: 1
+        duration: 0
+      - statField: 3
+        targetMode: 0
+        magnitude: 5
+        usePercent: 0
+        duration: 3
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_4_spin
+    displayName: Boss 4 Spin
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: spin
+      startTime: 0.2
+      triggerMode: 1
+      activeDuration: 0.5
+      repeatInterval: 0.16
+      damageEffects:
+      - damageMagnitude: 0.56
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 10
+        pushDuration: 0.05
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 2.6
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: spin
+      startTime: 0.2
+      triggerMode: 1
+      activeDuration: 0.5
+      repeatInterval: 0.16
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.08
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_4_piercing_shot
+    displayName: Boss 4 Piercing Shot
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: pierce
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 1.89
+        detectionDuration: 0
+        detectionType: 2
+        hitLayerName: Player
+        pushForce: 10
+        pushDuration: 0.07
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 20
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: pierce
+      startTime: 0.28
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.12
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_4_pursuit
+    displayName: Boss 4 Pursuit
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: finish
+      startTime: 0.26
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.73
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 18
+        pushDuration: 0.12
+        shape: 2
+        centerOffset: {x: 0, y: 0, z: 2}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 2.4, y: 1.8, z: 4.4}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: rush
+      startTime: 0.04
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 3
+        distance: 1
+        height: 1
+        duration: 0.22
+    - eventId: finish
+      startTime: 0.26
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.18
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_4_battlecry
+    displayName: Boss 4 Battlecry
+    ignoreAnimationDamageEvents: 1
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents:
+    - eventId: battlecry
+      startTime: 0.18
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 6
+        usePercent: 0
+        duration: 4
+      - statField: 4
+        targetMode: 0
+        magnitude: 0.45
+        usePercent: 0
+        duration: 4
+      - statField: 5
+        targetMode: 0
+        magnitude: 1.2
+        usePercent: 0
+        duration: 4
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_5_cleave
+    displayName: Boss 5 Cleave
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: cleave
+      startTime: 0.38
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.72
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 16
+        pushDuration: 0.08
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 3.4
+        sectorAngle: 140
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: cleave
+      startTime: 0.38
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.12
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_5_storm
+    displayName: Boss 5 Storm
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: storm
+      startTime: 0.2
+      triggerMode: 1
+      activeDuration: 0.75
+      repeatInterval: 0.15
+      damageEffects:
+      - damageMagnitude: 0.63750005
+        detectionDuration: 0
+        detectionType: 2
+        hitLayerName: Player
+        pushForce: 4
+        pushDuration: 0.04
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 16
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_5_stampede
+    displayName: Boss 5 Stampede
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: stomp
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 2.9399998
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 18
+        pushDuration: 0.12
+        shape: 2
+        centerOffset: {x: 0, y: 0, z: 2}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 2.4, y: 1.8, z: 4.4}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: charge
+      startTime: 0.04
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 3
+        distance: 1
+        height: 1
+        duration: 0.24
+    - eventId: stomp
+      startTime: 0.3
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 0
+        distance: 1
+        height: 1
+        duration: 0.2
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: boss_5_regen_roar
+    displayName: Boss 5 Regen Roar
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: roar_hit
+      startTime: 0.25
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      damageEffects:
+      - damageMagnitude: 0.85
+        detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Player
+        pushForce: 6
+        pushDuration: 0.05
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        sphereRadius: 4.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: roar_hit
+      startTime: 0.25
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 1
+        distance: 1
+        height: 1
+        duration: 0.1
+    attributeEvents:
+    - eventId: regen
+      startTime: 0.42
+      triggerMode: 0
+      activeDuration: 0
+      repeatInterval: 0.1
+      attributeEffects:
+      - statField: 0
+        targetMode: 0
+        magnitude: 0.12
+        usePercent: 1
+        duration: 0
+      - statField: 2
+        targetMode: 0
+        magnitude: 5
+        usePercent: 0
+        duration: 4.5
+      - statField: 3
+        targetMode: 0
+        magnitude: 6
+        usePercent: 0
+        duration: 4.5
+    vfxEvents: []
+    sfxEvents: []

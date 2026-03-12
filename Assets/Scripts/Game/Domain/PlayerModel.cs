@@ -52,6 +52,7 @@ namespace Game.Domain
         public HashSet<string> UnlockedSkillIds { get; private set; } = new HashSet<string>();
 
         private readonly Dictionary<string, StatModifier> _buffModifiers = new Dictionary<string, StatModifier>();
+        private readonly Dictionary<string, StatModifier> _passiveSkillModifiers = new Dictionary<string, StatModifier>();
         private LevelGrowthSO _levelGrowth;
 
         public PlayerModel(LevelGrowthSO levelGrowth)
@@ -91,6 +92,19 @@ namespace Game.Domain
 
         public bool HasBuff(string buffId) => !string.IsNullOrEmpty(buffId) && BuffIds.Contains(buffId);
         public bool HasUnlockedSkill(string skillId) => !string.IsNullOrEmpty(skillId) && UnlockedSkillIds.Contains(skillId);
+        public bool IsSkillAvailable(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return false;
+
+            if (entry.IsBaseSkill)
+                return true;
+
+            if (entry.IsActiveSkill || entry.IsPassiveSkill)
+                return HasUnlockedSkill(entry.skillId);
+
+            return HasUnlockedSkill(entry.skillId);
+        }
 
         // ── 统一背包 50 格 ───────────────────────────────────────────────────────────
         public InventorySlot GetSlot(int index)
@@ -315,6 +329,53 @@ namespace Game.Domain
                     Stats.AddModifier(mod);
                 }
             }
+        }
+
+        public bool UnlockSkill(string skillId, SkillConfigDatabaseSO config)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return false;
+
+            string normalizedSkillId = skillId.Trim();
+            if (!UnlockedSkillIds.Add(normalizedSkillId))
+                return false;
+
+            ApplyPassiveSkillModifier(normalizedSkillId, config);
+            return true;
+        }
+
+        public void RefreshUnlockedSkillEffects(SkillConfigDatabaseSO config)
+        {
+            ClearPassiveSkillModifiers();
+            if (config?.entries == null || UnlockedSkillIds == null || UnlockedSkillIds.Count == 0)
+                return;
+
+            foreach (string skillId in UnlockedSkillIds)
+                ApplyPassiveSkillModifier(skillId, config);
+        }
+
+        private void ApplyPassiveSkillModifier(string skillId, SkillConfigDatabaseSO config)
+        {
+            if (config == null || string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            var entry = config.GetEntry(skillId);
+            if (entry == null || !entry.IsPassiveSkill || entry.passiveStatModifier == null)
+                return;
+
+            if (_passiveSkillModifiers.ContainsKey(entry.skillId))
+                return;
+
+            var modifier = entry.passiveStatModifier.Clone();
+            _passiveSkillModifiers[entry.skillId] = modifier;
+            Stats.AddModifier(modifier);
+        }
+
+        private void ClearPassiveSkillModifiers()
+        {
+            foreach (var modifier in _passiveSkillModifiers.Values)
+                Stats.RemoveModifier(modifier);
+            _passiveSkillModifiers.Clear();
         }
 
         public void LoadFrom(RunData run)

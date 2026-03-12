@@ -7,6 +7,38 @@ namespace Game.Editor
     [CustomPropertyDrawer(typeof(SkillPhysicsEffect))]
     public class SkillPhysicsEffectDrawer : PropertyDrawer
     {
+        private static readonly PhysicsEffectType[] TopLevelTypes =
+        {
+            PhysicsEffectType.DashSelf,
+            PhysicsEffectType.Airborne,
+            PhysicsEffectType.SuperArmor,
+            PhysicsEffectType.Invincible,
+        };
+
+        private static readonly string[] TopLevelLabels =
+        {
+            "位移",
+            "腾空",
+            "霸体",
+            "无敌",
+        };
+
+        private static readonly PhysicsEffectType[] OnHitTypes =
+        {
+            PhysicsEffectType.Knockback,
+            PhysicsEffectType.Pull,
+            PhysicsEffectType.Launch,
+            PhysicsEffectType.Stun,
+        };
+
+        private static readonly string[] OnHitLabels =
+        {
+            "击退",
+            "拉拽",
+            "击飞",
+            "眩晕",
+        };
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property == null)
@@ -23,30 +55,23 @@ namespace Game.Editor
                 EditorGUI.indentLevel++;
 
                 SerializedProperty effectType = property.FindPropertyRelative("effectType");
-                SerializedProperty targetMode = property.FindPropertyRelative("targetMode");
-                SerializedProperty direction = property.FindPropertyRelative("direction");
-                SerializedProperty magnitude = property.FindPropertyRelative("magnitude");
+                SerializedProperty distance = property.FindPropertyRelative("distance");
+                SerializedProperty heightValue = property.FindPropertyRelative("height");
                 SerializedProperty duration = property.FindPropertyRelative("duration");
-
-                PhysicsEffectType effectTypeValue = (PhysicsEffectType)effectType.enumValueIndex;
-                bool forceSelfTarget = effectTypeValue == PhysicsEffectType.DashSelf || effectTypeValue == PhysicsEffectType.Airborne;
-                bool forceUpDirection = effectTypeValue == PhysicsEffectType.Airborne;
-
-                if (forceSelfTarget && targetMode != null)
-                    targetMode.enumValueIndex = (int)SkillTargetMode.Self;
-                if (forceUpDirection && direction != null)
-                    direction.enumValueIndex = (int)SkillEffectDirection.Up;
+                bool isOnHit = IsOnHitContext(property);
+                PhysicsEffectType[] allowedTypes = isOnHit ? OnHitTypes : TopLevelTypes;
+                string[] allowedLabels = isOnHit ? OnHitLabels : TopLevelLabels;
+                PhysicsEffectType effectTypeValue = CoerceEffectType(effectType, allowedTypes[0], allowedTypes);
 
                 float y = position.y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                y = DrawProperty(y, position, effectType);
+                y = DrawEffectTypePopup(y, position, effectType, effectTypeValue, allowedTypes, allowedLabels);
 
-                if (!forceSelfTarget)
-                    y = DrawProperty(y, position, targetMode);
+                if (UsesDistance(effectTypeValue))
+                    y = DrawProperty(y, position, distance);
 
-                if (!forceUpDirection)
-                    y = DrawProperty(y, position, direction);
+                if (UsesHeight(effectTypeValue))
+                    y = DrawProperty(y, position, heightValue);
 
-                y = DrawProperty(y, position, magnitude);
                 DrawProperty(y, position, duration);
 
                 EditorGUI.indentLevel = oldIndent;
@@ -62,25 +87,47 @@ namespace Game.Editor
                 return height;
 
             SerializedProperty effectType = property.FindPropertyRelative("effectType");
+            bool isOnHit = IsOnHitContext(property);
+            PhysicsEffectType[] allowedTypes = isOnHit ? OnHitTypes : TopLevelTypes;
             PhysicsEffectType effectTypeValue = effectType != null
-                ? (PhysicsEffectType)effectType.enumValueIndex
-                : PhysicsEffectType.Knockback;
-
-            bool forceSelfTarget = effectTypeValue == PhysicsEffectType.DashSelf || effectTypeValue == PhysicsEffectType.Airborne;
-            bool forceUpDirection = effectTypeValue == PhysicsEffectType.Airborne;
+                ? CoerceEffectType(effectType, allowedTypes[0], allowedTypes)
+                : allowedTypes[0];
 
             height += EditorGUIUtility.standardVerticalSpacing;
             height += GetChildHeight(effectType);
 
-            if (!forceSelfTarget)
-                height += GetChildHeight(property.FindPropertyRelative("targetMode"));
+            if (UsesDistance(effectTypeValue))
+                height += GetChildHeight(property.FindPropertyRelative("distance"));
 
-            if (!forceUpDirection)
-                height += GetChildHeight(property.FindPropertyRelative("direction"));
+            if (UsesHeight(effectTypeValue))
+                height += GetChildHeight(property.FindPropertyRelative("height"));
 
-            height += GetChildHeight(property.FindPropertyRelative("magnitude"));
             height += GetChildHeight(property.FindPropertyRelative("duration"));
             return height;
+        }
+
+        private static float DrawEffectTypePopup(
+            float y,
+            Rect totalRect,
+            SerializedProperty property,
+            PhysicsEffectType currentType,
+            PhysicsEffectType[] allowedTypes,
+            string[] allowedLabels)
+        {
+            int currentIndex = 0;
+            for (int i = 0; i < allowedTypes.Length; i++)
+            {
+                if (allowedTypes[i] == currentType)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            Rect rect = new Rect(totalRect.x, y, totalRect.width, EditorGUIUtility.singleLineHeight);
+            int selectedIndex = EditorGUI.Popup(rect, "效果类型", currentIndex, allowedLabels);
+            property.enumValueIndex = (int)allowedTypes[Mathf.Clamp(selectedIndex, 0, allowedTypes.Length - 1)];
+            return y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         }
 
         private static float DrawProperty(float y, Rect totalRect, SerializedProperty property)
@@ -100,6 +147,41 @@ namespace Game.Editor
                 return 0f;
 
             return EditorGUI.GetPropertyHeight(property, true) + EditorGUIUtility.standardVerticalSpacing;
+        }
+
+        private static bool IsOnHitContext(SerializedProperty property)
+        {
+            return property.propertyPath.Contains("onHitPhysicsEffects");
+        }
+
+        private static PhysicsEffectType CoerceEffectType(
+            SerializedProperty property,
+            PhysicsEffectType fallback,
+            PhysicsEffectType[] allowedTypes)
+        {
+            PhysicsEffectType current = (PhysicsEffectType)property.enumValueIndex;
+            for (int i = 0; i < allowedTypes.Length; i++)
+            {
+                if (allowedTypes[i] == current)
+                    return current;
+            }
+
+            property.enumValueIndex = (int)fallback;
+            return fallback;
+        }
+
+        private static bool UsesDistance(PhysicsEffectType effectType)
+        {
+            return effectType == PhysicsEffectType.Knockback
+                || effectType == PhysicsEffectType.Pull
+                || effectType == PhysicsEffectType.Launch
+                || effectType == PhysicsEffectType.DashSelf;
+        }
+
+        private static bool UsesHeight(PhysicsEffectType effectType)
+        {
+            return effectType == PhysicsEffectType.Launch
+                || effectType == PhysicsEffectType.Airborne;
         }
     }
 }

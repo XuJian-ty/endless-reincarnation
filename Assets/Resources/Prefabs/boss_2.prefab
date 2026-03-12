@@ -279,7 +279,7 @@ GameObject:
   - component: {fileID: 5843528886550740836}
   m_Layer: 6
   m_Name: boss_2
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -315,7 +315,6 @@ MonoBehaviour:
   _enemyId: boss_2
   _enemyType: 4
   _archetypeOverride: {fileID: 11400000, guid: 0ff4a97a18cb43ccbf23975ab2e93156, type: 2}
-  _defaultPostSkillIdleDuration: 0.25
   _deathDisableDelay: 1.2
 --- !u!114 &7368589953460887652
 MonoBehaviour:
@@ -366,10 +365,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b6ddf2ca5e74e64db4fd50a7e8591d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _paramSpeed: Speed
-  _triggerHurt: Hurt
-  _triggerDead: Dead
-  _damageDatabase: {fileID: 0}
 --- !u!136 &8173374087832777884
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -625,7 +620,7 @@ Transform:
   m_GameObject: {fileID: 1730638763737085508}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -2.99, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

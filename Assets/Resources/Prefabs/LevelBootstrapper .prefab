@@ -45,4 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerController: {fileID: 0}
+  playerPrefab: {fileID: 0}
   spawnPoint: {fileID: 0}

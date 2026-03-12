@@ -57,7 +57,7 @@ namespace Game.Editor
             if (archetypes == null || skillDb == null)
             {
                 if (logResult)
-                    Debug.LogWarning("[AI][Audit] 缺少敌人行为配置或共享技能库，无法执行审计。");
+                    Debug.LogWarning("[AI][Audit] 缺少敌人行为配置或技能库，无法执行审计。");
                 return new AuditResult(0, 0, 0, 0, 0, 0, 0);
             }
 
