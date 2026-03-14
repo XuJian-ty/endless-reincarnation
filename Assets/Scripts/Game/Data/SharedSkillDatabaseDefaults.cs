@@ -40,6 +40,11 @@ namespace Game.Data
                 PlayerSkill("Skill1", "主动技能1"),
                 PlayerSkill("Skill2", "主动技能2"),
                 PlayerSkill("Skill3", "主动技能3"),
+                PlayerSkill("Locomotion", "机动循环"),
+                PlayerSkill("ChargeLoop", "蓄力循环"),
+                PlayerSkill("Fall", "下落循环"),
+                PlayerSkill("FallAttackLoop", "下落攻击循环"),
+                PlayerSkill("EnemyLocomotion", "敌人机动循环"),
                 CreatePlayerAttack0(),
                 CreatePlayerAttack1(),
                 CreatePlayerAttack2(),
@@ -195,6 +200,11 @@ namespace Game.Data
 
             if (skillId.StartsWith("Skill", StringComparison.Ordinal) ||
                 skillId.StartsWith("Attack", StringComparison.Ordinal) ||
+                string.Equals(skillId, "Locomotion", StringComparison.Ordinal) ||
+                string.Equals(skillId, "ChargeLoop", StringComparison.Ordinal) ||
+                string.Equals(skillId, "Fall", StringComparison.Ordinal) ||
+                string.Equals(skillId, "FallAttackLoop", StringComparison.Ordinal) ||
+                string.Equals(skillId, "EnemyLocomotion", StringComparison.Ordinal) ||
                 string.Equals(skillId, "AirAttack", StringComparison.Ordinal) ||
                 string.Equals(skillId, "FallAttack", StringComparison.Ordinal) ||
                 string.Equals(skillId, "ChargeAttack", StringComparison.Ordinal))
@@ -427,27 +437,27 @@ namespace Game.Data
         {
             SkillDamageEffect effect = damageName switch
             {
-                "Attack0" => SphereDamage("Enemy", magnitude * 1f, 20f, 0.04f, 1.5f),
-                "Attack1" => SphereDamage("Enemy", magnitude * 1f, 20f, 0.04f, 1.5f),
-                "Attack2" => SphereDamage("Enemy", magnitude * 1f, 20f, 0.04f, 1.5f),
-                "Attack3" => SphereDamage("Enemy", magnitude * 1.2f, 20f, 0.04f, 1.5f),
-                "AirAttack" => SphereDamage("Enemy", magnitude * 1f, 15f, 0.04f, 1.5f),
-                "FallAttack" => SphereDamage("Enemy", magnitude * 1.5f, 25f, 0.05f, 2f),
-                "ChargeAttack" => SectorDamage("Enemy", magnitude * 2f, 30f, 0.06f, 2f, 180f),
-                "EnemyMelee" => SphereDamage("Player", magnitude * 1f, 10f, 0.04f, 1.6f),
-                "EnemyRanged" => SphereDamage("Player", magnitude * 1f, 8f, 0.04f, 1.6f),
-                "EnemyMeleeLight" => SphereDamage("Player", magnitude * 0.95f, 8f, 0.05f, 1.45f),
-                "EnemyMeleeArc" => SectorDamage("Player", magnitude * 1.05f, 10f, 0.06f, 2.4f, 110f),
-                "EnemyMeleeHeavy" => BoxDamage("Player", magnitude * 1.25f, 18f, 0.1f, new Vector3(0f, 0f, 1.4f), new Vector3(2.2f, 1.8f, 3.2f)),
-                "EnemyMeleeSpin" => SphereDamage("Player", magnitude * 0.8f, 10f, 0.05f, 2.6f),
-                "EnemyPullWave" => SectorDamage("Player", magnitude * 1f, 0f, 0.05f, 4.2f, 80f),
-                "EnemyChargeImpact" => BoxDamage("Player", magnitude * 1.4f, 18f, 0.12f, new Vector3(0f, 0f, 2f), new Vector3(2.4f, 1.8f, 4.4f)),
-                "EnemyBossCleave" => SectorDamage("Player", magnitude * 1.6f, 16f, 0.08f, 3.4f, 140f),
-                "EnemyBossRoar" => SphereDamage("Player", magnitude * 1f, 6f, 0.05f, 4.5f),
-                "EnemyRangedShot" => RayDamage("Player", magnitude * 1f, 6f, 0.05f, 14f, new Vector3(0f, 1f, 0f)),
-                "EnemyRangedBurst" => RayDamage("Player", magnitude * 0.85f, 4f, 0.04f, 16f, new Vector3(0f, 1f, 0f)),
-                "EnemyRangedHeavy" => RayDamage("Player", magnitude * 1.35f, 10f, 0.07f, 20f, new Vector3(0f, 1f, 0f)),
-                _ => SphereDamage("Enemy", magnitude, 20f, 0.04f, 1.5f),
+                "Attack0" => SphereDamage("Enemy", magnitude * 1f, 1.5f),
+                "Attack1" => SphereDamage("Enemy", magnitude * 1f, 1.5f),
+                "Attack2" => SphereDamage("Enemy", magnitude * 1f, 1.5f),
+                "Attack3" => SphereDamage("Enemy", magnitude * 1.2f, 1.5f),
+                "AirAttack" => SphereDamage("Enemy", magnitude * 1f, 1.5f),
+                "FallAttack" => SphereDamage("Enemy", magnitude * 1.5f, 2f),
+                "ChargeAttack" => SectorDamage("Enemy", magnitude * 2f, 2f, 180f),
+                "EnemyMelee" => SphereDamage("Player", magnitude * 1f, 1.6f),
+                "EnemyRanged" => SphereDamage("Player", magnitude * 1f, 1.6f),
+                "EnemyMeleeLight" => SphereDamage("Player", magnitude * 0.95f, 1.45f),
+                "EnemyMeleeArc" => SectorDamage("Player", magnitude * 1.05f, 2.4f, 110f),
+                "EnemyMeleeHeavy" => BoxDamage("Player", magnitude * 1.25f, new Vector3(0f, 0f, 1.4f), new Vector3(2.2f, 1.8f, 3.2f)),
+                "EnemyMeleeSpin" => SphereDamage("Player", magnitude * 0.8f, 2.6f),
+                "EnemyPullWave" => SectorDamage("Player", magnitude * 1f, 4.2f, 80f),
+                "EnemyChargeImpact" => BoxDamage("Player", magnitude * 1.4f, new Vector3(0f, 0f, 2f), new Vector3(2.4f, 1.8f, 4.4f)),
+                "EnemyBossCleave" => SectorDamage("Player", magnitude * 1.6f, 3.4f, 140f),
+                "EnemyBossRoar" => SphereDamage("Player", magnitude * 1f, 4.5f),
+                "EnemyRangedShot" => RayDamage("Player", magnitude * 1f, 14f, new Vector3(0f, 1f, 0f)),
+                "EnemyRangedBurst" => RayDamage("Player", magnitude * 0.85f, 16f, new Vector3(0f, 1f, 0f)),
+                "EnemyRangedHeavy" => RayDamage("Player", magnitude * 1.35f, 20f, new Vector3(0f, 1f, 0f)),
+                _ => SphereDamage("Enemy", magnitude, 1.5f),
             };
 
             if (onHitPhysicsEffects != null && onHitPhysicsEffects.Length > 0)
@@ -456,59 +466,51 @@ namespace Game.Data
             return effect;
         }
 
-        private static SkillDamageEffect SphereDamage(string hitLayerName, float magnitude, float pushForce, float pushDuration, float sphereRadius)
+        private static SkillDamageEffect SphereDamage(string hitLayerName, float magnitude, float sphereRadius)
         {
             return new SkillDamageEffect
             {
                 damageMagnitude = magnitude,
                 detectionType = DamageDetectionType.RangeOverlap,
                 hitLayerName = hitLayerName,
-                pushForce = pushForce,
-                pushDuration = pushDuration,
                 shape = AttackShapeType.Sphere,
                 sphereRadius = sphereRadius,
             };
         }
 
-        private static SkillDamageEffect SectorDamage(string hitLayerName, float magnitude, float pushForce, float pushDuration, float sphereRadius, float sectorAngle)
+        private static SkillDamageEffect SectorDamage(string hitLayerName, float magnitude, float sphereRadius, float sectorAngle)
         {
             return new SkillDamageEffect
             {
                 damageMagnitude = magnitude,
                 detectionType = DamageDetectionType.RangeOverlap,
                 hitLayerName = hitLayerName,
-                pushForce = pushForce,
-                pushDuration = pushDuration,
                 shape = AttackShapeType.Sector,
                 sphereRadius = sphereRadius,
                 sectorAngle = sectorAngle,
             };
         }
 
-        private static SkillDamageEffect BoxDamage(string hitLayerName, float magnitude, float pushForce, float pushDuration, Vector3 centerOffset, Vector3 boxSize)
+        private static SkillDamageEffect BoxDamage(string hitLayerName, float magnitude, Vector3 centerOffset, Vector3 boxSize)
         {
             return new SkillDamageEffect
             {
                 damageMagnitude = magnitude,
                 detectionType = DamageDetectionType.RangeOverlap,
                 hitLayerName = hitLayerName,
-                pushForce = pushForce,
-                pushDuration = pushDuration,
                 shape = AttackShapeType.Box,
                 centerOffset = centerOffset,
                 boxSize = boxSize,
             };
         }
 
-        private static SkillDamageEffect RayDamage(string hitLayerName, float magnitude, float pushForce, float pushDuration, float rayMaxDistance, Vector3 rayOriginOffset)
+        private static SkillDamageEffect RayDamage(string hitLayerName, float magnitude, float rayMaxDistance, Vector3 rayOriginOffset)
         {
             return new SkillDamageEffect
             {
                 damageMagnitude = magnitude,
                 detectionType = DamageDetectionType.Raycast,
                 hitLayerName = hitLayerName,
-                pushForce = pushForce,
-                pushDuration = pushDuration,
                 rayOriginOffset = rayOriginOffset,
                 rayMaxDistance = rayMaxDistance,
             };

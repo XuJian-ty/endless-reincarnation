@@ -186,13 +186,27 @@ namespace Game.Editor
             EnemySkillPhaseAvailability phaseAvailability = EnemySkillPhaseAvailability.Always,
             float postCastIdleDuration = 0f,
             bool enterIdleAfterCast = false,
-            bool rotateToTargetOnCast = true)
+            bool rotateToTargetOnCast = true,
+            float minCastRange = 0f,
+            float idealCastRange = 0f,
+            EnemySkillRole skillRole = EnemySkillRole.Flexible,
+            float riskWeight = 0.35f,
+            float punishWeight = 0.5f,
+            float repeatPenalty = 0.2f,
+            bool canUseUnderThreat = false)
         {
             return new EnemySkillSlotBinding
             {
                 slotIndex            = slotIndex,
                 skillId              = skillId,
                 castRange            = castRange,
+                minCastRange         = minCastRange,
+                idealCastRange       = idealCastRange > 0.01f ? idealCastRange : castRange,
+                skillRole            = skillRole,
+                riskWeight           = riskWeight,
+                punishWeight         = punishWeight,
+                repeatPenalty        = repeatPenalty,
+                canUseUnderThreat    = canUseUnderThreat,
                 cooldown             = cooldown,
                 castDuration         = castDuration,
                 animationTrigger     = animationTrigger,
@@ -207,7 +221,6 @@ namespace Game.Editor
             string enemyId,
             string displayName,
             EnemyType enemyType,
-            Game.AI.BehaviorTreeAsset defaultBehaviorTree,
             float sectorAngle,
             float sectorRange,
             float chaseBreakDistance,
@@ -218,7 +231,6 @@ namespace Game.Editor
             archetype.enemyId = enemyId;
             archetype.displayName = displayName;
             archetype.enemyType = enemyType;
-            archetype.behaviorTreeAsset = defaultBehaviorTree;
             archetype.sectorAngle = sectorAngle;
             archetype.sectorRange = sectorRange;
             archetype.chaseBreakDistance = chaseBreakDistance;
@@ -258,20 +270,56 @@ namespace Game.Editor
 
             bool isBossOrRanged = enemyType == EnemyType.Boss || enemyType == EnemyType.RangedMinion;
 
-            archetype.enableTacticalCombat = true;
             archetype.chaseInnerDistance = Mathf.Max(1.5f, Mathf.Min(maxRange, minRange + (isBossOrRanged ? 2.5f : 1.2f)));
             archetype.chaseOuterDistance = Mathf.Max(archetype.chaseInnerDistance + 2f, maxRange + (isBossOrRanged ? 3.5f : 2f));
             archetype.preferredSafetyDistanceOffset = isBossOrRanged ? 0.9f : 0.25f;
             archetype.combatDistanceTolerance = isBossOrRanged ? 1.1f : 0.75f;
             archetype.castRangeTolerance = 0.25f;
             archetype.retreatStepDistance = isBossOrRanged ? 4.2f : 2.6f;
-            archetype.tacticalHoldDuration = 0.12f;
             archetype.approachLeadTime = isBossOrRanged ? 0.25f : 0.15f;
             archetype.losProbeInterval = 0.1f;
             archetype.pathProbeInterval = 0.3f;
-            archetype.losBlockedPenaltySeconds = 0.35f;
             archetype.perceptionEyeHeight = 1.2f;
             archetype.obstacleMask = Physics.DefaultRaycastLayers;
+            archetype.reactionMinSeconds = isBossOrRanged ? 0.07f : 0.09f;
+            archetype.reactionMaxSeconds = isBossOrRanged ? 0.16f : 0.2f;
+            archetype.decisionCommitSeconds = isBossOrRanged ? 0.22f : 0.26f;
+            archetype.searchMemoryDuration = isBossOrRanged ? 1.9f : 1.4f;
+            archetype.aggression = isBossOrRanged ? 0.62f : 0.55f;
+            archetype.caution = isBossOrRanged ? 0.45f : 0.38f;
+            archetype.dodgeBias = isBossOrRanged ? 0.58f : 0.42f;
+            archetype.punishBias = isBossOrRanged ? 0.62f : 0.5f;
+            archetype.strafeBias = isBossOrRanged ? 0.52f : 0.38f;
+            archetype.maxPressureAllies = enemyType == EnemyType.MeleeMinion ? 1 : enemyType == EnemyType.Boss ? 3 : 2;
+            archetype.poiseMax = enemyType switch
+            {
+                EnemyType.MeleeMinion => 10f,
+                EnemyType.RangedMinion => 8f,
+                EnemyType.Elite => 18f,
+                EnemyType.Guardian => 26f,
+                EnemyType.Boss => 34f,
+                _ => 12f,
+            };
+            archetype.poiseRecoveryPerSecond = enemyType switch
+            {
+                EnemyType.MeleeMinion => 7f,
+                EnemyType.RangedMinion => 6f,
+                EnemyType.Elite => 9f,
+                EnemyType.Guardian => 11f,
+                EnemyType.Boss => 13f,
+                _ => 8f,
+            };
+            archetype.poiseBreakStunDuration = enemyType switch
+            {
+                EnemyType.MeleeMinion => 0.28f,
+                EnemyType.RangedMinion => 0.25f,
+                EnemyType.Elite => 0.34f,
+                EnemyType.Guardian => 0.4f,
+                EnemyType.Boss => 0.45f,
+                _ => 0.3f,
+            };
+            archetype.allowLightHitFlinch = enemyType == EnemyType.MeleeMinion || enemyType == EnemyType.RangedMinion;
+            archetype.superArmorWhileCasting = enemyType == EnemyType.Guardian || enemyType == EnemyType.Boss;
         }
 
         private static float ResolveSkillSlotRange(EnemySkillSlotBinding slot)
@@ -389,10 +437,9 @@ namespace Game.Editor
         public static void CreateAll()
         {
             EnsureConfigFolder();
-            var defaultBehaviorTree = CreateDefaultBehaviorTreeAsset.Create();
             CreateEnemyStatsDatabase();
             CreateSharedSkillDatabase();
-            CreateEnemyArchetypeDatabase(defaultBehaviorTree);
+            CreateEnemyArchetypeDatabase();
             CreateLevelConfigDatabase();
             CreateDropTableDatabase();
             CreateWeaponDatabase();
@@ -682,7 +729,7 @@ namespace Game.Editor
             }
         }
 
-        private static void CreateEnemyArchetypeDatabase(Game.AI.BehaviorTreeAsset defaultBehaviorTree)
+        private static void CreateEnemyArchetypeDatabase()
         {
             EnsureConfigFolder();
             var archetypes = new List<EnemyArchetypeSO>
@@ -692,151 +739,140 @@ namespace Game.Editor
                         "melee_minion",
                         "近战小怪",
                         EnemyType.MeleeMinion,
-                        defaultBehaviorTree,
                         120f,
                         12f,
                         20f,
                         10f,
-                        BuildSkillSlot(0, "melee_minion_chop",   castRange: 2.2f,  cooldown: 0.65f, castDuration: 0.72f)),
+                        BuildSkillSlot(0, "melee_minion_chop",   castRange: 2.2f,  cooldown: 0.65f, castDuration: 0.72f, idealCastRange: 1.9f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.22f, punishWeight: 0.3f, repeatPenalty: 0.22f)),
                     $"{ResourcesConfigDir}/敌人行为_近战小怪.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "ranged_minion",
                         "远程小怪",
                         EnemyType.RangedMinion,
-                        defaultBehaviorTree,
                         130f,
                         14f,
                         22f,
                         10f,
-                        BuildSkillSlot(0, "ranged_minion_shot",  castRange: 12f,   cooldown: 1.2f,  castDuration: 0.85f)),
+                        BuildSkillSlot(0, "ranged_minion_shot",  castRange: 12f,   cooldown: 1.2f,  castDuration: 0.85f, idealCastRange: 10.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.18f, punishWeight: 0.2f, repeatPenalty: 0.18f)),
                     $"{ResourcesConfigDir}/敌人行为_远程小怪.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "elite_1",
                         "精英1",
                         EnemyType.Elite,
-                        defaultBehaviorTree,
                         145f,
                         16f,
                         28f,
                         12f,
-                        BuildSkillSlot(0, "elite_1_combo",       castRange: 2.6f,  cooldown: 0.95f, castDuration: 1f),
-                        BuildSkillSlot(1, "elite_1_slam",        castRange: 3f,    cooldown: 3.2f,  castDuration: 1.1f,  enterIdleAfterCast: true, postCastIdleDuration: 0.3f)),
+                        BuildSkillSlot(0, "elite_1_combo",       castRange: 2.6f,  cooldown: 0.95f, castDuration: 1f,    idealCastRange: 2.2f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.35f, repeatPenalty: 0.25f),
+                        BuildSkillSlot(1, "elite_1_slam",        castRange: 3f,    cooldown: 3.2f,  castDuration: 1.1f,  enterIdleAfterCast: true, postCastIdleDuration: 0.3f, idealCastRange: 2.7f, skillRole: EnemySkillRole.Punish, riskWeight: 0.48f, punishWeight: 0.82f, repeatPenalty: 0.34f)),
                     $"{ResourcesConfigDir}/敌人行为_精英1.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "elite_2",
                         "精英2",
                         EnemyType.Elite,
-                        defaultBehaviorTree,
                         150f,
                         17f,
                         30f,
                         12f,
-                        BuildSkillSlot(0, "elite_2_burst_shot",  castRange: 13f,   cooldown: 1.6f,  castDuration: 1.2f),
-                        BuildSkillSlot(1, "elite_2_hook_pull",   castRange: 4f,    cooldown: 3.6f,  castDuration: 1.1f)),
+                        BuildSkillSlot(0, "elite_2_burst_shot",  castRange: 13f,   cooldown: 1.6f,  castDuration: 1.2f,  idealCastRange: 11.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.28f, punishWeight: 0.3f, repeatPenalty: 0.22f),
+                        BuildSkillSlot(1, "elite_2_hook_pull",   castRange: 4f,    cooldown: 3.6f,  castDuration: 1.1f,  minCastRange: 1.5f, idealCastRange: 3.4f, skillRole: EnemySkillRole.Punish, riskWeight: 0.4f, punishWeight: 0.72f, repeatPenalty: 0.28f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_精英2.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "guardian_1",
                         "守卫者1",
                         EnemyType.Guardian,
-                        defaultBehaviorTree,
                         145f,
                         18f,
                         30f,
                         14f,
-                        BuildSkillSlot(0, "guardian_1_crush",    castRange: 2.8f,  cooldown: 3.5f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.35f),
-                        BuildSkillSlot(1, "guardian_1_fortify",  castRange: 1f,    cooldown: 5f,    castDuration: 1f,    rotateToTargetOnCast: false)),
+                        BuildSkillSlot(0, "guardian_1_crush",    castRange: 2.8f,  cooldown: 3.5f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.35f, idealCastRange: 2.4f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.5f, punishWeight: 0.46f, repeatPenalty: 0.32f),
+                        BuildSkillSlot(1, "guardian_1_fortify",  castRange: 1f,    cooldown: 5f,    castDuration: 1f,    rotateToTargetOnCast: false, idealCastRange: 1f, skillRole: EnemySkillRole.Escape, riskWeight: 0.08f, punishWeight: 0f, repeatPenalty: 0.15f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_守卫者1.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "guardian_2",
                         "守卫者2",
                         EnemyType.Guardian,
-                        defaultBehaviorTree,
                         150f,
                         20f,
                         32f,
                         14f,
-                        BuildSkillSlot(0, "guardian_2_bash",     castRange: 3.2f,  cooldown: 3.4f,  castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.3f),
-                        BuildSkillSlot(1, "guardian_2_chain_pull", castRange: 5f,  cooldown: 4.2f,  castDuration: 1.1f)),
+                        BuildSkillSlot(0, "guardian_2_bash",     castRange: 3.2f,  cooldown: 3.4f,  castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.3f, idealCastRange: 2.8f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.42f, punishWeight: 0.4f, repeatPenalty: 0.28f),
+                        BuildSkillSlot(1, "guardian_2_chain_pull", castRange: 5f,  cooldown: 4.2f,  castDuration: 1.1f,  minCastRange: 2f, idealCastRange: 4.3f, skillRole: EnemySkillRole.Punish, riskWeight: 0.38f, punishWeight: 0.75f, repeatPenalty: 0.3f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_守卫者2.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "boss_1",
                         "Boss1",
                         EnemyType.Boss,
-                        defaultBehaviorTree,
                         160f,
                         22f,
                         40f,
                         16f,
-                        BuildSkillSlot(0, "boss_1_slash",        castRange: 3f,    cooldown: 2.2f,  castDuration: 0.9f),
-                        BuildSkillSlot(1, "boss_1_shot",         castRange: 14f,   cooldown: 2.8f,  castDuration: 1f),
-                        BuildSkillSlot(2, "boss_1_charge",       castRange: 5f,    cooldown: 4f,    castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.45f, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly),
-                        BuildSkillSlot(3, "boss_1_roar",         castRange: 8f,    cooldown: 5f,    castDuration: 1.2f,  enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly)),
+                        BuildSkillSlot(0, "boss_1_slash",        castRange: 3f,    cooldown: 2.2f,  castDuration: 0.9f,  idealCastRange: 2.6f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.35f, repeatPenalty: 0.2f),
+                        BuildSkillSlot(1, "boss_1_shot",         castRange: 14f,   cooldown: 2.8f,  castDuration: 1f,    idealCastRange: 12.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.22f, punishWeight: 0.25f, repeatPenalty: 0.18f),
+                        BuildSkillSlot(2, "boss_1_charge",       castRange: 5f,    cooldown: 4f,    castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.45f, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2f, idealCastRange: 4.2f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.48f, punishWeight: 0.58f, repeatPenalty: 0.3f, canUseUnderThreat: true),
+                        BuildSkillSlot(3, "boss_1_roar",         castRange: 8f,    cooldown: 5f,    castDuration: 1.2f,  enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7f, skillRole: EnemySkillRole.Escape, riskWeight: 0.18f, punishWeight: 0.18f, repeatPenalty: 0.25f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss1.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "boss_2",
                         "Boss2",
                         EnemyType.Boss,
-                        defaultBehaviorTree,
                         165f,
                         23f,
                         42f,
                         16f,
-                        BuildSkillSlot(0, "boss_2_cross_slash",  castRange: 3.2f,  cooldown: 2.1f,  castDuration: 1f),
-                        BuildSkillSlot(1, "boss_2_volley",       castRange: 15f,   cooldown: 2.7f,  castDuration: 1.2f),
-                        BuildSkillSlot(2, "boss_2_crash",        castRange: 5.5f,  cooldown: 3.8f,  castDuration: 1.05f, enterIdleAfterCast: true,  postCastIdleDuration: 0.5f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly),
-                        BuildSkillSlot(3, "boss_2_rage",         castRange: 8f,    cooldown: 4.8f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly)),
+                        BuildSkillSlot(0, "boss_2_cross_slash",  castRange: 3.2f,  cooldown: 2.1f,  castDuration: 1f,    idealCastRange: 2.8f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.36f, repeatPenalty: 0.2f),
+                        BuildSkillSlot(1, "boss_2_volley",       castRange: 15f,   cooldown: 2.7f,  castDuration: 1.2f,  idealCastRange: 13.2f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.24f, punishWeight: 0.22f, repeatPenalty: 0.18f),
+                        BuildSkillSlot(2, "boss_2_crash",        castRange: 5.5f,  cooldown: 3.8f,  castDuration: 1.05f, enterIdleAfterCast: true,  postCastIdleDuration: 0.5f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.2f, idealCastRange: 4.7f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.45f, punishWeight: 0.62f, repeatPenalty: 0.3f, canUseUnderThreat: true),
+                        BuildSkillSlot(3, "boss_2_rage",         castRange: 8f,    cooldown: 4.8f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.2f, skillRole: EnemySkillRole.Escape, riskWeight: 0.16f, punishWeight: 0.16f, repeatPenalty: 0.24f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss2.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "boss_3",
                         "Boss3",
                         EnemyType.Boss,
-                        defaultBehaviorTree,
                         170f,
                         24f,
                         44f,
                         17f,
-                        BuildSkillSlot(0, "boss_3_pull_cleave",  castRange: 4f,    cooldown: 2.4f,  castDuration: 1.05f),
-                        BuildSkillSlot(1, "boss_3_barrage",      castRange: 15f,   cooldown: 2.9f,  castDuration: 1.25f),
-                        BuildSkillSlot(2, "boss_3_lunge",        castRange: 5.8f,  cooldown: 3.9f,  castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.45f, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly),
-                        BuildSkillSlot(3, "boss_3_drain",        castRange: 8.5f,  cooldown: 5.2f,  castDuration: 1.25f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly)),
+                        BuildSkillSlot(0, "boss_3_pull_cleave",  castRange: 4f,    cooldown: 2.4f,  castDuration: 1.05f, idealCastRange: 3.5f, skillRole: EnemySkillRole.Punish, riskWeight: 0.32f, punishWeight: 0.68f, repeatPenalty: 0.24f),
+                        BuildSkillSlot(1, "boss_3_barrage",      castRange: 15f,   cooldown: 2.9f,  castDuration: 1.25f, idealCastRange: 13.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.26f, punishWeight: 0.2f, repeatPenalty: 0.18f),
+                        BuildSkillSlot(2, "boss_3_lunge",        castRange: 5.8f,  cooldown: 3.9f,  castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.45f, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.4f, idealCastRange: 4.9f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.44f, punishWeight: 0.6f, repeatPenalty: 0.3f, canUseUnderThreat: true),
+                        BuildSkillSlot(3, "boss_3_drain",        castRange: 8.5f,  cooldown: 5.2f,  castDuration: 1.25f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.6f, skillRole: EnemySkillRole.Escape, riskWeight: 0.18f, punishWeight: 0.18f, repeatPenalty: 0.24f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss3.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "boss_4",
                         "Boss4",
                         EnemyType.Boss,
-                        defaultBehaviorTree,
                         175f,
                         25f,
                         46f,
                         17f,
-                        BuildSkillSlot(0, "boss_4_spin",         castRange: 3.5f,  cooldown: 2f,    castDuration: 1.15f),
-                        BuildSkillSlot(1, "boss_4_piercing_shot", castRange: 15.5f, cooldown: 2.5f,  castDuration: 1f),
-                        BuildSkillSlot(2, "boss_4_pursuit",      castRange: 6.2f,  cooldown: 3.5f,  castDuration: 0.95f, enterIdleAfterCast: true,  postCastIdleDuration: 0.5f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly),
-                        BuildSkillSlot(3, "boss_4_battlecry",    castRange: 8.8f,  cooldown: 4.4f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly)),
+                        BuildSkillSlot(0, "boss_4_spin",         castRange: 3.5f,  cooldown: 2f,    castDuration: 1.15f, idealCastRange: 3f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.34f, punishWeight: 0.34f, repeatPenalty: 0.2f),
+                        BuildSkillSlot(1, "boss_4_piercing_shot", castRange: 15.5f, cooldown: 2.5f,  castDuration: 1f,    idealCastRange: 13.8f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.22f, punishWeight: 0.2f, repeatPenalty: 0.18f),
+                        BuildSkillSlot(2, "boss_4_pursuit",      castRange: 6.2f,  cooldown: 3.5f,  castDuration: 0.95f, enterIdleAfterCast: true,  postCastIdleDuration: 0.5f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.6f, idealCastRange: 5.2f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.42f, punishWeight: 0.56f, repeatPenalty: 0.28f, canUseUnderThreat: true),
+                        BuildSkillSlot(3, "boss_4_battlecry",    castRange: 8.8f,  cooldown: 4.4f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.8f, skillRole: EnemySkillRole.Escape, riskWeight: 0.14f, punishWeight: 0.16f, repeatPenalty: 0.22f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss4.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
                         "boss_5",
                         "Boss5",
                         EnemyType.Boss,
-                        defaultBehaviorTree,
                         180f,
                         26f,
                         48f,
                         18f,
-                        BuildSkillSlot(0, "boss_5_cleave",       castRange: 3.6f,  cooldown: 1.9f,  castDuration: 1f),
-                        BuildSkillSlot(1, "boss_5_storm",        castRange: 16f,   cooldown: 2.3f,  castDuration: 1.3f),
-                        BuildSkillSlot(2, "boss_5_stampede",     castRange: 6.5f,  cooldown: 3.3f,  castDuration: 1.05f, enterIdleAfterCast: true,  postCastIdleDuration: 0.6f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly),
-                        BuildSkillSlot(3, "boss_5_regen_roar",   castRange: 9f,    cooldown: 4.2f,  castDuration: 1.25f, enterIdleAfterCast: true,  postCastIdleDuration: 0.6f,  rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly)),
+                        BuildSkillSlot(0, "boss_5_cleave",       castRange: 3.6f,  cooldown: 1.9f,  castDuration: 1f,    idealCastRange: 3.1f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.3f, punishWeight: 0.32f, repeatPenalty: 0.18f),
+                        BuildSkillSlot(1, "boss_5_storm",        castRange: 16f,   cooldown: 2.3f,  castDuration: 1.3f,  idealCastRange: 14.2f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.24f, punishWeight: 0.2f, repeatPenalty: 0.18f),
+                        BuildSkillSlot(2, "boss_5_stampede",     castRange: 6.5f,  cooldown: 3.3f,  castDuration: 1.05f, enterIdleAfterCast: true,  postCastIdleDuration: 0.6f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.8f, idealCastRange: 5.4f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.44f, punishWeight: 0.58f, repeatPenalty: 0.28f, canUseUnderThreat: true),
+                        BuildSkillSlot(3, "boss_5_regen_roar",   castRange: 9f,    cooldown: 4.2f,  castDuration: 1.25f, enterIdleAfterCast: true,  postCastIdleDuration: 0.6f,  rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 8f, skillRole: EnemySkillRole.Escape, riskWeight: 0.14f, punishWeight: 0.16f, repeatPenalty: 0.22f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss5.asset"),
             };
 

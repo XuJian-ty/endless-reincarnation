@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
+using Game;
+using Game.Data;
 using ProjectBase;
 
 namespace Game.Saving
@@ -185,7 +187,7 @@ namespace Game.Saving
         /// <summary>创建一个全新的 RunData（新游戏用），并包装成 SaveData</summary>
         public static SaveData NewGameRun(int levelIndex = 1, int difficulty = 1)
         {
-            return new SaveData
+            var save = new SaveData
             {
                 version = CurrentVersion,
                 run = new RunData
@@ -205,6 +207,46 @@ namespace Game.Saving
                     levelSnapshot    = null
                 }
             };
+
+            ApplyStarterLoadout(save.run);
+            return save;
+        }
+
+        private static void ApplyStarterLoadout(RunData run)
+        {
+            if (run == null)
+                return;
+
+            run.inventory ??= new InventorySaveData();
+            run.inventory.slots ??= new List<InventorySlotSave>();
+            run.inventory.slots.Clear();
+            for (int i = 0; i < Domain.PlayerModel.SlotCount; i++)
+                run.inventory.slots.Add(new InventorySlotSave());
+
+            SetStarterStack(run.inventory.slots, 0, Domain.PlayerModel.ItemIds.PotionHp, 3);
+            SetStarterStack(run.inventory.slots, 1, Domain.PlayerModel.ItemIds.PotionMp, 3);
+            SetStarterStack(run.inventory.slots, 2, Domain.PlayerModel.ItemIds.Nectar, 1);
+
+            WeaponDatabaseSO weaponDb = ConfigManager.GetInstance()?.GetWeaponDatabase();
+            if (weaponDb == null)
+                return;
+
+            WeaponInstance starterSword = weaponDb.CreateMinimumRoll(WeaponType.MeleeSword, WeaponRarity.Common);
+            WeaponInstance starterGun = weaponDb.CreateMinimumRoll(WeaponType.RangedGun, WeaponRarity.Common);
+
+            run.equippedWeapon = starterSword;
+            if (starterGun != null && run.inventory.slots.Count > 3)
+                run.inventory.slots[3].weapon = starterGun;
+        }
+
+        private static void SetStarterStack(List<InventorySlotSave> slots, int index, string itemId, int count)
+        {
+            if (slots == null || index < 0 || index >= slots.Count || string.IsNullOrWhiteSpace(itemId) || count <= 0)
+                return;
+
+            slots[index].weapon = null;
+            slots[index].itemId = itemId;
+            slots[index].count = count;
         }
     }
 }

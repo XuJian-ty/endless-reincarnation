@@ -42,6 +42,10 @@ namespace Game.Editor
         private static readonly Color DefaultColor = new Color(0.55f, 0.55f, 0.55f, 0.88f);
         private static readonly Color SelectedOverlay = new Color(1f, 1f, 1f, 0.30f);
         private static readonly Color PlayheadColor = new Color(1f, 0.25f, 0.25f, 1f);
+        private static readonly CueAnchor[] TopLevelCueAnchors = { CueAnchor.Caster, CueAnchor.World };
+        private static readonly string[] TopLevelCueAnchorLabels = { "自身", "世界" };
+        private static readonly CueAnchor[] OnHitCueAnchors = { CueAnchor.Caster, CueAnchor.Target, CueAnchor.World };
+        private static readonly string[] OnHitCueAnchorLabels = { "自身", "目标", "世界" };
 
         private SharedSkillDatabaseSO _database;
         private SerializedObject _serializedDb;
@@ -92,6 +96,7 @@ namespace Game.Editor
         private int _activeSceneCueIndex = -1;
         private int _activeSceneHitVfxDamageIndex = -1;
         private int _activeSceneHitVfxIndex = -1;
+        private readonly HashSet<string> _hiddenPreviewCueKeys = new HashSet<string>();
         private CharacterAnimationLibrarySO _animationLibrary;
         private int _selectedAnimationGroupIndex = -1;
         private int _selectedAnimationEntryIndex = -1;
@@ -184,6 +189,8 @@ namespace Game.Editor
             public SkillVfxEffect effect;
             public Transform explicitTarget;
             public Vector3 baseScale;
+            public Vector3 originPosition;
+            public Quaternion originRotation;
         }
 
         private sealed class PreviewOverlayLine
@@ -198,6 +205,7 @@ namespace Game.Editor
             public int effectIndex;
             public int triggerIndex;
             public float triggerTime;
+            public float hitTime;
             public SkillDamageEffect effect;
             public List<Transform> hitTargets = new List<Transform>();
         }
@@ -263,8 +271,6 @@ namespace Game.Editor
             if (_previewTarget == null)
                 return;
 
-            DrawTimelinePreviewVfxBounds();
-            DrawTimelinePreviewDamageOverlays();
             DrawTimelinePreviewStateOverlay();
 
             if (!_sceneHandlesEnabled)
@@ -1433,7 +1439,7 @@ namespace Game.Editor
                     else
                     {
                         float interval = Mathf.Max(0.01f, evt.repeatInterval);
-                        float endTime = evt.startTime + Mathf.Max(0f, evt.activeDuration);
+                        float endTime = GetPreviewRepeatedEndTime(evt);
                         for (float triggerTime = evt.startTime; triggerTime <= endTime + 0.0001f && triggerTime <= _previewTime + 0.0001f; triggerTime += interval)
                         {
                             for (int effectIndex = 0; effectIndex < evt.attributeEffects.Count; effectIndex++)
@@ -1464,7 +1470,7 @@ namespace Game.Editor
                     if (!DoesOnHitAttributeEffectApplyToTarget(effect, target, hit.hitTargets))
                         continue;
 
-                    ApplyPreviewAttributeEffect(ref value, effect, field, referenceValue, hit.triggerTime, resourceMode);
+                    ApplyPreviewAttributeEffect(ref value, effect, field, referenceValue, hit.hitTime, resourceMode);
                 }
             }
         }
@@ -1517,9 +1523,20 @@ namespace Game.Editor
             }
 
             float interval = Mathf.Max(0.01f, evt.repeatInterval);
-            float endTime = evt.startTime + Mathf.Max(0f, evt.activeDuration);
+            float endTime = GetPreviewRepeatedEndTime(evt);
             for (float triggerTime = evt.startTime; triggerTime <= endTime + 0.0001f && triggerTime <= _previewTime + 0.0001f; triggerTime += interval)
                 action(triggerTime);
+        }
+
+        private float GetPreviewRepeatedEndTime(SkillTimedEventBase evt)
+        {
+            if (evt == null)
+                return 0f;
+
+            if (evt.RepeatsUntilStateExit)
+                return Mathf.Max(evt.startTime, GetPreviewStateExitTime());
+
+            return evt.startTime + Mathf.Max(0f, evt.activeDuration);
         }
 
         private void ApplyPreviewAttributeEffect(ref float value, SkillAttributeEffect effect, SkillStatField field, float referenceValue, float triggerTime, bool resourceMode)
@@ -1786,12 +1803,21 @@ namespace Game.Editor
             float newStartTime = Mathf.Max(0f, EditorGUILayout.FloatField("触发时间(秒)", timedEvent.startTime));
             EditorGUILayout.LabelField("触发时间(帧)", FormatFrameOnly(newStartTime), EditorStyles.miniLabel);
             SkillEventTriggerMode newTriggerMode = (SkillEventTriggerMode)EditorGUILayout.EnumPopup("触发模式", timedEvent.triggerMode);
+            SkillEventActiveDurationMode newActiveDurationMode = timedEvent.activeDurationMode;
             float newActiveDuration = timedEvent.activeDuration;
             float newRepeatInterval = timedEvent.repeatInterval;
             if (newTriggerMode == SkillEventTriggerMode.Repeated)
             {
-                newActiveDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续触发时长(秒)", timedEvent.activeDuration));
-                EditorGUILayout.LabelField("持续触发时长(帧)", FormatFrameOnly(newActiveDuration), EditorStyles.miniLabel);
+                newActiveDurationMode = (SkillEventActiveDurationMode)EditorGUILayout.EnumPopup("持续方式", timedEvent.activeDurationMode);
+                if (newActiveDurationMode == SkillEventActiveDurationMode.FixedTime)
+                {
+                    newActiveDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续触发时长(秒)", timedEvent.activeDuration));
+                    EditorGUILayout.LabelField("持续触发时长(帧)", FormatFrameOnly(newActiveDuration), EditorStyles.miniLabel);
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox("将持续重复触发，直到当前状态退出。", MessageType.None);
+                }
                 newRepeatInterval = Mathf.Max(0.01f, EditorGUILayout.FloatField("重复触发间隔(秒)", timedEvent.repeatInterval));
                 EditorGUILayout.LabelField("重复触发间隔(帧)", FormatFrameOnly(newRepeatInterval), EditorStyles.miniLabel);
             }
@@ -1802,7 +1828,10 @@ namespace Game.Editor
                 timedEvent.eventId = newEventId;
                 timedEvent.startTime = SnapTime(newStartTime);
                 timedEvent.triggerMode = newTriggerMode;
-                timedEvent.activeDuration = newTriggerMode == SkillEventTriggerMode.Repeated ? SnapDuration(newActiveDuration) : 0f;
+                timedEvent.activeDurationMode = newTriggerMode == SkillEventTriggerMode.Repeated ? newActiveDurationMode : SkillEventActiveDurationMode.FixedTime;
+                timedEvent.activeDuration = newTriggerMode == SkillEventTriggerMode.Repeated && newActiveDurationMode == SkillEventActiveDurationMode.FixedTime
+                    ? SnapDuration(newActiveDuration)
+                    : 0f;
                 timedEvent.repeatInterval = newTriggerMode == SkillEventTriggerMode.Repeated ? SnapDuration(newRepeatInterval) : 0.1f;
                 MarkDatabaseDirty();
                 view = CreateLegacyEventView(timedEvent, _selectedEventTrackType);
@@ -1894,22 +1923,24 @@ namespace Game.Editor
                 EditorGUILayout.LabelField("检测时长(帧)", FormatFrameOnly(newDetectionDuration), EditorStyles.miniLabel);
                 DamageDetectionType newDetectionType = (DamageDetectionType)EditorGUILayout.EnumPopup("检测方式", effect.detectionType);
                 string newHitLayerName = EditorGUILayout.TextField("命中层级名", effect.hitLayerName ?? string.Empty);
-                float newPushForce = Mathf.Max(0f, EditorGUILayout.FloatField("击退力", effect.pushForce));
-                float newPushDuration = Mathf.Max(0f, EditorGUILayout.FloatField("击退时长", effect.pushDuration));
                 AttackShapeType newShape = effect.shape;
                 Vector3 newCenterOffset = effect.centerOffset;
+                Vector3 newRotationEuler = effect.rotationEuler;
                 float newSphereRadius = effect.sphereRadius;
                 float newSectorAngle = effect.sectorAngle;
                 Vector3 newBoxSize = effect.boxSize;
                 string newColliderNodeName = effect.colliderNodeName ?? string.Empty;
                 Vector3 newRayOriginOffset = effect.rayOriginOffset;
                 float newRayMaxDistance = effect.rayMaxDistance;
+                SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
 
                 switch (newDetectionType)
                 {
                     case DamageDetectionType.RangeOverlap:
                         newShape = (AttackShapeType)EditorGUILayout.EnumPopup("范围形状", effect.shape);
                         newCenterOffset = EditorGUILayout.Vector3Field("中心偏移", effect.centerOffset);
+                        if (newShape == AttackShapeType.Sector || newShape == AttackShapeType.Box)
+                            newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                         if (newShape == AttackShapeType.Sphere || newShape == AttackShapeType.Sector)
                             newSphereRadius = Mathf.Max(0.01f, EditorGUILayout.FloatField("球体半径", effect.sphereRadius));
                         if (newShape == AttackShapeType.Sector)
@@ -1924,9 +1955,14 @@ namespace Game.Editor
 
                     case DamageDetectionType.Raycast:
                         newRayOriginOffset = EditorGUILayout.Vector3Field("射线起点偏移", effect.rayOriginOffset);
+                        newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                         newRayMaxDistance = Mathf.Max(0.01f, EditorGUILayout.FloatField("射线最大距离", effect.rayMaxDistance));
                         break;
                 }
+
+                DrawMotionSettingsEditor("移动设置", newMotion);
+                if (newDetectionType == DamageDetectionType.Collision && newMotion.enabled)
+                    EditorGUILayout.HelpBox("碰撞检测模式暂不使用这组移动设置。", MessageType.Info);
 
                 float newHitStopDuration = Mathf.Max(0f, EditorGUILayout.FloatField("命中停顿时长(秒)", effect.hitStopDuration));
                 float newHitStopTimeScale = Mathf.Clamp01(EditorGUILayout.Slider("命中停顿速度", effect.hitStopTimeScale, 0f, 1f));
@@ -1937,16 +1973,16 @@ namespace Game.Editor
                     effect.detectionDuration = SnapDuration(newDetectionDuration);
                     effect.detectionType = newDetectionType;
                     effect.hitLayerName = newHitLayerName;
-                    effect.pushForce = newPushForce;
-                    effect.pushDuration = newPushDuration;
                     effect.shape = newShape;
                     effect.centerOffset = newCenterOffset;
+                    effect.rotationEuler = newRotationEuler;
                     effect.sphereRadius = Mathf.Max(0.01f, newSphereRadius);
                     effect.sectorAngle = Mathf.Clamp(newSectorAngle, 1f, 360f);
                     effect.boxSize = ClampVector3(newBoxSize, 0.01f);
                     effect.colliderNodeName = newColliderNodeName;
                     effect.rayOriginOffset = newRayOriginOffset;
                     effect.rayMaxDistance = Mathf.Max(0.01f, newRayMaxDistance);
+                    effect.motion = newMotion;
                     effect.hitStopDuration = newHitStopDuration;
                     effect.hitStopTimeScale = newHitStopTimeScale;
                     MarkDatabaseDirty();
@@ -2124,8 +2160,28 @@ namespace Game.Editor
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField($"特效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                string hiddenKey = GetEditorCueVisibilityKey(_selectedEventIndex, i);
+                bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
+                bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
+                if (newVisible != visible)
+                {
+                    if (newVisible)
+                        _hiddenPreviewCueKeys.Remove(hiddenKey);
+                    else
+                        _hiddenPreviewCueKeys.Add(hiddenKey);
+
+                    if (!newVisible && _activeSceneCueIndex == i)
+                    {
+                        _activeSceneCueIndex = -1;
+                        DestroyScenePreviewCueInstance();
+                    }
+
+                    Repaint();
+                    SceneView.RepaintAll();
+                }
                 if (GUILayout.Button(_activeSceneCueIndex == i ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
                 {
+                    _hiddenPreviewCueKeys.Remove(hiddenKey);
                     _activeSceneCueIndex = _activeSceneCueIndex == i ? -1 : i;
                     _activeSceneHitVfxDamageIndex = -1;
                     _activeSceneHitVfxIndex = -1;
@@ -2141,11 +2197,16 @@ namespace Game.Editor
 
                 EditorGUI.BeginChangeCheck();
                 GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", cue.particlePrefab, typeof(GameObject), false);
-                CueAnchor newAnchor = CueAnchor.Caster;
+                CueAnchor newAnchor = DrawCueAnchorPopup("挂点", cue.anchor, TopLevelCueAnchors, TopLevelCueAnchorLabels);
                 Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", cue.offset);
                 Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", cue.rotationEuler);
                 Vector3 newScale = EditorGUILayout.Vector3Field("缩放", cue.scale);
-                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("强制持续时长(秒)", cue.duration));
+                SkillMotionSettings newMotion = CopyMotionSettings(cue.motion);
+                DrawMotionSettingsEditor("移动设置", newMotion);
+                SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", cue.destroyMode);
+                float newDuration = cue.duration;
+                if (newDestroyMode == SkillCueDestroyMode.Timed)
+                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", cue.duration));
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit VFX Effect");
@@ -2157,7 +2218,9 @@ namespace Game.Editor
                         Mathf.Max(0.01f, newScale.x),
                         Mathf.Max(0.01f, newScale.y),
                         Mathf.Max(0.01f, newScale.z));
-                    cue.duration = newDuration;
+                    cue.motion = newMotion;
+                    cue.destroyMode = newDestroyMode;
+                    cue.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
                     MarkDatabaseDirty();
                 }
 
@@ -2210,16 +2273,22 @@ namespace Game.Editor
 
                 EditorGUI.BeginChangeCheck();
                 AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
-                CueAnchor newAnchor = CueAnchor.Caster;
+                CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, TopLevelCueAnchors, TopLevelCueAnchorLabels);
                 Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
-                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("强制持续时长(秒)", effect.duration));
+                bool newLoop = EditorGUILayout.Toggle("循环播放", effect.loop);
+                SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
+                float newDuration = effect.duration;
+                if (newDestroyMode == SkillCueDestroyMode.Timed)
+                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit SFX Effect");
                     effect.audioClip = newAudioClip;
                     effect.anchor = newAnchor;
                     effect.offset = newOffset;
-                    effect.duration = newDuration;
+                    effect.loop = newLoop;
+                    effect.destroyMode = newDestroyMode;
+                    effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
                     MarkDatabaseDirty();
                 }
 
@@ -2392,6 +2461,36 @@ namespace Game.Editor
                 || effectType == PhysicsEffectType.Airborne;
         }
 
+        private static SkillMotionSettings CopyMotionSettings(SkillMotionSettings source)
+        {
+            if (source == null)
+                return new SkillMotionSettings();
+
+            return new SkillMotionSettings
+            {
+                enabled = source.enabled,
+                speed = source.speed,
+                direction = source.direction,
+            };
+        }
+
+        private static void DrawMotionSettingsEditor(string title, SkillMotionSettings motion)
+        {
+            if (motion == null)
+                return;
+
+            EditorGUILayout.Space(2f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+            motion.enabled = EditorGUILayout.Toggle("随时间移动", motion.enabled);
+            if (motion.enabled)
+            {
+                motion.speed = Mathf.Max(0f, EditorGUILayout.FloatField("移动速度(米/秒)", motion.speed));
+                motion.direction = EditorGUILayout.Vector3Field("移动方向", motion.direction);
+            }
+            EditorGUILayout.EndVertical();
+        }
+
         private void DrawNestedAttributeEffectsEditor(SkillDamageEffect damageEffect)
         {
             EnsureAttributeEffects(damageEffect);
@@ -2485,11 +2584,33 @@ namespace Game.Editor
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField($"命中特效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                string hiddenKey = GetEditorOnHitCueVisibilityKey(_selectedEventIndex, damageIndex, i);
+                bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
+                bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
+                if (newVisible != visible)
+                {
+                    if (newVisible)
+                        _hiddenPreviewCueKeys.Remove(hiddenKey);
+                    else
+                        _hiddenPreviewCueKeys.Add(hiddenKey);
+
+                    bool isCurrentHidden = _activeSceneHitVfxDamageIndex == damageIndex && _activeSceneHitVfxIndex == i;
+                    if (!newVisible && isCurrentHidden)
+                    {
+                        _activeSceneHitVfxDamageIndex = -1;
+                        _activeSceneHitVfxIndex = -1;
+                        DestroyScenePreviewCueInstance();
+                    }
+
+                    Repaint();
+                    SceneView.RepaintAll();
+                }
                 bool isEditingHitVfx = _selectedEventTrackType == TimelineTrackType.Damage
                     && _activeSceneHitVfxDamageIndex == damageIndex
                     && _activeSceneHitVfxIndex == i;
                 if (GUILayout.Button(isEditingHitVfx ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
                 {
+                    _hiddenPreviewCueKeys.Remove(hiddenKey);
                     bool same = isEditingHitVfx;
                     _activeSceneDamageIndex = same ? _activeSceneDamageIndex : damageIndex;
                     _activeSceneHitVfxDamageIndex = same ? -1 : damageIndex;
@@ -2508,11 +2629,16 @@ namespace Game.Editor
 
                 EditorGUI.BeginChangeCheck();
                 GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", effect.particlePrefab, typeof(GameObject), false);
-                CueAnchor newAnchor = (CueAnchor)EditorGUILayout.EnumPopup("挂点", effect.anchor);
+                CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, OnHitCueAnchors, OnHitCueAnchorLabels);
                 Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
                 Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                 Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
-                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("强制持续时长(秒)", effect.duration));
+                SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
+                DrawMotionSettingsEditor("移动设置", newMotion);
+                SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
+                float newDuration = effect.duration;
+                if (newDestroyMode == SkillCueDestroyMode.Timed)
+                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit Nested VFX Effect");
@@ -2524,7 +2650,9 @@ namespace Game.Editor
                         Mathf.Max(0.01f, newScale.x),
                         Mathf.Max(0.01f, newScale.y),
                         Mathf.Max(0.01f, newScale.z));
-                    effect.duration = newDuration;
+                    effect.motion = newMotion;
+                    effect.destroyMode = newDestroyMode;
+                    effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
                     MarkDatabaseDirty();
                 }
 
@@ -2574,16 +2702,22 @@ namespace Game.Editor
 
                 EditorGUI.BeginChangeCheck();
                 AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
-                CueAnchor newAnchor = (CueAnchor)EditorGUILayout.EnumPopup("挂点", effect.anchor);
+                CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, OnHitCueAnchors, OnHitCueAnchorLabels);
                 Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
-                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("强制持续时长(秒)", effect.duration));
+                bool newLoop = EditorGUILayout.Toggle("循环播放", effect.loop);
+                SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
+                float newDuration = effect.duration;
+                if (newDestroyMode == SkillCueDestroyMode.Timed)
+                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit Nested SFX Effect");
                     effect.audioClip = newAudioClip;
                     effect.anchor = newAnchor;
                     effect.offset = newOffset;
-                    effect.duration = newDuration;
+                    effect.loop = newLoop;
+                    effect.destroyMode = newDestroyMode;
+                    effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
                     MarkDatabaseDirty();
                 }
 
@@ -3037,7 +3171,18 @@ namespace Game.Editor
             SharedSkillDefinition skill = GetSelectedSkill();
             float timelineDuration = skill != null ? GetSkillPreviewDuration(skill) : 0f;
             float clipDuration = _previewClip != null ? _previewClip.length : 0f;
-            return Mathf.Max(timelineDuration, clipDuration, 0.1f);
+            float stateExitDuration = skill != null && skill.HasUntilStateExitEvents()
+                ? GetPreviewStateExitTime()
+                : 0f;
+            return Mathf.Max(timelineDuration, clipDuration, stateExitDuration, 0.1f);
+        }
+
+        private float GetPreviewStateExitTime()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            float clipDuration = _previewClip != null ? _previewClip.length : 0f;
+            float timelineDuration = skill != null ? skill.GetTimelineDuration() : 0f;
+            return Mathf.Max(clipDuration, timelineDuration, 2f);
         }
 
         private float GetSkillPreviewDuration(SharedSkillDefinition skill)
@@ -3066,7 +3211,7 @@ namespace Game.Editor
                 if (evt == null)
                     continue;
 
-                maxTime = Mathf.Max(maxTime, evt.startTime + GetPreviewPlaybackDuration(evt, trackType));
+                maxTime = Mathf.Max(maxTime, evt.startTime + GetTrackDisplayDuration(evt, trackType));
             }
 
             return maxTime;
@@ -3074,6 +3219,9 @@ namespace Game.Editor
 
         private float GetPreviewPlaybackDuration(SkillTimedEventBase evt, TimelineTrackType trackType)
         {
+            float lastTriggerTime = evt != null && evt.triggerMode == SkillEventTriggerMode.Repeated
+                ? GetPreviewRepeatedEndTime(evt)
+                : evt != null ? evt.startTime : 0f;
             float duration = Mathf.Max(0f, GetTrackDisplayDuration(evt, trackType));
             switch (trackType)
             {
@@ -3081,14 +3229,14 @@ namespace Game.Editor
                     if (evt is SkillVfxEvent vfxEvent && vfxEvent.vfxEffects != null)
                     {
                         for (int i = 0; i < vfxEvent.vfxEffects.Count; i++)
-                            duration = Mathf.Max(duration, GetVfxPlaybackDuration(vfxEvent.vfxEffects[i]));
+                            duration = Mathf.Max(duration, GetVfxPlaybackDuration(vfxEvent.vfxEffects[i], lastTriggerTime));
                     }
                     break;
                 case TimelineTrackType.Sfx:
                     if (evt is SkillSfxEvent sfxEvent && sfxEvent.sfxEffects != null)
                     {
                         for (int i = 0; i < sfxEvent.sfxEffects.Count; i++)
-                            duration = Mathf.Max(duration, GetSfxPlaybackDuration(sfxEvent.sfxEffects[i]));
+                            duration = Mathf.Max(duration, GetSfxPlaybackDuration(sfxEvent.sfxEffects[i], lastTriggerTime));
                     }
                     break;
             }
@@ -3096,7 +3244,7 @@ namespace Game.Editor
             return duration;
         }
 
-        private static float GetTrackEffectTailDuration(SkillTimedEventBase evt, TimelineTrackType trackType)
+        private float GetTrackEffectTailDuration(SkillTimedEventBase evt, TimelineTrackType trackType, float lastTriggerTime)
         {
             if (evt == null)
                 return 0f;
@@ -3105,37 +3253,16 @@ namespace Game.Editor
             switch (trackType)
             {
                 case TimelineTrackType.Damage:
-                    if (evt is SkillDamageEvent damageEvent && damageEvent.damageEffects != null)
-                    {
-                        for (int i = 0; i < damageEvent.damageEffects.Count; i++)
-                        {
-                            SkillDamageEffect effect = damageEvent.damageEffects[i];
-                            if (effect != null)
-                                duration = Mathf.Max(duration, effect.detectionDuration);
-                        }
-                    }
+                    if (evt is SkillDamageEvent damageEvent)
+                        duration = Mathf.Max(duration, GetPreviewDamageEventTailDuration(damageEvent, lastTriggerTime));
                     break;
                 case TimelineTrackType.Physics:
-                    if (evt is SkillPhysicsEvent physicsEvent && physicsEvent.physicsEffects != null)
-                    {
-                        for (int i = 0; i < physicsEvent.physicsEffects.Count; i++)
-                        {
-                            SkillPhysicsEffect effect = physicsEvent.physicsEffects[i];
-                            if (effect != null)
-                                duration = Mathf.Max(duration, effect.duration);
-                        }
-                    }
+                    if (evt is SkillPhysicsEvent physicsEvent)
+                        duration = Mathf.Max(duration, SharedSkillDefinition.GetPhysicsEventTailDuration(physicsEvent));
                     break;
                 case TimelineTrackType.Attribute:
-                    if (evt is SkillAttributeEvent attributeEvent && attributeEvent.attributeEffects != null)
-                    {
-                        for (int i = 0; i < attributeEvent.attributeEffects.Count; i++)
-                        {
-                            SkillAttributeEffect effect = attributeEvent.attributeEffects[i];
-                            if (effect != null)
-                                duration = Mathf.Max(duration, effect.duration);
-                        }
-                    }
+                    if (evt is SkillAttributeEvent attributeEvent)
+                        duration = Mathf.Max(duration, SharedSkillDefinition.GetAttributeEventTailDuration(attributeEvent));
                     break;
                 case TimelineTrackType.Vfx:
                     if (evt is SkillVfxEvent vfxEvent && vfxEvent.vfxEffects != null)
@@ -3144,7 +3271,7 @@ namespace Game.Editor
                         {
                             SkillVfxEffect effect = vfxEvent.vfxEffects[i];
                             if (effect != null)
-                                duration = Mathf.Max(duration, GetVfxPlaybackDuration(effect));
+                                duration = Mathf.Max(duration, GetVfxPlaybackDuration(effect, lastTriggerTime));
                         }
                     }
                     break;
@@ -3155,7 +3282,7 @@ namespace Game.Editor
                         {
                             SkillSfxEffect effect = sfxEvent.sfxEffects[i];
                             if (effect != null)
-                                duration = Mathf.Max(duration, GetSfxPlaybackDuration(effect));
+                                duration = Mathf.Max(duration, GetSfxPlaybackDuration(effect, lastTriggerTime));
                         }
                     }
                     break;
@@ -3164,61 +3291,111 @@ namespace Game.Editor
             return Mathf.Max(0f, duration);
         }
 
-        private static float GetVfxPlaybackDuration(SkillVfxEffect effect)
+        private static float GetTrackEffectTailDurationForAuthoring(SkillTimedEventBase evt, TimelineTrackType trackType)
         {
-            if (effect == null)
+            if (evt == null)
                 return 0f;
-            if (effect.duration > 0f)
-                return effect.duration;
-            return EstimateParticlePrefabDuration(effect.particlePrefab);
+
+            return trackType switch
+            {
+                TimelineTrackType.Damage => evt is SkillDamageEvent damageEvent ? SharedSkillDefinition.GetDamageEventTailDuration(damageEvent) : 0f,
+                TimelineTrackType.Physics => evt is SkillPhysicsEvent physicsEvent ? SharedSkillDefinition.GetPhysicsEventTailDuration(physicsEvent) : 0f,
+                TimelineTrackType.Attribute => evt is SkillAttributeEvent attributeEvent ? SharedSkillDefinition.GetAttributeEventTailDuration(attributeEvent) : 0f,
+                TimelineTrackType.Vfx => evt is SkillVfxEvent vfxEvent ? SharedSkillDefinition.GetVfxEventTailDuration(vfxEvent) : 0f,
+                TimelineTrackType.Sfx => evt is SkillSfxEvent sfxEvent ? SharedSkillDefinition.GetSfxEventTailDuration(sfxEvent) : 0f,
+                _ => 0f,
+            };
         }
 
-        private static float GetSfxPlaybackDuration(SkillSfxEffect effect)
+        private float GetPreviewDamageEventTailDuration(SkillDamageEvent evt, float lastTriggerTime)
         {
-            if (effect == null)
-                return 0f;
-            if (effect.duration > 0f)
-                return effect.duration;
-            return effect.audioClip != null ? effect.audioClip.length : 0f;
-        }
-
-        private static float EstimateParticlePrefabDuration(GameObject prefab)
-        {
-            if (prefab == null)
+            if (evt?.damageEffects == null)
                 return 0f;
 
             float duration = 0f;
-            ParticleSystem[] particleSystems = prefab.GetComponentsInChildren<ParticleSystem>(true);
-            for (int i = 0; i < particleSystems.Length; i++)
+            for (int i = 0; i < evt.damageEffects.Count; i++)
             {
-                ParticleSystem particleSystem = particleSystems[i];
-                if (particleSystem == null)
+                SkillDamageEffect effect = evt.damageEffects[i];
+                if (effect == null)
                     continue;
 
-                ParticleSystem.MainModule main = particleSystem.main;
-                duration = Mathf.Max(duration, main.duration + GetMaxCurveValue(main.startLifetime));
+                float detectionDuration = Mathf.Max(0f, effect.detectionDuration);
+                float hitTime = lastTriggerTime + detectionDuration;
+                float onHitTail = Mathf.Max(
+                    GetPreviewOnHitPhysicsTailDuration(effect),
+                    GetPreviewOnHitAttributeTailDuration(effect));
+
+                if (effect.onHitVfxEffects != null)
+                {
+                    for (int vfxIndex = 0; vfxIndex < effect.onHitVfxEffects.Count; vfxIndex++)
+                        onHitTail = Mathf.Max(onHitTail, GetVfxPlaybackDuration(effect.onHitVfxEffects[vfxIndex], hitTime));
+                }
+
+                if (effect.onHitSfxEffects != null)
+                {
+                    for (int sfxIndex = 0; sfxIndex < effect.onHitSfxEffects.Count; sfxIndex++)
+                        onHitTail = Mathf.Max(onHitTail, GetSfxPlaybackDuration(effect.onHitSfxEffects[sfxIndex], hitTime));
+                }
+
+                duration = Mathf.Max(duration, detectionDuration + onHitTail);
             }
 
             return duration;
         }
 
-        private static float GetMaxCurveValue(ParticleSystem.MinMaxCurve curve)
+        private static float GetPreviewOnHitPhysicsTailDuration(SkillDamageEffect effect)
         {
-            switch (curve.mode)
+            if (effect?.onHitPhysicsEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < effect.onHitPhysicsEffects.Count; i++)
+                duration = Mathf.Max(duration, SharedSkillDefinition.GetPhysicsEffectLifetime(effect.onHitPhysicsEffects[i]));
+
+            return duration;
+        }
+
+        private static float GetPreviewOnHitAttributeTailDuration(SkillDamageEffect effect)
+        {
+            if (effect?.onHitAttributeEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < effect.onHitAttributeEffects.Count; i++)
+                duration = Mathf.Max(duration, SharedSkillDefinition.GetAttributeEffectLifetime(effect.onHitAttributeEffects[i]));
+
+            return duration;
+        }
+
+        private float GetVfxPlaybackDuration(SkillVfxEffect effect, float triggerTime)
+        {
+            if (effect == null)
+                return 0f;
+
+            if (effect.destroyMode == SkillCueDestroyMode.OnStateExit)
+                return Mathf.Max(0f, GetPreviewStateExitTime() - triggerTime);
+
+            if (effect.destroyMode == SkillCueDestroyMode.Timed && effect.duration > 0f)
+                return effect.duration;
+
+            return SharedSkillDefinition.GetVfxEffectLifetime(effect);
+        }
+
+        private float GetSfxPlaybackDuration(SkillSfxEffect effect, float triggerTime)
+        {
+            if (effect == null)
+                return 0f;
+
+            if (effect.destroyMode == SkillCueDestroyMode.OnStateExit
+                || (effect.loop && effect.destroyMode == SkillCueDestroyMode.NaturalDestroy))
             {
-                case ParticleSystemCurveMode.Constant:
-                    return curve.constant;
-                case ParticleSystemCurveMode.TwoConstants:
-                    return Mathf.Max(curve.constantMin, curve.constantMax);
-                case ParticleSystemCurveMode.Curve:
-                    return curve.curve != null && curve.curve.length > 0 ? curve.curve.keys[curve.curve.length - 1].value : 0f;
-                case ParticleSystemCurveMode.TwoCurves:
-                    float minValue = curve.curveMin != null && curve.curveMin.length > 0 ? curve.curveMin.keys[curve.curveMin.length - 1].value : 0f;
-                    float maxValue = curve.curveMax != null && curve.curveMax.length > 0 ? curve.curveMax.keys[curve.curveMax.length - 1].value : 0f;
-                    return Mathf.Max(minValue, maxValue);
-                default:
-                    return 0f;
+                return Mathf.Max(0f, GetPreviewStateExitTime() - triggerTime);
             }
+
+            if (effect.destroyMode == SkillCueDestroyMode.Timed && effect.duration > 0f)
+                return effect.duration;
+
+            return SharedSkillDefinition.GetSfxEffectLifetime(effect);
         }
 
         private static MethodInfo ResolveAudioUtilMethod(string methodName, params System.Type[] parameterTypes)
@@ -3284,7 +3461,7 @@ namespace Game.Editor
             if (evt.triggerMode == SkillEventTriggerMode.Once)
                 return previousTime < evt.startTime && currentTime + 0.0001f >= evt.startTime ? 1 : 0;
 
-            float endTime = evt.GetEndTime();
+            float endTime = evt.RepeatsUntilStateExit ? currentTime : evt.GetEndTime();
             if (previousTime > endTime + 0.0001f)
                 return 0;
 
@@ -3318,7 +3495,7 @@ namespace Game.Editor
                     if (evt?.vfxEffects == null)
                         continue;
 
-                    float endTime = evt.triggerMode == SkillEventTriggerMode.Repeated ? evt.GetEndTime() : evt.startTime;
+                    float endTime = evt.triggerMode == SkillEventTriggerMode.Repeated ? GetPreviewRepeatedEndTime(evt) : evt.startTime;
                     float interval = Mathf.Max(0.01f, evt.repeatInterval);
                     int triggerIndex = 0;
                     for (float triggerTime = evt.startTime; triggerTime <= endTime + 0.0001f; triggerTime += evt.triggerMode == SkillEventTriggerMode.Repeated ? interval : endTime + 1f)
@@ -3326,8 +3503,14 @@ namespace Game.Editor
                         for (int effectIndex = 0; effectIndex < evt.vfxEffects.Count; effectIndex++)
                         {
                             SkillVfxEffect effect = evt.vfxEffects[effectIndex];
-                            float duration = GetVfxPlaybackDuration(effect);
+                            float duration = GetVfxPlaybackDuration(effect, triggerTime);
                             if (effect?.particlePrefab == null || duration <= 0f)
+                                continue;
+
+                            if (!IsTopLevelCueVisible(eventIndex, effectIndex))
+                                continue;
+
+                            if (!_isPlaying && IsSceneEditingTopLevelCue(eventIndex, effectIndex))
                                 continue;
 
                             if (_previewTime + 0.0001f < triggerTime || _previewTime > triggerTime + duration + 0.0001f)
@@ -3363,13 +3546,22 @@ namespace Game.Editor
                     for (int effectIndex = 0; effectIndex < hit.effect.onHitVfxEffects.Count; effectIndex++)
                     {
                         SkillVfxEffect effect = hit.effect.onHitVfxEffects[effectIndex];
-                        float duration = GetVfxPlaybackDuration(effect);
+                        float duration = GetVfxPlaybackDuration(effect, hit.hitTime);
                         if (effect?.particlePrefab == null || duration <= 0f)
+                            continue;
+
+                        if (!IsOnHitCueVisible(hit.eventIndex, hit.effectIndex, effectIndex))
+                            continue;
+
+                        if (!_isPlaying && IsSceneEditingOnHitCue(hit.eventIndex, hit.effectIndex, effectIndex))
+                            continue;
+
+                        if (_previewTime + 0.0001f < hit.hitTime || _previewTime > hit.hitTime + duration + 0.0001f)
                             continue;
 
                         string key = GetTimelinePreviewOnHitVfxKey(hit.eventIndex, hit.triggerIndex, hit.effectIndex, effectIndex, target);
                         activeKeys.Add(key);
-                        TimelinePreviewVfxInstance playback = EnsureTimelinePreviewVfxInstance(key, effect, TimelineTrackType.Damage, hit.eventIndex, effectIndex, hit.triggerIndex, hit.triggerTime, target);
+                        TimelinePreviewVfxInstance playback = EnsureTimelinePreviewVfxInstance(key, effect, TimelineTrackType.Damage, hit.eventIndex, effectIndex, hit.triggerIndex, hit.hitTime, target);
                         if (playback != null)
                             SimulateTimelinePreviewVfx(playback, Mathf.Max(0f, _previewTime - playback.triggerTime));
                     }
@@ -3390,8 +3582,9 @@ namespace Game.Editor
 
                 if (playback.trackType == TimelineTrackType.Damage && playback.effect != null)
                 {
-                    float playbackDuration = GetVfxPlaybackDuration(playback.effect);
-                    if (_previewTime <= playback.triggerTime + playbackDuration + 0.0001f)
+                    float playbackDuration = GetVfxPlaybackDuration(playback.effect, playback.triggerTime);
+                    if (_previewTime + 0.0001f >= playback.triggerTime
+                        && _previewTime <= playback.triggerTime + playbackDuration + 0.0001f)
                         continue;
                 }
 
@@ -3411,7 +3604,10 @@ namespace Game.Editor
                 if (playback.key == key)
                 {
                     playback.effect = effect;
+                    playback.triggerTime = triggerTime;
                     playback.explicitTarget = explicitTarget;
+                    playback.originPosition = Vector3.zero;
+                    playback.originRotation = default;
                     UpdateTimelinePreviewVfxTransform(playback);
                     return playback;
                 }
@@ -3459,14 +3655,11 @@ namespace Game.Editor
             if (playback?.instance == null || playback.effect == null)
                 return;
 
-            Transform anchor = ResolveCueAnchorTransform(playback.effect.anchor, playback.effect, playback.explicitTarget);
-            if (anchor == null)
-                anchor = _previewTarget != null ? _previewTarget.transform : null;
-            if (anchor == null)
+            if (!TryEvaluatePreviewCueTransform(playback.effect, playback.explicitTarget, playback.triggerTime, out Vector3 position, out Quaternion rotation))
                 return;
 
-            playback.instance.transform.position = anchor.TransformPoint(playback.effect.offset);
-            playback.instance.transform.rotation = anchor.rotation * Quaternion.Euler(playback.effect.rotationEuler);
+            playback.instance.transform.position = position;
+            playback.instance.transform.rotation = rotation;
             playback.instance.transform.localScale = Vector3.Scale(playback.baseScale, playback.effect.scale);
         }
 
@@ -3569,17 +3762,21 @@ namespace Game.Editor
                 if (evt?.damageEffects == null)
                     continue;
 
-                float activeDuration = Mathf.Max(evt.GetDetectionEndTime() - evt.startTime, 0.05f);
-                if (_previewTime + 0.0001f < evt.startTime || _previewTime > evt.startTime + activeDuration + 0.0001f)
-                    continue;
-
-                for (int effectIndex = 0; effectIndex < evt.damageEffects.Count; effectIndex++)
+                IteratePreviewTriggerTimes(evt, triggerTime =>
                 {
-                    SkillDamageEffect effect = evt.damageEffects[effectIndex];
-                    if (effect == null)
-                        continue;
-                    DrawDamageSceneHandle(effect);
-                }
+                    float occurrenceEndTime = triggerTime + GetMaxDamageDetectionDuration(evt);
+                    if (_previewTime + 0.0001f < triggerTime || _previewTime > occurrenceEndTime + 0.0001f)
+                        return;
+
+                    for (int effectIndex = 0; effectIndex < evt.damageEffects.Count; effectIndex++)
+                    {
+                        SkillDamageEffect effect = evt.damageEffects[effectIndex];
+                        if (effect == null)
+                            continue;
+
+                        DrawDamageSceneHandle(effect, triggerTime);
+                    }
+                });
             }
         }
 
@@ -3683,7 +3880,7 @@ namespace Game.Editor
                         if (effect == null)
                             continue;
 
-                        ApplyPreviewPhysicsEffectToTarget(target, _previewTarget.transform.position, effect, hit.triggerTime);
+                        ApplyPreviewPhysicsEffectToTarget(target, _previewTarget.transform.position, effect, hit.hitTime);
                     }
                 }
             }
@@ -4191,16 +4388,13 @@ namespace Game.Editor
                         if (effect == null)
                             continue;
 
-                        List<Transform> hitTargets = RunEditorPreviewDetection(effect);
-                        results.Add(new PreviewDamageHitResult
-                        {
-                            eventIndex = eventIndex,
-                            effectIndex = effectIndex,
-                            triggerIndex = occurrenceIndex,
-                            triggerTime = triggerTime,
-                            effect = effect,
-                            hitTargets = hitTargets
-                        });
+                        results.AddRange(CollectPreviewDamageHitsForOccurrence(
+                            eventIndex,
+                            effectIndex,
+                            occurrenceIndex,
+                            triggerTime,
+                            effect,
+                            currentOnly: true));
                     }
 
                     if (evt.triggerMode != SkillEventTriggerMode.Repeated)
@@ -4222,9 +4416,6 @@ namespace Game.Editor
             if (damageEvents == null)
                 return results;
 
-            Transform explicitVictim = ResolveRootPreviewTarget(_previewVictimTarget)?.transform;
-            Transform previewRoot = _previewTarget.transform.root;
-
             for (int eventIndex = 0; eventIndex < damageEvents.Count; eventIndex++)
             {
                 SkillDamageEvent evt = damageEvents[eventIndex];
@@ -4240,35 +4431,74 @@ namespace Game.Editor
                         if (effect == null)
                             continue;
 
-                        List<Transform> hitTargets;
-                        if (explicitVictim != null && explicitVictim != previewRoot)
-                        {
-                            hitTargets = new List<Transform> { explicitVictim };
-                        }
-                        else if (IsCurrentDamageOccurrence(evt, triggerTime))
-                        {
-                            hitTargets = RunEditorPreviewDetection(effect);
-                        }
-                        else
-                        {
-                            hitTargets = null;
-                        }
-
-                        if (hitTargets == null || hitTargets.Count == 0)
-                            continue;
-
-                        results.Add(new PreviewDamageHitResult
-                        {
-                            eventIndex = eventIndex,
-                            effectIndex = effectIndex,
-                            triggerIndex = occurrenceIndex,
-                            triggerTime = triggerTime,
-                            effect = effect,
-                            hitTargets = hitTargets
-                        });
+                        results.AddRange(CollectPreviewDamageHitsForOccurrence(
+                            eventIndex,
+                            effectIndex,
+                            occurrenceIndex,
+                            triggerTime,
+                            effect,
+                            currentOnly: false));
                     }
 
                     occurrenceIndex++;
+                });
+            }
+
+            return results;
+        }
+
+        private List<PreviewDamageHitResult> CollectPreviewDamageHitsForOccurrence(
+            int eventIndex,
+            int effectIndex,
+            int triggerIndex,
+            float triggerTime,
+            SkillDamageEffect effect,
+            bool currentOnly)
+        {
+            var results = new List<PreviewDamageHitResult>();
+            if (effect == null || _previewTarget == null || _previewTime + 0.0001f < triggerTime)
+                return results;
+
+            Transform explicitVictim = ResolveRootPreviewTarget(_previewVictimTarget)?.transform;
+            float tolerance = Mathf.Max(0.02f, 0.5f / Mathf.Max(1, _frameRate));
+            float sampleStep = 1f / Mathf.Max(1, _frameRate);
+            float sampleEndTime = effect.detectionDuration > 0f
+                ? Mathf.Min(_previewTime, triggerTime + effect.detectionDuration)
+                : triggerTime;
+            float currentWindowStart = Mathf.Max(triggerTime, _previewTime - sampleStep - tolerance);
+            var firstHitTimes = new Dictionary<Transform, float>();
+
+            for (float sampleTime = triggerTime; sampleTime <= sampleEndTime + 0.0001f; sampleTime += effect.detectionDuration > 0f ? sampleStep : sampleEndTime + 1f)
+            {
+                List<Transform> hitTargets = RunEditorPreviewDetection(effect, triggerTime, sampleTime, explicitVictim);
+                for (int targetIndex = 0; targetIndex < hitTargets.Count; targetIndex++)
+                {
+                    Transform target = hitTargets[targetIndex];
+                    if (target == null || firstHitTimes.ContainsKey(target))
+                        continue;
+
+                    firstHitTimes.Add(target, sampleTime);
+                }
+
+                if (effect.detectionDuration <= 0f)
+                    break;
+            }
+
+            foreach (var pair in firstHitTimes)
+            {
+                bool include = !currentOnly || (pair.Value >= currentWindowStart - 0.0001f && pair.Value <= _previewTime + 0.0001f);
+                if (!include)
+                    continue;
+
+                results.Add(new PreviewDamageHitResult
+                {
+                    eventIndex = eventIndex,
+                    effectIndex = effectIndex,
+                    triggerIndex = triggerIndex,
+                    triggerTime = triggerTime,
+                    hitTime = pair.Value,
+                    effect = effect,
+                    hitTargets = new List<Transform> { pair.Key }
                 });
             }
 
@@ -4288,7 +4518,7 @@ namespace Game.Editor
             return Mathf.Abs(_previewTime - triggerTime) <= tolerance;
         }
 
-        private List<Transform> RunEditorPreviewDetection(SkillDamageEffect effect)
+        private List<Transform> RunEditorPreviewDetection(SkillDamageEffect effect, float triggerTime, float sampleTime, Transform explicitVictim)
         {
             var targets = new List<Transform>();
             if (_previewTarget == null || effect == null)
@@ -4305,7 +4535,8 @@ namespace Game.Editor
             }
             else
             {
-                ranDetection = DamageDetectionRunner.TryRunDetection(effect, _previewTarget.transform, null, null, buffer, out hitCount);
+                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(effect, triggerTime, sampleTime);
+                ranDetection = DamageDetectionRunner.TryRunDetection(effect, _previewTarget.transform, null, null, buffer, motionFrame, out hitCount);
             }
 
             if (!ranDetection || hitCount <= 0)
@@ -4321,11 +4552,46 @@ namespace Game.Editor
                 Transform root = ResolvePreviewHitTargetRoot(hit.transform);
                 if (root == null || root == previewRoot || targets.Contains(root))
                     continue;
+                if (explicitVictim != null && root != explicitVictim)
+                    continue;
 
                 targets.Add(root);
             }
 
             return targets;
+        }
+
+        private SkillDetectionMotionFrame? CreateEditorPreviewMotionFrame(SkillDamageEffect effect, float triggerTime, float sampleTime)
+        {
+            if (_previewTarget == null || effect?.motion == null || !effect.motion.IsActive)
+                return null;
+
+            float elapsed = Mathf.Max(0f, sampleTime - triggerTime);
+            return new SkillDetectionMotionFrame(_previewTarget.transform.position, _previewTarget.transform.rotation, elapsed);
+        }
+
+        private bool TryGetCurrentSelectedDamageTriggerTime(out float triggerTime)
+        {
+            triggerTime = 0f;
+            if (_selectedEventTrackType != TimelineTrackType.Damage)
+                return false;
+
+            if (GetSelectedTimedEvent() is not SkillDamageEvent damageEvent)
+                return false;
+
+            bool found = false;
+            float resolvedTriggerTime = 0f;
+            IteratePreviewTriggerTimes(damageEvent, time =>
+            {
+                if (IsCurrentDamageOccurrence(damageEvent, time))
+                {
+                    resolvedTriggerTime = time;
+                    found = true;
+                }
+            });
+            if (found)
+                triggerTime = resolvedTriggerTime;
+            return found;
         }
 
         private int RunEditorPreviewCollisionDetection(SkillDamageEffect effect, Collider[] outBuffer)
@@ -4960,6 +5226,7 @@ namespace Game.Editor
                 startTime = timedEvent.startTime,
                 triggerMode = timedEvent.triggerMode,
                 activeDuration = timedEvent.activeDuration,
+                activeDurationMode = timedEvent.activeDurationMode,
                 repeatInterval = timedEvent.repeatInterval,
                 damageEffects = new List<SkillDamageEffect>(),
                 physicsEffects = new List<SkillPhysicsEffect>(),
@@ -5759,14 +6026,22 @@ namespace Game.Editor
             return Mathf.Max(MinEventWidth, 12f);
         }
 
-        private static float GetTrackDisplayDuration(SkillTimedEventBase evt, TimelineTrackType trackType)
+        private float GetTrackDisplayDuration(SkillTimedEventBase evt, TimelineTrackType trackType)
         {
             if (evt == null)
                 return 0f;
 
-            float tailDuration = GetTrackEffectTailDuration(evt, trackType);
+            float lastTriggerTime = evt.triggerMode == SkillEventTriggerMode.Repeated
+                ? GetPreviewRepeatedEndTime(evt)
+                : evt.startTime;
+            float tailDuration = GetTrackEffectTailDuration(evt, trackType, lastTriggerTime);
             if (evt.triggerMode == SkillEventTriggerMode.Repeated)
-                return Mathf.Max(0f, evt.activeDuration + tailDuration);
+            {
+                float repeatedDuration = evt.RepeatsUntilStateExit
+                    ? Mathf.Max(0f, GetPreviewStateExitTime() - evt.startTime)
+                    : evt.activeDuration;
+                return Mathf.Max(0f, repeatedDuration + tailDuration);
+            }
             return tailDuration;
         }
 
@@ -5786,6 +6061,7 @@ namespace Game.Editor
                     float maxDetectionDuration = GetMaxDamageDetectionDuration(damageEvent);
                     if (damageEvent.triggerMode == SkillEventTriggerMode.Repeated)
                     {
+                        damageEvent.activeDurationMode = SkillEventActiveDurationMode.FixedTime;
                         damageEvent.activeDuration = Mathf.Max(0f, clampedDuration - maxDetectionDuration);
                         if (damageEvent.activeDuration > 0f)
                             damageEvent.repeatInterval = Mathf.Clamp(damageEvent.repeatInterval, 0.01f, damageEvent.activeDuration);
@@ -5806,7 +6082,8 @@ namespace Game.Editor
                         return;
                     if (physicsEvent.triggerMode == SkillEventTriggerMode.Repeated)
                     {
-                        float tailDuration = GetTrackEffectTailDuration(physicsEvent, trackType);
+                        physicsEvent.activeDurationMode = SkillEventActiveDurationMode.FixedTime;
+                        float tailDuration = GetTrackEffectTailDurationForAuthoring(physicsEvent, trackType);
                         physicsEvent.activeDuration = Mathf.Max(0f, clampedDuration - tailDuration);
                         if (physicsEvent.activeDuration > 0f)
                             physicsEvent.repeatInterval = Mathf.Clamp(physicsEvent.repeatInterval, 0.01f, physicsEvent.activeDuration);
@@ -5825,7 +6102,8 @@ namespace Game.Editor
                         return;
                     if (attributeEvent.triggerMode == SkillEventTriggerMode.Repeated)
                     {
-                        float tailDuration = GetTrackEffectTailDuration(attributeEvent, trackType);
+                        attributeEvent.activeDurationMode = SkillEventActiveDurationMode.FixedTime;
+                        float tailDuration = GetTrackEffectTailDurationForAuthoring(attributeEvent, trackType);
                         attributeEvent.activeDuration = Mathf.Max(0f, clampedDuration - tailDuration);
                         if (attributeEvent.activeDuration > 0f)
                             attributeEvent.repeatInterval = Mathf.Clamp(attributeEvent.repeatInterval, 0.01f, attributeEvent.activeDuration);
@@ -5844,7 +6122,8 @@ namespace Game.Editor
                         return;
                     if (vfxEvent.triggerMode == SkillEventTriggerMode.Repeated)
                     {
-                        float tailDuration = GetTrackEffectTailDuration(vfxEvent, trackType);
+                        vfxEvent.activeDurationMode = SkillEventActiveDurationMode.FixedTime;
+                        float tailDuration = GetTrackEffectTailDurationForAuthoring(vfxEvent, trackType);
                         vfxEvent.activeDuration = Mathf.Max(0f, clampedDuration - tailDuration);
                         if (vfxEvent.activeDuration > 0f)
                             vfxEvent.repeatInterval = Mathf.Clamp(vfxEvent.repeatInterval, 0.01f, vfxEvent.activeDuration);
@@ -5863,7 +6142,8 @@ namespace Game.Editor
                         return;
                     if (sfxEvent.triggerMode == SkillEventTriggerMode.Repeated)
                     {
-                        float tailDuration = GetTrackEffectTailDuration(sfxEvent, trackType);
+                        sfxEvent.activeDurationMode = SkillEventActiveDurationMode.FixedTime;
+                        float tailDuration = GetTrackEffectTailDurationForAuthoring(sfxEvent, trackType);
                         sfxEvent.activeDuration = Mathf.Max(0f, clampedDuration - tailDuration);
                         if (sfxEvent.activeDuration > 0f)
                             sfxEvent.repeatInterval = Mathf.Clamp(sfxEvent.repeatInterval, 0.01f, sfxEvent.activeDuration);
@@ -6153,11 +6433,18 @@ namespace Game.Editor
 
             if (evt.triggerMode == SkillEventTriggerMode.Repeated)
             {
-                float repeatedWindow = Mathf.Max(0f, evt.activeDuration);
-                if (repeatedWindow <= 0f)
-                    warnings.Add("重复触发模式的持续触发时长为 0，事件不会重复执行。");
-                if (evt.repeatInterval > repeatedWindow && repeatedWindow > 0f)
-                    warnings.Add("重复触发间隔大于持续触发时长，通常只会触发 1 次。");
+                if (evt.activeDurationMode == SkillEventActiveDurationMode.FixedTime)
+                {
+                    float repeatedWindow = Mathf.Max(0f, evt.activeDuration);
+                    if (repeatedWindow <= 0f)
+                        warnings.Add("重复触发模式的持续触发时长为 0，事件不会重复执行。");
+                    if (evt.repeatInterval > repeatedWindow && repeatedWindow > 0f)
+                        warnings.Add("重复触发间隔大于持续触发时长，通常只会触发 1 次。");
+                }
+                else
+                {
+                    warnings.Add("当前事件会持续重复触发，直到状态退出。请确认它只用于你期望的循环状态。");
+                }
             }
 
             if (_previewClip != null && evt.startTime > _previewClip.length + 0.0001f)
@@ -6262,6 +6549,8 @@ namespace Game.Editor
 
                     if (cue.particlePrefab == null)
                         warnings.Add($"特效效果 {i + 1} 没有粒子特效 Prefab。");
+                    if (cue.destroyMode == SkillCueDestroyMode.Timed && cue.duration <= 0f)
+                        warnings.Add($"特效效果 {i + 1} 选择了“指定秒数销毁”，但销毁时间未大于 0。");
                 }
             }
 
@@ -6278,6 +6567,10 @@ namespace Game.Editor
 
                     if (cue.audioClip == null)
                         warnings.Add($"音效效果 {i + 1} 没有音效片段。");
+                    if (cue.destroyMode == SkillCueDestroyMode.Timed && cue.duration <= 0f)
+                        warnings.Add($"音效效果 {i + 1} 选择了“指定秒数销毁”，但销毁时间未大于 0。");
+                    if (cue.loop && cue.destroyMode == SkillCueDestroyMode.NaturalDestroy)
+                        warnings.Add($"音效效果 {i + 1} 开启了循环播放，但销毁方式仍是“等待自然销毁”，运行时会回退为状态退出销毁。");
                 }
             }
 
@@ -6560,12 +6853,27 @@ namespace Game.Editor
             if (cue == null || _previewTarget == null)
                 return;
 
-            Transform anchor = ResolveSceneCueAnchor(cue.anchor, cue);
+            float triggerTime = 0f;
+            Transform explicitTarget = null;
+            TryGetCurrentSceneCuePlaybackContext(out triggerTime, out explicitTarget);
+
+            Transform anchor = ResolveCueAnchorTransform(cue.anchor, cue, explicitTarget);
             if (anchor == null)
                 anchor = _previewTarget.transform;
 
-            Vector3 worldPosition = anchor.TransformPoint(cue.offset);
             Quaternion anchorRotation = anchor.rotation;
+            Vector3 worldPosition = anchor.TransformPoint(cue.offset);
+            Vector3 motionOffset = Vector3.zero;
+            if (cue.motion != null && cue.motion.IsActive)
+            {
+                float elapsed = Mathf.Max(0f, _previewTime - triggerTime);
+                Vector3 direction = cue.motion.direction.sqrMagnitude > 0.0001f
+                    ? cue.motion.direction.normalized
+                    : Vector3.forward;
+                motionOffset = anchorRotation * direction * (cue.motion.speed * elapsed);
+                worldPosition += motionOffset;
+            }
+
             Quaternion worldRotation = anchorRotation * Quaternion.Euler(cue.rotationEuler);
             Vector3 scale = cue.scale;
             float handleSize = HandleUtility.GetHandleSize(worldPosition);
@@ -6581,7 +6889,7 @@ namespace Game.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(_database, "Edit VFX Scene Handle");
-                cue.offset = anchor.InverseTransformPoint(newWorldPosition);
+                cue.offset = anchor.InverseTransformPoint(newWorldPosition - motionOffset);
                 cue.rotationEuler = (Quaternion.Inverse(anchorRotation) * newWorldRotation).eulerAngles;
                 cue.scale = ClampVector3(newScale, 0.01f);
                 MarkDatabaseDirty();
@@ -6593,7 +6901,7 @@ namespace Game.Editor
             Handles.color = oldColor;
         }
 
-        private void DrawDamageSceneHandle(SkillDamageEffect effect)
+        private void DrawDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
         {
             if (effect == null || _previewTarget == null)
                 return;
@@ -6601,10 +6909,10 @@ namespace Game.Editor
             switch (effect.detectionType)
             {
                 case DamageDetectionType.RangeOverlap:
-                    DrawRangeDamageSceneHandle(effect);
+                    DrawRangeDamageSceneHandle(effect, triggerTime);
                     break;
                 case DamageDetectionType.Raycast:
-                    DrawRaycastDamageSceneHandle(effect);
+                    DrawRaycastDamageSceneHandle(effect, triggerTime);
                     break;
                 case DamageDetectionType.Collision:
                     DrawCollisionDamageSceneHandle(effect);
@@ -6612,11 +6920,36 @@ namespace Game.Editor
             }
         }
 
-        private void DrawRangeDamageSceneHandle(SkillDamageEffect effect)
+        private void DrawRangeDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
         {
             Transform preview = _previewTarget.transform;
             Vector3 origin = preview.TransformPoint(effect.centerOffset);
-            Quaternion rotation = preview.rotation;
+            Vector3 motionOffset = Vector3.zero;
+            float resolvedTriggerTime;
+            bool hasTriggerTime = triggerTime.HasValue;
+            if (hasTriggerTime)
+            {
+                resolvedTriggerTime = triggerTime.Value;
+            }
+            else
+            {
+                hasTriggerTime = TryGetCurrentSelectedDamageTriggerTime(out resolvedTriggerTime);
+            }
+
+            if (hasTriggerTime)
+            {
+                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(effect, resolvedTriggerTime, _previewTime);
+                if (motionFrame.HasValue)
+                {
+                    Vector3 motionDirection = effect.motion.direction.sqrMagnitude > 0.0001f
+                        ? effect.motion.direction.normalized
+                        : Vector3.forward;
+                    motionOffset = motionFrame.Value.OriginRotation * motionDirection * (effect.motion.speed * motionFrame.Value.Elapsed);
+                    origin += motionOffset;
+                }
+            }
+            Quaternion previewRotation = preview.rotation;
+            Quaternion rotation = previewRotation * Quaternion.Euler(effect.rotationEuler);
             float handleSize = HandleUtility.GetHandleSize(origin);
             bool changed = false;
 
@@ -6626,10 +6959,17 @@ namespace Game.Editor
 
             EditorGUI.BeginChangeCheck();
             Vector3 newOrigin = Handles.PositionHandle(origin, rotation);
+            Quaternion newRotation = rotation;
+            if (effect.shape == AttackShapeType.Sector || effect.shape == AttackShapeType.Box)
+                newRotation = Handles.RotationHandle(rotation, newOrigin);
             if (EditorGUI.EndChangeCheck())
             {
-                effect.centerOffset = preview.InverseTransformPoint(newOrigin);
+                Undo.RecordObject(_database, "Edit Damage Scene Handle");
+                effect.centerOffset = preview.InverseTransformPoint(newOrigin - motionOffset);
+                if (effect.shape == AttackShapeType.Sector || effect.shape == AttackShapeType.Box)
+                    effect.rotationEuler = (Quaternion.Inverse(previewRotation) * newRotation).eulerAngles;
                 origin = newOrigin;
+                rotation = newRotation;
                 changed = true;
             }
 
@@ -6647,13 +6987,16 @@ namespace Game.Editor
                     break;
 
                 case AttackShapeType.Sector:
-                    DrawWireSector(origin, preview.forward, preview.up, Mathf.Max(0.01f, effect.sphereRadius), effect.sectorAngle);
+                    Vector3 sectorForward = rotation * Vector3.forward;
+                    Vector3 sectorUp = rotation * Vector3.up;
+                    DrawWireSector(origin, sectorForward, sectorUp, Mathf.Max(0.01f, effect.sphereRadius), effect.sectorAngle);
                     EditorGUI.BeginChangeCheck();
-                    Vector3 radiusHandle = origin + preview.forward.normalized * Mathf.Max(0.01f, effect.sphereRadius);
-                    Vector3 newRadiusHandle = Handles.Slider(radiusHandle, preview.forward, handleSize * 0.1f, Handles.ConeHandleCap, 0f);
+                    Vector3 radiusHandle = origin + sectorForward.normalized * Mathf.Max(0.01f, effect.sphereRadius);
+                    Vector3 newRadiusHandle = Handles.Slider(radiusHandle, sectorForward, handleSize * 0.1f, Handles.ConeHandleCap, 0f);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        effect.sphereRadius = Mathf.Max(0.01f, Vector3.Dot(newRadiusHandle - origin, preview.forward.normalized));
+                        Undo.RecordObject(_database, "Edit Damage Scene Handle");
+                        effect.sphereRadius = Mathf.Max(0.01f, Vector3.Dot(newRadiusHandle - origin, sectorForward.normalized));
                         changed = true;
                     }
                     break;
@@ -6664,6 +7007,7 @@ namespace Game.Editor
                     Vector3 newSize = Handles.ScaleHandle(effect.boxSize, origin, rotation, handleSize * 0.8f);
                     if (EditorGUI.EndChangeCheck())
                     {
+                        Undo.RecordObject(_database, "Edit Damage Scene Handle");
                         effect.boxSize = ClampVector3(newSize, 0.01f);
                         changed = true;
                     }
@@ -6676,12 +7020,37 @@ namespace Game.Editor
             Handles.color = oldColor;
         }
 
-        private void DrawRaycastDamageSceneHandle(SkillDamageEffect effect)
+        private void DrawRaycastDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
         {
             Transform preview = _previewTarget.transform;
             Vector3 origin = preview.TransformPoint(effect.rayOriginOffset);
-            Quaternion rotation = preview.rotation;
-            Vector3 direction = preview.forward.normalized;
+            Vector3 motionOffset = Vector3.zero;
+            float resolvedTriggerTime;
+            bool hasTriggerTime = triggerTime.HasValue;
+            if (hasTriggerTime)
+            {
+                resolvedTriggerTime = triggerTime.Value;
+            }
+            else
+            {
+                hasTriggerTime = TryGetCurrentSelectedDamageTriggerTime(out resolvedTriggerTime);
+            }
+
+            if (hasTriggerTime)
+            {
+                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(effect, resolvedTriggerTime, _previewTime);
+                if (motionFrame.HasValue)
+                {
+                    Vector3 motionDirection = effect.motion.direction.sqrMagnitude > 0.0001f
+                        ? effect.motion.direction.normalized
+                        : Vector3.forward;
+                    motionOffset = motionFrame.Value.OriginRotation * motionDirection * (effect.motion.speed * motionFrame.Value.Elapsed);
+                    origin += motionOffset;
+                }
+            }
+            Quaternion previewRotation = preview.rotation;
+            Quaternion rotation = previewRotation * Quaternion.Euler(effect.rotationEuler);
+            Vector3 direction = (rotation * Vector3.forward).normalized;
             float handleSize = HandleUtility.GetHandleSize(origin);
             bool changed = false;
 
@@ -6691,10 +7060,15 @@ namespace Game.Editor
 
             EditorGUI.BeginChangeCheck();
             Vector3 newOrigin = Handles.PositionHandle(origin, rotation);
+            Quaternion newRotation = Handles.RotationHandle(rotation, newOrigin);
             if (EditorGUI.EndChangeCheck())
             {
-                effect.rayOriginOffset = preview.InverseTransformPoint(newOrigin);
+                Undo.RecordObject(_database, "Edit Damage Scene Handle");
+                effect.rayOriginOffset = preview.InverseTransformPoint(newOrigin - motionOffset);
+                effect.rotationEuler = (Quaternion.Inverse(previewRotation) * newRotation).eulerAngles;
                 origin = newOrigin;
+                rotation = newRotation;
+                direction = (rotation * Vector3.forward).normalized;
                 changed = true;
             }
 
@@ -6704,6 +7078,7 @@ namespace Game.Editor
             Vector3 newEnd = Handles.Slider(end, direction, handleSize * 0.1f, Handles.ConeHandleCap, 0f);
             if (EditorGUI.EndChangeCheck())
             {
+                Undo.RecordObject(_database, "Edit Damage Scene Handle");
                 effect.rayMaxDistance = Mathf.Max(0.01f, Vector3.Dot(newEnd - origin, direction));
                 changed = true;
             }
@@ -6797,14 +7172,20 @@ namespace Game.Editor
             if (_scenePreviewCueInstance == null)
                 return;
 
+            if (!TryGetCurrentSceneCuePlaybackContext(out float triggerTime, out Transform explicitTarget))
+            {
+                _scenePreviewCueInstance.SetActive(false);
+                return;
+            }
+
             UpdateScenePreviewCueTransform(cue);
 
-            bool shouldShow = _previewTime + 0.0001f >= evt.startTime;
+            bool shouldShow = _previewTime + 0.0001f >= triggerTime;
             _scenePreviewCueInstance.SetActive(shouldShow);
             if (!shouldShow)
                 return;
 
-            float localTime = Mathf.Max(0f, _previewTime - evt.startTime);
+            float localTime = Mathf.Max(0f, _previewTime - triggerTime);
             SimulateScenePreviewParticles(localTime);
         }
 
@@ -6829,6 +7210,9 @@ namespace Game.Editor
                     && _activeSceneHitVfxIndex >= 0
                     && _activeSceneHitVfxIndex < damageEffect.onHitVfxEffects.Count)
                 {
+                    if (!IsOnHitCueVisible(_selectedEventIndex, _activeSceneDamageIndex, _activeSceneHitVfxIndex))
+                        return false;
+
                     cue = damageEffect.onHitVfxEffects[_activeSceneHitVfxIndex];
                     cueEventIndex = _selectedEventIndex;
                     cueListIndex = _activeSceneHitVfxIndex;
@@ -6839,6 +7223,9 @@ namespace Game.Editor
 
             if (evt.vfxEffects != null && _activeSceneCueIndex >= 0 && _activeSceneCueIndex < evt.vfxEffects.Count)
             {
+                if (!IsTopLevelCueVisible(_selectedEventIndex, _activeSceneCueIndex))
+                    return false;
+
                 cue = evt.vfxEffects[_activeSceneCueIndex];
                 cueEventIndex = _selectedEventIndex;
                 cueListIndex = _activeSceneCueIndex;
@@ -6872,13 +7259,143 @@ namespace Game.Editor
             if (_scenePreviewCueInstance == null || cue == null)
                 return;
 
-            Transform anchor = ResolveSceneCueAnchor(cue.anchor, cue);
+            if (!TryGetCurrentSceneCuePlaybackContext(out float triggerTime, out Transform explicitTarget))
+            {
+                _scenePreviewCueInstance.SetActive(false);
+                return;
+            }
+
+            if (!TryEvaluatePreviewCueTransform(cue, explicitTarget, triggerTime, out Vector3 position, out Quaternion rotation))
+                return;
+
+            _scenePreviewCueInstance.transform.position = position;
+            _scenePreviewCueInstance.transform.rotation = rotation;
+            _scenePreviewCueInstance.transform.localScale = cue.scale;
+        }
+
+        private bool IsSceneEditingTopLevelCue(int eventIndex, int effectIndex)
+        {
+            return _activeSceneCueIndex >= 0
+                && _selectedEventIndex == eventIndex
+                && _activeSceneCueIndex == effectIndex;
+        }
+
+        private bool IsSceneEditingOnHitCue(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
+        {
+            return _activeSceneHitVfxDamageIndex >= 0
+                && _activeSceneHitVfxIndex >= 0
+                && _selectedEventIndex == eventIndex
+                && _activeSceneHitVfxDamageIndex == damageEffectIndex
+                && _activeSceneHitVfxIndex == onHitEffectIndex;
+        }
+
+        private string GetEditorCueVisibilityKey(int eventIndex, int effectIndex)
+        {
+            return $"cue:{eventIndex}:{effectIndex}";
+        }
+
+        private string GetEditorOnHitCueVisibilityKey(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
+        {
+            return $"hitcue:{eventIndex}:{damageEffectIndex}:{onHitEffectIndex}";
+        }
+
+        private bool IsTopLevelCueVisible(int eventIndex, int effectIndex)
+        {
+            return !_hiddenPreviewCueKeys.Contains(GetEditorCueVisibilityKey(eventIndex, effectIndex));
+        }
+
+        private bool IsOnHitCueVisible(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
+        {
+            return !_hiddenPreviewCueKeys.Contains(GetEditorOnHitCueVisibilityKey(eventIndex, damageEffectIndex, onHitEffectIndex));
+        }
+
+        private bool TryGetCurrentSceneCuePlaybackContext(out float triggerTime, out Transform explicitTarget)
+        {
+            triggerTime = 0f;
+            explicitTarget = null;
+
+            SkillTimelineEvent evt = GetSelectedSceneEvent();
+            if (evt == null)
+                return false;
+
+            if (_selectedEventTrackType == TimelineTrackType.Damage
+                && _activeSceneHitVfxDamageIndex >= 0
+                && _activeSceneHitVfxIndex >= 0)
+            {
+                SharedSkillDefinition skill = GetSelectedSkill();
+                if (skill == null)
+                    return false;
+
+                List<PreviewDamageHitResult> hits = CollectPreviewDamageHitHistory(skill);
+                PreviewDamageHitResult bestHit = null;
+                for (int i = 0; i < hits.Count; i++)
+                {
+                    PreviewDamageHitResult hit = hits[i];
+                    if (hit == null
+                        || hit.eventIndex != _selectedEventIndex
+                        || hit.effectIndex != _activeSceneHitVfxDamageIndex
+                        || hit.hitTargets == null
+                        || hit.hitTargets.Count == 0
+                        || hit.hitTime > _previewTime + 0.0001f)
+                        continue;
+
+                    if (bestHit == null || hit.hitTime > bestHit.hitTime)
+                        bestHit = hit;
+                }
+
+                if (bestHit == null)
+                    return false;
+
+                triggerTime = bestHit.hitTime;
+                explicitTarget = bestHit.hitTargets[0];
+                return true;
+            }
+
+            if (_activeSceneCueIndex < 0 || _previewTime + 0.0001f < evt.startTime)
+                return false;
+
+            triggerTime = evt.startTime;
+            if (evt.triggerMode == SkillEventTriggerMode.Repeated)
+            {
+                float interval = Mathf.Max(0.01f, evt.repeatInterval);
+                float repeatedEndTime = evt.activeDurationMode == SkillEventActiveDurationMode.UntilStateExit
+                    ? Mathf.Max(evt.startTime, GetPreviewStateExitTime())
+                    : evt.startTime + Mathf.Max(0f, evt.activeDuration);
+                float endTime = Mathf.Min(repeatedEndTime, _previewTime);
+                for (float time = evt.startTime; time <= endTime + 0.0001f; time += interval)
+                    triggerTime = time;
+            }
+
+            return true;
+        }
+
+        private bool TryEvaluatePreviewCueTransform(SkillVfxEffect cue, Transform explicitTarget, float triggerTime, out Vector3 position, out Quaternion rotation)
+        {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+
+            if (cue == null || _previewTarget == null)
+                return false;
+
+            Transform anchor = ResolveCueAnchorTransform(cue.anchor, cue, explicitTarget);
             if (anchor == null)
                 anchor = _previewTarget.transform;
+            if (anchor == null)
+                return false;
 
-            _scenePreviewCueInstance.transform.position = anchor.TransformPoint(cue.offset);
-            _scenePreviewCueInstance.transform.rotation = anchor.rotation * Quaternion.Euler(cue.rotationEuler);
-            _scenePreviewCueInstance.transform.localScale = cue.scale;
+            Quaternion anchorRotation = anchor.rotation;
+            position = anchor.TransformPoint(cue.offset);
+            if (cue.motion != null && cue.motion.IsActive)
+            {
+                float elapsed = Mathf.Max(0f, _previewTime - triggerTime);
+                Vector3 direction = cue.motion.direction.sqrMagnitude > 0.0001f
+                    ? cue.motion.direction.normalized
+                    : Vector3.forward;
+                position += anchorRotation * direction * (cue.motion.speed * elapsed);
+            }
+
+            rotation = anchorRotation * Quaternion.Euler(cue.rotationEuler);
+            return true;
         }
 
         private void DrawSceneCueBounds()
@@ -7000,6 +7517,22 @@ namespace Game.Editor
         private Transform ResolveSceneCueAnchor(CueAnchor anchor, SkillVfxEffect cue = null)
         {
             return ResolveCueAnchorTransform(anchor, cue, null);
+        }
+
+        private CueAnchor DrawCueAnchorPopup(string label, CueAnchor current, CueAnchor[] values, string[] labels)
+        {
+            int currentIndex = 0;
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (values[i] != current)
+                    continue;
+
+                currentIndex = i;
+                break;
+            }
+
+            int selectedIndex = EditorGUILayout.Popup(label, currentIndex, labels);
+            return values[Mathf.Clamp(selectedIndex, 0, values.Length - 1)];
         }
 
         private Transform ResolveCueAnchorTransform(CueAnchor anchor, SkillVfxEffect cue, Transform explicitTarget)

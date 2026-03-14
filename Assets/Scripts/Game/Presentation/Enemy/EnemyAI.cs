@@ -11,9 +11,6 @@ namespace Game.Presentation
     [RequireComponent(typeof(EnemyController))]
     public class EnemyAI : MonoBehaviour
     {
-        [Header("��Ϊ��������������")]
-        [SerializeField] private BehaviorTreeAsset _behaviorTreeAsset;
-
         private EnemyController _controller;
         private EnemyPerception _perception;
         private IBehaviorNode _root;
@@ -36,6 +33,7 @@ namespace Game.Presentation
             _patrolOrigin = transform.position;
             _nextPatrolTime = 0f;
             _ctx = new EnemyAIContext();
+            _ctx.Memory = new EnemyCombatMemory();
             EnsureBehaviorTree();
         }
 
@@ -54,11 +52,16 @@ namespace Game.Presentation
                 EnsureBehaviorTree();
             if (_root == null || _ctx == null) return;
 
+            float now = Time.time;
             _ctx.Controller = _controller;
             _ctx.Perception = _perception;
             _ctx.Archetype = _controller.Archetype;
+            _ctx.TimeNow = now;
             _ctx.PatrolOrigin = _patrolOrigin;
             _ctx.NextPatrolTime = _nextPatrolTime;
+
+            if (!_perception.HasImmediateThreat && _ctx.Memory != null && !_ctx.Memory.CanEvaluate(now))
+                return;
 
             _root.Tick(_ctx);
             _nextPatrolTime = _ctx.NextPatrolTime;
@@ -68,18 +71,8 @@ namespace Game.Presentation
         {
             _controller?.EnsureInitialized();
 
-            var asset = _behaviorTreeAsset;
-            if (asset == null)
-                asset = _controller != null ? _controller.Archetype?.behaviorTreeAsset : null;
-
-            if (asset != null && asset.nodes != null && asset.nodes.Count > 0)
-            {
-                _root = BehaviorTreeFromDataBuilder.Build(asset);
-                return;
-            }
-
             _root = _controller != null && _controller.Archetype != null
-                ? EnemyBehaviorTreeBuilder.BuildDefaultTree(_controller.Archetype)
+                ? EnemyBehaviorTreeBuilder.BuildDefaultTree()
                 : null;
         }
     }

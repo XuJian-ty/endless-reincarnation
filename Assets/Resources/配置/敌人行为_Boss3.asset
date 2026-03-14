@@ -15,12 +15,10 @@ MonoBehaviour:
   enemyId: boss_3
   displayName: Boss3
   enemyType: 4
-  behaviorTreeAsset: {fileID: 11400000, guid: 19d0127e2bca69f4787221e7189102ae, type: 2}
   sectorAngle: 170
   sectorRange: 24
   chaseBreakDistance: 44
   patrolRadius: 17
-  enableTacticalCombat: 1
   chaseInnerDistance: 6.5
   chaseOuterDistance: 18.5
   preferredSafetyDistanceOffset: 0.9
@@ -36,11 +34,33 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  reactionMinSeconds: 0.07
+  reactionMaxSeconds: 0.16
+  decisionCommitSeconds: 0.22
+  searchMemoryDuration: 1.9
+  aggression: 0.63
+  caution: 0.46
+  dodgeBias: 0.57
+  punishBias: 0.68
+  strafeBias: 0.5
+  maxPressureAllies: 3
+  poiseMax: 34
+  poiseRecoveryPerSecond: 13
+  poiseBreakStunDuration: 0.45
+  allowLightHitFlinch: 0
+  superArmorWhileCasting: 1
   skillSlots:
   - slotIndex: 0
     skillId: boss_3_pull_cleave
     cooldown: 2.4
     castRange: 4
+    minCastRange: 0
+    idealCastRange: 3.5
+    skillRole: 3
+    riskWeight: 0.32
+    punishWeight: 0.68
+    repeatPenalty: 0.24
+    canUseUnderThreat: 0
     castDuration: 1.05
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
@@ -51,6 +71,13 @@ MonoBehaviour:
     skillId: boss_3_barrage
     cooldown: 2.9
     castRange: 15
+    minCastRange: 0
+    idealCastRange: 13.5
+    skillRole: 5
+    riskWeight: 0.26
+    punishWeight: 0.2
+    repeatPenalty: 0.18
+    canUseUnderThreat: 0
     castDuration: 1.25
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
@@ -61,6 +88,13 @@ MonoBehaviour:
     skillId: boss_3_lunge
     cooldown: 3.9
     castRange: 5.8
+    minCastRange: 2.4
+    idealCastRange: 4.9
+    skillRole: 1
+    riskWeight: 0.44
+    punishWeight: 0.6
+    repeatPenalty: 0.3
+    canUseUnderThreat: 1
     castDuration: 1
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.45
@@ -71,6 +105,13 @@ MonoBehaviour:
     skillId: boss_3_drain
     cooldown: 5.2
     castRange: 8.5
+    minCastRange: 0
+    idealCastRange: 7.6
+    skillRole: 4
+    riskWeight: 0.18
+    punishWeight: 0.18
+    repeatPenalty: 0.24
+    canUseUnderThreat: 1
     castDuration: 1.25
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.55

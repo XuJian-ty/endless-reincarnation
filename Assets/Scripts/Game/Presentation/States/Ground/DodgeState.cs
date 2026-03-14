@@ -31,6 +31,7 @@ namespace Game.Presentation
         {
             var pending = Ctx.StateMachine.PeekPending();
             bool hasMovePending = !pending.IsEmpty && (pending.Action == GameAction.Walk || pending.Action == GameAction.Run);
+            bool alreadyMovedToLoop = StateAge > 0.1f && Ctx.Anim.IsCurrentStateLooping();
             if (hasMovePending && AnimNearEnd(GetConfiguredPendingReleaseThreshold(pending.Action, 0.80f)))
             {
                 CompleteWithPending(() =>
@@ -42,7 +43,7 @@ namespace Game.Presentation
                 });
                 return;
             }
-            if (AnimNearConfiguredEnd())
+            if (AnimNearConfiguredEnd() || alreadyMovedToLoop)
                 CompleteWithPending(() =>
                 {
                     if (IsGrounded)

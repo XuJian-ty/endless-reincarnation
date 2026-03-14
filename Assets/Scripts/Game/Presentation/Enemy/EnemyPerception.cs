@@ -12,6 +12,7 @@ namespace Game.Presentation
     public class EnemyPerception : MonoBehaviour
     {
         private Transform _player;
+        private PlayerController _playerController;
         private EnemyController _controller;
 
         private bool _hasLineOfSight;
@@ -32,6 +33,17 @@ namespace Game.Presentation
         public bool HasLineOfSight => HasTarget && _hasLineOfSight;
         public bool HasReachablePath => HasTarget && _hasReachablePath;
         public Vector3 TargetVelocity { get; private set; }
+        public Vector3 LastKnownTargetPosition { get; private set; }
+        public float LastSeenTargetTime { get; private set; } = -1f;
+        public float TimeSinceLastSeen => LastSeenTargetTime >= 0f ? Time.time - LastSeenTargetTime : float.MaxValue;
+        public GameAction ObservedPlayerAction { get; private set; }
+        public float ObservedPlayerStateRemainingTime { get; private set; }
+        public float ObservedPlayerStateNormalizedProgress { get; private set; }
+        public float ThreatScore { get; private set; }
+        public bool HasImmediateThreat { get; private set; }
+        public bool IsPlayerLikelyRecovering { get; private set; }
+        public float PunishOpportunityScore { get; private set; }
+        public bool HasPunishOpportunity => PunishOpportunityScore > 0.2f;
 
         public bool IsInSkillRange(int slot)
         {
@@ -40,9 +52,16 @@ namespace Game.Presentation
             if (_controller == null || !HasTarget) return false;
 
             _controller.EnsureInitialized();
-            float range = _controller.GetSkillRange(slot);
+            EnemyResolvedSkill skill = _controller.ResolveSkillSlot(slot);
+            if (skill == null)
+                return false;
+
+            float range = skill.CastRange;
+            float minRange = Mathf.Max(0f, skill.MinCastRange);
             float tolerance = _controller.Archetype != null ? Mathf.Max(0f, _controller.Archetype.castRangeTolerance) : 0f;
-            return range > 0.01f && DistanceToPlayer <= range + tolerance;
+            return range > 0.01f &&
+                   DistanceToPlayer + tolerance >= minRange &&
+                   DistanceToPlayer <= range + tolerance;
         }
 
         public Vector3 PredictTargetPosition(float leadTime)
@@ -59,6 +78,12 @@ namespace Game.Presentation
         {
             EnemyArchetypeSO archetype = _controller != null ? _controller.Archetype : null;
             return ProbeLineOfSight(from, to, archetype);
+        }
+
+        public bool HasRecentTargetMemory(float memoryDuration)
+        {
+            return LastSeenTargetTime >= 0f &&
+                   Time.time - LastSeenTargetTime <= Mathf.Max(0f, memoryDuration);
         }
 
         private void Awake()
@@ -82,8 +107,14 @@ namespace Game.Presentation
             {
                 var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
                 if (player != null)
+                {
                     _player = player.transform;
+                    _playerController = player;
+                }
             }
+
+            if (_playerController == null && _player != null)
+                _playerController = _player.GetComponent<PlayerController>();
         }
 
         public void Tick()
@@ -149,33 +180,33 @@ namespace Game.Presentation
                 HasTarget = true;
                 TargetPosition = playerPos;
             }
-            else
-            {
-                TargetPosition = null;
-            }
-
-            if (!HasTarget || !TargetPosition.HasValue)
-            {
-                _hasLineOfSight = false;
-                _hasReachablePath = false;
-                TargetVelocity = Vector3.zero;
-                return;
-            }
 
             UpdateTargetVelocity(playerPos);
 
             float now = Time.time;
-            if (now >= _nextLosProbeTime)
+            bool shouldProbeTarget = HasTarget || inSector || HasRecentTargetMemory(archetype.searchMemoryDuration);
+            if (shouldProbeTarget && now >= _nextLosProbeTime)
             {
                 _hasLineOfSight = ProbeLineOfSight(transform.position, playerPos, archetype);
                 _nextLosProbeTime = now + Mathf.Max(0.01f, archetype.losProbeInterval);
             }
+            else if (!shouldProbeTarget)
+            {
+                _hasLineOfSight = false;
+            }
 
-            if (now >= _nextPathProbeTime)
+            if (shouldProbeTarget && now >= _nextPathProbeTime)
             {
                 _hasReachablePath = ProbePathToTarget(playerPos);
                 _nextPathProbeTime = now + Mathf.Max(0.02f, archetype.pathProbeInterval);
             }
+            else if (!shouldProbeTarget)
+            {
+                _hasReachablePath = false;
+            }
+
+            UpdateTargetAwareness(playerPos, inSector, archetype, now);
+            UpdatePlayerCombatObservation(archetype);
         }
 
         private void UpdateTargetVelocity(Vector3 playerPos)
@@ -202,6 +233,107 @@ namespace Game.Presentation
 
             _lastPlayerSamplePosition = playerPos;
             _lastPlayerSampleTime = Time.time;
+        }
+
+        private void UpdateTargetAwareness(Vector3 playerPos, bool inSector, EnemyArchetypeSO archetype, float now)
+        {
+            bool canSeePlayer = inSector || _hasLineOfSight;
+            if (canSeePlayer)
+            {
+                HasTarget = true;
+                TargetPosition = playerPos;
+                LastKnownTargetPosition = playerPos;
+                LastSeenTargetTime = now;
+                return;
+            }
+
+            float loseTrackDelay = Mathf.Clamp(archetype.searchMemoryDuration * 0.35f, 0.25f, 0.6f);
+            if (HasTarget && TimeSinceLastSeen <= loseTrackDelay)
+            {
+                TargetPosition = LastKnownTargetPosition;
+                return;
+            }
+
+            HasTarget = false;
+            TargetPosition = null;
+        }
+
+        private void UpdatePlayerCombatObservation(EnemyArchetypeSO archetype)
+        {
+            if (_playerController == null && _player != null)
+                _playerController = _player.GetComponent<PlayerController>();
+            if (_playerController == null)
+            {
+                ClearPlayerCombatObservation();
+                return;
+            }
+
+            ObservedPlayerAction = _playerController.CurrentActionId;
+            ObservedPlayerStateRemainingTime = Mathf.Max(0f, _playerController.StateRemainingTime);
+            ObservedPlayerStateNormalizedProgress = Mathf.Clamp01(_playerController.StateNormalizedProgress);
+
+            float threatWeight = ResolveActionThreatWeight(ObservedPlayerAction);
+            float progressWeight = ResolveActionThreatProgress(
+                ObservedPlayerAction,
+                ObservedPlayerStateNormalizedProgress,
+                ObservedPlayerStateRemainingTime);
+            float threatRange = Mathf.Max(2.25f, archetype.GetChaseInnerDistance() + 1.25f);
+            float rangeWeight = 1f - Mathf.Clamp01(DistanceToPlayer / threatRange);
+
+            ThreatScore = threatWeight * progressWeight * rangeWeight;
+            HasImmediateThreat = HasTarget && ThreatScore >= 0.22f;
+
+            bool isAttackLike = threatWeight > 0.01f;
+            IsPlayerLikelyRecovering = isAttackLike &&
+                                       ObservedPlayerStateNormalizedProgress >= 0.58f &&
+                                       ObservedPlayerStateRemainingTime <= 0.6f;
+
+            if (HasTarget && HasLineOfSight && IsPlayerLikelyRecovering)
+                PunishOpportunityScore = (0.35f + ObservedPlayerStateNormalizedProgress * 0.65f) * rangeWeight;
+            else
+                PunishOpportunityScore = 0f;
+        }
+
+        private void ClearPlayerCombatObservation()
+        {
+            ObservedPlayerAction = GameAction.None;
+            ObservedPlayerStateRemainingTime = 0f;
+            ObservedPlayerStateNormalizedProgress = 0f;
+            ThreatScore = 0f;
+            HasImmediateThreat = false;
+            IsPlayerLikelyRecovering = false;
+            PunishOpportunityScore = 0f;
+        }
+
+        private static float ResolveActionThreatWeight(GameAction action)
+        {
+            return action switch
+            {
+                GameAction.NormalAttack => 0.7f,
+                GameAction.Skill => 1f,
+                GameAction.AirAttack => 0.8f,
+                GameAction.FallAttack => 0.95f,
+                GameAction.ChargeRelease => 0.9f,
+                GameAction.ChargeStart => 0.45f,
+                _ => 0f,
+            };
+        }
+
+        private static float ResolveActionThreatProgress(GameAction action, float progress, float remainingTime)
+        {
+            if (action == GameAction.None)
+                return 0f;
+
+            if (progress <= 0f && remainingTime <= 0f)
+                return 0f;
+
+            if (progress < 0.12f)
+                return 0.35f;
+            if (progress < 0.68f)
+                return 1f;
+            if (remainingTime > 0.55f)
+                return 0.55f;
+            return 0.35f;
         }
 
         private bool ProbeLineOfSight(Vector3 from, Vector3 to, EnemyArchetypeSO archetype)
@@ -276,6 +408,9 @@ namespace Game.Presentation
             _hasLastPlayerSample = false;
             _nextLosProbeTime = 0f;
             _nextPathProbeTime = 0f;
+            LastKnownTargetPosition = Vector3.zero;
+            LastSeenTargetTime = -1f;
+            ClearPlayerCombatObservation();
         }
     }
 }

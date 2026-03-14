@@ -12,6 +12,8 @@ namespace Game.AI
         public EnemyController Controller;
         public EnemyPerception Perception;
         public EnemyArchetypeSO Archetype;
+        public EnemyCombatMemory Memory;
+        public float TimeNow;
         /// <summary>巡逻起点（通常为出生点）</summary>
         public Vector3 PatrolOrigin;
         /// <summary>下次可执行巡逻的时间戳，由 Patrol 动作节点写入</summary>

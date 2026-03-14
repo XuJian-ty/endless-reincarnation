@@ -155,7 +155,23 @@ namespace Game.Presentation
 
         protected void StopTimelineSkill()
         {
-            _timelineRunner?.Stop();
+            if (_timelineRunner == null)
+                return;
+
+            _timelineRunner.StopStateScopedCues();
+            if (_timelineRunner.HasPendingWork)
+            {
+                var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
+                if (player != null)
+                    player.ContinueDetachedTimelineRunner(_timelineRunner);
+                else
+                    _timelineRunner.Stop();
+            }
+            else
+            {
+                _timelineRunner.Stop();
+            }
+
             _timelineRunner = null;
         }
 

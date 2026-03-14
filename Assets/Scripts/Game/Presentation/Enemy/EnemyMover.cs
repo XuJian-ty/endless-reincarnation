@@ -14,6 +14,7 @@ namespace Game.Presentation
         private const float WalkBlendValue = 0.5f;
         private const float RunBlendValue = 1f;
         private const float RepositionSpeedRatio = 0.85f;
+        private const float DodgeSpeedRatio = 1.15f;
         private const float RetreatArrivalDistance = 0.2f;
 
         private NavMeshAgent _agent;
@@ -64,6 +65,12 @@ namespace Game.Presentation
                 return;
             }
 
+            if (intent.Type == EnemyIntentType.Hold)
+            {
+                ExecuteHoldIntent(intent);
+                return;
+            }
+
             if (IsMoveIntent(intent.Type))
             {
                 ExecuteMoveIntent(intent);
@@ -87,17 +94,25 @@ namespace Game.Presentation
             switch (intent.Type)
             {
                 case EnemyIntentType.Patrol:
+                case EnemyIntentType.Search:
                     moveSpeed *= WalkSpeedRatio;
                     moveBlend = WalkBlendValue;
                     break;
                 case EnemyIntentType.Chase:
                 case EnemyIntentType.Approach:
+                case EnemyIntentType.Punish:
                     ResolveChaseSpeed(intent.TargetPosition.Value, ref moveSpeed, ref moveBlend);
                     break;
                 case EnemyIntentType.Retreat:
                     moveSpeed *= WalkSpeedRatio;
                     moveBlend = WalkBlendValue;
                     break;
+                case EnemyIntentType.Dodge:
+                    moveSpeed *= DodgeSpeedRatio;
+                    moveBlend = RunBlendValue;
+                    break;
+                case EnemyIntentType.StrafeLeft:
+                case EnemyIntentType.StrafeRight:
                 case EnemyIntentType.Reposition:
                     moveSpeed *= RepositionSpeedRatio;
                     moveBlend = WalkBlendValue;
@@ -117,6 +132,17 @@ namespace Game.Presentation
         private Vector3 ResolveFacingPoint(EnemyIntent intent)
         {
             if ((intent.Type == EnemyIntentType.Retreat || intent.Type == EnemyIntentType.Reposition) &&
+                _perception != null &&
+                _perception.TargetPosition.HasValue)
+            {
+                return _perception.TargetPosition.Value;
+            }
+
+            if ((intent.Type == EnemyIntentType.StrafeLeft ||
+                 intent.Type == EnemyIntentType.StrafeRight ||
+                 intent.Type == EnemyIntentType.Dodge ||
+                 intent.Type == EnemyIntentType.Punish ||
+                 intent.Type == EnemyIntentType.Hold) &&
                 _perception != null &&
                 _perception.TargetPosition.HasValue)
             {
@@ -197,6 +223,14 @@ namespace Game.Presentation
             return true;
         }
 
+        private void ExecuteHoldIntent(EnemyIntent intent)
+        {
+            StopMoving();
+
+            Vector3 facingPoint = ResolveFacingPoint(intent);
+            RotateToward(facingPoint);
+        }
+
         private Vector3 ResolveCurrentThreatPosition()
         {
             if (_perception != null && _perception.TargetPosition.HasValue)
@@ -265,8 +299,13 @@ namespace Game.Presentation
         private static bool IsMoveIntent(EnemyIntentType type)
         {
             return type == EnemyIntentType.Patrol ||
+                   type == EnemyIntentType.Search ||
                    type == EnemyIntentType.Chase ||
                    type == EnemyIntentType.Approach ||
+                   type == EnemyIntentType.Punish ||
+                   type == EnemyIntentType.StrafeLeft ||
+                   type == EnemyIntentType.StrafeRight ||
+                   type == EnemyIntentType.Dodge ||
                    type == EnemyIntentType.Retreat ||
                    type == EnemyIntentType.Reposition;
         }

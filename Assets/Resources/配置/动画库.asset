@@ -34,10 +34,24 @@ MonoBehaviour:
       clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     - animationId: AirAttack
       clip: {fileID: 7400000, guid: b0ae0baa716e5924b82d3a08aa751647, type: 2}
-    - animationId: FallAttack
+    - animationId: FallAttackEnd
       clip: {fileID: 7400000, guid: d2f96f562e7e1644f835f1afd7fc3ed0, type: 2}
-    - animationId: ChargeRelease
+    - animationId: ChargeIaieleaseEnd
       clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
+    - animationId: Idle
+      clip: {fileID: 7400000, guid: 979fd354997c06a46ad48ffd58abbb2f, type: 2}
+    - animationId: Walk
+      clip: {fileID: 7400000, guid: 0709ae0220ed7f44b982fbf1bf1fdc02, type: 2}
+    - animationId: Run
+      clip: {fileID: 7400000, guid: 6df6f1940a4353641b0b014e2e7d15a2, type: 2}
+    - animationId: Run
+      clip: {fileID: 7400000, guid: 6df6f1940a4353641b0b014e2e7d15a2, type: 2}
+    - animationId: JumoLoop
+      clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+    - animationId: FallAttackLoop
+      clip: {fileID: 7400000, guid: 4164e076c17d81a4ea4108422b125f3f, type: 2}
+    - animationId: ChargeLoop
+      clip: {fileID: 7400000, guid: 6acbbbccbff6bc543bcbbf8e048550a7, type: 2}
   - groupId: melee_minion
     groupName: "\u8FD1\u6218\u5C0F\u602A"
     entries: []

@@ -82,6 +82,30 @@ namespace Game.Data
             };
         }
 
+        /// <summary>按类型与品质生成一条“所有属性取范围下限”的武器实例，用于新存档默认装备/道具。</summary>
+        public WeaponInstance CreateMinimumRoll(WeaponType type, WeaponRarity rarity)
+        {
+            var e = GetEntry(type);
+            if (e == null) return null;
+            var r = e.GetRangesFor(rarity);
+            return new WeaponInstance
+            {
+                weaponId          = e.weaponId,
+                type              = e.type,
+                rarity            = rarity,
+                rolledHp          = r.hp.min,
+                rolledMp          = r.mp.min,
+                rolledAttack      = r.attack.min,
+                rolledDefense     = r.defense.min,
+                rolledHpRegen     = rarity >= WeaponRarity.Rare      ? r.hpRegen.min      : 0f,
+                rolledMpRegen     = rarity >= WeaponRarity.Rare      ? r.mpRegen.min      : 0f,
+                rolledCritRate    = rarity >= WeaponRarity.Epic      ? r.critRate.min     : 0f,
+                rolledCritDmg     = rarity >= WeaponRarity.Epic      ? r.critDmg.min      : 0f,
+                rolledAttackSpeed = rarity >= WeaponRarity.Legendary ? r.attackSpeed.min  : 0f,
+                rolledMoveSpeed   = rarity >= WeaponRarity.Legendary ? r.moveSpeed.min    : 0f,
+            };
+        }
+
         /// <summary>在已有武器中随机选一个类型再 Roll（需求：剑/枪各半）</summary>
         public WeaponInstance RollRandomWeapon(WeaponRarity rarity, System.Random rng)
         {

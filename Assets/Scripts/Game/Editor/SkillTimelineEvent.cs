@@ -9,6 +9,7 @@ namespace Game.Editor
         public float startTime = 0f;
         public SkillEventTriggerMode triggerMode = SkillEventTriggerMode.Once;
         public float activeDuration = 0f;
+        public SkillEventActiveDurationMode activeDurationMode = SkillEventActiveDurationMode.FixedTime;
         public float repeatInterval = 0.1f;
 
         public List<SkillDamageEffect> damageEffects = new List<SkillDamageEffect>();

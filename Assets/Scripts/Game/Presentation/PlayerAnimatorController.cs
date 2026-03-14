@@ -40,12 +40,12 @@ namespace Game.Presentation
         public void SetGrounded(bool grounded)       => _animator.SetBool(IsGroundedHash, grounded);
 
         // ── 触发方法 ──────────────────────────────────────────────────────
-        public void TriggerJump()   => _animator.SetTrigger(JumpTrigger);
-        public void TriggerDodge()  => _animator.SetTrigger(DodgeTrigger);
-        public void TriggerFall()   => _animator.SetTrigger(FallTrigger);
-        public void TriggerLand()   => _animator.SetTrigger(LandTrigger);
-        public void TriggerHitStun()=> _animator.SetTrigger(HitStunTrigger);
-        public void TriggerDead()   => _animator.SetTrigger(DeadTrigger);
+        public void TriggerJump()   => SetExclusiveTrigger(JumpTrigger);
+        public void TriggerDodge()  => SetExclusiveTrigger(DodgeTrigger);
+        public void TriggerFall()   => SetExclusiveTrigger(FallTrigger);
+        public void TriggerLand()   => SetExclusiveTrigger(LandTrigger);
+        public void TriggerHitStun()=> SetExclusiveTrigger(HitStunTrigger);
+        public void TriggerDead()   => SetExclusiveTrigger(DeadTrigger);
 
         public void TriggerAttack(int comboIndex)
         {
@@ -55,14 +55,14 @@ namespace Game.Presentation
             TriggerAction(AttackTriggerNames[comboIndex]);
         }
 
-        public void TriggerLocomotion()      => _animator.SetTrigger(LocomotionHash);
-        public void TriggerChargeStart()     => _animator.SetTrigger(ChargeStartHash);
-        public void TriggerChargeLoop()      => _animator.SetTrigger(ChargeLoopHash);
-        public void TriggerChargeRelease()   => _animator.SetTrigger(ChargeRelHash);
-        public void TriggerAirAttack()       => _animator.SetTrigger(AirAttackHash);
-        public void TriggerFallAttackStart() => _animator.SetTrigger(FallAttackHash);
-        public void TriggerFallAttackLoop()  => _animator.SetTrigger(FallAttLoopHash);
-        public void TriggerFallAttackLand()  => _animator.SetTrigger(FallAttLandHash);
+        public void TriggerLocomotion()      => SetExclusiveTrigger(LocomotionHash, clearLocomotion: false);
+        public void TriggerChargeStart()     => SetExclusiveTrigger(ChargeStartHash);
+        public void TriggerChargeLoop()      => SetExclusiveTrigger(ChargeLoopHash);
+        public void TriggerChargeRelease()   => SetExclusiveTrigger(ChargeRelHash);
+        public void TriggerAirAttack()       => SetExclusiveTrigger(AirAttackHash);
+        public void TriggerFallAttackStart() => SetExclusiveTrigger(FallAttackHash);
+        public void TriggerFallAttackLoop()  => SetExclusiveTrigger(FallAttLoopHash);
+        public void TriggerFallAttackLand()  => SetExclusiveTrigger(FallAttLandHash);
 
         public void TriggerSkill(int skillIndex)
         {
@@ -81,6 +81,8 @@ namespace Game.Presentation
             string normalized = triggerName.Trim();
             if (_parameterNames.Contains(normalized))
             {
+                if (!string.Equals(normalized, "Locomotion"))
+                    _animator.ResetTrigger(LocomotionHash);
                 _animator.ResetTrigger(normalized);
                 _animator.SetTrigger(normalized);
                 return true;
@@ -121,6 +123,18 @@ namespace Game.Presentation
 
             foreach (var parameter in _animator.parameters)
                 _parameterNames.Add(parameter.name);
+        }
+
+        private void SetExclusiveTrigger(int triggerHash, bool clearLocomotion = true)
+        {
+            if (_animator == null)
+                return;
+
+            if (clearLocomotion)
+                _animator.ResetTrigger(LocomotionHash);
+
+            _animator.ResetTrigger(triggerHash);
+            _animator.SetTrigger(triggerHash);
         }
     }
 }

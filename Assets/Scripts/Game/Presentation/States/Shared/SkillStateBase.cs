@@ -13,8 +13,6 @@ namespace Game.Presentation
 
         public override GameAction CurrentActionId => GameAction.Skill;
 
-        private SkillTimelineRunner _timelineRunner;
-
         protected override void OnEnter()
         {
             SkillConfigEntry entry = ResolveEntry();
@@ -39,7 +37,6 @@ namespace Game.Presentation
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
-            _timelineRunner?.Tick(dt);
             if (AnimNearConfiguredEnd())
             {
                 CompleteWithPending(() =>
@@ -50,12 +47,6 @@ namespace Game.Presentation
                         GoTo<FallState>();
                 });
             }
-        }
-
-        protected override void OnExit()
-        {
-            _timelineRunner?.Stop();
-            _timelineRunner = null;
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action) => action switch
@@ -80,12 +71,7 @@ namespace Game.Presentation
             var def = sharedDb.GetEntry(entry.skillId);
             if (def == null) return;
 
-            var player = Ctx.Transform?.GetComponent<PlayerController>();
-            if (player == null) return;
-
-            var ctx = new PlayerSkillExecutionContext(player);
-            _timelineRunner = new SkillTimelineRunner();
-            _timelineRunner.Begin(def, ctx);
+            StartTimelineSkill(entry.skillId);
         }
 
         private SkillConfigEntry ResolveEntry()

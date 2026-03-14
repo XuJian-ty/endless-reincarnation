@@ -26,16 +26,16 @@ namespace Game.Editor
                 var detectionDuration = property.FindPropertyRelative("detectionDuration");
                 var detectionType = property.FindPropertyRelative("detectionType");
                 var hitLayerName = property.FindPropertyRelative("hitLayerName");
-                var pushForce = property.FindPropertyRelative("pushForce");
-                var pushDuration = property.FindPropertyRelative("pushDuration");
                 var shape = property.FindPropertyRelative("shape");
                 var centerOffset = property.FindPropertyRelative("centerOffset");
+                var rotationEuler = property.FindPropertyRelative("rotationEuler");
                 var sphereRadius = property.FindPropertyRelative("sphereRadius");
                 var sectorAngle = property.FindPropertyRelative("sectorAngle");
                 var boxSize = property.FindPropertyRelative("boxSize");
                 var colliderNodeName = property.FindPropertyRelative("colliderNodeName");
                 var rayOriginOffset = property.FindPropertyRelative("rayOriginOffset");
                 var rayMaxDistance = property.FindPropertyRelative("rayMaxDistance");
+                var motion = property.FindPropertyRelative("motion");
                 var hitStopDuration = property.FindPropertyRelative("hitStopDuration");
                 var hitStopTimeScale = property.FindPropertyRelative("hitStopTimeScale");
                 var onHitPhysicsEffects = property.FindPropertyRelative("onHitPhysicsEffects");
@@ -55,13 +55,14 @@ namespace Game.Editor
                 y = DrawProperty(y, position, detectionDuration);
                 y = DrawProperty(y, position, detectionType);
                 y = DrawProperty(y, position, hitLayerName);
-                y = DrawProperty(y, position, pushForce);
-                y = DrawProperty(y, position, pushDuration);
 
                 if (detection == DamageDetectionType.RangeOverlap)
                 {
                     y = DrawProperty(y, position, shape);
                     y = DrawProperty(y, position, centerOffset);
+
+                    if (shapeValue == AttackShapeType.Sector || shapeValue == AttackShapeType.Box)
+                        y = DrawProperty(y, position, rotationEuler);
 
                     if (shapeValue == AttackShapeType.Sphere || shapeValue == AttackShapeType.Sector)
                         y = DrawProperty(y, position, sphereRadius);
@@ -79,9 +80,11 @@ namespace Game.Editor
                 else if (detection == DamageDetectionType.Raycast)
                 {
                     y = DrawProperty(y, position, rayOriginOffset);
+                    y = DrawProperty(y, position, rotationEuler);
                     y = DrawProperty(y, position, rayMaxDistance);
                 }
 
+                y = DrawProperty(y, position, motion);
                 y = DrawProperty(y, position, hitStopDuration);
                 y = DrawProperty(y, position, hitStopTimeScale);
                 y = DrawProperty(y, position, onHitPhysicsEffects);
@@ -115,13 +118,14 @@ namespace Game.Editor
             height += GetChildHeight(property.FindPropertyRelative("detectionDuration"));
             height += GetChildHeight(detectionType);
             height += GetChildHeight(property.FindPropertyRelative("hitLayerName"));
-            height += GetChildHeight(property.FindPropertyRelative("pushForce"));
-            height += GetChildHeight(property.FindPropertyRelative("pushDuration"));
 
             if (detection == DamageDetectionType.RangeOverlap)
             {
                 height += GetChildHeight(shape);
                 height += GetChildHeight(property.FindPropertyRelative("centerOffset"));
+
+                if (shapeValue == AttackShapeType.Sector || shapeValue == AttackShapeType.Box)
+                    height += GetChildHeight(property.FindPropertyRelative("rotationEuler"));
 
                 if (shapeValue == AttackShapeType.Sphere || shapeValue == AttackShapeType.Sector)
                     height += GetChildHeight(property.FindPropertyRelative("sphereRadius"));
@@ -139,9 +143,11 @@ namespace Game.Editor
             else if (detection == DamageDetectionType.Raycast)
             {
                 height += GetChildHeight(property.FindPropertyRelative("rayOriginOffset"));
+                height += GetChildHeight(property.FindPropertyRelative("rotationEuler"));
                 height += GetChildHeight(property.FindPropertyRelative("rayMaxDistance"));
             }
 
+            height += GetChildHeight(property.FindPropertyRelative("motion"));
             height += GetChildHeight(property.FindPropertyRelative("hitStopDuration"));
             height += GetChildHeight(property.FindPropertyRelative("hitStopTimeScale"));
             height += GetChildHeight(property.FindPropertyRelative("onHitPhysicsEffects"));

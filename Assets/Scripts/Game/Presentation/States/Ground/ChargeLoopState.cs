@@ -8,7 +8,11 @@ namespace Game.Presentation
     {
         public override GameAction CurrentActionId => GameAction.ChargeStart;
 
-        protected override void OnEnter()  => Ctx.Anim.TriggerChargeLoop();
+        protected override void OnEnter()
+        {
+            Ctx.Anim.TriggerChargeLoop();
+            StartTimelineSkill("ChargeLoop");
+        }
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {

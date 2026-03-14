@@ -15,12 +15,10 @@ MonoBehaviour:
   enemyId: elite_1
   displayName: "\u7CBE\u82F11"
   enemyType: 2
-  behaviorTreeAsset: {fileID: 11400000, guid: 19d0127e2bca69f4787221e7189102ae, type: 2}
   sectorAngle: 145
   sectorRange: 16
   chaseBreakDistance: 28
   patrolRadius: 12
-  enableTacticalCombat: 1
   chaseInnerDistance: 3
   chaseOuterDistance: 5
   preferredSafetyDistanceOffset: 0.25
@@ -36,11 +34,33 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  reactionMinSeconds: 0.08
+  reactionMaxSeconds: 0.18
+  decisionCommitSeconds: 0.24
+  searchMemoryDuration: 1.6
+  aggression: 0.58
+  caution: 0.42
+  dodgeBias: 0.46
+  punishBias: 0.58
+  strafeBias: 0.4
+  maxPressureAllies: 2
+  poiseMax: 18
+  poiseRecoveryPerSecond: 9
+  poiseBreakStunDuration: 0.34
+  allowLightHitFlinch: 0
+  superArmorWhileCasting: 0
   skillSlots:
   - slotIndex: 0
     skillId: elite_1_combo
     cooldown: 0.95
     castRange: 2.6
+    minCastRange: 0
+    idealCastRange: 2.2
+    skillRole: 2
+    riskWeight: 0.28
+    punishWeight: 0.35
+    repeatPenalty: 0.25
+    canUseUnderThreat: 0
     castDuration: 1
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
@@ -51,6 +71,13 @@ MonoBehaviour:
     skillId: elite_1_slam
     cooldown: 3.2
     castRange: 3
+    minCastRange: 0
+    idealCastRange: 2.7
+    skillRole: 3
+    riskWeight: 0.48
+    punishWeight: 0.82
+    repeatPenalty: 0.34
+    canUseUnderThreat: 0
     castDuration: 1.1
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.3

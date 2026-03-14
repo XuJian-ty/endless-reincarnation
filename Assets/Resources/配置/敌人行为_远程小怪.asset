@@ -15,12 +15,10 @@ MonoBehaviour:
   enemyId: ranged_minion
   displayName: "\u8FDC\u7A0B\u5C0F\u602A"
   enemyType: 1
-  behaviorTreeAsset: {fileID: 11400000, guid: 19d0127e2bca69f4787221e7189102ae, type: 2}
   sectorAngle: 130
   sectorRange: 14
   chaseBreakDistance: 22
   patrolRadius: 10
-  enableTacticalCombat: 1
   chaseInnerDistance: 12
   chaseOuterDistance: 15.5
   preferredSafetyDistanceOffset: 0.9
@@ -36,11 +34,33 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  reactionMinSeconds: 0.08
+  reactionMaxSeconds: 0.18
+  decisionCommitSeconds: 0.22
+  searchMemoryDuration: 1.8
+  aggression: 0.48
+  caution: 0.56
+  dodgeBias: 0.52
+  punishBias: 0.44
+  strafeBias: 0.62
+  maxPressureAllies: 2
+  poiseMax: 8
+  poiseRecoveryPerSecond: 6
+  poiseBreakStunDuration: 0.25
+  allowLightHitFlinch: 1
+  superArmorWhileCasting: 0
   skillSlots:
   - slotIndex: 0
     skillId: ranged_minion_shot
     cooldown: 1.2
     castRange: 12
+    minCastRange: 0
+    idealCastRange: 10.5
+    skillRole: 5
+    riskWeight: 0.18
+    punishWeight: 0.2
+    repeatPenalty: 0.18
+    canUseUnderThreat: 0
     castDuration: 0.85
     enterIdleAfterCast: 0
     postCastIdleDuration: 0

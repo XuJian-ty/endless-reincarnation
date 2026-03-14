@@ -302,7 +302,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3d77366039dda247a8d3df3e15d9736, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _behaviorTreeAsset: {fileID: 0}
 --- !u!114 &260788351989387666
 MonoBehaviour:
   m_ObjectHideFlags: 0

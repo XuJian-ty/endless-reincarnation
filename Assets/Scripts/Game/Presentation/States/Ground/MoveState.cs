@@ -25,6 +25,7 @@ namespace Game.Presentation
 
             Ctx.Anim.SetGrounded(true);
             Ctx.Anim.TriggerLocomotion();
+            StartTimelineSkill("Locomotion");
             UpdateAnimSpeed();
         }
 

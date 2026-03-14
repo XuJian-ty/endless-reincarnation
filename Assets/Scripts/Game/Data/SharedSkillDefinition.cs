@@ -75,8 +75,43 @@ namespace Game.Data
     {
         Caster,
         Target,
-        ImpactPoint,
         World,
+    }
+
+    public enum SkillCueDestroyMode
+    {
+        [InspectorName("等待自然销毁")]
+        NaturalDestroy,
+        [InspectorName("指定秒数销毁")]
+        Timed,
+        [InspectorName("状态退出销毁")]
+        OnStateExit,
+    }
+
+    public enum SkillEventActiveDurationMode
+    {
+        [InspectorName("指定时长")]
+        FixedTime,
+        [InspectorName("状态退出")]
+        UntilStateExit,
+    }
+
+    [Serializable]
+    public class SkillMotionSettings
+    {
+        [InspectorLabel("随时间移动")]
+        [Tooltip("开启后，会在生成后按“移动速度”和“移动方向”持续移动。关闭则保持原本位置/跟随行为。")]
+        public bool enabled = false;
+
+        [InspectorLabel("移动速度(米/秒)")]
+        [Tooltip("仅“随时间移动”开启时使用。")]
+        [Min(0f)] public float speed = 0f;
+
+        [InspectorLabel("移动方向")]
+        [Tooltip("相对施法者朝向的本地方向。(0,0,1) 表示朝前方移动。")]
+        public Vector3 direction = Vector3.forward;
+
+        public bool IsActive => enabled && speed > 0.0001f && direction.sqrMagnitude > 0.0001f;
     }
 
     [Serializable]
@@ -86,7 +121,7 @@ namespace Game.Data
         [Tooltip("直接拖入粒子特效预制体，事件触发时会在指定挂点生成。")]
         public GameObject particlePrefab;
         [InspectorLabel("挂点")]
-        [Tooltip("Caster=施法者，Target=目标，ImpactPoint=命中点，World=世界位置。")]
+        [Tooltip("Caster=施法者，Target=目标，World=世界位置。")]
         public CueAnchor anchor = CueAnchor.Caster;
 
         [InspectorLabel("位置偏移")]
@@ -101,8 +136,16 @@ namespace Game.Data
         [Tooltip("生成特效时附加的局部缩放。")]
         public Vector3 scale = Vector3.one;
 
-        [InspectorLabel("强制持续时长(秒)")]
-        [Tooltip("0 表示使用粒子自身生命周期；大于 0 时会在指定时间后结束。")]
+        [InspectorLabel("移动设置")]
+        [Tooltip("用于实现剑气、前进中的扇形特效等。")]
+        public SkillMotionSettings motion = new SkillMotionSettings();
+
+        [InspectorLabel("销毁方式")]
+        [Tooltip("等待自然销毁=交给特效自身；指定秒数销毁=到时强制销毁；状态退出销毁=当前状态退出时销毁。")]
+        public SkillCueDestroyMode destroyMode = SkillCueDestroyMode.NaturalDestroy;
+
+        [InspectorLabel("销毁时间(秒)")]
+        [Tooltip("仅“指定秒数销毁”使用。到时会强制销毁该特效实例。")]
         [Min(0f)] public float duration = 0f;
     }
 
@@ -114,15 +157,23 @@ namespace Game.Data
         public AudioClip audioClip;
 
         [InspectorLabel("挂点")]
-        [Tooltip("Caster=施法者，Target=目标，ImpactPoint=命中点，World=世界位置。")]
+        [Tooltip("Caster=施法者，Target=目标，World=世界位置。")]
         public CueAnchor anchor = CueAnchor.Caster;
 
         [InspectorLabel("位置偏移")]
         [Tooltip("相对挂点的局部偏移，单位：米。")]
         public Vector3 offset = Vector3.zero;
 
-        [InspectorLabel("强制持续时长(秒)")]
-        [Tooltip("预留字段，当前音效为一次播放。")]
+        [InspectorLabel("循环播放")]
+        [Tooltip("开启后使用循环 AudioSource，通常应搭配“指定秒数销毁”或“状态退出销毁”。")]
+        public bool loop = false;
+
+        [InspectorLabel("销毁方式")]
+        [Tooltip("等待自然销毁=播完音频自然结束；指定秒数销毁=到时强制停止并销毁；状态退出销毁=当前状态退出时停止并销毁。")]
+        public SkillCueDestroyMode destroyMode = SkillCueDestroyMode.NaturalDestroy;
+
+        [InspectorLabel("销毁时间(秒)")]
+        [Tooltip("仅“指定秒数销毁”使用。到时会强制停止并销毁该音效实例。")]
         [Min(0f)] public float duration = 0f;
     }
 
@@ -135,6 +186,9 @@ namespace Game.Data
         [HideInInspector] public Vector3 offset = Vector3.zero;
         [HideInInspector] public Vector3 rotationEuler = Vector3.zero;
         [HideInInspector] public Vector3 scale = Vector3.one;
+        [HideInInspector] public SkillMotionSettings motion = new SkillMotionSettings();
+        [HideInInspector] public bool loop = false;
+        [HideInInspector] public SkillCueDestroyMode destroyMode = SkillCueDestroyMode.NaturalDestroy;
         [HideInInspector] [Min(0f)] public float duration = 0f;
     }
 
@@ -157,14 +211,6 @@ namespace Game.Data
         [Tooltip("例如 Enemy 或 Player。")]
         public string hitLayerName = "Enemy";
 
-        [InspectorLabel("击退力")]
-        [Tooltip("命中后附带的击退力度。")]
-        [Min(0f)] public float pushForce = 20f;
-
-        [InspectorLabel("击退时长")]
-        [Tooltip("命中后附带的击退持续时间。")]
-        [Min(0f)] public float pushDuration = 0.04f;
-
         [InspectorLabel("范围形状")]
         [Tooltip("仅 RangeOverlap 检测方式使用。")]
         public AttackShapeType shape = AttackShapeType.Sphere;
@@ -172,6 +218,10 @@ namespace Game.Data
         [InspectorLabel("中心偏移")]
         [Tooltip("仅 RangeOverlap 检测方式使用，相对施法者的本地偏移。")]
         public Vector3 centerOffset = Vector3.zero;
+
+        [InspectorLabel("旋转偏移")]
+        [Tooltip("用于旋转扇形、盒体或射线方向，例如把扇形判定竖起来。")]
+        public Vector3 rotationEuler = Vector3.zero;
 
         [InspectorLabel("球体半径")]
         [Tooltip("仅 Sphere/Sector 形状使用。")]
@@ -196,6 +246,10 @@ namespace Game.Data
         [InspectorLabel("射线最大距离")]
         [Tooltip("仅 Raycast 检测方式使用。")]
         [Min(0.01f)] public float rayMaxDistance = 50f;
+
+        [InspectorLabel("移动设置")]
+        [Tooltip("用于实现向前推进的扇形、剑气判定等。碰撞检测模式暂不使用这组设置。")]
+        public SkillMotionSettings motion = new SkillMotionSettings();
 
         [InspectorLabel("命中停顿时长(秒)")]
         [Tooltip("命中成功后附加的全局命中停顿时长。0 表示不触发命中停顿。")]
@@ -304,8 +358,12 @@ namespace Game.Data
         public SkillEventTriggerMode triggerMode = SkillEventTriggerMode.Once;
 
         [InspectorLabel("持续触发时长(秒)")]
-        [Tooltip("仅 Repeated 模式使用。")]
+        [Tooltip("仅“指定时长”模式使用。")]
         [Min(0f)] public float activeDuration = 0f;
+
+        [InspectorLabel("持续方式")]
+        [Tooltip("指定时长=重复触发一段固定时长；状态退出=只要当前状态未退出就持续重复触发。")]
+        public SkillEventActiveDurationMode activeDurationMode = SkillEventActiveDurationMode.FixedTime;
 
         [InspectorLabel("重复触发间隔(秒)")]
         [Tooltip("仅 Repeated 模式使用。")]
@@ -314,9 +372,15 @@ namespace Game.Data
         public float GetEndTime()
         {
             return triggerMode == SkillEventTriggerMode.Repeated
-                ? startTime + Mathf.Max(0f, activeDuration)
+                ? activeDurationMode == SkillEventActiveDurationMode.UntilStateExit
+                    ? startTime
+                    : startTime + Mathf.Max(0f, activeDuration)
                 : startTime;
         }
+
+        public bool RepeatsUntilStateExit =>
+            triggerMode == SkillEventTriggerMode.Repeated &&
+            activeDurationMode == SkillEventActiveDurationMode.UntilStateExit;
     }
 
     [Serializable]
@@ -326,15 +390,13 @@ namespace Game.Data
         [Tooltip("一条事件可以配置多条伤害效果，用于同一帧多段伤害。")]
         public List<SkillDamageEffect> damageEffects = new List<SkillDamageEffect>();
 
-        public float GetDetectionEndTime()
+        public float GetLifecycleEndTime()
         {
             float maxTime = GetEndTime();
             if (damageEffects == null)
                 return maxTime;
 
-            float lastTriggerTime = startTime;
-            if (triggerMode == SkillEventTriggerMode.Repeated)
-                lastTriggerTime = startTime + Mathf.Max(0f, activeDuration);
+            float lastTriggerTime = SharedSkillDefinition.GetLastPossibleTriggerTime(this);
 
             for (int i = 0; i < damageEffects.Count; i++)
             {
@@ -342,11 +404,13 @@ namespace Game.Data
                 if (effect == null)
                     continue;
 
-                maxTime = Mathf.Max(maxTime, lastTriggerTime + Mathf.Max(0f, effect.detectionDuration));
+                maxTime = Mathf.Max(maxTime, lastTriggerTime + SharedSkillDefinition.GetDamageEffectLifetime(effect));
             }
 
             return maxTime;
         }
+
+        public float GetDetectionEndTime() => GetLifecycleEndTime();
 
         public SkillDamageEffect GetPrimaryDamageEffect()
         {
@@ -438,11 +502,20 @@ namespace Game.Data
         {
             float maxTime = 0f;
             maxTime = Mathf.Max(maxTime, GetMaxDamageEndTime(damageEvents));
-            maxTime = Mathf.Max(maxTime, GetMaxEndTime(physicsEvents));
-            maxTime = Mathf.Max(maxTime, GetMaxEndTime(attributeEvents));
-            maxTime = Mathf.Max(maxTime, GetMaxEndTime(vfxEvents));
-            maxTime = Mathf.Max(maxTime, GetMaxEndTime(sfxEvents));
+            maxTime = Mathf.Max(maxTime, GetMaxPhysicsEndTime(physicsEvents));
+            maxTime = Mathf.Max(maxTime, GetMaxAttributeEndTime(attributeEvents));
+            maxTime = Mathf.Max(maxTime, GetMaxVfxEndTime(vfxEvents));
+            maxTime = Mathf.Max(maxTime, GetMaxSfxEndTime(sfxEvents));
             return maxTime;
+        }
+
+        public bool HasUntilStateExitEvents()
+        {
+            return HasUntilStateExitEvent(damageEvents)
+                || HasUntilStateExitEvent(physicsEvents)
+                || HasUntilStateExitEvent(attributeEvents)
+                || HasUntilStateExitEvent(vfxEvents)
+                || HasUntilStateExitEvent(sfxEvents);
         }
 
         public SkillDamageEffect GetPrimaryDamageEffect()
@@ -479,6 +552,60 @@ namespace Game.Data
             return maxTime;
         }
 
+        private static float GetMaxPhysicsEndTime(List<SkillPhysicsEvent> list)
+        {
+            return GetMaxTimedEventEndTime(list, GetPhysicsEventTailDuration);
+        }
+
+        private static float GetMaxAttributeEndTime(List<SkillAttributeEvent> list)
+        {
+            return GetMaxTimedEventEndTime(list, GetAttributeEventTailDuration);
+        }
+
+        private static float GetMaxVfxEndTime(List<SkillVfxEvent> list)
+        {
+            return GetMaxTimedEventEndTime(list, GetVfxEventTailDuration);
+        }
+
+        private static float GetMaxSfxEndTime(List<SkillSfxEvent> list)
+        {
+            return GetMaxTimedEventEndTime(list, GetSfxEventTailDuration);
+        }
+
+        private static float GetMaxTimedEventEndTime<T>(List<T> list, Func<T, float> getTailDuration)
+            where T : SkillTimedEventBase
+        {
+            float maxTime = 0f;
+            if (list == null)
+                return maxTime;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                T evt = list[i];
+                if (evt == null)
+                    continue;
+
+                maxTime = Mathf.Max(maxTime, GetLastPossibleTriggerTime(evt) + Mathf.Max(0f, getTailDuration(evt)));
+            }
+
+            return maxTime;
+        }
+
+        private static bool HasUntilStateExitEvent<T>(List<T> list) where T : SkillTimedEventBase
+        {
+            if (list == null)
+                return false;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                T evt = list[i];
+                if (evt != null && evt.RepeatsUntilStateExit)
+                    return true;
+            }
+
+            return false;
+        }
+
         private static float GetMaxDamageEndTime(List<SkillDamageEvent> list)
         {
             float maxTime = 0f;
@@ -489,10 +616,212 @@ namespace Game.Data
             {
                 SkillDamageEvent evt = list[i];
                 if (evt != null)
-                    maxTime = Mathf.Max(maxTime, evt.GetDetectionEndTime());
+                    maxTime = Mathf.Max(maxTime, evt.GetLifecycleEndTime());
             }
 
             return maxTime;
+        }
+
+        public static float GetLastPossibleTriggerTime(SkillTimedEventBase evt)
+        {
+            if (evt == null)
+                return 0f;
+
+            if (evt.triggerMode != SkillEventTriggerMode.Repeated)
+                return evt.startTime;
+
+            if (evt.RepeatsUntilStateExit)
+                return evt.startTime;
+
+            float interval = Mathf.Max(0.01f, evt.repeatInterval);
+            float activeDuration = Mathf.Max(0f, evt.activeDuration);
+            int repeatCount = Mathf.FloorToInt(activeDuration / interval);
+            return evt.startTime + repeatCount * interval;
+        }
+
+        public static float GetDamageEventTailDuration(SkillDamageEvent evt)
+        {
+            if (evt?.damageEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < evt.damageEffects.Count; i++)
+            {
+                SkillDamageEffect effect = evt.damageEffects[i];
+                if (effect != null)
+                    duration = Mathf.Max(duration, GetDamageEffectLifetime(effect));
+            }
+
+            return duration;
+        }
+
+        public static float GetDamageEffectLifetime(SkillDamageEffect effect)
+        {
+            if (effect == null)
+                return 0f;
+
+            return Mathf.Max(0f, effect.detectionDuration) + GetDamageOnHitTailDuration(effect);
+        }
+
+        public static float GetDamageOnHitTailDuration(SkillDamageEffect effect)
+        {
+            if (effect == null)
+                return 0f;
+
+            float duration = 0f;
+            if (effect.onHitPhysicsEffects != null)
+            {
+                for (int i = 0; i < effect.onHitPhysicsEffects.Count; i++)
+                    duration = Mathf.Max(duration, GetPhysicsEffectLifetime(effect.onHitPhysicsEffects[i]));
+            }
+
+            if (effect.onHitAttributeEffects != null)
+            {
+                for (int i = 0; i < effect.onHitAttributeEffects.Count; i++)
+                    duration = Mathf.Max(duration, GetAttributeEffectLifetime(effect.onHitAttributeEffects[i]));
+            }
+
+            if (effect.onHitVfxEffects != null)
+            {
+                for (int i = 0; i < effect.onHitVfxEffects.Count; i++)
+                    duration = Mathf.Max(duration, GetVfxEffectLifetime(effect.onHitVfxEffects[i]));
+            }
+
+            if (effect.onHitSfxEffects != null)
+            {
+                for (int i = 0; i < effect.onHitSfxEffects.Count; i++)
+                    duration = Mathf.Max(duration, GetSfxEffectLifetime(effect.onHitSfxEffects[i]));
+            }
+
+            return duration;
+        }
+
+        public static float GetPhysicsEventTailDuration(SkillPhysicsEvent evt)
+        {
+            if (evt?.physicsEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < evt.physicsEffects.Count; i++)
+                duration = Mathf.Max(duration, GetPhysicsEffectLifetime(evt.physicsEffects[i]));
+
+            return duration;
+        }
+
+        public static float GetAttributeEventTailDuration(SkillAttributeEvent evt)
+        {
+            if (evt?.attributeEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < evt.attributeEffects.Count; i++)
+                duration = Mathf.Max(duration, GetAttributeEffectLifetime(evt.attributeEffects[i]));
+
+            return duration;
+        }
+
+        public static float GetVfxEventTailDuration(SkillVfxEvent evt)
+        {
+            if (evt?.vfxEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < evt.vfxEffects.Count; i++)
+                duration = Mathf.Max(duration, GetVfxEffectLifetime(evt.vfxEffects[i]));
+
+            return duration;
+        }
+
+        public static float GetSfxEventTailDuration(SkillSfxEvent evt)
+        {
+            if (evt?.sfxEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < evt.sfxEffects.Count; i++)
+                duration = Mathf.Max(duration, GetSfxEffectLifetime(evt.sfxEffects[i]));
+
+            return duration;
+        }
+
+        public static float GetPhysicsEffectLifetime(SkillPhysicsEffect effect)
+        {
+            return effect != null ? Mathf.Max(0f, effect.duration) : 0f;
+        }
+
+        public static float GetAttributeEffectLifetime(SkillAttributeEffect effect)
+        {
+            if (effect == null)
+                return 0f;
+
+            return effect.statField == SkillStatField.HP || effect.statField == SkillStatField.MP
+                ? 0f
+                : Mathf.Max(0f, effect.duration);
+        }
+
+        public static float GetVfxEffectLifetime(SkillVfxEffect effect)
+        {
+            if (effect == null)
+                return 0f;
+
+            if (effect.destroyMode == SkillCueDestroyMode.OnStateExit)
+                return 0f;
+
+            if (effect.destroyMode == SkillCueDestroyMode.Timed && effect.duration > 0f)
+                return effect.duration;
+
+            return EstimateParticlePrefabDuration(effect.particlePrefab);
+        }
+
+        public static float GetSfxEffectLifetime(SkillSfxEffect effect)
+        {
+            if (effect == null)
+                return 0f;
+
+            if (effect.destroyMode == SkillCueDestroyMode.OnStateExit)
+                return 0f;
+
+            if (effect.loop && effect.destroyMode == SkillCueDestroyMode.NaturalDestroy)
+                return 0f;
+
+            if (effect.destroyMode == SkillCueDestroyMode.Timed && effect.duration > 0f)
+                return effect.duration;
+
+            return effect.audioClip != null ? effect.audioClip.length : 0f;
+        }
+
+        private static float EstimateParticlePrefabDuration(GameObject prefab)
+        {
+            if (prefab == null)
+                return 0f;
+
+            float duration = 0f;
+            ParticleSystem[] particleSystems = prefab.GetComponentsInChildren<ParticleSystem>(true);
+            for (int i = 0; i < particleSystems.Length; i++)
+            {
+                ParticleSystem particleSystem = particleSystems[i];
+                if (particleSystem == null)
+                    continue;
+
+                ParticleSystem.MainModule main = particleSystem.main;
+                duration = Mathf.Max(duration, main.duration + GetMaxCurveValue(main.startLifetime));
+            }
+
+            return duration;
+        }
+
+        private static float GetMaxCurveValue(ParticleSystem.MinMaxCurve curve)
+        {
+            return curve.mode switch
+            {
+                ParticleSystemCurveMode.Constant => curve.constant,
+                ParticleSystemCurveMode.TwoConstants => Mathf.Max(curve.constantMin, curve.constantMax),
+                ParticleSystemCurveMode.Curve => curve.curve != null && curve.curve.length > 0 ? curve.curve.keys[curve.curve.length - 1].value : 0f,
+                ParticleSystemCurveMode.TwoCurves => Mathf.Max(
+                    curve.curveMin != null && curve.curveMin.length > 0 ? curve.curveMin.keys[curve.curveMin.length - 1].value : 0f,
+                    curve.curveMax != null && curve.curveMax.length > 0 ? curve.curveMax.keys[curve.curveMax.length - 1].value : 0f),
+                _ => 0f
+            };
         }
     }
 }
