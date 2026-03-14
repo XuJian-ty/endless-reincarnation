@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Game;
@@ -71,6 +72,18 @@ namespace Game.GameFlow
         {
             levelIndex = Mathf.Clamp(levelIndex, 1, MaxLevelIndex);
             return $"{SceneNames.LevelPrefix}{levelIndex}";
+        }
+
+        public bool HasLoadableNextLevel()
+        {
+            if (_currentRun == null)
+                return false;
+
+            int nextLevel = _currentRun.levelIndex + 1;
+            if (nextLevel > MaxLevelIndex)
+                return false;
+
+            return CanLoadLevelScene(nextLevel);
         }
 
         // ── 进档（新游戏创建存档后 / 加载存档）────────────────────────────
@@ -188,21 +201,66 @@ namespace Game.GameFlow
         public void ExecuteReviveWithNectar()
         {
             if (_currentRun == null || _playerModel == null) return;
-            if (_currentRun.checkpoint == null) return;
+            RunData checkpoint = _currentRun.checkpoint;
+            if (checkpoint == null) return;
             if (_playerModel.GetItemCount(PlayerModel.ItemIds.Nectar) < 1) return;
 
-            if (!_playerModel.TryConsumeItem(PlayerModel.ItemIds.Nectar, 1))
+            RunData restoredRun = SaveSystem.CloneRunData(checkpoint);
+            if (restoredRun == null)
                 return;
 
-            _currentRun = _currentRun.checkpoint;
-            _currentRun.difficulty++;
-            _playerModel.LoadFrom(_currentRun);
+            restoredRun.checkpoint = SaveSystem.CloneRunData(checkpoint);
+            restoredRun.difficulty++;
+
+            _currentRun = restoredRun;
+            _playerModel.LoadFrom(restoredRun);
+            _playerModel.TryConsumeItem(PlayerModel.ItemIds.Nectar, 1);
+
+            _playerModel.SaveTo(_currentRun);
             var buffCfg = ConfigManager.GetInstance()?.GetBuffConfig();
             if (buffCfg != null)
                 _playerModel.ReapplyBuffModifiers(buffCfg.GetModifierForBuff);
             SaveCurrent();
             Debug.Log($"[GameStateMachine] 仙露复活，回滚至 Checkpoint，难度提升至 {_currentRun.difficulty}");
+            Time.timeScale = 1f;
+            SetState(State.InLevel);
             ScenesMgr.GetInstance().LoadSceneAsyn(GetLevelSceneName(_currentRun.levelIndex), ApplyLevelBgm);
+        }
+
+        public void RecordBossDefeat(string bossId)
+        {
+            if (_currentRun == null)
+                return;
+
+            _currentRun.defeatedBossIds ??= new List<string>();
+            if (!string.IsNullOrWhiteSpace(bossId) && !_currentRun.defeatedBossIds.Contains(bossId))
+                _currentRun.defeatedBossIds.Add(bossId);
+
+            if (!HasLoadableNextLevel())
+                _currentRun.isGameCleared = true;
+
+            _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
+            SaveCurrent();
+        }
+
+        public bool RestartCurrentLevelAtEntrance()
+        {
+            if (_currentRun == null)
+                return false;
+
+            return TransitionToLevel(_currentRun.levelIndex);
+        }
+
+        public bool TryAdvanceToNextLevel()
+        {
+            if (_currentRun == null)
+                return false;
+
+            int nextLevel = _currentRun.levelIndex + 1;
+            if (nextLevel > MaxLevelIndex || !CanLoadLevelScene(nextLevel))
+                return false;
+
+            return TransitionToLevel(nextLevel);
         }
 
         /// <summary>不复活：删除当前存档并返回主菜单。由 DeathPanel 选择「不复活」时调用。</summary>
@@ -270,6 +328,31 @@ namespace Game.GameFlow
         }
 
         // ── 私有工具 ──────────────────────────────────────────────────────
+        private static bool CanLoadLevelScene(int levelIndex)
+        {
+            return Application.CanStreamedLevelBeLoaded(GetLevelSceneName(levelIndex));
+        }
+
+        private bool TransitionToLevel(int levelIndex)
+        {
+            if (_currentRun == null)
+                return false;
+
+            levelIndex = Mathf.Clamp(levelIndex, 1, MaxLevelIndex);
+            if (!CanLoadLevelScene(levelIndex))
+                return false;
+
+            _currentRun.levelIndex = levelIndex;
+            _currentRun.levelSnapshot = null;
+            _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
+            SaveCurrent();
+
+            Time.timeScale = 1f;
+            SetState(State.InLevel);
+            ScenesMgr.GetInstance().LoadSceneAsyn(GetLevelSceneName(levelIndex), ApplyLevelBgm);
+            return true;
+        }
+
         private void SetState(State newState)
         {
             if (_state == newState) return;

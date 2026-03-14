@@ -152,8 +152,18 @@ namespace Game.Presentation
         {
             if (input.sqrMagnitude < 0.01f) return Vector3.zero;
             ResolveCameraReference();
-            float yaw = _camera != null ? _camera.Yaw : transform.eulerAngles.y;
-            return Quaternion.Euler(0f, yaw, 0f) * new Vector3(input.x, 0f, input.y);
+            if (_camera != null)
+            {
+                float yaw = _camera.GetMovementYaw();
+                Quaternion planarRotation = Quaternion.Euler(0f, yaw, 0f);
+                Vector3 direction = planarRotation * new Vector3(input.x, 0f, input.y);
+                if (direction.sqrMagnitude > 1f)
+                    direction.Normalize();
+                return direction;
+            }
+
+            float fallbackYaw = transform.eulerAngles.y;
+            return Quaternion.Euler(0f, fallbackYaw, 0f) * new Vector3(input.x, 0f, input.y);
         }
 
         private void ResolveCameraReference()
@@ -173,6 +183,13 @@ namespace Game.Presentation
             {
                 _loggedMissingCameraWarning = false;
             }
+        }
+
+        public void BindCamera(ThirdPersonCamera cameraRig)
+        {
+            _camera = cameraRig;
+            if (_camera != null)
+                _loggedMissingCameraWarning = false;
         }
 
         // ── Send Messages 回调（PlayerInput → Behavior = Send Messages）──

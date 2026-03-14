@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Game.Data
 {
     /// <summary>
-    /// 单关配置：每格 3 种怪物与宝箱的数量上下限、商店数量（固定）、格子大小。
+    /// 单关配置：关卡编号、全局敌人生成方案库与方案索引、宝箱数量上下限、商店数量与布局参数。
     /// </summary>
     [Serializable]
     public class LevelConfigData
@@ -15,17 +15,15 @@ namespace Game.Data
         [Range(1, 5)]
         public int levelIndex = 1;
 
-        [Header("守卫者（数量固定，位置随机）")]
-        [InspectorLabel("守卫者数量")]
-        public int guardianCount = 3;
+        [Header("敌人生成")]
+        [InspectorLabel("全局敌人生成方案库")]
+        [Tooltip("必填。全局敌人生成器会从这份方案库中选择一个列表项执行生成任务。")]
+        public LevelEnemySpawnPlanSO enemyGlobalSpawnPlanLibrary;
 
-        [Header("每格怪物数量上下限（近战/远程/精英）")]
-        [InspectorLabel("近战下限")] public int meleeMinCount = 0;
-        [InspectorLabel("近战上限")] public int meleeMaxCount  = 4;
-        [InspectorLabel("远程下限")] public int rangedMinCount = 0;
-        [InspectorLabel("远程上限")] public int rangedMaxCount = 2;
-        [InspectorLabel("精英下限")] public int eliteMinCount  = 0;
-        [InspectorLabel("精英上限")] public int eliteMaxCount  = 1;
+        [InspectorLabel("全局方案列表项")]
+        [Min(0)]
+        [Tooltip("当前关卡使用的全局敌人生成方案列表项索引。")]
+        public int enemyGlobalSpawnPlanIndex = 0;
 
         [Header("每格宝箱数量上下限")]
         [InspectorLabel("宝箱下限")] public int chestMinCount = 0;
@@ -37,13 +35,10 @@ namespace Game.Data
         public int shopCount = 2;
         [InspectorLabel("格子大小")] public float cellSize = 40f;
 
-        /// <summary>随机本格怪物与宝箱数量（商店数量用 shopCount 固定）</summary>
-        public void RollCounts(System.Random rng, out int melee, out int ranged, out int elite, out int chests)
+        /// <summary>随机本关宝箱数量（商店数量用 shopCount 固定）。</summary>
+        public int RollChestCount(System.Random rng)
         {
-            melee  = RandomRange(rng, meleeMinCount, meleeMaxCount);
-            ranged = RandomRange(rng, rangedMinCount, rangedMaxCount);
-            elite  = RandomRange(rng, eliteMinCount, eliteMaxCount);
-            chests = RandomRange(rng, chestMinCount, chestMaxCount);
+            return RandomRange(rng, chestMinCount, chestMaxCount);
         }
 
         private static int RandomRange(System.Random rng, int min, int max)
@@ -54,7 +49,7 @@ namespace Game.Data
     }
 
     /// <summary>
-    /// 关卡配置库：列表每项对应一关（每格怪物/宝箱上下限、商店数量、格子大小）。
+    /// 关卡配置库：列表每项对应一关（全局敌人生成方案、宝箱数量、商店数量、布局参数）。
     /// </summary>
     [CreateAssetMenu(menuName = "游戏/配置/关卡配置库", fileName = "关卡配置库")]
     public class LevelConfigDatabaseSO : ScriptableObject

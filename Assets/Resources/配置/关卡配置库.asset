@@ -14,61 +14,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levels:
   - levelIndex: 1
-    guardianCount: 3
-    meleeMinCount: 0
-    meleeMaxCount: 4
-    rangedMinCount: 0
-    rangedMaxCount: 2
-    eliteMinCount: 0
-    eliteMaxCount: 1
+    enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
+      type: 2}
+    enemyGlobalSpawnPlanIndex: 0
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
   - levelIndex: 2
-    guardianCount: 4
-    meleeMinCount: 0
-    meleeMaxCount: 4
-    rangedMinCount: 0
-    rangedMaxCount: 2
-    eliteMinCount: 0
-    eliteMaxCount: 1
+    enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
+      type: 2}
+    enemyGlobalSpawnPlanIndex: 0
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
   - levelIndex: 3
-    guardianCount: 6
-    meleeMinCount: 0
-    meleeMaxCount: 4
-    rangedMinCount: 0
-    rangedMaxCount: 2
-    eliteMinCount: 0
-    eliteMaxCount: 1
+    enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
+      type: 2}
+    enemyGlobalSpawnPlanIndex: 0
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
   - levelIndex: 4
-    guardianCount: 7
-    meleeMinCount: 0
-    meleeMaxCount: 4
-    rangedMinCount: 0
-    rangedMaxCount: 2
-    eliteMinCount: 0
-    eliteMaxCount: 1
+    enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
+      type: 2}
+    enemyGlobalSpawnPlanIndex: 0
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
   - levelIndex: 5
-    guardianCount: 10
-    meleeMinCount: 0
-    meleeMaxCount: 4
-    rangedMinCount: 0
-    rangedMaxCount: 2
-    eliteMinCount: 0
-    eliteMaxCount: 1
+    enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
+      type: 2}
+    enemyGlobalSpawnPlanIndex: 0
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2

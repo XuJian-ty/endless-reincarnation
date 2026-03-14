@@ -1,0 +1,149 @@
+using System.Collections.Generic;
+using Game.Data;
+using UnityEditor;
+using UnityEngine;
+
+namespace Game.Editor
+{
+    [CustomEditor(typeof(LevelLocalEnemySpawnPlanSO))]
+    public class LevelLocalEnemySpawnPlanSOEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            serializedObject.Update();
+
+            SerializedProperty taskDatabase = serializedObject.FindProperty("taskDatabase");
+            SerializedProperty plans = serializedObject.FindProperty("plans");
+
+            EditorGUILayout.PropertyField(taskDatabase, new GUIContent("任务库"));
+            DrawPlans(plans, taskDatabase.objectReferenceValue as EnemySpawnTaskDatabaseSO);
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private static void DrawPlans(SerializedProperty plansProperty, EnemySpawnTaskDatabaseSO database)
+        {
+            if (plansProperty == null)
+                return;
+
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.LabelField("局部生成方案列表", EditorStyles.boldLabel);
+
+            if (database == null || database.tasks == null || database.tasks.Count == 0)
+            {
+                EditorGUILayout.HelpBox("请先指定任务库并至少创建一条具体类型敌人生成数据。", MessageType.Info);
+                EditorGUILayout.PropertyField(plansProperty, true);
+                return;
+            }
+
+            List<string> labels = BuildTaskLabels(database);
+            for (int i = 0; i < plansProperty.arraySize; i++)
+            {
+                SerializedProperty plan = plansProperty.GetArrayElementAtIndex(i);
+                if (plan == null)
+                    continue;
+
+                SerializedProperty taskIndex = plan.FindPropertyRelative("taskIndex");
+                SerializedProperty spawnMode = plan.FindPropertyRelative("spawnMode");
+                SerializedProperty taskTotalMode = plan.FindPropertyRelative("taskTotalMode");
+                SerializedProperty totalTaskCount = plan.FindPropertyRelative("totalTaskCount");
+                SerializedProperty taskInterval = plan.FindPropertyRelative("taskInterval");
+
+                EditorGUILayout.BeginVertical("box");
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"局部生成方案 {i + 1}", EditorStyles.boldLabel);
+                if (GUILayout.Button("删除", GUILayout.Width(64f)))
+                {
+                    plansProperty.DeleteArrayElementAtIndex(i);
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.EndVertical();
+                    break;
+                }
+                EditorGUILayout.EndHorizontal();
+
+                int selectedIndex = Mathf.Clamp(taskIndex.intValue, 0, labels.Count - 1);
+                selectedIndex = EditorGUILayout.Popup("列表项", selectedIndex, labels.ToArray());
+                taskIndex.intValue = selectedIndex;
+
+                DrawSpawnModePopup(spawnMode);
+                LocalEnemySpawnMode mode = (LocalEnemySpawnMode)spawnMode.enumValueIndex;
+                if (mode == LocalEnemySpawnMode.SpawnRepeatedly)
+                {
+                    DrawTaskTotalModePopup(taskTotalMode);
+                    if ((LocalEnemySpawnTaskTotalMode)taskTotalMode.enumValueIndex == LocalEnemySpawnTaskTotalMode.FixedCount)
+                        EditorGUILayout.PropertyField(totalTaskCount, new GUIContent("生成任务总数"));
+
+                    EditorGUILayout.PropertyField(taskInterval, new GUIContent("任务间隔(秒)"));
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (GUILayout.Button("添加局部生成方案"))
+            {
+                int index = plansProperty.arraySize;
+                plansProperty.InsertArrayElementAtIndex(index);
+                SerializedProperty newPlan = plansProperty.GetArrayElementAtIndex(index);
+                if (newPlan != null)
+                {
+                    SerializedProperty taskIndex = newPlan.FindPropertyRelative("taskIndex");
+                    SerializedProperty spawnMode = newPlan.FindPropertyRelative("spawnMode");
+                    SerializedProperty taskTotalMode = newPlan.FindPropertyRelative("taskTotalMode");
+                    SerializedProperty totalTaskCount = newPlan.FindPropertyRelative("totalTaskCount");
+                    SerializedProperty taskInterval = newPlan.FindPropertyRelative("taskInterval");
+                    if (taskIndex != null)
+                        taskIndex.intValue = 0;
+                    if (spawnMode != null)
+                        spawnMode.enumValueIndex = (int)LocalEnemySpawnMode.SpawnOnce;
+                    if (taskTotalMode != null)
+                        taskTotalMode.enumValueIndex = (int)LocalEnemySpawnTaskTotalMode.FixedCount;
+                    if (totalTaskCount != null)
+                        totalTaskCount.intValue = 1;
+                    if (taskInterval != null)
+                        taskInterval.floatValue = 8f;
+                }
+            }
+        }
+
+        private static List<string> BuildTaskLabels(EnemySpawnTaskDatabaseSO database)
+        {
+            var labels = new List<string>(database.tasks.Count);
+            for (int i = 0; i < database.tasks.Count; i++)
+            {
+                EnemySpawnTaskDefinition task = database.tasks[i];
+                if (task == null)
+                {
+                    labels.Add($"[{i}] <空>");
+                    continue;
+                }
+
+                string countText = task.countMode == EnemySpawnCountMode.Fixed
+                    ? $"固定{Mathf.Max(0, task.fixedCount)}"
+                    : $"随机{Mathf.Max(0, task.randomMinCount)}~{Mathf.Max(task.randomMinCount, task.randomMaxCount)}";
+                labels.Add($"[{i}] {task.enemyType} | 半径{task.spawnRadius:0.##} | {countText}");
+            }
+
+            return labels;
+        }
+
+        private static void DrawSpawnModePopup(SerializedProperty property)
+        {
+            if (property == null)
+                return;
+
+            int selected = Mathf.Clamp(property.enumValueIndex, 0, 1);
+            selected = EditorGUILayout.Popup("生成模式", selected, new[] { "只生成一次敌人", "随时间不断生成敌人" });
+            property.enumValueIndex = selected;
+        }
+
+        private static void DrawTaskTotalModePopup(SerializedProperty property)
+        {
+            if (property == null)
+                return;
+
+            int selected = Mathf.Clamp(property.enumValueIndex, 0, 1);
+            selected = EditorGUILayout.Popup("任务总数模式", selected, new[] { "固定数量", "无限" });
+            property.enumValueIndex = selected;
+        }
+    }
+}

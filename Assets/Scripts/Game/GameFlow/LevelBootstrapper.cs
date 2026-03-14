@@ -15,14 +15,21 @@ namespace Game.GameFlow
     /// </summary>
     public class LevelBootstrapper : MonoBehaviour
     {
-        [HideInInspector]
-        public PlayerController playerController;
+        [Header("玩家")]
+        [SerializeField] [Tooltip("场景中预放的玩家实例。可留空，留空时会自动查找或从玩家预制体生成。")]
+        private PlayerController playerController;
+        [SerializeField] [Tooltip("玩家预制体。场景中没有玩家实例时会优先使用它生成。")]
+        private PlayerController playerPrefab;
 
-        [HideInInspector]
-        public PlayerController playerPrefab;
+        [Header("相机")]
+        [SerializeField] [Tooltip("场景中的第三人称相机。可留空，留空时会自动查找。")]
+        private ThirdPersonCamera cameraRig;
 
-        [HideInInspector]
-        public Transform spawnPoint;
+        [Header("出生点")]
+        [SerializeField] [Tooltip("可选出生点。为空时使用 LevelBootstrapper 自身位置和朝向。")]
+        private Transform spawnPoint;
+
+        private UIDeathChoiceHandler _deathChoiceHandler;
 
         private void Start()
         {
@@ -52,6 +59,8 @@ namespace Game.GameFlow
             playerController.Init(playerModel);
             playerController.OnPlayerDied += HandlePlayerDied;
             gsm?.SetLevelPlayerTransform(playerController.transform);
+            _deathChoiceHandler ??= new UIDeathChoiceHandler();
+            gsm?.SetDeathChoiceHandler(_deathChoiceHandler);
 
             if (run.levelSnapshot != null)
             {
@@ -61,9 +70,12 @@ namespace Game.GameFlow
             }
             else
             {
-                var rotation = spawnPoint != null ? spawnPoint.rotation : Quaternion.identity;
-                PlacePlayer(spawnPoint != null ? spawnPoint.position : Vector3.zero, rotation);
+                var spawnTransform = GetSpawnTransform();
+                var rotation = spawnTransform != null ? spawnTransform.rotation : Quaternion.identity;
+                PlacePlayer(spawnTransform != null ? spawnTransform.position : Vector3.zero, rotation);
             }
+
+            BindCameraToPlayer();
 
             if (run.levelSnapshot == null)
                 ShowBuffSelection();
@@ -82,6 +94,7 @@ namespace Game.GameFlow
         private void OnDestroy()
         {
             GameStateMachine.GetInstance()?.SetLevelPlayerTransform(null);
+            GameStateMachine.GetInstance()?.SetDeathChoiceHandler(null);
             LevelUIModelLocator.Set(null);
 
             if (playerController != null)
@@ -152,8 +165,11 @@ namespace Game.GameFlow
             {
                 spawnPoint = FindSpawnPointInScene();
                 if (spawnPoint == null)
-                    Debug.LogWarning("[LevelBootstrapper] Spawn point not found. Fresh runs will fall back to Vector3.zero.");
+                    Debug.LogWarning("[LevelBootstrapper] Spawn point not found. Fresh runs will fall back to LevelBootstrapper transform.");
             }
+
+            if (!IsValidSceneObject(cameraRig))
+                cameraRig = FindFirstObjectByType<ThirdPersonCamera>();
         }
 
         private void EnsurePlayerInstance(RunData run)
@@ -177,12 +193,31 @@ namespace Game.GameFlow
             }
             else
             {
-                spawnPosition = spawnPoint != null ? spawnPoint.position : Vector3.zero;
-                spawnRotation = spawnPoint != null ? spawnPoint.rotation : prefab.transform.rotation;
+                var spawnTransform = GetSpawnTransform();
+                spawnPosition = spawnTransform != null ? spawnTransform.position : Vector3.zero;
+                spawnRotation = spawnTransform != null ? spawnTransform.rotation : prefab.transform.rotation;
             }
 
             playerController = Instantiate(prefab, spawnPosition, spawnRotation);
             playerController.name = prefab.name;
+        }
+
+        private Transform GetSpawnTransform()
+        {
+            return spawnPoint != null ? spawnPoint : transform;
+        }
+
+        private void BindCameraToPlayer()
+        {
+            if (playerController == null)
+                return;
+
+            if (cameraRig == null)
+                return;
+
+            var inputHandler = playerController.GetComponent<PlayerInputHandler>();
+            cameraRig.BindTarget(playerController.transform, inputHandler);
+            playerController.BindCamera(cameraRig);
         }
 
         private static bool IsValidSceneObject(Component component)
