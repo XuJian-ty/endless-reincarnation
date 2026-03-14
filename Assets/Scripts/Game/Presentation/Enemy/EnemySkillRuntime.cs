@@ -28,7 +28,16 @@ namespace Game.Presentation
 
         public float Cooldown => Binding != null ? Binding.cooldown : 1f;
         public float CastRange => Binding != null ? Binding.castRange : 3f;
+        public float MinCastRange => Binding != null ? Binding.minCastRange : 0f;
+        public float IdealCastRange => Binding != null && Binding.idealCastRange > 0.01f ? Binding.idealCastRange : CastRange;
         public float CastDuration => Binding != null ? Binding.castDuration : 0.6f;
+        public float NaturalExitNormalizedTime => Binding != null ? Binding.naturalExitNormalizedTime : 0.9f;
+        public EnemySkillRole SkillRole => Binding != null ? Binding.skillRole : EnemySkillRole.Flexible;
+        public EnemyAnimationNaturalExitTarget NaturalExitTarget => Binding != null ? Binding.naturalExitTarget : EnemyAnimationNaturalExitTarget.Locomotion;
+        public float RiskWeight => Binding != null ? Binding.riskWeight : 0.35f;
+        public float PunishWeight => Binding != null ? Binding.punishWeight : 0.5f;
+        public float RepeatPenalty => Binding != null ? Binding.repeatPenalty : 0.2f;
+        public bool CanUseUnderThreat => Binding != null && Binding.canUseUnderThreat;
         public bool IgnoreAnimationDamageEvents => Definition != null && Definition.ignoreAnimationDamageEvents;
         public bool RotateToTargetOnCast => Binding != null && Binding.rotateToTargetOnCast;
         public float PostCastIdleDuration => Binding != null ? Binding.postCastIdleDuration : 0f;

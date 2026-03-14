@@ -15,12 +15,10 @@ MonoBehaviour:
   enemyId: melee_minion
   displayName: "\u8FD1\u6218\u5C0F\u602A"
   enemyType: 0
-  behaviorTreeAsset: {fileID: 11400000, guid: 19d0127e2bca69f4787221e7189102ae, type: 2}
   sectorAngle: 120
   sectorRange: 12
   chaseBreakDistance: 20
   patrolRadius: 10
-  enableTacticalCombat: 1
   chaseInnerDistance: 2.2
   chaseOuterDistance: 4.2
   preferredSafetyDistanceOffset: 0.25
@@ -36,11 +34,33 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  reactionMinSeconds: 0.09
+  reactionMaxSeconds: 0.2
+  decisionCommitSeconds: 0.26
+  searchMemoryDuration: 1.4
+  aggression: 0.55
+  caution: 0.38
+  dodgeBias: 0.42
+  punishBias: 0.5
+  strafeBias: 0.38
+  maxPressureAllies: 1
+  poiseMax: 10
+  poiseRecoveryPerSecond: 7
+  poiseBreakStunDuration: 0.28
+  allowLightHitFlinch: 1
+  superArmorWhileCasting: 0
   skillSlots:
   - slotIndex: 0
     skillId: melee_minion_chop
     cooldown: 0.65
     castRange: 2.2
+    minCastRange: 0
+    idealCastRange: 1.9
+    skillRole: 2
+    riskWeight: 0.22
+    punishWeight: 0.3
+    repeatPenalty: 0.22
+    canUseUnderThreat: 0
     castDuration: 0.72
     enterIdleAfterCast: 0
     postCastIdleDuration: 0

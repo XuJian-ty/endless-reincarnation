@@ -15,12 +15,10 @@ MonoBehaviour:
   enemyId: guardian_1
   displayName: "\u5B88\u536B\u80051"
   enemyType: 3
-  behaviorTreeAsset: {fileID: 11400000, guid: 19d0127e2bca69f4787221e7189102ae, type: 2}
   sectorAngle: 145
   sectorRange: 18
   chaseBreakDistance: 30
   patrolRadius: 14
-  enableTacticalCombat: 1
   chaseInnerDistance: 2.2
   chaseOuterDistance: 4.8
   preferredSafetyDistanceOffset: 0.25
@@ -36,11 +34,33 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  reactionMinSeconds: 0.08
+  reactionMaxSeconds: 0.16
+  decisionCommitSeconds: 0.24
+  searchMemoryDuration: 1.8
+  aggression: 0.46
+  caution: 0.62
+  dodgeBias: 0.34
+  punishBias: 0.58
+  strafeBias: 0.24
+  maxPressureAllies: 1
+  poiseMax: 26
+  poiseRecoveryPerSecond: 11
+  poiseBreakStunDuration: 0.4
+  allowLightHitFlinch: 0
+  superArmorWhileCasting: 1
   skillSlots:
   - slotIndex: 0
     skillId: guardian_1_crush
     cooldown: 3.5
     castRange: 2.8
+    minCastRange: 0
+    idealCastRange: 2.4
+    skillRole: 2
+    riskWeight: 0.5
+    punishWeight: 0.46
+    repeatPenalty: 0.32
+    canUseUnderThreat: 0
     castDuration: 1.15
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.35
@@ -51,6 +71,13 @@ MonoBehaviour:
     skillId: guardian_1_fortify
     cooldown: 5
     castRange: 1
+    minCastRange: 0
+    idealCastRange: 1
+    skillRole: 4
+    riskWeight: 0.08
+    punishWeight: 0
+    repeatPenalty: 0.15
+    canUseUnderThreat: 1
     castDuration: 1
     enterIdleAfterCast: 0
     postCastIdleDuration: 0

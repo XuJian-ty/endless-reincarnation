@@ -19,6 +19,7 @@ namespace Game.Presentation
         private static readonly HashSet<string> MissingAnimatorActionWarnings    = new HashSet<string>();
         private const string ParamMoveX      = "MoveX";
         private const string ParamMoveY      = "MoveY";
+        private const string TriggerLocomotion = "Locomotion";
         private const string TriggerHurt     = "Hurt";
         private const string TriggerDead     = "Dead";
 
@@ -30,9 +31,15 @@ namespace Game.Presentation
 
         private EnemyResolvedSkill _runningSkill;
         private readonly SkillTimelineRunner _timelineRunner = new SkillTimelineRunner();
+        private readonly SkillTimelineRunner _loopStateTimelineRunner = new SkillTimelineRunner();
         private int _handledSkillSequence;
         private EnemyIntentType _lastIntentType = EnemyIntentType.None;
         private bool _wasHurtLastFrame;
+        private bool _wasInLocomotionLoopState;
+        private string _trackedNaturalExitAction;
+        private float _trackedNaturalExitNormalizedTime = 0.9f;
+        private EnemyAnimationNaturalExitTarget _trackedNaturalExitTarget = EnemyAnimationNaturalExitTarget.Locomotion;
+        private bool _trackedNaturalExitTriggered;
 
         private void Awake()
         {
@@ -52,12 +59,16 @@ namespace Game.Presentation
             if (!_controller.IsAlive)
             {
                 ClearRunningSkill();
+                ClearTrackedNaturalExit();
+                StopLoopStateTimeline();
                 if (_controller.CurrentIntent.Type == EnemyIntentType.Dead && _lastIntentType != EnemyIntentType.Dead)
                     PlayAnimatorAction(TriggerDead);
                 _lastIntentType   = _controller.CurrentIntent.Type;
                 _wasHurtLastFrame = false;
                 return;
             }
+
+            TickLoopStateTimeline();
 
             if (_controller.ActiveSkill != null)
             {
@@ -70,8 +81,16 @@ namespace Game.Presentation
             {
                 ClearRunningSkill();
                 if (_controller.IsHurt && !_wasHurtLastFrame)
+                {
                     PlayAnimatorAction(TriggerHurt);
+                    TrackNaturalExit(
+                        TriggerHurt,
+                        ResolveHurtNaturalExitNormalizedTime(),
+                        ResolveHurtNaturalExitTarget());
+                }
             }
+
+            TickNaturalExit();
 
             _lastIntentType   = _controller.CurrentIntent.Type;
             _wasHurtLastFrame = _controller.IsHurt;
@@ -98,6 +117,10 @@ namespace Game.Presentation
                 RotateToward(targetPosition.Value);
 
             PlayAnimatorAction(_runningSkill.AnimationTrigger);
+            TrackNaturalExit(
+                _runningSkill.AnimationTrigger,
+                _runningSkill.NaturalExitNormalizedTime,
+                _runningSkill.NaturalExitTarget);
 
             var ctx = new EnemySkillExecutionContext(
                 _controller,
@@ -120,7 +143,149 @@ namespace Game.Presentation
             }
         }
 
-        private void ClearRunningSkill() => _runningSkill = null;
+        private void ClearRunningSkill()
+        {
+            _timelineRunner.Stop();
+            _runningSkill = null;
+        }
+
+        private void TickLoopStateTimeline()
+        {
+            if (!ShouldRunLocomotionLoopState())
+            {
+                StopLoopStateTimeline();
+                return;
+            }
+
+            string skillId = ResolveLocomotionLoopSkillId();
+            if (!_wasInLocomotionLoopState)
+            {
+                _wasInLocomotionLoopState = true;
+                BeginLoopStateTimeline(skillId);
+            }
+
+            _loopStateTimelineRunner.Tick(Time.deltaTime);
+        }
+
+        private void BeginLoopStateTimeline(string skillId)
+        {
+            _loopStateTimelineRunner.Stop();
+
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            SharedSkillDefinition definition = ConfigManager.GetInstance()?.GetSkillDatabase()?.GetEntry(skillId);
+            if (definition == null)
+                return;
+
+            var ctx = new EnemySkillExecutionContext(
+                _controller,
+                _perception,
+                _overlapBuffer);
+
+            _loopStateTimelineRunner.Begin(definition, ctx);
+        }
+
+        private void StopLoopStateTimeline()
+        {
+            _loopStateTimelineRunner.Stop();
+            _wasInLocomotionLoopState = false;
+        }
+
+        private void ClearTrackedNaturalExit()
+        {
+            _trackedNaturalExitAction = null;
+            _trackedNaturalExitNormalizedTime = 0.9f;
+            _trackedNaturalExitTarget = EnemyAnimationNaturalExitTarget.Locomotion;
+            _trackedNaturalExitTriggered = false;
+        }
+
+        private void TrackNaturalExit(string action, float normalizedTime, EnemyAnimationNaturalExitTarget target)
+        {
+            if (string.IsNullOrWhiteSpace(action))
+            {
+                ClearTrackedNaturalExit();
+                return;
+            }
+
+            _trackedNaturalExitAction = action;
+            _trackedNaturalExitNormalizedTime = Mathf.Clamp01(normalizedTime);
+            _trackedNaturalExitTarget = target;
+            _trackedNaturalExitTriggered = false;
+        }
+
+        private void TickNaturalExit()
+        {
+            if (_anim == null || _trackedNaturalExitTriggered || string.IsNullOrWhiteSpace(_trackedNaturalExitAction))
+                return;
+
+            string trigger = ResolveNaturalExitTrigger(_trackedNaturalExitTarget);
+            if (string.IsNullOrEmpty(trigger))
+            {
+                _trackedNaturalExitTriggered = true;
+                return;
+            }
+
+            if (!IsCurrentStateNearEnd(_trackedNaturalExitNormalizedTime))
+                return;
+
+            PlayAnimatorAction(trigger);
+            _trackedNaturalExitTriggered = true;
+        }
+
+        private bool IsCurrentStateNearEnd(float threshold)
+        {
+            if (_anim == null || _anim.IsInTransition(0))
+                return false;
+
+            AnimatorStateInfo info = _anim.GetCurrentAnimatorStateInfo(0);
+            if (info.loop)
+                return false;
+
+            return info.normalizedTime >= Mathf.Clamp01(threshold);
+        }
+
+        private float ResolveHurtNaturalExitNormalizedTime()
+        {
+            if (_controller != null && _controller.Archetype != null)
+                return _controller.Archetype.hurtNaturalExitNormalizedTime;
+            return 0.9f;
+        }
+
+        private EnemyAnimationNaturalExitTarget ResolveHurtNaturalExitTarget()
+        {
+            if (_controller != null && _controller.Archetype != null)
+                return _controller.Archetype.hurtNaturalExitTarget;
+            return EnemyAnimationNaturalExitTarget.Locomotion;
+        }
+
+        private bool ShouldRunLocomotionLoopState()
+        {
+            if (_controller == null || !_controller.IsAlive)
+                return false;
+
+            if (_controller.IsHurt || _controller.ActiveSkill != null)
+                return false;
+
+            if (_controller.CurrentIntent.Type == EnemyIntentType.Dead)
+                return false;
+
+            return Mathf.Abs(_controller.AnimatorMoveForward) > 0.01f
+                || Mathf.Abs(_controller.AnimatorMoveStrafe) > 0.01f;
+        }
+
+        private string ResolveLocomotionLoopSkillId()
+        {
+            if (_controller != null && _controller.Archetype != null)
+                return _controller.Archetype.locomotionSkillId;
+            return "EnemyLocomotion";
+        }
+
+        private static string ResolveNaturalExitTrigger(EnemyAnimationNaturalExitTarget target) => target switch
+        {
+            EnemyAnimationNaturalExitTarget.Locomotion => TriggerLocomotion,
+            _ => null,
+        };
 
         private void ApplyDamageToPlayerTargets(int hitCount, float damageMultiplier, float stunDuration)
         {

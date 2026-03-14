@@ -11,6 +11,7 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Anim.TriggerFall();
+            StartTimelineSkill("Fall");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

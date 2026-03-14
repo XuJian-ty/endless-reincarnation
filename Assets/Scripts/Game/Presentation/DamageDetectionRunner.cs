@@ -20,6 +20,7 @@ namespace Game.Presentation
             SkillCollisionHitbox collisionHitbox,
             object collisionToken,
             Collider[] outBuffer,
+            SkillDetectionMotionFrame? motionFrame,
             out int hitCount)
         {
             hitCount = 0;
@@ -33,22 +34,24 @@ namespace Game.Presentation
             switch (effect.detectionType)
             {
                 case DamageDetectionType.RangeOverlap:
-                    hitCount = RunRangeOverlap(attacker, effect, layerMask, outBuffer);
+                    hitCount = RunRangeOverlap(attacker, effect, layerMask, outBuffer, motionFrame);
                     return true;
                 case DamageDetectionType.Collision:
                     hitCount = RunCollisionHits(collisionHitbox, collisionToken, outBuffer);
                     return true;
                 case DamageDetectionType.Raycast:
-                    hitCount = RunRaycast(attacker, effect, layerMask, outBuffer);
+                    hitCount = RunRaycast(attacker, effect, layerMask, outBuffer, motionFrame);
                     return true;
                 default:
                     return true;
             }
         }
 
-        private static int RunRangeOverlap(Transform attacker, SkillDamageEffect effect, int layerMask, Collider[] outBuffer)
+        private static int RunRangeOverlap(Transform attacker, SkillDamageEffect effect, int layerMask, Collider[] outBuffer, SkillDetectionMotionFrame? motionFrame)
         {
-            Vector3 origin = attacker.TransformPoint(effect.centerOffset);
+            ResolveDetectionPose(attacker, effect, motionFrame, out Vector3 basePosition, out Quaternion baseRotation, out Vector3 motionOffset);
+            Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
+            Vector3 origin = basePosition + baseRotation * (effect.centerOffset + motionOffset);
             int count;
 
             switch (effect.shape)
@@ -61,14 +64,20 @@ namespace Game.Presentation
                     float radius = Mathf.Max(effect.sphereRadius, 0.01f);
                     count = Physics.OverlapSphereNonAlloc(origin, radius, outBuffer, layerMask);
                     if (count <= 0) return 0;
-                    Vector3 forward = attacker.forward;
                     float halfAngle = effect.sectorAngle * 0.5f;
+                    Quaternion inverseRotation = Quaternion.Inverse(detectionRotation);
                     int write = 0;
                     for (int i = 0; i < count; i++)
                     {
-                        Vector3 toCollider = outBuffer[i].transform.position - origin;
-                        if (toCollider.sqrMagnitude < 0.0001f ||
-                            Vector3.Angle(forward, toCollider) <= halfAngle)
+                        Collider collider = outBuffer[i];
+                        if (collider == null)
+                            continue;
+
+                        Vector3 targetPoint = collider.bounds.center;
+                        Vector3 local = inverseRotation * (targetPoint - origin);
+                        Vector2 planar = new Vector2(local.x, local.z);
+                        if (planar.sqrMagnitude < 0.0001f ||
+                            Vector2.Angle(Vector2.up, planar) <= halfAngle)
                         {
                             if (write != i) outBuffer[write] = outBuffer[i];
                             write++;
@@ -78,7 +87,7 @@ namespace Game.Presentation
 
                 case AttackShapeType.Box:
                     Vector3 halfExtents = effect.boxSize * 0.5f;
-                    count = Physics.OverlapBoxNonAlloc(origin, halfExtents, outBuffer, attacker.rotation, layerMask);
+                    count = Physics.OverlapBoxNonAlloc(origin, halfExtents, outBuffer, detectionRotation, layerMask);
                     return count;
 
                 default:
@@ -86,10 +95,12 @@ namespace Game.Presentation
             }
         }
 
-        private static int RunRaycast(Transform attacker, SkillDamageEffect effect, int layerMask, Collider[] outBuffer)
+        private static int RunRaycast(Transform attacker, SkillDamageEffect effect, int layerMask, Collider[] outBuffer, SkillDetectionMotionFrame? motionFrame)
         {
-            Vector3 origin = attacker.TransformPoint(effect.rayOriginOffset);
-            Vector3 direction = attacker.forward;
+            ResolveDetectionPose(attacker, effect, motionFrame, out Vector3 basePosition, out Quaternion baseRotation, out Vector3 motionOffset);
+            Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
+            Vector3 origin = basePosition + baseRotation * (effect.rayOriginOffset + motionOffset);
+            Vector3 direction = detectionRotation * Vector3.forward;
             float distance = Mathf.Max(0f, effect.rayMaxDistance);
 
             int numHits = Physics.RaycastNonAlloc(origin, direction, RaycastHitBuffer, distance, layerMask);
@@ -106,6 +117,28 @@ namespace Game.Presentation
             for (int i = 0; i < n; i++)
                 outBuffer[i] = RaycastColliderList[i];
             return n;
+        }
+
+        private static void ResolveDetectionPose(
+            Transform attacker,
+            SkillDamageEffect effect,
+            SkillDetectionMotionFrame? motionFrame,
+            out Vector3 basePosition,
+            out Quaternion baseRotation,
+            out Vector3 motionOffset)
+        {
+            bool useCapturedPose = motionFrame.HasValue && effect?.motion != null && effect.motion.IsActive;
+            if (useCapturedPose)
+            {
+                basePosition = motionFrame.Value.OriginPosition;
+                baseRotation = motionFrame.Value.OriginRotation;
+                motionOffset = effect.motion.direction.normalized * effect.motion.speed * motionFrame.Value.Elapsed;
+                return;
+            }
+
+            basePosition = attacker.position;
+            baseRotation = attacker.rotation;
+            motionOffset = Vector3.zero;
         }
 
         public static SkillCollisionHitbox BeginCollisionWindow(Transform attacker, SkillDamageEffect effect, object collisionToken)

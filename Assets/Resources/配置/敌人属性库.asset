@@ -19,7 +19,7 @@ MonoBehaviour:
     baseHp: 60
     baseAttack: 10
     baseDefense: 5
-    baseMoveSpeed: 3.8
+    baseMoveSpeed: 2
     goldMin: 10
     goldMax: 10
     baseExp: 10
@@ -29,7 +29,7 @@ MonoBehaviour:
     baseHp: 45
     baseAttack: 12
     baseDefense: 3
-    baseMoveSpeed: 3.6
+    baseMoveSpeed: 2
     goldMin: 10
     goldMax: 10
     baseExp: 10
@@ -39,7 +39,7 @@ MonoBehaviour:
     baseHp: 160
     baseAttack: 18
     baseDefense: 8
-    baseMoveSpeed: 4
+    baseMoveSpeed: 2
     goldMin: 30
     goldMax: 30
     baseExp: 30
@@ -49,7 +49,7 @@ MonoBehaviour:
     baseHp: 180
     baseAttack: 16
     baseDefense: 10
-    baseMoveSpeed: 3.9
+    baseMoveSpeed: 2
     goldMin: 30
     goldMax: 30
     baseExp: 30
@@ -59,7 +59,7 @@ MonoBehaviour:
     baseHp: 260
     baseAttack: 22
     baseDefense: 10
-    baseMoveSpeed: 4.2
+    baseMoveSpeed: 3
     goldMin: 0
     goldMax: 0
     baseExp: 0
@@ -69,7 +69,7 @@ MonoBehaviour:
     baseHp: 300
     baseAttack: 20
     baseDefense: 12
-    baseMoveSpeed: 3.9
+    baseMoveSpeed: 3
     goldMin: 0
     goldMax: 0
     baseExp: 0
@@ -79,7 +79,7 @@ MonoBehaviour:
     baseHp: 750
     baseAttack: 28
     baseDefense: 12
-    baseMoveSpeed: 4.5
+    baseMoveSpeed: 3
     goldMin: 0
     goldMax: 0
     baseExp: 0
@@ -89,7 +89,7 @@ MonoBehaviour:
     baseHp: 820
     baseAttack: 30
     baseDefense: 13
-    baseMoveSpeed: 4.4
+    baseMoveSpeed: 3
     goldMin: 0
     goldMax: 0
     baseExp: 0
@@ -99,7 +99,7 @@ MonoBehaviour:
     baseHp: 900
     baseAttack: 32
     baseDefense: 14
-    baseMoveSpeed: 4.3
+    baseMoveSpeed: 3
     goldMin: 0
     goldMax: 0
     baseExp: 0
@@ -109,7 +109,7 @@ MonoBehaviour:
     baseHp: 980
     baseAttack: 34
     baseDefense: 15
-    baseMoveSpeed: 4.2
+    baseMoveSpeed: 3
     goldMin: 0
     goldMax: 0
     baseExp: 0
@@ -119,7 +119,7 @@ MonoBehaviour:
     baseHp: 1100
     baseAttack: 36
     baseDefense: 16
-    baseMoveSpeed: 4.1
+    baseMoveSpeed: 3
     goldMin: 0
     goldMax: 0
     baseExp: 0

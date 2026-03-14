@@ -19,39 +19,37 @@
         }
     }
 
-    /// <summary>Condition: skill slot can be cast (phase + cooldown + runtime state).</summary>
-    public class CondCanCastSkill : IBehaviorNode
+    /// <summary>Condition: perceived player action is dangerous enough to warrant an evasive response.</summary>
+    public class CondHasImmediateThreat : IBehaviorNode
     {
-        public int SkillSlot;
-
         public TaskStatus Tick(EnemyAIContext ctx)
         {
-            return (ctx?.Controller != null && ctx.Controller.CanCastSkill(SkillSlot)) ? TaskStatus.Success : TaskStatus.Failure;
-        }
-    }
-
-    /// <summary>Condition: target is in range and visible for this slot.</summary>
-    public class CondIsInSkillRange : IBehaviorNode
-    {
-        public int SkillSlot;
-
-        public TaskStatus Tick(EnemyAIContext ctx)
-        {
-            if (ctx?.Perception == null)
-                return TaskStatus.Failure;
-
-            return (ctx.Perception.IsInSkillRange(SkillSlot) && ctx.Perception.HasLineOfSight)
+            return (ctx?.Perception != null && ctx.Perception.HasImmediateThreat)
                 ? TaskStatus.Success
                 : TaskStatus.Failure;
         }
     }
 
-    /// <summary>Condition: current target is visible (line of sight clear).</summary>
-    public class CondHasLineOfSight : IBehaviorNode
+    /// <summary>Condition: player seems to be in recovery, creating a punish opportunity.</summary>
+    public class CondHasPunishWindow : IBehaviorNode
     {
         public TaskStatus Tick(EnemyAIContext ctx)
         {
-            return (ctx?.Perception != null && ctx.Perception.HasLineOfSight)
+            return (ctx?.Perception != null && ctx.Perception.HasPunishOpportunity)
+                ? TaskStatus.Success
+                : TaskStatus.Failure;
+        }
+    }
+
+    /// <summary>Condition: enemy recently saw the target and should search the last known position.</summary>
+    public class CondHasTargetMemory : IBehaviorNode
+    {
+        public TaskStatus Tick(EnemyAIContext ctx)
+        {
+            if (ctx?.Perception == null || ctx.Archetype == null)
+                return TaskStatus.Failure;
+
+            return (!ctx.Perception.HasTarget && ctx.Perception.HasRecentTargetMemory(ctx.Archetype.searchMemoryDuration))
                 ? TaskStatus.Success
                 : TaskStatus.Failure;
         }

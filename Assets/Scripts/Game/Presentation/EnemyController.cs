@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Game.Domain;
 using Game.Data;
+using Game.AI;
 using Game.GameFlow;
 using Game;
 using ProjectBase;
@@ -65,6 +66,8 @@ namespace Game.Presentation
         private bool _loggedAmbiguousVariantError;
         private bool _loggedMissingStatsError;
         private bool _loggedMissingArchetypeError;
+        private float _currentPoise;
+        private bool _poiseInitialized;
 
         public float Defense
         {
@@ -178,10 +181,12 @@ namespace Game.Presentation
         public bool IsDecisionLocked => !_dead && Time.time < _decisionLockUntilTime;
         public bool IsIdling => !_dead && CurrentIntent.Type == EnemyIntentType.Idle && Time.time < _idleUntilTime;
         public bool IsInPostCastRecovery => !_dead && _isInPostCastRecovery && Time.time < _idleUntilTime;
+        public bool HasCastingSuperArmor => IsCastingSkill && Archetype != null && Archetype.superArmorWhileCasting;
         public float AnimatorMoveBlend => _animatorMoveBlend;
         public float AnimatorMoveSigned => _animatorMoveSigned;
         public float AnimatorMoveForward => _animatorMoveSigned;
         public float AnimatorMoveStrafe => _animatorMoveStrafe;
+        public float CurrentPoise => _currentPoise;
         public float CurrentHpRatio
         {
             get
@@ -234,6 +239,7 @@ namespace Game.Presentation
             }
 
             RecalculateModifierCacheIfNeeded();
+            TickPoiseRecovery(Time.deltaTime);
             if (!_dead && _bonusHpRegen > 0f)
                 Heal(_bonusHpRegen * Time.deltaTime);
 
@@ -303,6 +309,8 @@ namespace Game.Presentation
                     _loggedMissingArchetypeError = true;
                 }
             }
+
+            EnsurePoiseInitialized();
         }
 
         public EnemyResolvedSkill ResolveSkillSlot(int slot)
@@ -453,6 +461,7 @@ namespace Game.Presentation
             if (validDuration <= 0f)
                 return;
 
+            EnemySquadCoordinator.Release(this);
             ClearPostCastRecoveryState();
 
             if (validDuration > _hurtRemainingTime)
@@ -553,7 +562,7 @@ namespace Game.Presentation
                 return true;
             }
 
-            ApplyHardControl(0.3f);
+            ProcessHitReaction(amount);
             return false;
         }
 
@@ -580,6 +589,8 @@ namespace Game.Presentation
             _animatorMoveBlend = 0f;
             _animatorMoveSigned = 0f;
             _animatorMoveStrafe = 0f;
+            _currentPoise = 0f;
+            _poiseInitialized = false;
             _modifierCacheDirty = true;
             CurrentIntent = EnemyIntent.None;
         }
@@ -635,6 +646,7 @@ namespace Game.Presentation
         {
             if (_dead) return;
             _dead = true;
+            EnemySquadCoordinator.Release(this);
             CancelActiveSkill();
             ClearPostCastRecoveryState();
             _idleUntilTime = 0f;
@@ -802,6 +814,65 @@ namespace Game.Presentation
             _isInPostCastRecovery = false;
             _hasPostCastRetreatDestination = false;
             _postCastRetreatDestination = Vector3.zero;
+        }
+
+        private void EnsurePoiseInitialized()
+        {
+            if (_poiseInitialized && (Archetype == null || _currentPoise > 0f || Archetype.poiseMax <= 0f))
+                return;
+
+            _poiseInitialized = true;
+            _currentPoise = Archetype != null ? Mathf.Max(0f, Archetype.poiseMax) : 0f;
+        }
+
+        private void TickPoiseRecovery(float dt)
+        {
+            if (_dead || Archetype == null)
+                return;
+
+            EnsurePoiseInitialized();
+
+            float maxPoise = Mathf.Max(0f, Archetype.poiseMax);
+            if (maxPoise <= 0f || _currentPoise >= maxPoise)
+                return;
+
+            _currentPoise = Mathf.Min(maxPoise, _currentPoise + Mathf.Max(0f, Archetype.poiseRecoveryPerSecond) * dt);
+        }
+
+        private void ProcessHitReaction(float damage)
+        {
+            if (Archetype == null)
+            {
+                ApplyHardControl(0.3f);
+                return;
+            }
+
+            EnsurePoiseInitialized();
+
+            float maxPoise = Mathf.Max(0f, Archetype.poiseMax);
+            float breakStunDuration = Mathf.Max(0.05f, Archetype.poiseBreakStunDuration);
+            if (maxPoise <= 0f)
+            {
+                if (!HasCastingSuperArmor)
+                    ApplyHardControl(breakStunDuration);
+                return;
+            }
+
+            _currentPoise = Mathf.Max(0f, _currentPoise - Mathf.Max(0.5f, damage));
+            if (_currentPoise <= 0.01f)
+            {
+                _currentPoise = maxPoise;
+                if (!HasCastingSuperArmor)
+                    ApplyHardControl(breakStunDuration);
+                return;
+            }
+
+            if (!Archetype.allowLightHitFlinch || HasCastingSuperArmor)
+                return;
+
+            float heavyHitThreshold = Mathf.Max(4f, maxPoise * 0.45f);
+            if (damage >= heavyHitThreshold)
+                ApplyHardControl(Mathf.Max(0.05f, breakStunDuration * 0.55f));
         }
 
     }

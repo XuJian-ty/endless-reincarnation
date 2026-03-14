@@ -26,6 +26,9 @@ namespace Game.Presentation
             public SkillDamageEffect effect;
             public float endTime;
             public SkillCollisionHitbox collisionHitbox;
+            public float startTime;
+            public UnityEngine.Vector3 originPosition;
+            public UnityEngine.Quaternion originRotation;
             public readonly HashSet<UnityEngine.Transform> hitTargets = new HashSet<UnityEngine.Transform>();
         }
 
@@ -39,12 +42,17 @@ namespace Game.Presentation
         private EventState[] _vfxStates;
         private EventState[] _sfxStates;
         private readonly List<ActiveDamageWindow> _activeDamageWindows = new List<ActiveDamageWindow>();
+        private readonly SkillCueRuntimeScope _cueRuntime = new SkillCueRuntimeScope();
         private bool _started;
+        private bool _stateScopeEnded;
+        private float _dynamicCompletionTime;
 
         // ── 公开属性 ──────────────────────────────────────────────────────────
 
         public bool IsRunning => _started && !IsComplete;
         public bool IsComplete { get; private set; }
+        public bool HasActiveDamageWindows => _activeDamageWindows.Count > 0;
+        public bool HasPendingWork => _started && !IsComplete;
 
         /// <summary>当前已播放时长（秒）。</summary>
         public float Elapsed => _elapsed;
@@ -59,6 +67,13 @@ namespace Game.Presentation
             get
             {
                 float eventsDuration = _definition != null ? _definition.GetTimelineDuration() : 0f;
+                eventsDuration = UnityEngine.Mathf.Max(eventsDuration, _dynamicCompletionTime);
+                bool hasUntilStateExitEvents =
+                    !_stateScopeEnded
+                    && _definition != null
+                    && _definition.HasUntilStateExitEvents();
+                if (hasUntilStateExitEvents && _castDuration <= 0f)
+                    return float.PositiveInfinity;
                 if (_castDuration > 0f)
                     return UnityEngine.Mathf.Max(_castDuration, eventsDuration);
                 return eventsDuration;
@@ -81,7 +96,10 @@ namespace Game.Presentation
             _castDuration = castDuration;
             _elapsed      = 0f;
             _started      = true;
+            _stateScopeEnded = false;
+            _dynamicCompletionTime = 0f;
             IsComplete    = false;
+            _cueRuntime.Stop();
 
             _damageStates = BuildStates(_definition?.damageEvents);
             _physicsStates = BuildStates(_definition?.physicsEvents);
@@ -104,9 +122,7 @@ namespace Game.Presentation
 
             _elapsed += deltaTime;
             EvaluateEvents();
-
-            if (_elapsed >= Duration)
-                IsComplete = true;
+            RefreshCompletion();
         }
 
         /// <summary>提前终止时间轴（不触发剩余事件）。</summary>
@@ -115,6 +131,14 @@ namespace Game.Presentation
             _started = false;
             IsComplete = true;
             ClearActiveDamageWindows();
+            _cueRuntime.Stop();
+        }
+
+        public void StopStateScopedCues()
+        {
+            _stateScopeEnded = true;
+            _cueRuntime.Stop();
+            RefreshCompletion();
         }
 
         // ── 内部评估 ──────────────────────────────────────────────────────────
@@ -154,10 +178,11 @@ namespace Game.Presentation
                     continue;
                 }
 
-                float endTime = evt.GetEndTime();
                 float interval = UnityEngine.Mathf.Max(0.01f, evt.repeatInterval);
+                bool repeatsUntilStateExit = evt.RepeatsUntilStateExit && !_stateScopeEnded;
+                float endTime = evt.GetEndTime();
                 while (_elapsed >= state.nextTriggerTime
-                       && state.nextTriggerTime <= endTime + 0.0001f)
+                       && (repeatsUntilStateExit || state.nextTriggerTime <= endTime + 0.0001f))
                 {
                     TriggerDamageEvent(evt);
                     state.hasTriggered = true;
@@ -182,10 +207,14 @@ namespace Game.Presentation
                     float detectionDuration = effect.detectionDuration > 0f
                         ? effect.detectionDuration
                         : UnityEngine.Mathf.Max(0.0001f, UnityEngine.Time.fixedDeltaTime);
+                    UpdateDynamicCompletionTime(_elapsed + detectionDuration + SharedSkillDefinition.GetDamageOnHitTailDuration(effect));
                     var collisionWindow = new ActiveDamageWindow
                     {
                         effect = effect,
                         endTime = _elapsed + detectionDuration,
+                        startTime = _elapsed,
+                        originPosition = _context.CasterTransform != null ? _context.CasterTransform.position : UnityEngine.Vector3.zero,
+                        originRotation = _context.CasterTransform != null ? _context.CasterTransform.rotation : UnityEngine.Quaternion.identity,
                     };
                     collisionWindow.collisionHitbox = DamageDetectionRunner.BeginCollisionWindow(_context.CasterTransform, effect, collisionWindow);
                     if (collisionWindow.collisionHitbox != null)
@@ -195,7 +224,15 @@ namespace Game.Presentation
 
                 if (effect.detectionDuration <= 0f)
                 {
-                    SkillEffectExecutor.ExecuteDamageEffect(effect, _context, null);
+                    UpdateDynamicCompletionTime(_elapsed + SharedSkillDefinition.GetDamageEffectLifetime(effect));
+                    SkillEffectExecutor.ExecuteDamageEffect(
+                        effect,
+                        _context,
+                        null,
+                        null,
+                        null,
+                        _cueRuntime,
+                        CreateMotionFrame(_context.CasterTransform, 0f));
                     continue;
                 }
 
@@ -203,9 +240,20 @@ namespace Game.Presentation
                 {
                     effect = effect,
                     endTime = _elapsed + effect.detectionDuration,
+                    startTime = _elapsed,
+                    originPosition = _context.CasterTransform != null ? _context.CasterTransform.position : UnityEngine.Vector3.zero,
+                    originRotation = _context.CasterTransform != null ? _context.CasterTransform.rotation : UnityEngine.Quaternion.identity,
                 };
+                UpdateDynamicCompletionTime(_elapsed + SharedSkillDefinition.GetDamageEffectLifetime(effect));
                 _activeDamageWindows.Add(detectionWindow);
-                SkillEffectExecutor.ExecuteDamageEffect(effect, _context, detectionWindow.hitTargets);
+                SkillEffectExecutor.ExecuteDamageEffect(
+                    effect,
+                    _context,
+                    detectionWindow.hitTargets,
+                    null,
+                    null,
+                    _cueRuntime,
+                    CreateMotionFrame(detectionWindow, 0f));
             }
         }
 
@@ -231,7 +279,14 @@ namespace Game.Presentation
                     continue;
                 }
 
-                SkillEffectExecutor.ExecuteDamageEffect(window.effect, _context, window.hitTargets, window.collisionHitbox, window);
+                SkillEffectExecutor.ExecuteDamageEffect(
+                    window.effect,
+                    _context,
+                    window.hitTargets,
+                    window.collisionHitbox,
+                    window,
+                    _cueRuntime,
+                    CreateMotionFrame(window, _elapsed - window.startTime));
             }
         }
 
@@ -272,7 +327,20 @@ namespace Game.Presentation
             return states;
         }
 
-        private void EvaluateTrack<T>(List<T> events, EventState[] states, Action<T, ISkillExecutionContext> executor)
+        private static SkillDetectionMotionFrame? CreateMotionFrame(UnityEngine.Transform caster, float elapsed)
+        {
+            if (caster == null)
+                return null;
+
+            return new SkillDetectionMotionFrame(caster.position, caster.rotation, elapsed);
+        }
+
+        private static SkillDetectionMotionFrame CreateMotionFrame(ActiveDamageWindow window, float elapsed)
+        {
+            return new SkillDetectionMotionFrame(window.originPosition, window.originRotation, elapsed);
+        }
+
+        private void EvaluateTrack<T>(List<T> events, EventState[] states, Action<T, ISkillExecutionContext, SkillCueRuntimeScope> executor)
             where T : SkillTimedEventBase
         {
             if (events == null || states == null || executor == null)
@@ -290,22 +358,58 @@ namespace Game.Presentation
                 {
                     if (!state.hasTriggered && _elapsed >= evt.startTime)
                     {
-                        executor(evt, _context);
+                        executor(evt, _context, _cueRuntime);
                         state.hasTriggered = true;
                     }
                     continue;
                 }
 
-                float endTime = evt.GetEndTime();
                 float interval = UnityEngine.Mathf.Max(0.01f, evt.repeatInterval);
+                bool repeatsUntilStateExit = evt.RepeatsUntilStateExit && !_stateScopeEnded;
+                float endTime = evt.GetEndTime();
                 while (_elapsed >= state.nextTriggerTime
-                       && state.nextTriggerTime <= endTime + 0.0001f)
+                       && (repeatsUntilStateExit || state.nextTriggerTime <= endTime + 0.0001f))
                 {
-                    executor(evt, _context);
+                    UpdateDynamicCompletionTime(state.nextTriggerTime + GetEventOccurrenceLifetime(evt));
+                    executor(evt, _context, _cueRuntime);
                     state.hasTriggered = true;
                     state.nextTriggerTime += interval;
                 }
             }
+        }
+
+        private void RefreshCompletion()
+        {
+            if (!_started || _definition == null)
+            {
+                IsComplete = true;
+                return;
+            }
+
+            if (float.IsPositiveInfinity(Duration))
+            {
+                IsComplete = false;
+                return;
+            }
+
+            IsComplete = _elapsed >= Duration && _activeDamageWindows.Count <= 0;
+        }
+
+        private void UpdateDynamicCompletionTime(float endTime)
+        {
+            _dynamicCompletionTime = UnityEngine.Mathf.Max(_dynamicCompletionTime, endTime);
+        }
+
+        private static float GetEventOccurrenceLifetime<T>(T evt) where T : SkillTimedEventBase
+        {
+            return evt switch
+            {
+                SkillPhysicsEvent physicsEvent => SharedSkillDefinition.GetPhysicsEventTailDuration(physicsEvent),
+                SkillAttributeEvent attributeEvent => SharedSkillDefinition.GetAttributeEventTailDuration(attributeEvent),
+                SkillVfxEvent vfxEvent => SharedSkillDefinition.GetVfxEventTailDuration(vfxEvent),
+                SkillSfxEvent sfxEvent => SharedSkillDefinition.GetSfxEventTailDuration(sfxEvent),
+                _ => 0f,
+            };
         }
     }
 }

@@ -16,7 +16,6 @@ namespace Game.Editor
         [MenuItem("游戏/AI/一键升级敌人战术AI（行为树+参数+配置清理）", false, 10)]
         public static void Upgrade()
         {
-            var defaultTree = CreateDefaultBehaviorTreeAsset.Create();
             var archetypes = EnemyConfigAuditUtility.LoadEnemyArchetypes();
             var sharedSkillDb = EnemyConfigAuditUtility.LoadFirstAsset<SharedSkillDatabaseSO>("t:SharedSkillDatabaseSO");
 
@@ -33,8 +32,9 @@ namespace Game.Editor
                 if (archetype == null)
                     continue;
 
-                bool dirty = EnsureBehaviorTreeBinding(archetype, defaultTree);
+                bool dirty = false;
                 dirty |= EnsureTacticalDefaults(archetype);
+                dirty |= EnsureSkillSlotDefaults(archetype);
                 dirty |= NormalizeRedundantSlotOverrides(archetype);
 
                 if (!dirty)
@@ -49,29 +49,6 @@ namespace Game.Editor
             EnemyConfigAuditUtility.Audit(archetypes, sharedSkillDb, logResult: true);
 
             Debug.Log($"[AI] 战术 AI 升级完成：更新 {updatedArchetypes} 个敌人行为配置。");
-        }
-
-        private static bool EnsureBehaviorTreeBinding(EnemyArchetypeSO archetype, Game.AI.BehaviorTreeAsset defaultTree)
-        {
-            if (archetype == null || defaultTree == null)
-                return false;
-
-            if (archetype.behaviorTreeAsset == null)
-            {
-                archetype.behaviorTreeAsset = defaultTree;
-                return true;
-            }
-
-            string currentPath = AssetDatabase.GetAssetPath(archetype.behaviorTreeAsset);
-            string defaultPath = AssetDatabase.GetAssetPath(defaultTree);
-            if (string.Equals(currentPath, defaultPath, StringComparison.OrdinalIgnoreCase) &&
-                archetype.behaviorTreeAsset != defaultTree)
-            {
-                archetype.behaviorTreeAsset = defaultTree;
-                return true;
-            }
-
-            return false;
         }
 
         private static bool EnsureTacticalDefaults(EnemyArchetypeSO archetype)
@@ -105,12 +82,6 @@ namespace Game.Editor
             bool isBossOrRanged = archetype.enemyType == EnemyType.Boss || archetype.enemyType == EnemyType.RangedMinion;
             float suggestedInner = Mathf.Max(1.5f, Mathf.Min(maxRange, minRange + (isBossOrRanged ? 2.5f : 1.2f)));
             float suggestedOuter = Mathf.Max(suggestedInner + 2f, maxRange + (isBossOrRanged ? 3.5f : 2f));
-
-            if (!archetype.enableTacticalCombat)
-            {
-                archetype.enableTacticalCombat = true;
-                changed = true;
-            }
 
             if (archetype.chaseInnerDistance <= 0f)
             {
@@ -154,12 +125,6 @@ namespace Game.Editor
                 changed = true;
             }
 
-            if (archetype.tacticalHoldDuration < 0f)
-            {
-                archetype.tacticalHoldDuration = 0.12f;
-                changed = true;
-            }
-
             if (archetype.approachLeadTime < 0f)
             {
                 archetype.approachLeadTime = isBossOrRanged ? 0.25f : 0.15f;
@@ -178,12 +143,6 @@ namespace Game.Editor
                 changed = true;
             }
 
-            if (archetype.losBlockedPenaltySeconds < 0f)
-            {
-                archetype.losBlockedPenaltySeconds = 0.35f;
-                changed = true;
-            }
-
             if (archetype.perceptionEyeHeight < 0f)
             {
                 archetype.perceptionEyeHeight = 1.2f;
@@ -196,6 +155,108 @@ namespace Game.Editor
                 changed = true;
             }
 
+            if (archetype.reactionMinSeconds <= 0f)
+            {
+                archetype.reactionMinSeconds = isBossOrRanged ? 0.07f : 0.09f;
+                changed = true;
+            }
+
+            if (archetype.reactionMaxSeconds < archetype.reactionMinSeconds)
+            {
+                archetype.reactionMaxSeconds = isBossOrRanged ? 0.16f : 0.2f;
+                changed = true;
+            }
+
+            if (archetype.decisionCommitSeconds <= 0f)
+            {
+                archetype.decisionCommitSeconds = isBossOrRanged ? 0.22f : 0.26f;
+                changed = true;
+            }
+
+            if (archetype.searchMemoryDuration <= 0f)
+            {
+                archetype.searchMemoryDuration = isBossOrRanged ? 1.9f : 1.4f;
+                changed = true;
+            }
+
+            if (archetype.aggression <= 0f)
+            {
+                archetype.aggression = isBossOrRanged ? 0.62f : 0.55f;
+                changed = true;
+            }
+
+            if (archetype.caution <= 0f)
+            {
+                archetype.caution = isBossOrRanged ? 0.45f : 0.38f;
+                changed = true;
+            }
+
+            if (archetype.dodgeBias <= 0f)
+            {
+                archetype.dodgeBias = isBossOrRanged ? 0.58f : 0.42f;
+                changed = true;
+            }
+
+            if (archetype.punishBias <= 0f)
+            {
+                archetype.punishBias = isBossOrRanged ? 0.62f : 0.5f;
+                changed = true;
+            }
+
+            if (archetype.strafeBias <= 0f)
+            {
+                archetype.strafeBias = isBossOrRanged ? 0.52f : 0.38f;
+                changed = true;
+            }
+
+            if (archetype.maxPressureAllies <= 0)
+            {
+                archetype.maxPressureAllies = archetype.enemyType == EnemyType.MeleeMinion ? 1 : archetype.enemyType == EnemyType.Boss ? 3 : 2;
+                changed = true;
+            }
+
+            if (archetype.poiseMax <= 0f)
+            {
+                archetype.poiseMax = archetype.enemyType switch
+                {
+                    EnemyType.MeleeMinion => 10f,
+                    EnemyType.RangedMinion => 8f,
+                    EnemyType.Elite => 18f,
+                    EnemyType.Guardian => 26f,
+                    EnemyType.Boss => 34f,
+                    _ => 12f,
+                };
+                changed = true;
+            }
+
+            if (archetype.poiseRecoveryPerSecond <= 0f)
+            {
+                archetype.poiseRecoveryPerSecond = archetype.enemyType switch
+                {
+                    EnemyType.MeleeMinion => 7f,
+                    EnemyType.RangedMinion => 6f,
+                    EnemyType.Elite => 9f,
+                    EnemyType.Guardian => 11f,
+                    EnemyType.Boss => 13f,
+                    _ => 8f,
+                };
+                changed = true;
+            }
+
+            if (archetype.poiseBreakStunDuration <= 0f)
+            {
+                archetype.poiseBreakStunDuration = archetype.enemyType switch
+                {
+                    EnemyType.MeleeMinion => 0.28f,
+                    EnemyType.RangedMinion => 0.25f,
+                    EnemyType.Elite => 0.34f,
+                    EnemyType.Guardian => 0.4f,
+                    EnemyType.Boss => 0.45f,
+                    _ => 0.3f,
+                };
+                changed = true;
+            }
+
             return changed;
         }
 
@@ -205,6 +266,47 @@ namespace Game.Editor
                 return 3f;
 
             return slot.castRange > 0.01f ? slot.castRange : 3f;
+        }
+
+        private static bool EnsureSkillSlotDefaults(EnemyArchetypeSO archetype)
+        {
+            if (archetype == null || archetype.skillSlots == null)
+                return false;
+
+            bool changed = false;
+            for (int i = 0; i < archetype.skillSlots.Count; i++)
+            {
+                EnemySkillSlotBinding slot = archetype.skillSlots[i];
+                if (slot == null)
+                    continue;
+
+                float castRange = ResolveCastRange(slot);
+                if (slot.idealCastRange <= 0f)
+                {
+                    slot.idealCastRange = castRange;
+                    changed = true;
+                }
+
+                if (slot.repeatPenalty <= 0f)
+                {
+                    slot.repeatPenalty = 0.2f;
+                    changed = true;
+                }
+
+                if (slot.punishWeight <= 0f)
+                {
+                    slot.punishWeight = 0.5f;
+                    changed = true;
+                }
+
+                if (slot.riskWeight <= 0f)
+                {
+                    slot.riskWeight = 0.35f;
+                    changed = true;
+                }
+            }
+
+            return changed;
         }
 
         private static bool NormalizeRedundantSlotOverrides(EnemyArchetypeSO archetype)

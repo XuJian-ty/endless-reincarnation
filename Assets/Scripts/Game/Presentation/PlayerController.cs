@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Game.Domain;
 using Game.Data;
@@ -62,6 +63,7 @@ namespace Game.Presentation
         private bool               _deathSequenceCompleted;
         private float              _temporarySuperArmorTimer;
         private float              _temporaryInvincibleTimer;
+        private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
 
         // ── 连续受击保护状态 ──────────────────────────────────────────────
         private HitProtectionSystem _hitProtectionSystem;
@@ -91,6 +93,7 @@ namespace Game.Presentation
             _deathSequenceCompleted = false;
             _temporarySuperArmorTimer = 0f;
             _temporaryInvincibleTimer = 0f;
+            StopDetachedTimelineRunners();
             _hitProtectionSystem = new HitProtectionSystem(_hitProtectionWindow, _hitProtectionThreshold, _hitProtectionDuration);
             ResolveCameraReference();
 
@@ -115,6 +118,7 @@ namespace Game.Presentation
             _inputHandler.ManualUpdate();
             var input = _inputHandler.CurrentInput;
             StateMachine.Tick(Time.deltaTime, input);
+            TickDetachedTimelineRunners(Time.deltaTime);
             Mover.Tick(Time.deltaTime);
         }
 
@@ -253,13 +257,66 @@ namespace Game.Presentation
             StateMachine.ChangeState<PlayerDeathState>();
         }
 
+        public void ContinueDetachedTimelineRunner(SkillTimelineRunner runner)
+        {
+            if (runner == null || runner.IsComplete || _detachedTimelineRunners.Contains(runner))
+                return;
+
+            _detachedTimelineRunners.Add(runner);
+        }
+
+        private void TickDetachedTimelineRunners(float deltaTime)
+        {
+            if (_detachedTimelineRunners.Count <= 0)
+                return;
+
+            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
+            {
+                SkillTimelineRunner runner = _detachedTimelineRunners[i];
+                if (runner == null || runner.IsComplete)
+                {
+                    _detachedTimelineRunners.RemoveAt(i);
+                    continue;
+                }
+
+                runner.Tick(deltaTime);
+                if (runner.IsComplete)
+                    _detachedTimelineRunners.RemoveAt(i);
+            }
+        }
+
+        private void StopDetachedTimelineRunners()
+        {
+            if (_detachedTimelineRunners.Count <= 0)
+                return;
+
+            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
+            {
+                SkillTimelineRunner runner = _detachedTimelineRunners[i];
+                runner?.Stop();
+            }
+
+            _detachedTimelineRunners.Clear();
+        }
+
         public void CompleteDeathSequence()
         {
             if (_deathSequenceCompleted) return;
 
             _deathSequenceCompleted = true;
             _initialized = false;
+            StopDetachedTimelineRunners();
             OnPlayerDied?.Invoke();
+        }
+
+        private void OnDisable()
+        {
+            StopDetachedTimelineRunners();
+        }
+
+        private void OnDestroy()
+        {
+            StopDetachedTimelineRunners();
         }
 
         private void TickTemporaryCombatFlags(float dt)
