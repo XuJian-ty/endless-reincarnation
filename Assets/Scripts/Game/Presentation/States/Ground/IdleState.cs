@@ -28,6 +28,9 @@ namespace Game.Presentation
             if (IsGrounded)
             {
                 _continuousAirTime = 0f;
+                var cameraForward = Ctx.GetMoveDirection(Vector2.up);
+                if (cameraForward.sqrMagnitude > 0.001f)
+                    Ctx.Mover.RotateToward(cameraForward, Ctx.RotateSpeed);
                 return;
             }
             _continuousAirTime += dt;

@@ -34,6 +34,27 @@ namespace Game.Presentation
         public static ThirdPersonCamera Active { get; private set; }
         public float Yaw => _yaw;
 
+        public float GetMovementYaw()
+        {
+            float yaw = _yaw;
+            if (_inputHandler != null)
+                yaw += _inputHandler.CurrentInput.LookDelta.x * _sensitivityX;
+            return yaw;
+        }
+
+        public void BindTarget(Transform target, PlayerInputHandler inputHandler = null)
+        {
+            _target = target;
+            _inputHandler = inputHandler;
+
+            if (_inputHandler == null && _target != null)
+                _inputHandler = _target.GetComponent<PlayerInputHandler>();
+
+            _anglesInitialized = false;
+            _loggedMissingTargetWarning = false;
+            _loggedMissingInputWarning = false;
+        }
+
         private void Awake()
         {
             Active = this;

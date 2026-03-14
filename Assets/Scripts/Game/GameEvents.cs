@@ -13,9 +13,6 @@ namespace Game
         /// <summary>守卫者死亡；用于 Boss 降临计数</summary>
         public const string GuardianDied = "GuardianDied";
 
-        /// <summary>请求生成 Boss；关卡导演订阅后生成 Boss</summary>
-        public const string BossSpawnRequest = "BossSpawnRequest";
-
         /// <summary>Boss 被击败；参数传 bossId，流程层写 Checkpoint 并弹选关</summary>
         public const string BossDefeated = "BossDefeated";
 

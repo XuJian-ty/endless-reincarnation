@@ -1205,14 +1205,14 @@ MonoBehaviour:
         activeDurationMode: 0
         repeatInterval: 0.1
         damageEffects:
-        - damageMagnitude: 0.95
-          detectionDuration: 0
+        - damageMagnitude: 0
+          detectionDuration: 0.033333335
           detectionType: 0
           hitLayerName: Player
           shape: 1
           centerOffset: {x: 0, y: 0, z: 0}
           rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 1.45
+          sphereRadius: 0.01
           sectorAngle: 180
           boxSize: {x: 1, y: 1, z: 1}
           colliderNodeName: 
@@ -3945,14 +3945,14 @@ MonoBehaviour:
       activeDurationMode: 0
       repeatInterval: 0.1
       damageEffects:
-      - damageMagnitude: 0.95
-        detectionDuration: 0
+      - damageMagnitude: 0
+        detectionDuration: 0.033333335
         detectionType: 0
         hitLayerName: Player
         shape: 1
         centerOffset: {x: 0, y: 0, z: 0}
         rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 1.45
+        sphereRadius: 0.01
         sectorAngle: 180
         boxSize: {x: 1, y: 1, z: 1}
         colliderNodeName: 

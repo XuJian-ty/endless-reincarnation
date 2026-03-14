@@ -664,6 +664,8 @@ namespace Game.Presentation
 
             if (_stats.type == EnemyType.Guardian)
                 EventCenter.GetInstance().EventTrigger(GameEvents.GuardianDied);
+            else if (_stats.type == EnemyType.Boss)
+                EventCenter.GetInstance().EventTrigger(GameEvents.BossDefeated, EnemyId);
 
             // 使用奖励系统处理玩家奖励，解耦 EnemyController 和 PlayerModel
             var player = GameStateMachine.GetInstance()?.Player;

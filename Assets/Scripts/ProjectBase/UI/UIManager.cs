@@ -118,6 +118,18 @@ public class UIManager : BaseManager<UIManager>
 
         ResMgr.GetInstance().LoadAsync<GameObject>("UI/" + panelName, obj =>
         {
+            if (obj == null)
+            {
+                Debug.LogWarning($"[UIManager] 未找到面板预制体 '{panelName}'，将创建运行时回退面板。");
+                obj = CreateRuntimeFallbackPanel<T>(panelName);
+            }
+
+            if (obj == null)
+            {
+                Debug.LogError($"[UIManager] 无法创建面板 '{panelName}'。");
+                return;
+            }
+
             var father = GetLayerFather(layer);
             obj.transform.SetParent(father);
             obj.transform.localPosition = Vector3.zero;
@@ -237,6 +249,14 @@ public class UIManager : BaseManager<UIManager>
         }
 
         return false;
+    }
+
+    private static GameObject CreateRuntimeFallbackPanel<T>(string panelName) where T : BasePanel
+    {
+        var obj = new GameObject(panelName, typeof(RectTransform));
+        obj.AddComponent<CanvasRenderer>();
+        obj.AddComponent<T>();
+        return obj;
     }
 
 }

@@ -1,0 +1,74 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Game.Data
+{
+    public enum EnemySpawnCountMode
+    {
+        Fixed = 0,
+        RandomRange = 1,
+    }
+
+    /// <summary>
+    /// 单条具体类型敌人生成数据：描述一种敌人生成逻辑。
+    /// 只提供数据，不直接参与生成行为。
+    /// </summary>
+    [Serializable]
+    public class EnemySpawnTaskDefinition
+    {
+        [InspectorLabel("敌人类型")]
+        public EnemyType enemyType = EnemyType.MeleeMinion;
+
+        [InspectorLabel("生成半径(米)")]
+        [Min(1f)]
+        public float spawnRadius = 12f;
+
+        [InspectorLabel("数量模式")]
+        public EnemySpawnCountMode countMode = EnemySpawnCountMode.RandomRange;
+
+        [InspectorLabel("固定数量")]
+        [Min(0)]
+        public int fixedCount = 3;
+
+        [InspectorLabel("随机数量下限")]
+        [Min(0)]
+        public int randomMinCount = 1;
+
+        [InspectorLabel("随机数量上限")]
+        [Min(0)]
+        public int randomMaxCount = 4;
+
+        [InspectorLabel("敌人最小间距(米)")]
+        [Min(0.1f)]
+        public float enemyMinSpacing = 3f;
+
+        public int ResolveSpawnCount(System.Random rng)
+        {
+            if (countMode == EnemySpawnCountMode.Fixed)
+                return Mathf.Max(0, fixedCount);
+
+            int min = Mathf.Max(0, randomMinCount);
+            int max = Mathf.Max(min, randomMaxCount);
+            if (min == max)
+                return min;
+
+            return rng.Next(min, max + 1);
+        }
+    }
+
+    [CreateAssetMenu(menuName = "游戏/配置/敌人生成任务库", fileName = "敌人生成任务库")]
+    public class EnemySpawnTaskDatabaseSO : ScriptableObject
+    {
+        [InspectorLabel("具体类型敌人生成数据列表")]
+        public List<EnemySpawnTaskDefinition> tasks = new List<EnemySpawnTaskDefinition>();
+
+        public EnemySpawnTaskDefinition GetTaskAt(int index)
+        {
+            if (tasks == null || index < 0 || index >= tasks.Count)
+                return null;
+
+            return tasks[index];
+        }
+    }
+}

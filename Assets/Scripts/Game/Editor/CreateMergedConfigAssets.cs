@@ -357,19 +357,213 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
         }
 
-        private static void CreateLevelConfigDatabase()
+        private static EnemySpawnTaskDatabaseSO CreateEnemySpawnTaskDatabase()
+        {
+            EnsureConfigFolder();
+            var db = ScriptableObject.CreateInstance<EnemySpawnTaskDatabaseSO>();
+            db.tasks = new List<EnemySpawnTaskDefinition>
+            {
+                new EnemySpawnTaskDefinition
+                {
+                    enemyType = EnemyType.MeleeMinion,
+                    spawnRadius = 12f,
+                    countMode = EnemySpawnCountMode.RandomRange,
+                    randomMinCount = 2,
+                    randomMaxCount = 4,
+                    enemyMinSpacing = 3f,
+                },
+                new EnemySpawnTaskDefinition
+                {
+                    enemyType = EnemyType.RangedMinion,
+                    spawnRadius = 14f,
+                    countMode = EnemySpawnCountMode.RandomRange,
+                    randomMinCount = 1,
+                    randomMaxCount = 3,
+                    enemyMinSpacing = 3.5f,
+                },
+                new EnemySpawnTaskDefinition
+                {
+                    enemyType = EnemyType.Elite,
+                    spawnRadius = 10f,
+                    countMode = EnemySpawnCountMode.Fixed,
+                    fixedCount = 1,
+                    enemyMinSpacing = 4f,
+                },
+                new EnemySpawnTaskDefinition
+                {
+                    enemyType = EnemyType.Guardian,
+                    spawnRadius = 8f,
+                    countMode = EnemySpawnCountMode.Fixed,
+                    fixedCount = 1,
+                    enemyMinSpacing = 5f,
+                },
+            };
+
+            var asset = CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/敌人生成任务库.asset");
+            AssetDatabase.SaveAssets();
+            return asset;
+        }
+
+        private static LevelEnemySpawnPlanSO CreateEnemySpawnPlanLibrary(EnemySpawnTaskDatabaseSO taskDatabase)
+        {
+            EnsureConfigFolder();
+            var so = ScriptableObject.CreateInstance<LevelEnemySpawnPlanSO>();
+            so.taskDatabase = taskDatabase;
+            so.plans = new List<LevelEnemyGlobalSpawnPlanDefinition>
+            {
+                new LevelEnemyGlobalSpawnPlanDefinition
+                {
+                    taskAssignments = new List<GlobalEnemySpawnTaskAssignment>
+                    {
+                        new GlobalEnemySpawnTaskAssignment { taskIndex = 0, taskCount = 4 },
+                        new GlobalEnemySpawnTaskAssignment { taskIndex = 1, taskCount = 3 },
+                        new GlobalEnemySpawnTaskAssignment { taskIndex = 2, taskCount = 2 },
+                        new GlobalEnemySpawnTaskAssignment { taskIndex = 3, taskCount = 2 },
+                    },
+                    spawnMode = GlobalEnemySpawnMode.SpawnAllAtOnce,
+                    taskCenterMinSpacing = 18f,
+                    initialTaskCount = 3,
+                    taskInterval = 8f,
+                }
+            };
+
+            var asset = CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/关卡敌人全局生成方案库.asset");
+            if (asset != null)
+            {
+                bool changed = false;
+                if (asset.taskDatabase == null && taskDatabase != null)
+                {
+                    asset.taskDatabase = taskDatabase;
+                    changed = true;
+                }
+
+                if (asset.plans == null || asset.plans.Count == 0)
+                {
+                    asset.plans = new List<LevelEnemyGlobalSpawnPlanDefinition>
+                    {
+                        new LevelEnemyGlobalSpawnPlanDefinition
+                        {
+                            taskAssignments = new List<GlobalEnemySpawnTaskAssignment>
+                            {
+                                new GlobalEnemySpawnTaskAssignment { taskIndex = 0, taskCount = 4 },
+                                new GlobalEnemySpawnTaskAssignment { taskIndex = 1, taskCount = 3 },
+                                new GlobalEnemySpawnTaskAssignment { taskIndex = 2, taskCount = 2 },
+                                new GlobalEnemySpawnTaskAssignment { taskIndex = 3, taskCount = 2 },
+                            },
+                            spawnMode = GlobalEnemySpawnMode.SpawnAllAtOnce,
+                            taskCenterMinSpacing = 18f,
+                            initialTaskCount = 3,
+                            taskInterval = 8f,
+                        }
+                    };
+                    changed = true;
+                }
+
+                if (changed)
+                    EditorUtility.SetDirty(asset);
+            }
+
+            AssetDatabase.SaveAssets();
+            return asset;
+        }
+
+        private static LevelLocalEnemySpawnPlanSO CreateLocalEnemySpawnPlanLibrary(EnemySpawnTaskDatabaseSO taskDatabase)
+        {
+            EnsureConfigFolder();
+            var so = ScriptableObject.CreateInstance<LevelLocalEnemySpawnPlanSO>();
+            so.taskDatabase = taskDatabase;
+            so.plans = new List<LevelLocalEnemySpawnPlanDefinition>
+            {
+                new LevelLocalEnemySpawnPlanDefinition
+                {
+                    taskIndex = 0,
+                    spawnMode = LocalEnemySpawnMode.SpawnOnce,
+                    taskTotalMode = LocalEnemySpawnTaskTotalMode.FixedCount,
+                    totalTaskCount = 1,
+                    taskInterval = 8f,
+                },
+                new LevelLocalEnemySpawnPlanDefinition
+                {
+                    taskIndex = 3,
+                    spawnMode = LocalEnemySpawnMode.SpawnRepeatedly,
+                    taskTotalMode = LocalEnemySpawnTaskTotalMode.FixedCount,
+                    totalTaskCount = 3,
+                    taskInterval = 10f,
+                },
+            };
+
+            var asset = CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/关卡敌人局部生成方案库.asset");
+            if (asset != null)
+            {
+                bool changed = false;
+                if (asset.taskDatabase == null && taskDatabase != null)
+                {
+                    asset.taskDatabase = taskDatabase;
+                    changed = true;
+                }
+
+                if (asset.plans == null || asset.plans.Count == 0)
+                {
+                    asset.plans = new List<LevelLocalEnemySpawnPlanDefinition>
+                    {
+                        new LevelLocalEnemySpawnPlanDefinition
+                        {
+                            taskIndex = 0,
+                            spawnMode = LocalEnemySpawnMode.SpawnOnce,
+                            taskTotalMode = LocalEnemySpawnTaskTotalMode.FixedCount,
+                            totalTaskCount = 1,
+                            taskInterval = 8f,
+                        },
+                        new LevelLocalEnemySpawnPlanDefinition
+                        {
+                            taskIndex = 3,
+                            spawnMode = LocalEnemySpawnMode.SpawnRepeatedly,
+                            taskTotalMode = LocalEnemySpawnTaskTotalMode.FixedCount,
+                            totalTaskCount = 3,
+                            taskInterval = 10f,
+                        },
+                    };
+                    changed = true;
+                }
+
+                if (changed)
+                    EditorUtility.SetDirty(asset);
+            }
+
+            AssetDatabase.SaveAssets();
+            return asset;
+        }
+
+        private static void CreateLevelConfigDatabase(LevelEnemySpawnPlanSO defaultSpawnPlanLibrary)
         {
             EnsureConfigFolder();
             var db = ScriptableObject.CreateInstance<LevelConfigDatabaseSO>();
             db.levels = new List<LevelConfigData>
             {
-                new LevelConfigData { levelIndex = 1, guardianCount = 3,  meleeMinCount = 0, meleeMaxCount = 4, rangedMinCount = 0, rangedMaxCount = 2, eliteMinCount = 0, eliteMaxCount = 1, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
-                new LevelConfigData { levelIndex = 2, guardianCount = 4,  meleeMinCount = 0, meleeMaxCount = 4, rangedMinCount = 0, rangedMaxCount = 2, eliteMinCount = 0, eliteMaxCount = 1, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
-                new LevelConfigData { levelIndex = 3, guardianCount = 6,  meleeMinCount = 0, meleeMaxCount = 4, rangedMinCount = 0, rangedMaxCount = 2, eliteMinCount = 0, eliteMaxCount = 1, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
-                new LevelConfigData { levelIndex = 4, guardianCount = 7,  meleeMinCount = 0, meleeMaxCount = 4, rangedMinCount = 0, rangedMaxCount = 2, eliteMinCount = 0, eliteMaxCount = 1, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
-                new LevelConfigData { levelIndex = 5, guardianCount = 10, meleeMinCount = 0, meleeMaxCount = 4, rangedMinCount = 0, rangedMaxCount = 2, eliteMinCount = 0, eliteMaxCount = 1, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
+                new LevelConfigData { levelIndex = 1, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
+                new LevelConfigData { levelIndex = 2, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
+                new LevelConfigData { levelIndex = 3, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
+                new LevelConfigData { levelIndex = 4, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
+                new LevelConfigData { levelIndex = 5, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
             };
-            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/关卡配置库.asset");
+            var asset = CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/关卡配置库.asset");
+            if (asset != null && asset.levels != null && defaultSpawnPlanLibrary != null)
+            {
+                bool changed = false;
+                for (int i = 0; i < asset.levels.Count; i++)
+                {
+                    LevelConfigData level = asset.levels[i];
+                    if (level == null || level.enemyGlobalSpawnPlanLibrary != null)
+                        continue;
+
+                    level.enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary;
+                    level.enemyGlobalSpawnPlanIndex = 0;
+                    changed = true;
+                }
+
+                if (changed)
+                    EditorUtility.SetDirty(asset);
+            }
             AssetDatabase.SaveAssets();
         }
 
@@ -440,7 +634,10 @@ namespace Game.Editor
             CreateEnemyStatsDatabase();
             CreateSharedSkillDatabase();
             CreateEnemyArchetypeDatabase();
-            CreateLevelConfigDatabase();
+            var enemySpawnTaskDatabase = CreateEnemySpawnTaskDatabase();
+            var enemySpawnPlanLibrary = CreateEnemySpawnPlanLibrary(enemySpawnTaskDatabase);
+            CreateLocalEnemySpawnPlanLibrary(enemySpawnTaskDatabase);
+            CreateLevelConfigDatabase(enemySpawnPlanLibrary);
             CreateDropTableDatabase();
             CreateWeaponDatabase();
             CreatePlayerGrowthDatabase();
@@ -452,7 +649,6 @@ namespace Game.Editor
             CreatePotionConfig();
             CreateSkillConfigDatabase();
             CreateCharacterAnimationLibrary();
-            DeleteLegacyAnimationFrameDamageDatabaseAsset();
             CreateItemDisplayConfig();
             CreateKeyRebindConfig();
             CreateBackpackUIConfig();
@@ -713,22 +909,6 @@ namespace Game.Editor
             };
         }
 
-        private static void DeleteLegacyAnimationFrameDamageDatabaseAsset()
-        {
-            string[] assetPaths =
-            {
-                $"{ResourcesConfigDir}/技能伤害数据配置库.asset",
-                $"{ResourcesConfigDir}/动画帧伤害数据配置库.asset",
-            };
-
-            for (int i = 0; i < assetPaths.Length; i++)
-            {
-                string assetPath = assetPaths[i];
-                if (AssetDatabase.LoadMainAssetAtPath(assetPath) != null)
-                    AssetDatabase.DeleteAsset(assetPath);
-            }
-        }
-
         private static void CreateEnemyArchetypeDatabase()
         {
             EnsureConfigFolder();
@@ -877,10 +1057,6 @@ namespace Game.Editor
             };
 
             NormalizeSkillSlotOverrides(archetypes);
-
-            string legacyDatabasePath = $"{ResourcesConfigDir}/敌人行为配置库.asset";
-            if (AssetDatabase.LoadMainAssetAtPath(legacyDatabasePath) != null)
-                AssetDatabase.DeleteAsset(legacyDatabasePath);
             AssetDatabase.SaveAssets();
         }
 

@@ -26,6 +26,8 @@ namespace Game.UI
         public const string Loading      = "LoadingPanel";
         public const string BuffSelect   = "BuffSelectPanel";
         public const string PlayerInfoHUD = "PlayerInfoHUDPanel";
+        public const string DeathChoice = "DeathChoicePanel";
+        public const string BossResult = "BossResultPanel";
 
         /// <summary>
         /// 打开后应阻挡关卡内操作、显示光标、暂停游戏时间、阻止其它面板打开的面板。
@@ -39,6 +41,8 @@ namespace Game.UI
             BuffSelect,
             LevelSound,
             BattleMemory,
+            DeathChoice,
+            BossResult,
         };
     }
 
@@ -62,5 +66,7 @@ namespace Game.UI
         public const E_UI_Layer Loading     = E_UI_Layer.System;
         public const E_UI_Layer BuffSelect  = E_UI_Layer.System;
         public const E_UI_Layer PlayerInfoHUD = E_UI_Layer.Top;
+        public const E_UI_Layer DeathChoice = E_UI_Layer.System;
+        public const E_UI_Layer BossResult = E_UI_Layer.System;
     }
 }
