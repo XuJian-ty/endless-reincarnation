@@ -25,6 +25,6 @@ MonoBehaviour:
     rarity: 2
   - itemId: nectar
     displayName: "\u4ED9\u9732"
-    icon: {fileID: 21300000, guid: ab454495f7ad5ef4f98416fc32ede414, type: 3}
-    description: "\u6B7B\u4EA1\u65F6\u53EF\u6D88\u80171\u4E2A\u4ED9\u9732\u590D\u6D3B\uFF0C\u5E76\u56DE\u6EDA\u81F3\u68C0\u67E5\u70B9\u4E14\u96BE\u5EA6-1\u3002"
+    icon: {fileID: 21300000, guid: 5009e374c77051341a10e7a86026d75f, type: 3}
+    description: "\u6B7B\u4EA1\u65F6\u53EF\u6D88\u80171\u4E2A\u4ED9\u9732\u590D\u6D3B\uFF0C\u5E76\u56DE\u6EDA\u81F3\u68C0\u67E5\u70B9\u4E14\u5173\u5361\u96BE\u5EA6+1\u3002"
     rarity: 3

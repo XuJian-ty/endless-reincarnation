@@ -235,12 +235,15 @@ namespace Game.UI
 
         private float GetAttackPendingThreshold(int comboIndex)
         {
-            string stateId = $"Attack{comboIndex}State";
-            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
-            if (ruleDb == null)
-                ruleDb = Resources.Load<PlayerStateRuleDatabaseSO>("配置/玩家状态规则");
+            string actionId = $"Attack{comboIndex}";
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (skillDb == null)
+                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家动作及技能配置库");
+            if (skillDb == null)
+                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家技能配置库");
 
-            if (ruleDb != null && ruleDb.TryGetPendingReleaseThreshold(stateId, GameAction.NormalAttack, out float configured))
+            SkillConfigEntry entry = skillDb != null ? skillDb.GetEntryByActionId(actionId) : null;
+            if (entry != null && entry.TryGetPendingReleaseThreshold(GameAction.NormalAttack, out float configured))
                 return configured;
 
             return comboIndex < 3 ? 0.7f : 0.6f;
@@ -248,13 +251,16 @@ namespace Game.UI
 
         private float GetNaturalExitThreshold(int comboIndex)
         {
-            string stateId = $"Attack{comboIndex}State";
-            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
-            if (ruleDb == null)
-                ruleDb = Resources.Load<PlayerStateRuleDatabaseSO>("配置/玩家状态规则");
+            string actionId = $"Attack{comboIndex}";
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (skillDb == null)
+                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家动作及技能配置库");
+            if (skillDb == null)
+                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家技能配置库");
 
-            if (ruleDb != null && ruleDb.TryGetNaturalExitThreshold(stateId, out float configured))
-                return configured;
+            SkillConfigEntry entry = skillDb != null ? skillDb.GetEntryByActionId(actionId) : null;
+            if (entry != null && entry.overrideNaturalExitNormalizedTime)
+                return entry.naturalExitNormalizedTime;
 
             return 0.9f;
         }

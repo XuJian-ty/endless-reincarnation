@@ -24,7 +24,7 @@ namespace Game.Presentation
     public abstract class PlayerStateBase
     {
         protected IPlayerContext Ctx { get; private set; }
-        protected string StateRuleId => GetType().Name;
+        protected virtual string ActionId => TrimStateSuffix(GetType().Name);
 
         private float _stateAge;
         private SkillTimelineRunner _timelineRunner;
@@ -37,12 +37,14 @@ namespace Game.Presentation
         {
             Ctx       = ctx;
             _stateAge = 0f;
+            ApplyActionPlaybackSpeed();
             OnEnter();
         }
 
         internal void Exit()
         {
             StopTimelineSkill();
+            ResetActionPlaybackSpeed();
             OnExit();
             Ctx = null;
         }
@@ -63,17 +65,18 @@ namespace Game.Presentation
         public virtual GameAction CurrentActionId => GameAction.None;
 
         // ── 策略表（Strategy Pattern）────────────────────────────────────
-        public virtual TransitionPolicy GetPolicyFor(GameAction action) => action switch
-        {
-            GameAction.Dodge        => TransitionPolicy.Interrupt,
-            GameAction.Skill        => TransitionPolicy.Interrupt,
-            GameAction.ChargeStart  => TransitionPolicy.Interrupt,
-            GameAction.NormalAttack => TransitionPolicy.Buffer,
-            GameAction.Jump         => TransitionPolicy.Buffer,
-            GameAction.Walk         => TransitionPolicy.Buffer,
-            GameAction.Run          => TransitionPolicy.Buffer,
-            _                       => TransitionPolicy.Ignore,
-        };
+        public virtual TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, action switch
+            {
+                GameAction.Dodge        => TransitionPolicy.Interrupt,
+                GameAction.Skill        => TransitionPolicy.Interrupt,
+                GameAction.ChargeStart  => TransitionPolicy.Interrupt,
+                GameAction.NormalAttack => TransitionPolicy.Buffer,
+                GameAction.Jump         => TransitionPolicy.Buffer,
+                GameAction.Walk         => TransitionPolicy.Buffer,
+                GameAction.Run          => TransitionPolicy.Buffer,
+                _                       => TransitionPolicy.Ignore,
+            });
 
         // ── 过渡辅助 ─────────────────────────────────────────────────────
         /// <summary>
@@ -112,6 +115,21 @@ namespace Game.Presentation
             return skillDb != null ? skillDb.GetEntry(skillId) : null;
         }
 
+        protected SkillConfigEntry ResolvePlayerActionEntry(string actionId = null)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim();
+            if (string.IsNullOrWhiteSpace(resolvedActionId))
+                return null;
+
+            var skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            return skillDb != null ? skillDb.GetEntryByActionId(resolvedActionId) : null;
+        }
+
+        protected SkillConfigEntry ResolveCurrentActionEntry()
+        {
+            return ResolvePlayerActionEntry(ActionId);
+        }
+
         protected bool IsPlayerSkillAvailable(string skillId)
         {
             SkillConfigEntry entry = ResolvePlayerSkillEntry(skillId);
@@ -126,6 +144,16 @@ namespace Game.Presentation
             string triggerName = entry != null ? entry.GetResolvedAnimationTrigger() : fallbackTrigger;
             if (string.IsNullOrWhiteSpace(triggerName))
                 triggerName = skillId;
+            return Ctx.Anim.TriggerAction(triggerName);
+        }
+
+        protected bool TriggerConfiguredActionByActionId(string actionId = null, string fallbackTrigger = null)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim();
+            SkillConfigEntry entry = ResolvePlayerActionEntry(resolvedActionId);
+            string triggerName = entry != null ? entry.GetResolvedAnimationTrigger() : fallbackTrigger;
+            if (string.IsNullOrWhiteSpace(triggerName))
+                triggerName = resolvedActionId;
             return Ctx.Anim.TriggerAction(triggerName);
         }
 
@@ -148,6 +176,42 @@ namespace Game.Presentation
             if (player == null)
                 return;
 
+            def = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(player.transform, def, ActionId);
+            var ctx = new PlayerSkillExecutionContext(player);
+            _timelineRunner = new SkillTimelineRunner();
+            _timelineRunner.Begin(def, ctx, overrideDuration);
+        }
+
+        protected void StartConfiguredTimelineByActionId(string actionId = null, float overrideDuration = -1f)
+        {
+            SkillConfigEntry entry = ResolvePlayerActionEntry(actionId);
+            string skillId = entry != null ? entry.skillId : string.Empty;
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            StartTimelineSkill(skillId, overrideDuration, string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim());
+        }
+
+        protected void StartTimelineSkill(string skillId, float overrideDuration, string actionId)
+        {
+            StopTimelineSkill();
+
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
+            if (sharedDb == null)
+                return;
+
+            var def = sharedDb.GetEntry(skillId);
+            if (def == null)
+                return;
+
+            var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
+            if (player == null)
+                return;
+
+            def = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(player.transform, def, actionId);
             var ctx = new PlayerSkillExecutionContext(player);
             _timelineRunner = new SkillTimelineRunner();
             _timelineRunner.Begin(def, ctx, overrideDuration);
@@ -177,8 +241,8 @@ namespace Game.Presentation
 
         protected TransitionPolicy ResolveConfiguredPolicy(GameAction action, TransitionPolicy fallback)
         {
-            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
-            if (ruleDb != null && ruleDb.TryGetPolicy(StateRuleId, action, out TransitionPolicy configured))
+            SkillConfigEntry entry = ResolveCurrentActionEntry();
+            if (entry != null && entry.TryGetPolicy(action, out TransitionPolicy configured))
                 return configured;
 
             return fallback;
@@ -186,8 +250,8 @@ namespace Game.Presentation
 
         protected float GetConfiguredPendingReleaseThreshold(GameAction pendingAction, float fallbackThreshold)
         {
-            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
-            if (ruleDb != null && ruleDb.TryGetPendingReleaseThreshold(StateRuleId, pendingAction, out float configured))
+            SkillConfigEntry entry = ResolveCurrentActionEntry();
+            if (entry != null && entry.TryGetPendingReleaseThreshold(pendingAction, out float configured))
                 return configured;
 
             return fallbackThreshold;
@@ -195,20 +259,20 @@ namespace Game.Presentation
 
         protected float GetConfiguredNaturalExitThreshold(float fallbackThreshold)
         {
-            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
-            if (ruleDb != null && ruleDb.TryGetNaturalExitThreshold(StateRuleId, out float configured))
-                return configured;
+            SkillConfigEntry entry = ResolveCurrentActionEntry();
+            if (entry != null && entry.overrideNaturalExitNormalizedTime)
+                return entry.naturalExitNormalizedTime;
 
             return fallbackThreshold;
         }
 
         protected PlayerStateNaturalExitTarget GetConfiguredNaturalExitTarget(PlayerStateNaturalExitTarget fallbackTarget)
         {
-            PlayerStateRuleDatabaseSO ruleDb = ConfigManager.GetInstance()?.GetPlayerStateRuleDatabase();
-            if (ruleDb == null)
+            SkillConfigEntry entry = ResolveCurrentActionEntry();
+            if (entry == null)
                 return fallbackTarget;
 
-            PlayerStateNaturalExitTarget configured = ruleDb.GetNaturalExitTarget(StateRuleId);
+            PlayerStateNaturalExitTarget configured = entry.naturalExitTarget;
             return configured != PlayerStateNaturalExitTarget.None ? configured : fallbackTarget;
         }
 
@@ -234,6 +298,30 @@ namespace Game.Presentation
         private void TickTimeline(float dt)
         {
             _timelineRunner?.Tick(dt);
+        }
+
+        private static string TrimStateSuffix(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            string normalized = value.Trim();
+            return normalized.EndsWith("State")
+                ? normalized.Substring(0, normalized.Length - "State".Length)
+                : normalized;
+        }
+
+        private void ApplyActionPlaybackSpeed()
+        {
+            if (Ctx?.PlayerModel == null || Ctx?.Anim == null)
+                return;
+
+            Ctx.Anim.SetPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionPlaybackSpeed(Ctx.PlayerModel, ActionId));
+        }
+
+        private void ResetActionPlaybackSpeed()
+        {
+            Ctx?.Anim?.SetPlaybackSpeed(1f);
         }
     }
 }

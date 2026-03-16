@@ -1,25 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Data;
 
 namespace Game.Domain
 {
     [Serializable]
     public class StatModifier
     {
-        public float hpAdd;
-        public float mpAdd;
-        public float attackAdd;
-        public float defenseAdd;
-        public float lifeStealAdd;
-        public float critRateAdd;
-        public float critDmgAdd;
-        public float attackSpeedAdd;
-        public float moveSpeedAdd;
-        public float hpRegenAdd;
-        public float mpRegenAdd;
-        public float damageBonusAdd;
-        public float damageReduceAdd;
+        [InspectorLabel("生命加算")] public float hpAdd;
+        [InspectorLabel("法力加算")] public float mpAdd;
+        [InspectorLabel("攻击加算")] public float attackAdd;
+        [InspectorLabel("防御加算")] public float defenseAdd;
+        [InspectorLabel("吸血")] public float lifeStealAdd;
+        [InspectorLabel("暴击率")] public float critRateAdd;
+        [InspectorLabel("暴击伤害")] public float critDmgAdd;
+        [InspectorLabel("攻速加成")] public float attackSpeedAdd;
+        [InspectorLabel("移速加成")] public float moveSpeedAdd;
+        [InspectorLabel("生命回复加算")] public float hpRegenAdd;
+        [InspectorLabel("法力回复加算")] public float mpRegenAdd;
+        [InspectorLabel("增伤比例")] public float damageBonusAdd;
+        [InspectorLabel("减伤比例")] public float damageReduceAdd;
 
         public StatModifier Clone()
         {

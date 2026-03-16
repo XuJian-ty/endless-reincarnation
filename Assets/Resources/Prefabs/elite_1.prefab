@@ -181,9 +181,9 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -6555466957843759900, guid: eeebaf59eb75a344693bc635022c201a, type: 3}
-  - {fileID: 8157563403274074192, guid: eeebaf59eb75a344693bc635022c201a, type: 3}
-  - {fileID: -7990188794910336688, guid: eeebaf59eb75a344693bc635022c201a, type: 3}
+  - {fileID: 2100000, guid: e913bc8cad23fb245b5ca67b9eea6dc0, type: 2}
+  - {fileID: 2100000, guid: 08ba50960e1245743b8ab5a40e7949c2, type: 2}
+  - {fileID: 2100000, guid: 31e4277916f506a4bb858d4b1f8322f9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1970,7 +1970,7 @@ Transform:
   m_GameObject: {fileID: 8903404072496274945}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.99, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:

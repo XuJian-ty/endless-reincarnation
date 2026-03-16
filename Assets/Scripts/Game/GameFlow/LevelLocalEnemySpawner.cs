@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Game.Data;
 using UnityEngine;
 
@@ -22,6 +23,7 @@ namespace Game.GameFlow
         private EnemySpawnTaskDatabaseSO _resolvedTaskDatabase;
         private LevelLocalEnemySpawnPlanDefinition _resolvedPlan;
         private EnemySpawnTaskDefinition _resolvedTask;
+        private readonly Queue<int> _plannedSpawnCounts = new Queue<int>();
         private int _seed;
         private int _executedTaskCount;
         private float _taskTimer;
@@ -33,6 +35,7 @@ namespace Game.GameFlow
             _rng = new System.Random(_seed);
             _variantCatalog = EnemySpawnRuntime.BuildVariantCatalog();
             ResolvePlanIfNeeded();
+            PreparePlannedSpawnCounts();
         }
 
         private IEnumerator Start()
@@ -75,15 +78,9 @@ namespace Game.GameFlow
             if (!ResolvePlanIfNeeded())
                 return;
 
-            if (_resolvedTask.enemyType == EnemyType.Boss)
-            {
-                Debug.LogWarning("[LevelLocalEnemySpawner] 局部敌人生成器不支持 Boss 任务。", this);
-                return;
-            }
-
             Vector3 center = transform.position;
             EnemySpawnRuntime.TryResolveCenterOnNavMesh(transform.position, out center);
-            int spawnCount = _resolvedTask.ResolveSpawnCount(_rng);
+            int spawnCount = DequeuePlannedSpawnCount();
             if (EnemySpawnRuntime.TrySpawnTask(_resolvedTask, spawnCount, center, _rng, _variantCatalog))
                 _executedTaskCount++;
         }
@@ -93,7 +90,7 @@ namespace Game.GameFlow
             if (!ResolvePlanIfNeeded())
                 return 0;
 
-            if (_resolvedTask.enemyType != EnemyType.Guardian)
+            if (_resolvedTask.enemyType != EnemySpawnCategory.Guardian)
                 return 0;
 
             int taskCount = _resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnOnce
@@ -107,6 +104,25 @@ namespace Game.GameFlow
             System.Random previewRng = new System.Random(_seed);
             for (int i = 0; i < taskCount; i++)
                 total += _resolvedTask.ResolveSpawnCount(previewRng);
+
+            return total;
+        }
+
+        public int GetPendingGuardianCount()
+        {
+            if (!ResolvePlanIfNeeded())
+                return 0;
+
+            if (_resolvedTask.enemyType != EnemySpawnCategory.Guardian)
+                return 0;
+
+            if (_resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnRepeatedly &&
+                _resolvedPlan.taskTotalMode == LocalEnemySpawnTaskTotalMode.Infinite)
+                return int.MaxValue;
+
+            int total = 0;
+            foreach (int count in _plannedSpawnCounts)
+                total += Mathf.Max(0, count);
 
             return total;
         }
@@ -137,6 +153,33 @@ namespace Game.GameFlow
                 return false;
             }
             return true;
+        }
+
+        private void PreparePlannedSpawnCounts()
+        {
+            _plannedSpawnCounts.Clear();
+            if (!ResolvePlanIfNeeded())
+                return;
+
+            if (_resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnRepeatedly &&
+                _resolvedPlan.taskTotalMode == LocalEnemySpawnTaskTotalMode.Infinite)
+                return;
+
+            int taskCount = _resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnOnce
+                ? 1
+                : Mathf.Max(1, _resolvedPlan.totalTaskCount);
+
+            System.Random previewRng = new System.Random(_seed);
+            for (int i = 0; i < taskCount; i++)
+                _plannedSpawnCounts.Enqueue(_resolvedTask.ResolveSpawnCount(previewRng));
+        }
+
+        private int DequeuePlannedSpawnCount()
+        {
+            if (_plannedSpawnCounts.Count > 0)
+                return _plannedSpawnCounts.Dequeue();
+
+            return _resolvedTask != null ? _resolvedTask.ResolveSpawnCount(_rng) : 0;
         }
     }
 }

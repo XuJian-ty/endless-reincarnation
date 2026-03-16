@@ -14,6 +14,12 @@ namespace Game.Domain
     {
         public const int SlotCount = 50;
 
+        private sealed class AppliedBuffModifier
+        {
+            public string buffId;
+            public StatModifier modifier;
+        }
+
         public static class ItemIds
         {
             public const string Gold        = "gold";
@@ -48,10 +54,10 @@ namespace Game.Domain
             set => SetCurrency(ItemIds.TalentPoint, Math.Max(0, value));
         }
 
-        public HashSet<string> BuffIds         { get; private set; } = new HashSet<string>();
+        public List<string> BuffIds            { get; private set; } = new List<string>();
         public HashSet<string> UnlockedSkillIds { get; private set; } = new HashSet<string>();
 
-        private readonly Dictionary<string, StatModifier> _buffModifiers = new Dictionary<string, StatModifier>();
+        private readonly List<AppliedBuffModifier> _buffModifiers = new List<AppliedBuffModifier>();
         private readonly Dictionary<string, StatModifier> _passiveSkillModifiers = new Dictionary<string, StatModifier>();
         private LevelGrowthSO _levelGrowth;
 
@@ -91,6 +97,20 @@ namespace Game.Domain
         }
 
         public bool HasBuff(string buffId) => !string.IsNullOrEmpty(buffId) && BuffIds.Contains(buffId);
+        public int GetBuffStackCount(string buffId)
+        {
+            if (string.IsNullOrEmpty(buffId) || BuffIds == null || BuffIds.Count == 0)
+                return 0;
+
+            int count = 0;
+            for (int i = 0; i < BuffIds.Count; i++)
+            {
+                if (BuffIds[i] == buffId)
+                    count++;
+            }
+
+            return count;
+        }
         public bool HasUnlockedSkill(string skillId) => !string.IsNullOrEmpty(skillId) && UnlockedSkillIds.Contains(skillId);
         public bool IsSkillAvailable(SkillConfigEntry entry)
         {
@@ -289,12 +309,16 @@ namespace Game.Domain
         public void AddBuff(string buffId, StatModifier modifier)
         {
             if (string.IsNullOrEmpty(buffId)) return;
-            if (_buffModifiers.ContainsKey(buffId)) return;
             BuffIds.Add(buffId);
             if (modifier != null)
             {
-                _buffModifiers[buffId] = modifier;
-                Stats.AddModifier(modifier);
+                var clonedModifier = modifier.Clone();
+                _buffModifiers.Add(new AppliedBuffModifier
+                {
+                    buffId = buffId,
+                    modifier = clonedModifier
+                });
+                Stats.AddModifier(clonedModifier);
             }
         }
 
@@ -302,17 +326,26 @@ namespace Game.Domain
         {
             if (string.IsNullOrEmpty(buffId)) return;
             BuffIds.Remove(buffId);
-            if (_buffModifiers.TryGetValue(buffId, out var mod))
+            for (int i = 0; i < _buffModifiers.Count; i++)
             {
-                Stats.RemoveModifier(mod);
-                _buffModifiers.Remove(buffId);
+                AppliedBuffModifier entry = _buffModifiers[i];
+                if (entry == null || entry.buffId != buffId)
+                    continue;
+
+                Stats.RemoveModifier(entry.modifier);
+                _buffModifiers.RemoveAt(i);
+                break;
             }
         }
 
         public void ClearBuffModifiers()
         {
-            foreach (var mod in _buffModifiers.Values)
-                Stats.RemoveModifier(mod);
+            for (int i = 0; i < _buffModifiers.Count; i++)
+            {
+                AppliedBuffModifier entry = _buffModifiers[i];
+                if (entry?.modifier != null)
+                    Stats.RemoveModifier(entry.modifier);
+            }
             _buffModifiers.Clear();
         }
 
@@ -325,8 +358,13 @@ namespace Game.Domain
                 var mod = getModifier(id);
                 if (mod != null)
                 {
-                    _buffModifiers[id] = mod;
-                    Stats.AddModifier(mod);
+                    var clonedModifier = mod.Clone();
+                    _buffModifiers.Add(new AppliedBuffModifier
+                    {
+                        buffId = id,
+                        modifier = clonedModifier
+                    });
+                    Stats.AddModifier(clonedModifier);
                 }
             }
         }
@@ -454,7 +492,7 @@ namespace Game.Domain
                 TalentPoints = run.talentPoints;
             }
 
-            BuffIds          = run.buffIds         != null ? new HashSet<string>(run.buffIds)         : new HashSet<string>();
+            BuffIds          = run.buffIds         != null ? new List<string>(run.buffIds)            : new List<string>();
             UnlockedSkillIds = run.unlockedSkillIds != null ? new HashSet<string>(run.unlockedSkillIds) : new HashSet<string>();
             ClearBuffModifiers();
             CurrentHp = Mathf.Clamp(CurrentHp, 0f, Stats.MaxHp);

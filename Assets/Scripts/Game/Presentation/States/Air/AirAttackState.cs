@@ -13,8 +13,8 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            TriggerConfiguredAction("AirAttack", "AirAttack");
-            StartTimelineSkill("AirAttack");
+            TriggerConfiguredActionByActionId("AirAttack", "AirAttack");
+            StartConfiguredTimelineByActionId("AirAttack");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

@@ -15,7 +15,8 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            Ctx.Anim.TriggerFallAttackStart();
+            TriggerConfiguredActionByActionId("FallAttackStart", "FallAttackStart");
+            StartConfiguredTimelineByActionId("FallAttackStart");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

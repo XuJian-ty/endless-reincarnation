@@ -5,6 +5,7 @@ using Game.UI;
 using Game.Data;
 using Game.Presentation;
 using ProjectBase;
+using UnityEngine.SceneManagement;
 
 namespace Game.GameFlow
 {
@@ -14,6 +15,8 @@ namespace Game.GameFlow
     /// </summary>
     public class LevelDirector : MonoBehaviour
     {
+        private const float GuardianStateCheckInterval = 0.2f;
+
         // 配置由 ConfigManager 单例提供，无需挂载
         [Header("Boss 流程")]
         [SerializeField] [Tooltip("守卫者清空后，延迟多少秒生成 Boss。")]
@@ -31,15 +34,14 @@ namespace Game.GameFlow
 
         private System.Random _bossRng;
         private EnemySpawnVariantCatalog _bossVariantCatalog;
-        private int _guardiansAlive;
         private bool _bossSpawned;
         private bool _bossDefeated;
         private Coroutine _bossSpawnRoutine;
+        private float _guardianStateCheckTimer;
 
         private void Awake()
         {
-            _enemySpawner ??= FindFirstObjectByType<LevelEnemySpawner>();
-            _guardiansAlive = CountPlannedGuardians();
+            _enemySpawner = EnsureEnemySpawnerReference(true);
             _bossSpawned = false;
             _bossDefeated = false;
 
@@ -53,33 +55,27 @@ namespace Game.GameFlow
 
         private void Start()
         {
+            _enemySpawner = EnsureEnemySpawnerReference(true);
             if (_enemySpawner == null && FindFirstObjectByType<LevelLocalEnemySpawner>() == null)
                 Debug.LogWarning("[LevelDirector] 场景中未找到 LevelEnemySpawner。若当前关卡不使用全局敌人生成器，可忽略此提示。", this);
 
             EventCenter.GetInstance().AddEventListener(GameEvents.GuardianDied, OnGuardianDied);
             EventCenter.GetInstance().AddEventListener<string>(GameEvents.BossDefeated, OnBossDefeated);
 
-            if (_guardiansAlive <= 0)
-                ScheduleBossSpawn();
+            TryScheduleBossSpawnIfReady();
         }
 
-        private int CountPlannedGuardians()
+        private void Update()
         {
-            int total = 0;
-            if (_enemySpawner != null)
-                total += _enemySpawner.GetPlannedGuardianCount();
+            if (_bossSpawned || _bossDefeated || _bossSpawnRoutine != null)
+                return;
 
-            LevelLocalEnemySpawner[] localSpawners = FindObjectsByType<LevelLocalEnemySpawner>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            for (int i = 0; i < localSpawners.Length; i++)
-            {
-                LevelLocalEnemySpawner localSpawner = localSpawners[i];
-                if (localSpawner == null)
-                    continue;
+            _guardianStateCheckTimer -= Time.deltaTime;
+            if (_guardianStateCheckTimer > 0f)
+                return;
 
-                total += localSpawner.GetPlannedGuardianCount();
-            }
-
-            return total;
+            _guardianStateCheckTimer = GuardianStateCheckInterval;
+            TryScheduleBossSpawnIfReady();
         }
 
         private void OnDestroy()
@@ -97,10 +93,7 @@ namespace Game.GameFlow
 
         private void OnGuardianDied()
         {
-            if (_guardiansAlive <= 0 || _bossSpawned || _bossDefeated) return;
-            _guardiansAlive--;
-            if (_guardiansAlive == 0)
-                ScheduleBossSpawn();
+            TryScheduleBossSpawnIfReady();
         }
 
         private void OnBossDefeated(string bossId)
@@ -126,6 +119,63 @@ namespace Game.GameFlow
                 return;
 
             _bossSpawnRoutine = StartCoroutine(BossSpawnCountdown());
+        }
+
+        private void TryScheduleBossSpawnIfReady()
+        {
+            if (_bossSpawned || _bossDefeated || _bossSpawnRoutine != null)
+                return;
+
+            if (GetLivingGuardianCount() > 0)
+                return;
+
+            int pendingGuardians = GetPendingGuardianCount();
+            if (pendingGuardians != 0)
+                return;
+
+            ScheduleBossSpawn();
+        }
+
+        private int GetLivingGuardianCount()
+        {
+            int total = 0;
+            EnemyController[] enemies = FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                EnemyController enemy = enemies[i];
+                if (enemy != null && enemy.IsAlive && enemy.EnemyCategory == EnemyType.Guardian)
+                    total++;
+            }
+
+            return total;
+        }
+
+        private int GetPendingGuardianCount()
+        {
+            int total = 0;
+            LevelEnemySpawner enemySpawner = EnsureEnemySpawnerReference(true);
+            if (enemySpawner != null)
+            {
+                int pending = enemySpawner.GetPendingGuardianCount();
+                if (pending == int.MaxValue)
+                    return int.MaxValue;
+                total += pending;
+            }
+
+            LevelLocalEnemySpawner[] localSpawners = FindObjectsByType<LevelLocalEnemySpawner>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < localSpawners.Length; i++)
+            {
+                LevelLocalEnemySpawner localSpawner = localSpawners[i];
+                if (localSpawner == null)
+                    continue;
+
+                int pending = localSpawner.GetPendingGuardianCount();
+                if (pending == int.MaxValue)
+                    return int.MaxValue;
+                total += pending;
+            }
+
+            return total;
         }
 
         private System.Collections.IEnumerator BossSpawnCountdown()
@@ -181,7 +231,7 @@ namespace Game.GameFlow
             if (!TrySampleBossNearPlayer(out Vector3 position))
                 return false;
 
-            return EnemySpawnRuntime.TrySpawnSingleEnemy(bossId, EnemyType.Boss, position, _bossVariantCatalog);
+            return EnemySpawnRuntime.TrySpawnSingleEnemy(bossId, EnemyType.Boss, position, _bossVariantCatalog, true);
         }
 
         private bool HasLivingBoss()
@@ -190,44 +240,51 @@ namespace Game.GameFlow
             for (int i = 0; i < enemies.Length; i++)
             {
                 EnemyController enemy = enemies[i];
-                if (enemy != null && enemy.IsAlive && enemy.EnemyCategory == EnemyType.Boss)
+                if (IsTrackedLevelBoss(enemy))
                     return true;
             }
 
             return false;
         }
 
-        private string ResolveBossIdForCurrentLevel()
+        private bool IsTrackedLevelBoss(EnemyController enemy)
         {
-            int level = Mathf.Clamp(GameStateMachine.GetInstance()?.CurrentRun?.levelIndex ?? 1, 1, 5);
-            string preferredId = $"boss_{level}";
-            if (_bossVariantCatalog != null && _bossVariantCatalog.BossIds.Contains(preferredId))
-                return preferredId;
-
-            return _bossVariantCatalog != null && _bossVariantCatalog.BossIds.Count > 0
-                ? _bossVariantCatalog.BossIds[0]
-                : string.Empty;
+            return enemy != null &&
+                   enemy.IsAlive &&
+                   enemy.EnemyCategory == EnemyType.Boss &&
+                   enemy.GetComponent<LevelBossVisualMarker>() != null;
         }
 
         private string ResolveBossIdForCurrentRun()
         {
-            if (_bossVariantCatalog == null || _bossVariantCatalog.BossIds.Count == 0)
+            var bossVariants = _bossVariantCatalog?.GetVariants(EnemyType.Boss);
+            if (bossVariants == null || bossVariants.Count == 0)
                 return string.Empty;
 
             var run = GameStateMachine.GetInstance()?.CurrentRun;
             if (run?.defeatedBossIds == null || run.defeatedBossIds.Count == 0)
-                return _bossVariantCatalog.BossIds[_bossRng.Next(0, _bossVariantCatalog.BossIds.Count)];
+            {
+                EnemySpawnVariantInfo randomVariant = bossVariants[_bossRng.Next(0, bossVariants.Count)];
+                return randomVariant != null ? randomVariant.enemyId : string.Empty;
+            }
 
             var undefeatedBossIds = new System.Collections.Generic.List<string>();
-            for (int i = 0; i < _bossVariantCatalog.BossIds.Count; i++)
+            for (int i = 0; i < bossVariants.Count; i++)
             {
-                string bossId = _bossVariantCatalog.BossIds[i];
+                EnemySpawnVariantInfo variant = bossVariants[i];
+                if (variant == null || string.IsNullOrWhiteSpace(variant.enemyId))
+                    continue;
+
+                string bossId = variant.enemyId;
                 if (!run.defeatedBossIds.Contains(bossId))
                     undefeatedBossIds.Add(bossId);
             }
 
             if (undefeatedBossIds.Count == 0)
-                return ResolveBossIdForCurrentLevel();
+            {
+                EnemySpawnVariantInfo randomVariant = bossVariants[_bossRng.Next(0, bossVariants.Count)];
+                return randomVariant != null ? randomVariant.enemyId : string.Empty;
+            }
 
             return undefeatedBossIds[_bossRng.Next(0, undefeatedBossIds.Count)];
         }
@@ -258,6 +315,65 @@ namespace Game.GameFlow
 
             position = Vector3.zero;
             return false;
+        }
+
+        private LevelEnemySpawner EnsureEnemySpawnerReference(bool allowCreate)
+        {
+            if (_enemySpawner != null)
+                return _enemySpawner;
+
+            _enemySpawner = FindFirstObjectByType<LevelEnemySpawner>();
+            if (_enemySpawner != null || !allowCreate)
+                return _enemySpawner;
+
+            LevelConfigData levelConfig = ResolveCurrentLevelConfig();
+            if (levelConfig?.enemyGlobalSpawnPlanLibrary == null)
+                return null;
+
+            GameObject spawnerObject = new GameObject("LevelEnemySpawner");
+            Transform parent = transform.parent;
+            if (parent != null)
+                spawnerObject.transform.SetParent(parent, false);
+
+            _enemySpawner = spawnerObject.AddComponent<LevelEnemySpawner>();
+            return _enemySpawner;
+        }
+
+        private LevelConfigData ResolveCurrentLevelConfig()
+        {
+            int level = ResolveCurrentLevelIndex();
+            return ConfigManager.GetInstance()?.GetLevelConfigDatabase()?.GetConfigForLevel(level);
+        }
+
+        private int ResolveCurrentLevelIndex()
+        {
+            int level = GameStateMachine.GetInstance()?.CurrentRun?.levelIndex ?? 0;
+            if (level > 0)
+                return level;
+
+            string activeSceneName = gameObject.scene.IsValid() ? gameObject.scene.name : SceneManager.GetActiveScene().name;
+            if (string.IsNullOrWhiteSpace(activeSceneName))
+                return 1;
+
+            LevelConfigDatabaseSO configDb = ConfigManager.GetInstance()?.GetLevelConfigDatabase();
+            if (configDb?.levels != null)
+            {
+                for (int i = 0; i < configDb.levels.Count; i++)
+                {
+                    LevelConfigData config = configDb.levels[i];
+                    if (config != null && string.Equals(config.sceneName, activeSceneName, System.StringComparison.OrdinalIgnoreCase))
+                        return Mathf.Max(1, config.levelIndex);
+                }
+            }
+
+            const string levelPrefix = "Level_";
+            if (activeSceneName.StartsWith(levelPrefix, System.StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(activeSceneName.Substring(levelPrefix.Length), out int parsedLevel))
+            {
+                return Mathf.Max(1, parsedLevel);
+            }
+
+            return 1;
         }
 
         /// <summary>默认实现：写 Checkpoint、保存、后续可弹选关面板</summary>

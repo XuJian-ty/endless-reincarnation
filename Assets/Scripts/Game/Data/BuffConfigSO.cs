@@ -11,12 +11,18 @@ namespace Game.Data
     /// </summary>
     public enum BuffType
     {
-        [InspectorLabel("仅属性")] StatOnly,
-        [InspectorLabel("全程霸体")] SuperArmor,
-        [InspectorLabel("召唤分身")] SummonClone,
-        [InspectorLabel("攻击重影")] Afterimage,
-        [InspectorLabel("近战范围扩大")] MeleeRangeExpand,
-        [InspectorLabel("多重射击")] Multishot,
+        [InspectorName("属性加成")] StatOnly,
+        [InspectorName("霸体加减伤")] SuperArmorDamageReduce,
+        [InspectorName("召唤分身")] SummonClone,
+        [InspectorName("攻击附带重影")] Afterimage,
+        [InspectorName("伤害范围扩大")] DamageRangeExpand,
+    }
+
+    [Serializable]
+    public struct SummonCloneBuffSettings
+    {
+        public float followRadius;
+        public float opacity;
     }
 
     /// <summary>
@@ -34,8 +40,12 @@ namespace Game.Data
 
         [Header("类型与特殊参数")]
         [InspectorLabel("类型")] public BuffType type = BuffType.StatOnly;
-        [InspectorLabel("近战范围倍数")] [Tooltip("近战范围扩大：如 2=扩大100%")] public float meleeRangeScale = 2f;
-        [InspectorLabel("多重射击延迟(秒)")] [Tooltip("额外一发子弹的延迟")] public float multishotDelaySeconds = 0.2f;
+        [InspectorLabel("重影间隔时间(秒)")] [Tooltip("攻击附带重影：原事件与重影事件之间的时间间隔。")] public float afterimageDelaySeconds = 0.2f;
+        [InspectorLabel("重影伤害倍率")] [Tooltip("攻击附带重影：重影伤害事件的伤害倍率会再乘上该倍率。0.5 表示只有原伤害倍率的一半。")] [Min(0f)] public float afterimageDamageMultiplier = 0.5f;
+        [InspectorLabel("减伤")] [Tooltip("霸体加减伤：会进入（1+增伤-减伤）中的减伤乘区。")] [Range(0f, 1f)] public float damageReduceAdd = 0.3f;
+        [InspectorLabel("扩大倍数")] [Tooltip("伤害范围扩大：特效缩放、伤害范围、射线距离、碰撞体尺寸都会乘上该倍数。")] [Min(1f)] public float damageRangeScale = 2f;
+        [InspectorLabel("分身跟随半径")] [Tooltip("召唤分身：分身围绕玩家跟随时的环绕半径。")] [Min(0.1f)] public float cloneFollowRadius = 2f;
+        [InspectorLabel("分身透明度")] [Tooltip("召唤分身：0 表示完全透明，1 表示不透明。")] [Range(0.05f, 1f)] public float cloneOpacity = 0.45f;
 
         [Header("属性加成（类型=仅属性 或 同时有特殊效果时生效，0 表示不加）")]
         [InspectorLabel("生命加算")] public float hpAdd;
@@ -87,11 +97,10 @@ namespace Game.Data
             new BuffEntry { buffId = BuffIds.HpRegen, type = BuffType.StatOnly, displayName = "生命回复提升", description = "生命回复速度+300%，快速回血", hpRegenAdd = 3f },
             new BuffEntry { buffId = BuffIds.MpRegen, type = BuffType.StatOnly, displayName = "法力回复提升", description = "法力回复速度+300%，快速回蓝", mpRegenAdd = 3f },
             new BuffEntry { buffId = BuffIds.Damage, type = BuffType.StatOnly, displayName = "伤害提升", description = "伤害提升50%，打得更痛", damageBonusAdd = 0.5f },
-            new BuffEntry { buffId = BuffIds.SuperArmor, type = BuffType.SuperArmor, displayName = "全程霸体", description = "全程霸体，不会被打断" },
-            new BuffEntry { buffId = BuffIds.SummonClone, type = BuffType.SummonClone, displayName = "召唤分身", description = "召唤分身协助战斗" },
-            new BuffEntry { buffId = BuffIds.Afterimage, type = BuffType.Afterimage, displayName = "攻击重影", description = "攻击附带重影，额外伤害" },
-            new BuffEntry { buffId = BuffIds.MeleeRangeExpand, type = BuffType.MeleeRangeExpand, displayName = "近战范围扩大", description = "武器碰撞体、伤害检测与特效范围均扩大100%", meleeRangeScale = 2f },
-            new BuffEntry { buffId = BuffIds.Multishot, type = BuffType.Multishot, displayName = "多重射击", description = "远程每次多发射一发子弹，间隔0.2秒", multishotDelaySeconds = 0.2f },
+            new BuffEntry { buffId = BuffIds.SuperArmor, type = BuffType.SuperArmorDamageReduce, displayName = "霸体加减伤", description = "全程霸体，且提供减伤", damageReduceAdd = 0.3f },
+            new BuffEntry { buffId = BuffIds.SummonClone, type = BuffType.SummonClone, displayName = "召唤分身", description = "召唤一个半透明分身跟随玩家，并由分身AI协助战斗", cloneFollowRadius = 2f, cloneOpacity = 0.45f },
+            new BuffEntry { buffId = BuffIds.Afterimage, type = BuffType.Afterimage, displayName = "攻击附带重影", description = "玩家攻击会延迟再次触发一份同源的伤害、特效与音效事件", afterimageDelaySeconds = 0.2f, afterimageDamageMultiplier = 0.5f },
+            new BuffEntry { buffId = BuffIds.DamageRangeExpand, type = BuffType.DamageRangeExpand, displayName = "伤害范围扩大", description = "特效、命中特效、伤害范围、碰撞体与射线距离均按倍数扩大", damageRangeScale = 2f },
         };
 
         public BuffEntry GetEntry(string buffId)
@@ -110,22 +119,56 @@ namespace Game.Data
         {
             var e = GetEntry(buffId);
             if (e == null) return new StatModifier();
-            if (e.HasAnyStatEffect()) return e.ToStatModifier();
+            if (e.type == BuffType.SuperArmorDamageReduce)
+            {
+                return new StatModifier
+                {
+                    damageReduceAdd = Mathf.Clamp01(e.damageReduceAdd)
+                };
+            }
+
+            if (e.type == BuffType.StatOnly && e.HasAnyStatEffect())
+                return e.ToStatModifier();
             return new StatModifier();
         }
 
-        /// <summary>近战范围扩大倍数（如 2 表示 100% 扩大）。无配置或非该类型返回 1。</summary>
-        public float GetMeleeRangeScale(string buffId)
+        /// <summary>伤害范围扩大倍数（如 2 表示扩大 100%）。无配置或非该类型返回 1。</summary>
+        public float GetDamageRangeScale(string buffId)
         {
             var e = GetEntry(buffId);
-            return (e != null && e.type == BuffType.MeleeRangeExpand) ? e.meleeRangeScale : 1f;
+            return (e != null && e.type == BuffType.DamageRangeExpand) ? Mathf.Max(1f, e.damageRangeScale) : 1f;
         }
 
-        /// <summary>多重射击额外一发的延迟（秒）。无配置或非该类型返回 0。</summary>
-        public float GetMultishotDelaySeconds(string buffId)
+        /// <summary>攻击附带重影的延迟（秒）。无配置或非该类型返回 0。</summary>
+        public float GetAfterimageDelaySeconds(string buffId)
         {
             var e = GetEntry(buffId);
-            return (e != null && e.type == BuffType.Multishot) ? e.multishotDelaySeconds : 0f;
+            return (e != null && e.type == BuffType.Afterimage) ? Mathf.Max(0f, e.afterimageDelaySeconds) : 0f;
+        }
+
+        public float GetAfterimageDamageMultiplier(string buffId)
+        {
+            var e = GetEntry(buffId);
+            return (e != null && e.type == BuffType.Afterimage) ? Mathf.Max(0f, e.afterimageDamageMultiplier) : 1f;
+        }
+
+        public SummonCloneBuffSettings GetSummonCloneSettings(string buffId)
+        {
+            var e = GetEntry(buffId);
+            if (e == null || e.type != BuffType.SummonClone)
+            {
+                return new SummonCloneBuffSettings
+                {
+                    followRadius = 2f,
+                    opacity = 0.45f
+                };
+            }
+
+            return new SummonCloneBuffSettings
+            {
+                followRadius = Mathf.Max(0.1f, e.cloneFollowRadius),
+                opacity = Mathf.Clamp01(e.cloneOpacity)
+            };
         }
 
         /// <summary>所有可被抽到的 Buff ID 列表（用于关卡开始时三选一候选池）。</summary>

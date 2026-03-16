@@ -149,11 +149,11 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -2606634804167525036, guid: 15a48b19321d99b4da73dfb52364fba0, type: 3}
-  - {fileID: -6639292466182748828, guid: 15a48b19321d99b4da73dfb52364fba0, type: 3}
-  - {fileID: 131695951205099084, guid: 15a48b19321d99b4da73dfb52364fba0, type: 3}
-  - {fileID: 8998895992033476470, guid: 15a48b19321d99b4da73dfb52364fba0, type: 3}
-  - {fileID: 3924874633609085741, guid: 15a48b19321d99b4da73dfb52364fba0, type: 3}
+  - {fileID: 2100000, guid: 5ad79a34c45f21f4f9096e04869cb944, type: 2}
+  - {fileID: 2100000, guid: 203586bb2ba9dbd4bb12d240a6e9a596, type: 2}
+  - {fileID: 2100000, guid: 60cf69c445d7cd742bbeb88355843938, type: 2}
+  - {fileID: 2100000, guid: 3042b93ba0e900f4a89919793b82252f, type: 2}
+  - {fileID: 2100000, guid: 203586bb2ba9dbd4bb12d240a6e9a596, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1236,7 +1236,7 @@ Transform:
   m_GameObject: {fileID: 5761453899249364607}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.99, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -1259,6 +1259,7 @@ MonoBehaviour:
   _enemyType: 4
   _archetypeOverride: {fileID: 11400000, guid: 53e853c0d9704471a378567feaadde54, type: 2}
   _deathDisableDelay: 1.2
+  _countsAsLevelBoss: 1
 --- !u!114 &5592283640868598655
 MonoBehaviour:
   m_ObjectHideFlags: 0

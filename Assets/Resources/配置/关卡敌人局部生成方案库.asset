@@ -14,28 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   taskDatabase: {fileID: 11400000, guid: 3d9ce52e880d19c47930c51421ed1316, type: 2}
   plans:
-  - taskIndex: 0
+  - taskIndex: 3
     spawnMode: 0
     taskTotalMode: 0
     totalTaskCount: 1
     taskInterval: 8
-  - taskIndex: 3
-    spawnMode: 1
+  - taskIndex: 4
+    spawnMode: 0
     taskTotalMode: 0
     totalTaskCount: 3
     taskInterval: 10
-  - taskIndex: 0
+  - taskIndex: 5
     spawnMode: 0
     taskTotalMode: 0
     totalTaskCount: 1
     taskInterval: 8
-  - taskIndex: 0
+  - taskIndex: 6
     spawnMode: 0
-    taskTotalMode: 0
+    taskTotalMode: 1
     totalTaskCount: 1
-    taskInterval: 8
-  - taskIndex: 0
-    spawnMode: 0
-    taskTotalMode: 0
-    totalTaskCount: 1
-    taskInterval: 8
+    taskInterval: 3

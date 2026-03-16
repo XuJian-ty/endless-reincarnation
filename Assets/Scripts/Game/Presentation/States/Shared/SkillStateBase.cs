@@ -9,7 +9,8 @@ namespace Game.Presentation
     /// </summary>
     public abstract class SkillStateBase : PlayerStateBase
     {
-        protected abstract string SkillId { get; }
+        protected abstract string SkillActionId { get; }
+        protected override string ActionId => SkillActionId;
 
         public override GameAction CurrentActionId => GameAction.Skill;
 
@@ -28,8 +29,9 @@ namespace Game.Presentation
                 return;
             }
             Ctx.PlayerModel.SpendMp(entry.mpCost);
+            Ctx.StateMachine.StartActiveSkillCooldown(entry);
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            TriggerConfiguredAction(entry.skillId, entry.GetResolvedAnimationTrigger());
+            TriggerConfiguredActionByActionId(ActionId, entry.GetResolvedAnimationTrigger());
 
             // 启动共享技能时间轴（若有配置）
             TryStartTimeline(entry);
@@ -64,20 +66,12 @@ namespace Game.Presentation
         private void TryStartTimeline(SkillConfigEntry entry)
         {
             if (entry == null || string.IsNullOrEmpty(entry.skillId)) return;
-
-            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
-            if (sharedDb == null) return;
-
-            var def = sharedDb.GetEntry(entry.skillId);
-            if (def == null) return;
-
-            StartTimelineSkill(entry.skillId);
+            StartConfiguredTimelineByActionId(ActionId);
         }
 
         private SkillConfigEntry ResolveEntry()
         {
-            var skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
-            return skillDb != null ? skillDb.GetEntry(SkillId) : null;
+            return ResolvePlayerActionEntry(ActionId);
         }
     }
 }

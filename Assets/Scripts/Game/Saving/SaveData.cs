@@ -63,6 +63,10 @@ namespace Game.Saving
 
         /// <summary>上次击败 Boss 时的快照，用于死亡复活回滚</summary>
         public RunData       checkpoint;
+        /// <summary>进入新关卡后是否需要弹出 Buff 三选一；不再借用 levelSnapshot 是否为空来判断。</summary>
+        public bool          pendingBuffSelection;
+        /// <summary>当前关卡选择的 Buff；复活或重打本关时会移除并重新选择。</summary>
+        public string        currentLevelBuffId;
         /// <summary>当前关卡内的场景快照；为 null 表示新进关卡</summary>
         public LevelSnapshot levelSnapshot;
     }

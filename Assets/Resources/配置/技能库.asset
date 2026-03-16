@@ -361,7 +361,7 @@ MonoBehaviour:
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: 70
-        startTime: 0.23333335
+        startTime: 0.10000001
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
@@ -372,8 +372,8 @@ MonoBehaviour:
           detectionType: 0
           hitLayerName: Enemy
           shape: 0
-          centerOffset: {x: 0, y: 1, z: 2}
-          rotationEuler: {x: 0, y: 0, z: 70}
+          centerOffset: {x: 0.15101314, y: 1.6099492, z: 0.6648903}
+          rotationEuler: {x: 325.4352, y: 9.821056, z: 73.03177}
           sphereRadius: 5
           sectorAngle: 230
           boxSize: {x: 1, y: 1, z: 1}
@@ -382,7 +382,7 @@ MonoBehaviour:
           rayMaxDistance: 50
           motion:
             enabled: 1
-            speed: 10
+            speed: 20
             direction: {x: 0, y: 0, z: 1}
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -456,12 +456,12 @@ MonoBehaviour:
         - particlePrefab: {fileID: 8609793798989012907, guid: 0ff6ac2b88dee4b43982cc7f2a106909,
             type: 3}
           anchor: 2
-          offset: {x: 1, y: 1.3659506, z: -0.12532997}
+          offset: {x: 1, y: 1.3659506, z: -1}
           rotationEuler: {x: 9.105383, y: 83.74572, z: 281.21616}
           scale: {x: 1, y: 1, z: 1}
           motion:
             enabled: 1
-            speed: 10
+            speed: 20
             direction: {x: 0, y: 0, z: 1}
           destroyMode: 1
           duration: 5
@@ -495,8 +495,8 @@ MonoBehaviour:
           detectionType: 0
           hitLayerName: Enemy
           shape: 0
-          centerOffset: {x: 0, y: 1, z: 2}
-          rotationEuler: {x: -0, y: -10, z: 0}
+          centerOffset: {x: 0.68013096, y: 1, z: 2.7307496}
+          rotationEuler: {x: -0, y: 342.70993, z: 0}
           sphereRadius: 5
           sectorAngle: 230
           boxSize: {x: 1, y: 1, z: 1}
@@ -505,7 +505,7 @@ MonoBehaviour:
           rayMaxDistance: 50
           motion:
             enabled: 1
-            speed: 10
+            speed: 20
             direction: {x: 0, y: 0, z: 1}
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -579,12 +579,12 @@ MonoBehaviour:
         - particlePrefab: {fileID: 8609793798989012907, guid: 0ff6ac2b88dee4b43982cc7f2a106909,
             type: 3}
           anchor: 2
-          offset: {x: 0, y: 1, z: 2}
+          offset: {x: 0.5, y: 1, z: 1}
           rotationEuler: {x: 270, y: 300, z: 75}
           scale: {x: 1, y: 1, z: 1}
           motion:
             enabled: 1
-            speed: 10
+            speed: 20
             direction: {x: 0, y: 0, z: 1}
           destroyMode: 1
           duration: 5
@@ -1194,52 +1194,41 @@ MonoBehaviour:
   - groupId: melee_minion
     groupName: "\u8FD1\u6218\u5C0F\u602A"
     entries:
-    - skillId: melee_minion_chop
-      displayName: Melee Minion Chop
+    - skillId: melee_minion_shot
+      displayName: 
       ignoreAnimationDamageEvents: 1
       damageEvents:
-      - eventId: hit
-        startTime: 0.24
+      - eventId: 
+        startTime: 0
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
-        repeatInterval: 0.1
+        repeatInterval: 0
         damageEffects:
-        - damageMagnitude: 0
-          detectionDuration: 0.033333335
+        - damageMagnitude: 1
+          detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
-          shape: 1
+          shape: 0
           centerOffset: {x: 0, y: 0, z: 0}
           rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 0.01
+          sphereRadius: 1
           sectorAngle: 180
-          boxSize: {x: 1, y: 1, z: 1}
+          boxSize: {x: 0, y: 0, z: 0}
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
-          rayMaxDistance: 50
+          rayMaxDistance: 0
           motion:
             enabled: 0
             speed: 0
-            direction: {x: 0, y: 0, z: 1}
+            direction: {x: 0, y: 0, z: 0}
           hitStopDuration: 0
           hitStopTimeScale: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
           onHitSfxEffects: []
-      physicsEvents:
-      - eventId: hit
-        startTime: 0.24
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        physicsEffects:
-        - effectType: 0
-          distance: 1
-          height: 1
-          duration: 0.08
+      physicsEvents: []
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
@@ -1280,14 +1269,6 @@ MonoBehaviour:
           onHitAttributeEffects: []
           onHitVfxEffects: []
           onHitSfxEffects: []
-      physicsEvents: []
-      attributeEvents: []
-      vfxEvents: []
-      sfxEvents: []
-    - skillId: new_skill_1
-      displayName: 
-      ignoreAnimationDamageEvents: 1
-      damageEvents: []
       physicsEvents: []
       attributeEvents: []
       vfxEvents: []
@@ -2699,7 +2680,7 @@ MonoBehaviour:
         repeatInterval: 0.1
         damageEffects:
         - damageMagnitude: 0.85
-          detectionDuration: 0
+          detectionDuration: 0.033333335
           detectionType: 0
           hitLayerName: Player
           shape: 1
@@ -2735,7 +2716,7 @@ MonoBehaviour:
           duration: 0.1
       attributeEvents:
       - eventId: regen
-        startTime: 0.42
+        startTime: 0.40000004
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
@@ -3104,7 +3085,7 @@ MonoBehaviour:
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: 70
-      startTime: 0.23333335
+      startTime: 0.10000001
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0
@@ -3115,8 +3096,8 @@ MonoBehaviour:
         detectionType: 0
         hitLayerName: Enemy
         shape: 0
-        centerOffset: {x: 0, y: 1, z: 2}
-        rotationEuler: {x: 0, y: 0, z: 70}
+        centerOffset: {x: 0.15101314, y: 1.6099492, z: 0.6648903}
+        rotationEuler: {x: 325.4352, y: 9.821056, z: 73.03177}
         sphereRadius: 5
         sectorAngle: 230
         boxSize: {x: 1, y: 1, z: 1}
@@ -3125,7 +3106,7 @@ MonoBehaviour:
         rayMaxDistance: 50
         motion:
           enabled: 1
-          speed: 10
+          speed: 20
           direction: {x: 0, y: 0, z: 1}
         hitStopDuration: 0
         hitStopTimeScale: 0
@@ -3199,12 +3180,12 @@ MonoBehaviour:
       - particlePrefab: {fileID: 8609793798989012907, guid: 0ff6ac2b88dee4b43982cc7f2a106909,
           type: 3}
         anchor: 2
-        offset: {x: 1, y: 1.3659506, z: -0.12532997}
+        offset: {x: 1, y: 1.3659506, z: -1}
         rotationEuler: {x: 9.105383, y: 83.74572, z: 281.21616}
         scale: {x: 1, y: 1, z: 1}
         motion:
           enabled: 1
-          speed: 10
+          speed: 20
           direction: {x: 0, y: 0, z: 1}
         destroyMode: 1
         duration: 5
@@ -3238,8 +3219,8 @@ MonoBehaviour:
         detectionType: 0
         hitLayerName: Enemy
         shape: 0
-        centerOffset: {x: 0, y: 1, z: 2}
-        rotationEuler: {x: -0, y: -10, z: 0}
+        centerOffset: {x: 0.68013096, y: 1, z: 2.7307496}
+        rotationEuler: {x: -0, y: 342.70993, z: 0}
         sphereRadius: 5
         sectorAngle: 230
         boxSize: {x: 1, y: 1, z: 1}
@@ -3248,7 +3229,7 @@ MonoBehaviour:
         rayMaxDistance: 50
         motion:
           enabled: 1
-          speed: 10
+          speed: 20
           direction: {x: 0, y: 0, z: 1}
         hitStopDuration: 0
         hitStopTimeScale: 0
@@ -3322,12 +3303,12 @@ MonoBehaviour:
       - particlePrefab: {fileID: 8609793798989012907, guid: 0ff6ac2b88dee4b43982cc7f2a106909,
           type: 3}
         anchor: 2
-        offset: {x: 0, y: 1, z: 2}
+        offset: {x: 0.5, y: 1, z: 1}
         rotationEuler: {x: 270, y: 300, z: 75}
         scale: {x: 1, y: 1, z: 1}
         motion:
           enabled: 1
-          speed: 10
+          speed: 20
           direction: {x: 0, y: 0, z: 1}
         destroyMode: 1
         duration: 5
@@ -3934,52 +3915,41 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: melee_minion_chop
-    displayName: Melee Minion Chop
+  - skillId: melee_minion_shot
+    displayName: 
     ignoreAnimationDamageEvents: 1
     damageEvents:
-    - eventId: hit
-      startTime: 0.24
+    - eventId: 
+      startTime: 0
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0
-      repeatInterval: 0.1
+      repeatInterval: 0
       damageEffects:
-      - damageMagnitude: 0
-        detectionDuration: 0.033333335
+      - damageMagnitude: 1
+        detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
-        shape: 1
+        shape: 0
         centerOffset: {x: 0, y: 0, z: 0}
         rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 0.01
+        sphereRadius: 1
         sectorAngle: 180
-        boxSize: {x: 1, y: 1, z: 1}
+        boxSize: {x: 0, y: 0, z: 0}
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
-        rayMaxDistance: 50
+        rayMaxDistance: 0
         motion:
           enabled: 0
           speed: 0
-          direction: {x: 0, y: 0, z: 1}
+          direction: {x: 0, y: 0, z: 0}
         hitStopDuration: 0
         hitStopTimeScale: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
         onHitSfxEffects: []
-    physicsEvents:
-    - eventId: hit
-      startTime: 0.24
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      physicsEffects:
-      - effectType: 0
-        distance: 1
-        height: 1
-        duration: 0.08
+    physicsEvents: []
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
@@ -4017,14 +3987,6 @@ MonoBehaviour:
         onHitAttributeEffects: []
         onHitVfxEffects: []
         onHitSfxEffects: []
-    physicsEvents: []
-    attributeEvents: []
-    vfxEvents: []
-    sfxEvents: []
-  - skillId: new_skill_1
-    displayName: 
-    ignoreAnimationDamageEvents: 1
-    damageEvents: []
     physicsEvents: []
     attributeEvents: []
     vfxEvents: []
@@ -5409,7 +5371,7 @@ MonoBehaviour:
       repeatInterval: 0.1
       damageEffects:
       - damageMagnitude: 0.85
-        detectionDuration: 0
+        detectionDuration: 0.033333335
         detectionType: 0
         hitLayerName: Player
         shape: 1
@@ -5445,7 +5407,7 @@ MonoBehaviour:
         duration: 0.1
     attributeEvents:
     - eventId: regen
-      startTime: 0.42
+      startTime: 0.40000004
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0

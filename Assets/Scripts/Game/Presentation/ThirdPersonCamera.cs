@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Game.GameFlow;
+using Game.UI;
 
 namespace Game.Presentation
 {
@@ -37,7 +38,7 @@ namespace Game.Presentation
         public float GetMovementYaw()
         {
             float yaw = _yaw;
-            if (_inputHandler != null)
+            if (_inputHandler != null && !IsLookInputBlocked())
                 yaw += _inputHandler.CurrentInput.LookDelta.x * _sensitivityX;
             return yaw;
         }
@@ -58,7 +59,6 @@ namespace Game.Presentation
         private void Awake()
         {
             Active = this;
-            EnsureReferences();
         }
 
         private void OnEnable()
@@ -80,10 +80,13 @@ namespace Game.Presentation
             if (_target == null || _inputHandler == null)
                 return;
 
-            var input = _inputHandler.CurrentInput;
-            _yaw += input.LookDelta.x * _sensitivityX;
-            _pitch -= input.LookDelta.y * _sensitivityY;
-            _pitch = Mathf.Clamp(_pitch, _minPitch, _maxPitch);
+            if (!IsLookInputBlocked())
+            {
+                var input = _inputHandler.CurrentInput;
+                _yaw += input.LookDelta.x * _sensitivityX;
+                _pitch -= input.LookDelta.y * _sensitivityY;
+                _pitch = Mathf.Clamp(_pitch, _minPitch, _maxPitch);
+            }
 
             Vector3 pivotPos = _target.position + Vector3.up * _targetHeight;
             Quaternion rotation = Quaternion.Euler(_pitch, _yaw, 0f);
@@ -96,6 +99,12 @@ namespace Game.Presentation
 
             transform.position = pivotPos + dir * dist;
             transform.LookAt(pivotPos);
+        }
+
+        private static bool IsLookInputBlocked()
+        {
+            var gsm = GameStateMachine.GetInstance();
+            return gsm?.IsGameplayPaused == true || GameplayUIInputBridge.IsAnyGameplayPanelOpen();
         }
 
         private void EnsureReferences()

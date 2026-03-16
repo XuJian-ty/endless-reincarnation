@@ -14,44 +14,58 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tasks:
   - enemyType: 0
-    spawnRadius: 40
+    specificEnemyId: 
+    spawnRadius: 20
     countMode: 1
     fixedCount: 1
-    randomMinCount: 0
-    randomMaxCount: 1
-    enemyMinSpacing: 0
-  - enemyType: 1
-    spawnRadius: 40
+    randomMinCount: 2
+    randomMaxCount: 3
+    enemyMinSpacing: 5
+  - enemyType: 0
+    specificEnemyId: 
+    spawnRadius: 20
     countMode: 1
     fixedCount: 1
-    randomMinCount: 0
-    randomMaxCount: 1
-    enemyMinSpacing: 0
+    randomMinCount: 2
+    randomMaxCount: 3
+    enemyMinSpacing: 5
   - enemyType: 2
-    spawnRadius: 40
+    specificEnemyId: 
+    spawnRadius: 20
+    countMode: 1
+    fixedCount: 3
+    randomMinCount: 1
+    randomMaxCount: 2
+    enemyMinSpacing: 5
+  - enemyType: 3
+    specificEnemyId: 
+    spawnRadius: 20
     countMode: 0
     fixedCount: 1
     randomMinCount: 0
     randomMaxCount: 0
     enemyMinSpacing: 0
   - enemyType: 3
-    spawnRadius: 40
+    specificEnemyId: 
+    spawnRadius: 20
     countMode: 0
-    fixedCount: 3
+    fixedCount: 2
     randomMinCount: 0
     randomMaxCount: 0
     enemyMinSpacing: 0
   - enemyType: 3
-    spawnRadius: 40
+    specificEnemyId: 
+    spawnRadius: 20
     countMode: 0
     fixedCount: 3
     randomMinCount: 0
     randomMaxCount: 0
     enemyMinSpacing: 0
   - enemyType: 4
-    spawnRadius: 40
+    specificEnemyId: 
+    spawnRadius: 20
     countMode: 0
-    fixedCount: 3
+    fixedCount: 1
     randomMinCount: 0
     randomMaxCount: 0
     enemyMinSpacing: 0

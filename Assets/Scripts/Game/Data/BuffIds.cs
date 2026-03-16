@@ -17,15 +17,13 @@ namespace Game.Data
         public const string Damage          = "buff_damage";
 
         // ── 特殊效果类（逻辑在各自系统内根据 HasBuff(id) 实现）────────────────
-        /// <summary>全程霸体：受击不进入硬直。接入：PlayerController.OnHit。</summary>
+        /// <summary>霸体加减伤：受击不进入硬直，并提供减伤。接入：PlayerController.OnHit 与 PlayerModel.Stats.DamageReduce。</summary>
         public const string SuperArmor      = "buff_superarmor";
         /// <summary>召唤分身。接入：关卡/战斗逻辑，生成友方单位。</summary>
         public const string SummonClone     = "buff_summon";
-        /// <summary>攻击重影：攻击附带重影与额外伤害。接入：攻击/伤害检测或特效逻辑。</summary>
+        /// <summary>攻击附带重影：延迟重复一次伤害、特效与音效时间轴事件。接入：玩家技能时间轴启动。</summary>
         public const string Afterimage      = "buff_afterimage";
-        /// <summary>近战范围扩大：碰撞体、伤害范围、特效范围 × 配置 meleeRangeScale。接入：武器/伤害检测。</summary>
-        public const string MeleeRangeExpand = "buff_meleerange";
-        /// <summary>多重射击：远程多发射一发，间隔由配置 multishotDelaySeconds。接入：远程射击逻辑。</summary>
-        public const string Multishot      = "buff_multishot";
+        /// <summary>伤害范围扩大：特效、伤害范围、碰撞体和射线距离 × 配置倍率。接入：伤害检测与技能特效。</summary>
+        public const string DamageRangeExpand = "buff_meleerange";
     }
 }

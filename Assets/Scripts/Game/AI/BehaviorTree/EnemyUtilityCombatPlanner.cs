@@ -309,14 +309,14 @@ namespace Game.AI
                 if (frame.Perception.HasImmediateThreat && !skill.CanUseUnderThreat)
                     continue;
 
-                float score = 42f;
+                float score = 46f;
                 float distanceDelta = Mathf.Abs(frame.Distance - skill.IdealCastRange);
                 float rangeScale = Mathf.Max(1f, skill.IdealCastRange);
-                score += (1f - Mathf.Clamp01(distanceDelta / rangeScale)) * 18f;
-                score += frame.Archetype.aggression * 12f;
-                score += frame.Perception.PunishOpportunityScore * skill.PunishWeight * 20f;
+                score += (1f - Mathf.Clamp01(distanceDelta / rangeScale)) * 20f;
+                score += frame.Archetype.aggression * 16f;
+                score += frame.Perception.PunishOpportunityScore * skill.PunishWeight * 24f;
                 score += GetRoleBonus(skill, frame, focus);
-                score -= skill.RiskWeight * frame.Archetype.caution * 18f;
+                score -= skill.RiskWeight * frame.Archetype.caution * 15f;
                 score -= frame.Memory.GetRepeatPenalty(skill.RepeatPenalty * 14f);
 
                 if (score > bestScore)
@@ -352,7 +352,7 @@ namespace Game.AI
 
             Vector3 predicted = frame.Perception.PredictTargetPosition(frame.Archetype.approachLeadTime);
             float distanceOvershoot = frame.Distance - frame.DesiredDistance;
-            float score = 20f + frame.Archetype.aggression * 18f + Mathf.Min(distanceOvershoot, 6f) * 4f;
+            float score = 24f + frame.Archetype.aggression * 22f + Mathf.Min(distanceOvershoot, 6f) * 4.5f;
             if (!frame.CanPressure)
                 score -= 10f;
 
@@ -379,7 +379,7 @@ namespace Game.AI
                 return default;
 
             Vector3 predicted = frame.Perception.PredictTargetPosition(frame.Archetype.approachLeadTime * 0.6f);
-            float score = 28f + frame.Archetype.punishBias * 20f + frame.Perception.PunishOpportunityScore * 18f;
+            float score = 34f + frame.Archetype.punishBias * 24f + frame.Perception.PunishOpportunityScore * 24f;
             if (!frame.CanPressure)
                 score -= 6f;
 
@@ -418,7 +418,7 @@ namespace Game.AI
                 return default;
             }
 
-            float score = 16f + frame.Archetype.strafeBias * 16f + (frame.CanPressure ? 4f : 9f);
+            float score = 20f + frame.Archetype.strafeBias * 20f + (frame.CanPressure ? 5f : 10f);
             if (focus == EnemyCombatDecisionFocus.Punish)
                 score += frame.Archetype.punishBias * 8f;
             if (sign != frame.PreferredStrafeSign)
@@ -456,9 +456,11 @@ namespace Game.AI
                 return default;
             }
 
-            float score = 18f + frame.Archetype.caution * 18f + frame.Perception.ThreatScore * 14f;
+            float score = 14f + frame.Archetype.caution * 16f + frame.Perception.ThreatScore * 12f;
             if (focus == EnemyCombatDecisionFocus.ThreatResponse)
                 score += frame.Archetype.dodgeBias * 12f;
+            if (frame.CanPressure && !frame.Perception.HasImmediateThreat)
+                score -= 8f;
 
             EnemyIntent intent = new EnemyIntent
             {
@@ -518,7 +520,12 @@ namespace Game.AI
             if (!inBand && focus == EnemyCombatDecisionFocus.Standard)
                 return default;
 
-            float score = 13f + frame.Archetype.caution * 14f;
+            bool waitingForSkillWindow = frame.PlanningSkill != null && frame.PlanningCooldownRemaining <= 0.35f;
+            bool defensiveHold = !frame.CanPressure || frame.Perception.HasImmediateThreat;
+            if (!waitingForSkillWindow && !defensiveHold)
+                return default;
+
+            float score = 2.5f + frame.Archetype.caution * 7f;
             if (!frame.CanPressure)
                 score += 5f;
             if (focus == EnemyCombatDecisionFocus.ThreatResponse)

@@ -14,7 +14,8 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            Ctx.Anim.TriggerChargeStart();
+            TriggerConfiguredActionByActionId("ChargeStart", "ChargeStart");
+            StartConfiguredTimelineByActionId("ChargeStart");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

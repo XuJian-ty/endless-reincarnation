@@ -52,16 +52,17 @@ namespace Game.Presentation
             ResolveDetectionPose(attacker, effect, motionFrame, out Vector3 basePosition, out Quaternion baseRotation, out Vector3 motionOffset);
             Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
             Vector3 origin = basePosition + baseRotation * (effect.centerOffset + motionOffset);
+            float rangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker);
             int count;
 
             switch (effect.shape)
             {
                 case AttackShapeType.Sphere:
-                    count = Physics.OverlapSphereNonAlloc(origin, effect.sphereRadius, outBuffer, layerMask);
+                    count = Physics.OverlapSphereNonAlloc(origin, effect.sphereRadius * rangeScale, outBuffer, layerMask);
                     return count;
 
                 case AttackShapeType.Sector:
-                    float radius = Mathf.Max(effect.sphereRadius, 0.01f);
+                    float radius = Mathf.Max(effect.sphereRadius * rangeScale, 0.01f);
                     count = Physics.OverlapSphereNonAlloc(origin, radius, outBuffer, layerMask);
                     if (count <= 0) return 0;
                     float halfAngle = effect.sectorAngle * 0.5f;
@@ -86,7 +87,7 @@ namespace Game.Presentation
                     return write;
 
                 case AttackShapeType.Box:
-                    Vector3 halfExtents = effect.boxSize * 0.5f;
+                    Vector3 halfExtents = effect.boxSize * rangeScale * 0.5f;
                     count = Physics.OverlapBoxNonAlloc(origin, halfExtents, outBuffer, detectionRotation, layerMask);
                     return count;
 
@@ -101,7 +102,7 @@ namespace Game.Presentation
             Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
             Vector3 origin = basePosition + baseRotation * (effect.rayOriginOffset + motionOffset);
             Vector3 direction = detectionRotation * Vector3.forward;
-            float distance = Mathf.Max(0f, effect.rayMaxDistance);
+            float distance = Mathf.Max(0f, effect.rayMaxDistance * PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker));
 
             int numHits = Physics.RaycastNonAlloc(origin, direction, RaycastHitBuffer, distance, layerMask);
             if (numHits <= 0) return 0;
@@ -164,7 +165,7 @@ namespace Game.Presentation
             if (hitbox == null)
                 hitbox = node.gameObject.AddComponent<SkillCollisionHitbox>();
 
-            hitbox.OpenWindow(collisionToken, attacker.root, layerMask);
+            hitbox.OpenWindow(collisionToken, attacker.root, layerMask, PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker));
             return hitbox;
         }
 

@@ -39,8 +39,8 @@ namespace Game.Presentation
         public PlayerModel              PlayerModel  { get; private set; }
 
         // ── IPlayerContext 移动参数（玩家唯一，直接写在脚本内）────────
-        public float WalkSpeed   => 3f;
-        public float RunSpeed    => 6f;
+        public float WalkSpeed   => Mathf.Max(0.1f, RunSpeed * 0.5f);
+        public float RunSpeed    => Mathf.Max(0.1f, PlayerModel != null ? PlayerModel.Stats.MoveSpeed : 6f);
         public float JumpHeight  => 2f;
         public float DodgeSpeed  => 12f;
         public float RotateSpeed => 720f;
@@ -63,6 +63,7 @@ namespace Game.Presentation
         private bool               _deathSequenceCompleted;
         private float              _temporarySuperArmorTimer;
         private float              _temporaryInvincibleTimer;
+        private PlayerCloneManager _cloneManager;
         private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
 
         // ── 连续受击保护状态 ──────────────────────────────────────────────
@@ -96,6 +97,10 @@ namespace Game.Presentation
             StopDetachedTimelineRunners();
             _hitProtectionSystem = new HitProtectionSystem(_hitProtectionWindow, _hitProtectionThreshold, _hitProtectionDuration);
             ResolveCameraReference();
+            _cloneManager = GetComponent<PlayerCloneManager>();
+            if (_cloneManager == null)
+                _cloneManager = gameObject.AddComponent<PlayerCloneManager>();
+            _cloneManager.Initialize(this);
 
 #if ENABLE_INPUT_SYSTEM
             var playerInput = GetComponent<PlayerInput>();
@@ -115,6 +120,7 @@ namespace Game.Presentation
             if (GameStateMachine.GetInstance()?.IsGameplayPaused == true) return;
 
             TickTemporaryCombatFlags(Time.deltaTime);
+            TickAttributeRegeneration(Time.deltaTime);
             _inputHandler.ManualUpdate();
             var input = _inputHandler.CurrentInput;
             StateMachine.Tick(Time.deltaTime, input);
@@ -343,6 +349,20 @@ namespace Game.Presentation
 
             if (_temporaryInvincibleTimer > 0f)
                 _temporaryInvincibleTimer = Mathf.Max(0f, _temporaryInvincibleTimer - dt);
+        }
+
+        private void TickAttributeRegeneration(float dt)
+        {
+            if (PlayerModel == null || dt <= 0f || _deathSequenceStarted)
+                return;
+
+            float hpRegen = Mathf.Max(0f, PlayerModel.Stats.HpRegen);
+            if (hpRegen > 0f && PlayerModel.CurrentHp < PlayerModel.Stats.MaxHp)
+                PlayerModel.Heal(hpRegen * dt);
+
+            float mpRegen = Mathf.Max(0f, PlayerModel.Stats.MpRegen);
+            if (mpRegen > 0f && PlayerModel.CurrentMp < PlayerModel.Stats.MaxMp)
+                PlayerModel.CurrentMp = Mathf.Min(PlayerModel.Stats.MaxMp, PlayerModel.CurrentMp + mpRegen * dt);
         }
     }
 }

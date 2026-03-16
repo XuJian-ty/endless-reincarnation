@@ -4,6 +4,15 @@ using UnityEngine;
 
 namespace Game.Data
 {
+    public enum EnemySpawnCategory
+    {
+        Minion = 0,
+        MinionLegacyRanged = 1,
+        Elite = 2,
+        Guardian = 3,
+        Boss = 4,
+    }
+
     public enum EnemySpawnCountMode
     {
         Fixed = 0,
@@ -18,7 +27,10 @@ namespace Game.Data
     public class EnemySpawnTaskDefinition
     {
         [InspectorLabel("敌人类型")]
-        public EnemyType enemyType = EnemyType.MeleeMinion;
+        public EnemySpawnCategory enemyType = EnemySpawnCategory.Minion;
+
+        [HideInInspector]
+        public string specificEnemyId = string.Empty;
 
         [InspectorLabel("生成半径(米)")]
         [Min(1f)]
@@ -42,6 +54,9 @@ namespace Game.Data
         [InspectorLabel("敌人最小间距(米)")]
         [Min(0.1f)]
         public float enemyMinSpacing = 3f;
+
+        public bool UseMixedVariants => string.IsNullOrWhiteSpace(specificEnemyId);
+        public bool IsMinionCategory => enemyType == EnemySpawnCategory.Minion || enemyType == EnemySpawnCategory.MinionLegacyRanged;
 
         public int ResolveSpawnCount(System.Random rng)
         {

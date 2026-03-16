@@ -21,11 +21,11 @@ namespace Game.GameFlow
             switch (enemyStats.type)
             {
                 case EnemyType.Guardian:
-                    GrantGuardianRewards(player);
+                    GrantGuardianRewards(player, deathPosition, rng);
                     break;
 
                 case EnemyType.Boss:
-                    // Boss reward flow is handled elsewhere.
+                    GrantBossRewards(player, deathPosition, rng);
                     break;
 
                 default:
@@ -34,9 +34,15 @@ namespace Game.GameFlow
             }
         }
 
-        private static void GrantGuardianRewards(PlayerModel player)
+        private static void GrantGuardianRewards(PlayerModel player, Vector3 deathPosition, System.Random rng)
         {
             player.AddItemCount(PlayerModel.ItemIds.TalentPoint, 1);
+            TryDropLoot(player, deathPosition, rng, EnemyType.Guardian);
+        }
+
+        private static void GrantBossRewards(PlayerModel player, Vector3 deathPosition, System.Random rng)
+        {
+            TryDropLoot(player, deathPosition, rng, EnemyType.Boss);
         }
 
         private static void GrantNormalEnemyRewards(PlayerModel player, EnemyRuntimeStats enemyStats, Vector3 deathPosition, System.Random rng)
@@ -51,48 +57,53 @@ namespace Game.GameFlow
             player.AddItemCount(PlayerModel.ItemIds.Gold, gold);
 
             if (enemyStats.type == EnemyType.Elite)
-                TryDropLoot(player, deathPosition, rng);
+                TryDropLoot(player, deathPosition, rng, EnemyType.Elite);
         }
 
-        private static void TryDropLoot(PlayerModel player, Vector3 position, System.Random rng)
+        private static void TryDropLoot(PlayerModel player, Vector3 position, System.Random rng, EnemyType enemyType)
         {
             var cfg = ConfigManager.GetInstance();
-            var dropDb = cfg?.GetDropTableDatabase();
+            var levelConfigDb = cfg?.GetLevelConfigDatabase();
             var weaponDb = cfg?.GetWeaponDatabase();
-            if (dropDb == null || weaponDb == null)
+            if (levelConfigDb == null || weaponDb == null)
                 return;
 
             int level = GetCurrentLevel();
-            string dropId = dropDb.Roll(level, rng);
+            LevelConfigData levelConfig = levelConfigDb.GetConfigForLevel(level);
+            if (levelConfig == null)
+                return;
+
+            string dropId = ResolveDropId(levelConfig, rng, enemyType);
             if (string.IsNullOrEmpty(dropId))
                 return;
 
             if (TryGetWeaponRarity(dropId, out WeaponRarity rarity))
             {
-                if (!player.CanAddWeapon())
-                    return;
-
                 var instance = weaponDb.RollRandomWeapon(rarity, rng);
                 if (instance == null)
                     return;
 
-                if (!player.AddWeapon(instance))
+                DroppedPickupRuntime pickup = DroppedPickupRuntime.SpawnWeapon(instance, position, rng);
+                if (pickup == null)
                     return;
 
                 var entry = weaponDb.GetEntryByWeaponId(instance.weaponId);
                 string weaponName = entry != null ? entry.displayName : instance.weaponId;
-                Debug.Log($"[EnemyDeathRewardSystem] 掉落武器: {weaponName} (品质: {instance.rarity})");
+                Debug.Log($"[EnemyDeathRewardSystem] {GetEnemyTypeLabel(enemyType)}掉落武器: {weaponName} (品质: {instance.rarity})");
                 return;
             }
 
-            if (IsStackableDrop(dropId) && player.CanAddStackable(dropId, 1))
+            if (IsStackableDrop(dropId))
             {
-                player.AddItemCount(dropId, 1);
-                Debug.Log($"[EnemyDeathRewardSystem] 掉落物品: {dropId}");
+                DroppedPickupRuntime pickup = DroppedPickupRuntime.SpawnStackable(dropId, 1, position, rng);
+                if (pickup == null)
+                    return;
+
+                Debug.Log($"[EnemyDeathRewardSystem] {GetEnemyTypeLabel(enemyType)}掉落物品: {dropId}");
                 return;
             }
 
-            Debug.LogWarning($"[EnemyDeathRewardSystem] 未识别或背包已满，跳过掉落: {dropId} @ {position}");
+            Debug.LogWarning($"[EnemyDeathRewardSystem] 未识别掉落配置，跳过{GetEnemyTypeLabel(enemyType)}掉落: {dropId} @ {position}");
         }
 
         private static int GetCurrentLevel()
@@ -128,6 +139,35 @@ namespace Game.GameFlow
             return dropId == PlayerModel.ItemIds.PotionHp
                    || dropId == PlayerModel.ItemIds.PotionMp
                    || dropId == PlayerModel.ItemIds.Nectar;
+        }
+
+        private static string ResolveDropId(LevelConfigData levelConfig, System.Random rng, EnemyType enemyType)
+        {
+            if (levelConfig == null)
+                return null;
+
+            switch (enemyType)
+            {
+                case EnemyType.Guardian:
+                    return levelConfig.RollGuardianDrop(rng);
+                case EnemyType.Boss:
+                    return levelConfig.RollBossDrop(rng);
+                default:
+                    return levelConfig.RollEliteDrop(rng);
+            }
+        }
+
+        private static string GetEnemyTypeLabel(EnemyType enemyType)
+        {
+            switch (enemyType)
+            {
+                case EnemyType.Guardian:
+                    return "守卫者";
+                case EnemyType.Boss:
+                    return "Boss";
+                default:
+                    return "精英";
+            }
         }
     }
 }

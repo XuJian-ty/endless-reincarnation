@@ -204,11 +204,47 @@ namespace Game.Saving
                     defeatedBossIds  = new List<string>(),
                     isGameCleared    = false,
                     checkpoint       = null,
+                    pendingBuffSelection = true,
+                    currentLevelBuffId = null,
                     levelSnapshot    = null
                 }
             };
 
             ApplyStarterLoadout(save.run);
+            return save;
+        }
+
+        /// <summary>创建一份编辑器直进关卡用的临时调试存档：1级、满血满蓝、传说最高词条剑枪。</summary>
+        public static SaveData NewDebugRun(int levelIndex = 1, int difficulty = 1)
+        {
+            SaveData save = NewGameRun(levelIndex, difficulty);
+            RunData run = save?.run;
+            if (run == null)
+                return save;
+
+            int debugLevel = 1;
+            run.player.level = debugLevel;
+            run.player.exp = 0;
+
+            LevelGrowthSO levelGrowth = ConfigManager.GetInstance()?.GetLevelGrowth();
+            LevelGrowthEntry debugLevelEntry = null;
+            if (levelGrowth?.levels != null)
+            {
+                for (int i = 0; i < levelGrowth.levels.Count; i++)
+                {
+                    LevelGrowthEntry entry = levelGrowth.levels[i];
+                    if (entry != null && entry.level == debugLevel)
+                    {
+                        debugLevelEntry = entry;
+                        break;
+                    }
+                }
+            }
+
+            run.player.currentHp = debugLevelEntry != null ? debugLevelEntry.baseHp : 1000f;
+            run.player.currentMp = debugLevelEntry != null ? debugLevelEntry.baseMp : 1000f;
+
+            ApplyDebugStarterLoadout(run);
             return save;
         }
 
@@ -237,6 +273,48 @@ namespace Game.Saving
             run.equippedWeapon = starterSword;
             if (starterGun != null && run.inventory.slots.Count > 3)
                 run.inventory.slots[3].weapon = starterGun;
+        }
+
+        private static void ApplyDebugStarterLoadout(RunData run)
+        {
+            if (run == null)
+                return;
+
+            WeaponDatabaseSO weaponDb = ConfigManager.GetInstance()?.GetWeaponDatabase();
+            if (weaponDb == null)
+                return;
+
+            WeaponInstance debugSword = CreateMaximumRoll(weaponDb, WeaponType.MeleeSword, WeaponRarity.Legendary);
+            WeaponInstance debugGun = CreateMaximumRoll(weaponDb, WeaponType.RangedGun, WeaponRarity.Legendary);
+
+            run.equippedWeapon = debugSword;
+            if (debugGun != null && run.inventory?.slots != null && run.inventory.slots.Count > 3)
+                run.inventory.slots[3].weapon = debugGun;
+        }
+
+        private static WeaponInstance CreateMaximumRoll(WeaponDatabaseSO weaponDb, WeaponType type, WeaponRarity rarity)
+        {
+            WeaponEntryData entry = weaponDb?.GetEntry(type);
+            if (entry == null)
+                return null;
+
+            WeaponStatRanges ranges = entry.GetRangesFor(rarity);
+            return new WeaponInstance
+            {
+                weaponId = entry.weaponId,
+                type = entry.type,
+                rarity = rarity,
+                rolledHp = ranges.hp.max,
+                rolledMp = ranges.mp.max,
+                rolledAttack = ranges.attack.max,
+                rolledDefense = ranges.defense.max,
+                rolledHpRegen = rarity >= WeaponRarity.Rare ? ranges.hpRegen.max : 0f,
+                rolledMpRegen = rarity >= WeaponRarity.Rare ? ranges.mpRegen.max : 0f,
+                rolledCritRate = rarity >= WeaponRarity.Epic ? ranges.critRate.max : 0f,
+                rolledCritDmg = rarity >= WeaponRarity.Epic ? ranges.critDmg.max : 0f,
+                rolledAttackSpeed = rarity >= WeaponRarity.Legendary ? ranges.attackSpeed.max : 0f,
+                rolledMoveSpeed = rarity >= WeaponRarity.Legendary ? ranges.moveSpeed.max : 0f,
+            };
         }
 
         private static void SetStarterStack(List<InventorySlotSave> slots, int index, string itemId, int count)

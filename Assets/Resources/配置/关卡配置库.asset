@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levels:
   - levelIndex: 1
+    sceneName: Level_1
+    sceneGuid:
     enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
       type: 2}
     enemyGlobalSpawnPlanIndex: 0
@@ -21,35 +23,208 @@ MonoBehaviour:
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
+    eliteDropEntries:
+    - itemType: weapon_common
+      weight: 0.3
+    - itemType: weapon_rare
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianDropEntries:
+    - itemType: weapon_common
+      weight: 0.3
+    - itemType: weapon_rare
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    bossDropEntries:
+    - itemType: weapon_common
+      weight: 0.3
+    - itemType: weapon_rare
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
   - levelIndex: 2
+    sceneName: Level_2
+    sceneGuid:
     enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
       type: 2}
-    enemyGlobalSpawnPlanIndex: 0
+    enemyGlobalSpawnPlanIndex: 1
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
+    eliteDropEntries:
+    - itemType: weapon_common
+      weight: 0.15
+    - itemType: weapon_rare
+      weight: 0.15
+    - itemType: weapon_epic
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianDropEntries:
+    - itemType: weapon_common
+      weight: 0.15
+    - itemType: weapon_rare
+      weight: 0.15
+    - itemType: weapon_epic
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    bossDropEntries:
+    - itemType: weapon_common
+      weight: 0.15
+    - itemType: weapon_rare
+      weight: 0.15
+    - itemType: weapon_epic
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
   - levelIndex: 3
+    sceneName: Level_3
+    sceneGuid:
     enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
       type: 2}
-    enemyGlobalSpawnPlanIndex: 0
+    enemyGlobalSpawnPlanIndex: 2
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
+    eliteDropEntries:
+    - itemType: weapon_rare
+      weight: 0.2
+    - itemType: weapon_epic
+      weight: 0.2
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianDropEntries:
+    - itemType: weapon_rare
+      weight: 0.2
+    - itemType: weapon_epic
+      weight: 0.2
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    bossDropEntries:
+    - itemType: weapon_rare
+      weight: 0.2
+    - itemType: weapon_epic
+      weight: 0.2
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
   - levelIndex: 4
+    sceneName: Level_4
+    sceneGuid:
     enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
       type: 2}
-    enemyGlobalSpawnPlanIndex: 0
+    enemyGlobalSpawnPlanIndex: 3
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
+    eliteDropEntries:
+    - itemType: weapon_epic
+      weight: 0.3
+    - itemType: weapon_legendary
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianDropEntries:
+    - itemType: weapon_epic
+      weight: 0.3
+    - itemType: weapon_legendary
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    bossDropEntries:
+    - itemType: weapon_epic
+      weight: 0.3
+    - itemType: weapon_legendary
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
   - levelIndex: 5
+    sceneName: Level_5
+    sceneGuid:
     enemyGlobalSpawnPlanLibrary: {fileID: 11400000, guid: f6b7324696cd6684e8bea3d7049345d3,
       type: 2}
-    enemyGlobalSpawnPlanIndex: 0
+    enemyGlobalSpawnPlanIndex: 4
     chestMinCount: 0
     chestMaxCount: 2
     shopCount: 2
     cellSize: 40
+    eliteDropEntries:
+    - itemType: weapon_legendary
+      weight: 0.4
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianDropEntries:
+    - itemType: weapon_legendary
+      weight: 0.4
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    bossDropEntries:
+    - itemType: weapon_legendary
+      weight: 0.4
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1

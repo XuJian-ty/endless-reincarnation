@@ -10,6 +10,7 @@ namespace Game.Presentation
         {
             public Transform ownerRoot;
             public int layerMask;
+            public float scaleMultiplier = 1f;
             public readonly List<Collider> pendingHits = new List<Collider>(8);
             public readonly HashSet<Collider> pendingSet = new HashSet<Collider>();
         }
@@ -17,6 +18,7 @@ namespace Game.Presentation
         private readonly Dictionary<object, ListenerState> _listeners = new Dictionary<object, ListenerState>();
         private Collider _hitboxCollider;
         private Rigidbody _rigidbody;
+        private Vector3 _baseLocalScale = Vector3.one;
 
         private void Awake()
         {
@@ -36,7 +38,7 @@ namespace Game.Presentation
             RefreshColliderEnabled();
         }
 
-        public void OpenWindow(object token, Transform ownerRoot, int layerMask)
+        public void OpenWindow(object token, Transform ownerRoot, int layerMask, float scaleMultiplier)
         {
             if (token == null)
                 return;
@@ -51,6 +53,7 @@ namespace Game.Presentation
 
             listener.ownerRoot = ownerRoot;
             listener.layerMask = layerMask;
+            listener.scaleMultiplier = Mathf.Max(1f, scaleMultiplier);
             listener.pendingHits.Clear();
             listener.pendingSet.Clear();
             RefreshColliderEnabled();
@@ -109,6 +112,8 @@ namespace Game.Presentation
             if (_hitboxCollider == null)
                 _hitboxCollider = GetComponent<Collider>();
 
+            _baseLocalScale = transform.localScale;
+
             if (_hitboxCollider != null)
                 _hitboxCollider.isTrigger = true;
 
@@ -125,6 +130,17 @@ namespace Game.Presentation
 
         private void RefreshColliderEnabled()
         {
+            float appliedScale = 1f;
+            foreach (KeyValuePair<object, ListenerState> pair in _listeners)
+            {
+                ListenerState listener = pair.Value;
+                if (listener == null)
+                    continue;
+
+                appliedScale = Mathf.Max(appliedScale, listener.scaleMultiplier);
+            }
+
+            transform.localScale = _baseLocalScale * appliedScale;
             if (_hitboxCollider != null)
                 _hitboxCollider.enabled = _listeners.Count > 0;
         }

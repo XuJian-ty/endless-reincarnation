@@ -25,11 +25,9 @@ MonoBehaviour:
   combatDistanceTolerance: 1.1
   castRangeTolerance: 0.25
   retreatStepDistance: 4.2
-  tacticalHoldDuration: 0.12
   approachLeadTime: 0.25
   losProbeInterval: 0.1
   pathProbeInterval: 0.3
-  losBlockedPenaltySeconds: 0.35
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4294967291
@@ -38,21 +36,24 @@ MonoBehaviour:
   reactionMaxSeconds: 0.16
   decisionCommitSeconds: 0.22
   searchMemoryDuration: 1.9
-  aggression: 0.64
+  aggression: 1
   caution: 0.45
   dodgeBias: 0.58
-  punishBias: 0.66
-  strafeBias: 0.5
+  punishBias: 1
+  strafeBias: 1
   maxPressureAllies: 3
   poiseMax: 34
   poiseRecoveryPerSecond: 13
   poiseBreakStunDuration: 0.45
   allowLightHitFlinch: 0
   superArmorWhileCasting: 1
+  hurtNaturalExitNormalizedTime: 0.9
+  hurtNaturalExitTarget: 0
+  locomotionSkillId: EnemyLocomotion
   skillSlots:
   - slotIndex: 0
     skillId: boss_1_slash
-    cooldown: 2.2
+    cooldown: 2
     castRange: 3
     minCastRange: 0
     idealCastRange: 2.6
@@ -66,10 +67,12 @@ MonoBehaviour:
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
     skillId: boss_1_shot
-    cooldown: 2.8
+    cooldown: 2
     castRange: 14
     minCastRange: 0
     idealCastRange: 12.5
@@ -83,10 +86,12 @@ MonoBehaviour:
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 2
     skillId: boss_1_charge
-    cooldown: 4
+    cooldown: 3
     castRange: 5
     minCastRange: 2
     idealCastRange: 4.2
@@ -100,10 +105,12 @@ MonoBehaviour:
     postCastIdleDuration: 0.45
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 1
   - slotIndex: 3
     skillId: boss_1_roar
-    cooldown: 5
+    cooldown: 4
     castRange: 8
     minCastRange: 0
     idealCastRange: 7
@@ -117,4 +124,6 @@ MonoBehaviour:
     postCastIdleDuration: 0.55
     rotateToTargetOnCast: 0
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 1

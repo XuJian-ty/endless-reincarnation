@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc26d155a252b5c47aa6330feaadd4e2, type: 3}
-  m_Name: "\u5173\u5361\u654C\u4EBA\u5168\u5C40\u751F\u6210\u65B9\u6848"
+  m_Name: "\u5173\u5361\u654C\u4EBA\u5168\u5C40\u751F\u6210\u65B9\u6848\u5E93"
   m_EditorClassIdentifier: 
   taskDatabase: {fileID: 11400000, guid: 3d9ce52e880d19c47930c51421ed1316, type: 2}
   plans:
@@ -21,9 +21,7 @@ MonoBehaviour:
       taskCount: 10
     - taskIndex: 2
       taskCount: 10
-    - taskIndex: 3
-      taskCount: 3
-    spawnMode: 1
+    spawnMode: 0
     taskCenterMinSpacing: 18
     initialTaskCount: 3
     taskInterval: 30
@@ -34,8 +32,6 @@ MonoBehaviour:
       taskCount: 15
     - taskIndex: 2
       taskCount: 15
-    - taskIndex: 3
-      taskCount: 4
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 4
@@ -47,8 +43,6 @@ MonoBehaviour:
       taskCount: 20
     - taskIndex: 2
       taskCount: 20
-    - taskIndex: 3
-      taskCount: 6
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 5
@@ -60,8 +54,6 @@ MonoBehaviour:
       taskCount: 25
     - taskIndex: 2
       taskCount: 25
-    - taskIndex: 3
-      taskCount: 25
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 6
@@ -71,10 +63,8 @@ MonoBehaviour:
       taskCount: 30
     - taskIndex: 1
       taskCount: 30
-    - taskIndex: 3
+    - taskIndex: 2
       taskCount: 30
-    - taskIndex: 3
-      taskCount: 10
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 7

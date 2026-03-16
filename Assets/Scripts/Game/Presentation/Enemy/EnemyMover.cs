@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using Game.Data;
 using Game.GameFlow;
 
 namespace Game.Presentation
@@ -50,7 +51,7 @@ namespace Game.Presentation
 
             if (_controller.IsInPostCastRecovery)
             {
-                if (ExecutePostCastRecoveryRetreat())
+                if (ExecutePostCastRecoveryMovement())
                     return;
 
                 StopMoving();
@@ -195,10 +196,13 @@ namespace Game.Presentation
             _controller.SetAnimatorMove(moveBlend, forwardSigned, strafeSigned);
         }
 
-        private bool ExecutePostCastRecoveryRetreat()
+        private bool ExecutePostCastRecoveryMovement()
         {
             if (!_controller.TryGetPostCastRetreatDestination(out Vector3 retreatDestination))
-                return false;
+            {
+                if (!TryResolveDynamicRecoveryDestination(out retreatDestination))
+                    return false;
+            }
 
             float planarDistance = GetPlanarDistance(transform.position, retreatDestination);
             if (planarDistance <= RetreatArrivalDistance)
@@ -221,6 +225,51 @@ namespace Game.Presentation
             };
             ApplyDirectionalAnimatorMotion(retreatIntent, WalkBlendValue, facingPoint);
             return true;
+        }
+
+        private bool TryResolveDynamicRecoveryDestination(out Vector3 destination)
+        {
+            destination = Vector3.zero;
+            if (_controller == null || _perception == null || !_perception.TargetPosition.HasValue)
+                return false;
+
+            EnemyArchetypeSO archetype = _controller.Archetype;
+            float desiredDistance = _controller.GetPreferredCombatRange();
+            int preferredSign = Game.AI.EnemySquadCoordinator.GetPreferredStrafeSign(_controller);
+
+            if (Game.AI.EnemyTacticalNavigation.TryFindStrafePoint(
+                    _controller,
+                    _perception,
+                    archetype,
+                    desiredDistance,
+                    preferredSign,
+                    out destination))
+            {
+                return true;
+            }
+
+            if (Game.AI.EnemyTacticalNavigation.TryFindStrafePoint(
+                    _controller,
+                    _perception,
+                    archetype,
+                    desiredDistance,
+                    -preferredSign,
+                    out destination))
+            {
+                return true;
+            }
+
+            if (Game.AI.EnemyTacticalNavigation.TryFindRepositionPoint(
+                    _controller,
+                    _perception,
+                    archetype,
+                    desiredDistance,
+                    out destination))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private void ExecuteHoldIntent(EnemyIntent intent)

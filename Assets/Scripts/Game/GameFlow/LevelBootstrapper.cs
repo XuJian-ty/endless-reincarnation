@@ -6,6 +6,7 @@ using Game.Data;
 using Game.Saving;
 using Game.UI;
 using ProjectBase;
+using UnityEngine.SceneManagement;
 
 namespace Game.GameFlow
 {
@@ -77,7 +78,7 @@ namespace Game.GameFlow
 
             BindCameraToPlayer();
 
-            if (run.levelSnapshot == null)
+            if (run.pendingBuffSelection)
                 ShowBuffSelection();
 
             LevelUIModelLocator.Set(new LevelUIModel(gsm));
@@ -129,16 +130,16 @@ namespace Game.GameFlow
 
         private RunData CreateFallbackRun()
         {
-            int levelIndex = 1;
+            int levelIndex = ResolveFallbackLevelIndex();
             var configDb = ConfigManager.GetInstance().GetLevelConfigDatabase();
             if (configDb != null)
             {
-                var config = configDb.GetConfigForLevel(1);
+                var config = configDb.GetConfigForLevel(levelIndex);
                 if (config != null)
                     levelIndex = config.levelIndex;
             }
 
-            return SaveSystem.NewGameRun(levelIndex, 1).run;
+            return SaveSystem.NewDebugRun(levelIndex, 1).run;
         }
 
         private void PlacePlayer(Vector3 pos, Quaternion rotation)
@@ -157,7 +158,7 @@ namespace Game.GameFlow
             if (!IsValidSceneObject(playerController))
             {
                 playerController = FindFirstObjectByType<PlayerController>();
-                if (playerController == null)
+                if (playerController == null && playerPrefab == null && Resources.Load<PlayerController>("Prefabs/Player") == null)
                     Debug.LogWarning("[LevelBootstrapper] Scene PlayerController not found.");
             }
 
@@ -244,6 +245,33 @@ namespace Game.GameFlow
             return null;
         }
 
+        private static int ResolveFallbackLevelIndex()
+        {
+            string activeSceneName = SceneManager.GetActiveScene().name;
+            if (string.IsNullOrWhiteSpace(activeSceneName))
+                return 1;
+
+            LevelConfigDatabaseSO configDb = ConfigManager.GetInstance()?.GetLevelConfigDatabase();
+            if (configDb?.levels != null)
+            {
+                for (int i = 0; i < configDb.levels.Count; i++)
+                {
+                    LevelConfigData config = configDb.levels[i];
+                    if (config != null && string.Equals(config.sceneName, activeSceneName, System.StringComparison.OrdinalIgnoreCase))
+                        return Mathf.Max(1, config.levelIndex);
+                }
+            }
+
+            const string levelPrefix = "Level_";
+            if (activeSceneName.StartsWith(levelPrefix, System.StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(activeSceneName.Substring(levelPrefix.Length), out int parsedLevel))
+            {
+                return Mathf.Max(1, parsedLevel);
+            }
+
+            return 1;
+        }
+
         private void ShowBuffSelection()
         {
             var config = ConfigManager.GetInstance()?.GetBuffConfig();
@@ -271,12 +299,20 @@ namespace Game.GameFlow
         private void OnBuffSelected(string buffId)
         {
             var gsm = GameStateMachine.GetInstance();
+            var run = gsm?.CurrentRun;
             var playerModel = gsm?.Player;
-            if (playerModel == null) return;
+            if (playerModel == null || run == null) return;
 
             var config = ConfigManager.GetInstance()?.GetBuffConfig();
+            if (!string.IsNullOrWhiteSpace(run.currentLevelBuffId))
+                playerModel.RemoveBuff(run.currentLevelBuffId);
+
             var modifier = config != null ? config.GetModifierForBuff(buffId) : new StatModifier();
             playerModel.AddBuff(buffId, modifier);
+            run.pendingBuffSelection = false;
+            run.currentLevelBuffId = buffId;
+            playerModel.SaveTo(run);
+            gsm.SaveCurrent();
         }
     }
 }

@@ -19,8 +19,8 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            TriggerConfiguredAction(TimelineSkillId, $"Attack{ComboIndex}");
-            StartTimelineSkill(TimelineSkillId);
+            TriggerConfiguredActionByActionId(TimelineSkillId, $"Attack{ComboIndex}");
+            StartConfiguredTimelineByActionId(TimelineSkillId);
         }
 
         protected override void OnExit() { }
@@ -33,6 +33,10 @@ namespace Game.Presentation
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
+            var cameraForward = Ctx.GetMoveDirection(Vector2.up);
+            if (cameraForward.sqrMagnitude > 0.001f)
+                Ctx.Mover.RotateToward(cameraForward, Ctx.RotateSpeed);
+
             var pending = Ctx.StateMachine.PeekPending();
             bool hasNormalAttackPending = !pending.IsEmpty && pending.Action == GameAction.NormalAttack;
             bool hasMovePending = !pending.IsEmpty && (pending.Action == GameAction.Walk || pending.Action == GameAction.Run);

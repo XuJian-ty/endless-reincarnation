@@ -60,7 +60,10 @@ namespace Game.Presentation
             _ctx.PatrolOrigin = _patrolOrigin;
             _ctx.NextPatrolTime = _nextPatrolTime;
 
-            if (!_perception.HasImmediateThreat && _ctx.Memory != null && !_ctx.Memory.CanEvaluate(now))
+            if (!_perception.HasImmediateThreat &&
+                _ctx.Memory != null &&
+                !_ctx.Memory.CanEvaluate(now) &&
+                !ShouldForceImmediateReevaluation())
                 return;
 
             _root.Tick(_ctx);
@@ -74,6 +77,43 @@ namespace Game.Presentation
             _root = _controller != null && _controller.Archetype != null
                 ? EnemyBehaviorTreeBuilder.BuildDefaultTree()
                 : null;
+        }
+
+        private bool ShouldForceImmediateReevaluation()
+        {
+            if (_controller == null)
+                return false;
+
+            EnemyIntent intent = _controller.CurrentIntent;
+            if (intent.Type == EnemyIntentType.None)
+                return true;
+
+            if (intent.Type == EnemyIntentType.Hold || intent.Type == EnemyIntentType.Idle)
+                return true;
+
+            if (!intent.HasTargetPosition)
+                return false;
+
+            if (!IsMoveIntent(intent.Type))
+                return false;
+
+            Vector3 delta = intent.TargetPosition.Value - _controller.transform.position;
+            delta.y = 0f;
+            return delta.sqrMagnitude <= 0.75f * 0.75f;
+        }
+
+        private static bool IsMoveIntent(EnemyIntentType type)
+        {
+            return type == EnemyIntentType.Patrol ||
+                   type == EnemyIntentType.Search ||
+                   type == EnemyIntentType.Chase ||
+                   type == EnemyIntentType.Approach ||
+                   type == EnemyIntentType.Punish ||
+                   type == EnemyIntentType.StrafeLeft ||
+                   type == EnemyIntentType.StrafeRight ||
+                   type == EnemyIntentType.Dodge ||
+                   type == EnemyIntentType.Retreat ||
+                   type == EnemyIntentType.Reposition;
         }
     }
 }

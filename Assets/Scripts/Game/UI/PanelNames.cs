@@ -65,7 +65,7 @@ namespace Game.UI
         public const E_UI_Layer MainMenuBackground = E_UI_Layer.Bot;
         public const E_UI_Layer Loading     = E_UI_Layer.System;
         public const E_UI_Layer BuffSelect  = E_UI_Layer.System;
-        public const E_UI_Layer PlayerInfoHUD = E_UI_Layer.Top;
+        public const E_UI_Layer PlayerInfoHUD = E_UI_Layer.Bot;
         public const E_UI_Layer DeathChoice = E_UI_Layer.System;
         public const E_UI_Layer BossResult = E_UI_Layer.System;
     }

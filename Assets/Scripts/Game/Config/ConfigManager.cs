@@ -17,15 +17,17 @@ namespace Game
         private EnemyStatsDatabaseSO _enemyStatsDatabase;
         private SharedSkillDatabaseSO _sharedSkillDatabase;
         private LevelConfigDatabaseSO _levelConfigDatabase;
-        private DropTableDatabaseSO _dropTableDatabase;
         private WeaponDatabaseSO _weaponDatabase;
         private LevelGrowthSO _levelGrowth;
         private DifficultyScalingSO _difficultyScaling;
+        private LevelBossVisualConfigSO _levelBossVisualConfig;
+        private PlayerCloneAIConfigSO _playerCloneAIConfig;
         private ShopPriceConfigSO _shopPriceConfig;
         private PotionConfigSO _potionConfig;
         private SkillConfigDatabaseSO _skillConfigDatabase;
         private CharacterAnimationLibrarySO _characterAnimationLibrary;
         private ItemDisplayDatabaseSO _itemDisplayDatabase;
+        private WorldPickupVisualConfigSO _worldPickupVisualConfig;
         private SlotBackgroundConfigSO _slotBackgroundConfig;
         private KeyRebindConfigSO _keyRebindConfig;
         private BackpackUIConfigSO _backpackUIConfig;
@@ -92,13 +94,6 @@ namespace Game
             return _levelConfigDatabase;
         }
 
-        public DropTableDatabaseSO GetDropTableDatabase()
-        {
-            if (_dropTableDatabase == null)
-                _dropTableDatabase = Resources.Load<DropTableDatabaseSO>(ConfigPathPrefix + "掉落表库");
-            return _dropTableDatabase;
-        }
-
         public WeaponDatabaseSO GetWeaponDatabase()
         {
             if (_weaponDatabase == null)
@@ -124,6 +119,20 @@ namespace Game
             return _difficultyScaling;
         }
 
+        public LevelBossVisualConfigSO GetLevelBossVisualConfig()
+        {
+            if (_levelBossVisualConfig == null)
+                _levelBossVisualConfig = Resources.Load<LevelBossVisualConfigSO>(ConfigPathPrefix + "最终Boss视觉配置");
+            return _levelBossVisualConfig;
+        }
+
+        public PlayerCloneAIConfigSO GetPlayerCloneAIConfig()
+        {
+            if (_playerCloneAIConfig == null)
+                _playerCloneAIConfig = Resources.Load<PlayerCloneAIConfigSO>(ConfigPathPrefix + "分身AI配置");
+            return _playerCloneAIConfig;
+        }
+
         public ShopPriceConfigSO GetShopPriceConfig()
         {
             if (_shopPriceConfig == null)
@@ -142,7 +151,9 @@ namespace Game
         {
             if (_skillConfigDatabase == null)
             {
-                _skillConfigDatabase = Resources.Load<SkillConfigDatabaseSO>(ConfigPathPrefix + "玩家技能配置库");
+                _skillConfigDatabase = Resources.Load<SkillConfigDatabaseSO>(ConfigPathPrefix + "玩家动作及技能配置库");
+                if (_skillConfigDatabase == null)
+                    _skillConfigDatabase = Resources.Load<SkillConfigDatabaseSO>(ConfigPathPrefix + "玩家技能配置库");
                 if (_skillConfigDatabase == null)
                     _skillConfigDatabase = Resources.Load<SkillConfigDatabaseSO>(ConfigPathPrefix + "技能配置库");
             }
@@ -165,6 +176,13 @@ namespace Game
             if (_itemDisplayDatabase == null)
                 _itemDisplayDatabase = Resources.Load<ItemDisplayDatabaseSO>(ConfigPathPrefix + "物品显示配置");
             return _itemDisplayDatabase;
+        }
+
+        public WorldPickupVisualConfigSO GetWorldPickupVisualConfig()
+        {
+            if (_worldPickupVisualConfig == null)
+                _worldPickupVisualConfig = Resources.Load<WorldPickupVisualConfigSO>(ConfigPathPrefix + "掉落物显示配置");
+            return _worldPickupVisualConfig;
         }
 
         public SlotBackgroundConfigSO GetSlotBackgroundConfig()
