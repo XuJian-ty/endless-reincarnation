@@ -8,23 +8,116 @@ using UnityEngine.AI;
 namespace Game.GameFlow
 {
     /// <summary>
+    /// 敌人变体信息：记录 enemyId 与显示名。
+    /// </summary>
+    public sealed class EnemySpawnVariantInfo
+    {
+        public string enemyId;
+        public string displayName;
+        public EnemyType enemyType;
+    }
+
+    /// <summary>
     /// 敌人变体缓存：按敌人类型收集可用的敌人ID，供生成器在运行时复用。
     /// </summary>
     public sealed class EnemySpawnVariantCatalog
     {
-        public readonly List<string> EliteIds = new List<string>();
-        public readonly List<string> GuardianIds = new List<string>();
-        public readonly List<string> BossIds = new List<string>();
+        private readonly Dictionary<EnemyType, List<EnemySpawnVariantInfo>> _variantsByType = new Dictionary<EnemyType, List<EnemySpawnVariantInfo>>();
 
-        public List<string> GetVariantIds(EnemyType type)
+        public List<EnemySpawnVariantInfo> GetVariants(EnemyType type)
         {
-            return type switch
+            return _variantsByType.TryGetValue(type, out List<EnemySpawnVariantInfo> variants)
+                ? variants
+                : null;
+        }
+
+        public void Add(EnemyType type, string enemyId, string displayName)
+        {
+            if (!_variantsByType.TryGetValue(type, out List<EnemySpawnVariantInfo> variants))
             {
-                EnemyType.Elite => EliteIds,
-                EnemyType.Guardian => GuardianIds,
-                EnemyType.Boss => BossIds,
+                variants = new List<EnemySpawnVariantInfo>();
+                _variantsByType.Add(type, variants);
+            }
+
+            variants.Add(new EnemySpawnVariantInfo
+            {
+                enemyId = enemyId,
+                displayName = string.IsNullOrWhiteSpace(displayName) ? enemyId : displayName,
+                enemyType = type,
+            });
+        }
+
+        public string GetDisplayName(EnemySpawnCategory category, string enemyId)
+        {
+            List<EnemySpawnVariantInfo> variants = GetVariants(category);
+            if (variants == null || string.IsNullOrWhiteSpace(enemyId))
+                return string.Empty;
+
+            string normalizedId = enemyId.Trim();
+            for (int i = 0; i < variants.Count; i++)
+            {
+                EnemySpawnVariantInfo variant = variants[i];
+                if (variant != null && string.Equals(variant.enemyId, normalizedId, StringComparison.OrdinalIgnoreCase))
+                    return variant.displayName;
+            }
+
+            return normalizedId;
+        }
+
+        public List<EnemySpawnVariantInfo> GetVariants(EnemySpawnCategory category)
+        {
+            if (category == EnemySpawnCategory.Minion || category == EnemySpawnCategory.MinionLegacyRanged)
+            {
+                var result = new List<EnemySpawnVariantInfo>();
+                AppendVariants(result, EnemyType.MeleeMinion);
+                AppendVariants(result, EnemyType.RangedMinion);
+                return result;
+            }
+
+            return category switch
+            {
+                EnemySpawnCategory.Elite => GetVariants(EnemyType.Elite),
+                EnemySpawnCategory.Guardian => GetVariants(EnemyType.Guardian),
+                EnemySpawnCategory.Boss => GetVariants(EnemyType.Boss),
                 _ => null,
             };
+        }
+
+        public EnemySpawnVariantInfo GetVariant(string enemyId)
+        {
+            if (string.IsNullOrWhiteSpace(enemyId))
+                return null;
+
+            string normalizedId = enemyId.Trim();
+            foreach (KeyValuePair<EnemyType, List<EnemySpawnVariantInfo>> pair in _variantsByType)
+            {
+                List<EnemySpawnVariantInfo> variants = pair.Value;
+                if (variants == null)
+                    continue;
+
+                for (int i = 0; i < variants.Count; i++)
+                {
+                    EnemySpawnVariantInfo variant = variants[i];
+                    if (variant != null && string.Equals(variant.enemyId, normalizedId, StringComparison.OrdinalIgnoreCase))
+                        return variant;
+                }
+            }
+
+            return null;
+        }
+
+        private void AppendVariants(List<EnemySpawnVariantInfo> result, EnemyType type)
+        {
+            List<EnemySpawnVariantInfo> variants = GetVariants(type);
+            if (variants == null)
+                return;
+
+            for (int i = 0; i < variants.Count; i++)
+            {
+                EnemySpawnVariantInfo variant = variants[i];
+                if (variant != null)
+                    result.Add(variant);
+            }
         }
     }
 
@@ -58,14 +151,12 @@ namespace Game.GameFlow
 
                 switch (entry.type)
                 {
+                    case EnemyType.MeleeMinion:
+                    case EnemyType.RangedMinion:
                     case EnemyType.Elite:
-                        catalog.EliteIds.Add(enemyId);
-                        break;
                     case EnemyType.Guardian:
-                        catalog.GuardianIds.Add(enemyId);
-                        break;
                     case EnemyType.Boss:
-                        catalog.BossIds.Add(enemyId);
+                        catalog.Add(entry.type, enemyId, entry.displayName);
                         break;
                 }
             }
@@ -92,7 +183,8 @@ namespace Game.GameFlow
             int spawnCount,
             Vector3 center,
             System.Random rng,
-            EnemySpawnVariantCatalog catalog)
+            EnemySpawnVariantCatalog catalog,
+            bool countsAsLevelBoss = false)
         {
             if (definition == null || spawnCount <= 0)
                 return false;
@@ -101,14 +193,13 @@ namespace Game.GameFlow
             bool spawnedAny = false;
             for (int i = 0; i < spawnCount; i++)
             {
-                string enemyId = ResolveEnemyId(definition, rng, catalog);
-                if (string.IsNullOrEmpty(enemyId))
+                if (!TryResolveEnemyVariant(definition, rng, catalog, out string enemyId, out EnemyType actualType))
                     break;
 
                 if (!TrySampleEnemyPositionInTask(center, definition, localOccupiedPositions, rng, out Vector3 position))
                     continue;
 
-                if (!TrySpawnEnemyAtPosition(enemyId, definition.enemyType, position, catalog))
+                if (!TrySpawnEnemyAtPosition(enemyId, actualType, position, catalog, countsAsLevelBoss))
                     continue;
 
                 localOccupiedPositions.Add(position);
@@ -118,9 +209,9 @@ namespace Game.GameFlow
             return spawnedAny;
         }
 
-        public static bool TrySpawnSingleEnemy(string enemyId, EnemyType type, Vector3 position, EnemySpawnVariantCatalog catalog)
+        public static bool TrySpawnSingleEnemy(string enemyId, EnemyType type, Vector3 position, EnemySpawnVariantCatalog catalog, bool countsAsLevelBoss = false)
         {
-            return TrySpawnEnemyAtPosition(enemyId, type, position, catalog);
+            return TrySpawnEnemyAtPosition(enemyId, type, position, catalog, countsAsLevelBoss);
         }
 
         public static string ResolveEnemyId(
@@ -131,7 +222,10 @@ namespace Game.GameFlow
             if (definition == null)
                 return string.Empty;
 
-            return ResolveEnemyIdByType(definition.enemyType, rng, catalog?.GetVariantIds(definition.enemyType));
+            if (TryResolveEnemyVariant(definition, rng, catalog, out string enemyId, out _))
+                return enemyId;
+
+            return string.Empty;
         }
 
         public static GameObject ResolvePrefab(string enemyId, EnemyType type, EnemySpawnVariantCatalog catalog)
@@ -147,9 +241,9 @@ namespace Game.GameFlow
             {
                 EnemyType.MeleeMinion => Resources.Load<GameObject>("Prefabs/Melee Minion"),
                 EnemyType.RangedMinion => Resources.Load<GameObject>("Prefabs/Ranged Minion"),
-                EnemyType.Elite => LoadFirstAvailable(catalog?.EliteIds),
-                EnemyType.Guardian => LoadFirstAvailable(catalog?.GuardianIds),
-                EnemyType.Boss => LoadFirstAvailable(catalog?.BossIds),
+                EnemyType.Elite => LoadFirstAvailable(catalog?.GetVariants(EnemyType.Elite)),
+                EnemyType.Guardian => LoadFirstAvailable(catalog?.GetVariants(EnemyType.Guardian)),
+                EnemyType.Boss => LoadFirstAvailable(catalog?.GetVariants(EnemyType.Boss)),
                 _ => null,
             };
         }
@@ -220,7 +314,7 @@ namespace Game.GameFlow
             return true;
         }
 
-        private static bool TrySpawnEnemyAtPosition(string enemyId, EnemyType type, Vector3 position, EnemySpawnVariantCatalog catalog)
+        private static bool TrySpawnEnemyAtPosition(string enemyId, EnemyType type, Vector3 position, EnemySpawnVariantCatalog catalog, bool countsAsLevelBoss)
         {
             GameObject prefab = ResolvePrefab(enemyId, type, catalog);
             if (prefab == null)
@@ -240,17 +334,32 @@ namespace Game.GameFlow
 
             GameObject instance = UnityEngine.Object.Instantiate(prefab, position, rotation);
             instance.name = prefab.name;
+            EnemyController controller = instance.GetComponent<EnemyController>();
+            if (controller != null && type == EnemyType.Boss)
+            {
+                controller.SetCountsAsLevelBoss(countsAsLevelBoss);
+                if (countsAsLevelBoss)
+                {
+                    float scaleMultiplier = ConfigManager.GetInstance()?.GetLevelBossVisualConfig()?.scaleMultiplier ?? 3f;
+                    instance.transform.localScale *= scaleMultiplier;
+                    if (controller.GetComponent<LevelBossVisualMarker>() == null)
+                        controller.gameObject.AddComponent<LevelBossVisualMarker>();
+                }
+            }
             return true;
         }
 
-        private static GameObject LoadFirstAvailable(List<string> ids)
+        private static GameObject LoadFirstAvailable(List<EnemySpawnVariantInfo> variants)
         {
-            if (ids == null)
+            if (variants == null)
                 return null;
 
-            for (int i = 0; i < ids.Count; i++)
+            for (int i = 0; i < variants.Count; i++)
             {
-                GameObject prefab = Resources.Load<GameObject>($"Prefabs/{ids[i]}");
+                if (variants[i] == null || string.IsNullOrWhiteSpace(variants[i].enemyId))
+                    continue;
+
+                GameObject prefab = Resources.Load<GameObject>($"Prefabs/{variants[i].enemyId}");
                 if (prefab != null)
                     return prefab;
             }
@@ -258,19 +367,66 @@ namespace Game.GameFlow
             return null;
         }
 
-        private static string ResolveEnemyIdByType(EnemyType type, System.Random rng, List<string> variants)
+        private static bool TryResolveEnemyVariant(
+            EnemySpawnTaskDefinition definition,
+            System.Random rng,
+            EnemySpawnVariantCatalog catalog,
+            out string enemyId,
+            out EnemyType enemyType)
         {
-            if (type == EnemyType.MeleeMinion)
-                return "melee_minion";
+            enemyId = string.Empty;
+            enemyType = EnemyType.MeleeMinion;
 
-            if (type == EnemyType.RangedMinion)
-                return "ranged_minion";
+            if (definition == null)
+                return false;
 
-            if (variants == null || variants.Count == 0)
-                return string.Empty;
+            if (!string.IsNullOrWhiteSpace(definition.specificEnemyId))
+            {
+                EnemySpawnVariantInfo specificVariant = catalog?.GetVariant(definition.specificEnemyId.Trim());
+                if (specificVariant != null)
+                {
+                    enemyId = specificVariant.enemyId;
+                    enemyType = specificVariant.enemyType;
+                    return true;
+                }
 
-            int index = rng.Next(0, variants.Count);
-            return variants[index];
+                enemyId = definition.specificEnemyId.Trim();
+                enemyType = definition.IsMinionCategory ? EnemyType.MeleeMinion : MapCategoryToEnemyType(definition.enemyType);
+                return true;
+            }
+
+            List<EnemySpawnVariantInfo> variants = catalog?.GetVariants(definition.enemyType);
+            if (variants != null && variants.Count > 0)
+            {
+                int index = rng.Next(0, variants.Count);
+                EnemySpawnVariantInfo variant = variants[index];
+                if (variant != null)
+                {
+                    enemyId = variant.enemyId;
+                    enemyType = variant.enemyType;
+                    return true;
+                }
+            }
+
+            enemyType = definition.IsMinionCategory ? EnemyType.MeleeMinion : MapCategoryToEnemyType(definition.enemyType);
+            enemyId = enemyType switch
+            {
+                EnemyType.MeleeMinion => "melee_minion",
+                EnemyType.RangedMinion => "ranged_minion",
+                _ => string.Empty,
+            };
+            return !string.IsNullOrWhiteSpace(enemyId);
+        }
+
+        private static EnemyType MapCategoryToEnemyType(EnemySpawnCategory category)
+        {
+            return category switch
+            {
+                EnemySpawnCategory.Elite => EnemyType.Elite,
+                EnemySpawnCategory.Guardian => EnemyType.Guardian,
+                EnemySpawnCategory.Boss => EnemyType.Boss,
+                _ => EnemyType.MeleeMinion,
+            };
         }
 
         private static float RandomRange(System.Random rng, float min, float max)

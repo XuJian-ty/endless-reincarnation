@@ -62,7 +62,7 @@ namespace Game.GameFlow
                 if (definition == null)
                     continue;
 
-                if (definition.enemyType != EnemyType.Guardian)
+                if (definition.enemyType != EnemySpawnCategory.Guardian)
                     continue;
 
                 int taskCount = Mathf.Max(0, assignment.taskCount);

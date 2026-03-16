@@ -159,7 +159,7 @@ MonoBehaviour:
     damageBonusAdd: 0.5
   - buffId: buff_superarmor
     displayName: "\u5168\u7A0B\u9738\u4F53"
-    description: "\u5168\u7A0B\u9738\u4F53\uFF0C\u4E0D\u4F1A\u88AB\u6253\u65AD"
+    description: "\u5168\u7A0B\u9738\u4F53\uFF0C\u4E14\u63D0\u4F9B\u51CF\u4F24"
     type: 1
     meleeRangeScale: 2
     multishotDelaySeconds: 0.2
@@ -177,7 +177,7 @@ MonoBehaviour:
     damageBonusAdd: 0
   - buffId: buff_summon
     displayName: "\u53EC\u5524\u5206\u8EAB"
-    description: "\u53EC\u5524\u5206\u8EAB\u534F\u52A9\u6218\u6597"
+    description: "\u53EC\u5524\u4E00\u4E2A\u534A\u900F\u660E\u5206\u8EAB\u8DDF\u968F\u73A9\u5BB6\uFF0C\u5E76\u7531\u5206\u8EABAI\u534F\u52A9\u6218\u6597"
     type: 2
     meleeRangeScale: 2
     multishotDelaySeconds: 0.2
@@ -193,9 +193,11 @@ MonoBehaviour:
     hpRegenAdd: 0
     mpRegenAdd: 0
     damageBonusAdd: 0
+    cloneFollowRadius: 2
+    cloneOpacity: 0.45
   - buffId: buff_afterimage
     displayName: "\u653B\u51FB\u91CD\u5F71"
-    description: "\u653B\u51FB\u9644\u5E26\u91CD\u5F71\uFF0C\u989D\u5916\u4F24\u5BB3"
+    description: "\u73A9\u5BB6\u653B\u51FB\u4F1A\u5EF6\u8FDF\u518D\u6B21\u89E6\u53D1\u4E00\u4EFD\u540C\u6E90\u7684\u4F24\u5BB3\u3001\u7279\u6548\u4E0E\u97F3\u6548\u4E8B\u4EF6"
     type: 3
     meleeRangeScale: 2
     multishotDelaySeconds: 0.2
@@ -211,28 +213,12 @@ MonoBehaviour:
     hpRegenAdd: 0
     mpRegenAdd: 0
     damageBonusAdd: 0
+    afterimageDelaySeconds: 0.2
+    afterimageDamageMultiplier: 0.5
   - buffId: buff_meleerange
     displayName: "\u8FD1\u6218\u8303\u56F4\u6269\u5927"
-    description: "\u6B66\u5668\u78B0\u649E\u4F53\u3001\u4F24\u5BB3\u68C0\u6D4B\u4E0E\u7279\u6548\u8303\u56F4\u5747\u6269\u5927100%"
+    description: "\u7279\u6548\u3001\u547D\u4E2D\u7279\u6548\u3001\u4F24\u5BB3\u8303\u56F4\u3001\u78B0\u649E\u4F53\u4E0E\u5C04\u7EBF\u8DDD\u79BB\u5747\u6309\u500D\u6570\u6269\u5927"
     type: 4
-    meleeRangeScale: 2
-    multishotDelaySeconds: 0.2
-    hpAdd: 0
-    mpAdd: 0
-    attackAdd: 0
-    defenseAdd: 0
-    lifeStealAdd: 0
-    critRateAdd: 0
-    critDmgAdd: 0
-    attackSpeedAdd: 0
-    moveSpeedAdd: 0
-    hpRegenAdd: 0
-    mpRegenAdd: 0
-    damageBonusAdd: 0
-  - buffId: buff_multishot
-    displayName: "\u591A\u91CD\u5C04\u51FB"
-    description: "\u8FDC\u7A0B\u6BCF\u6B21\u591A\u53D1\u5C04\u4E00\u53D1\u5B50\u5F39\uFF0C\u95F4\u96940.2\u79D2"
-    type: 5
     meleeRangeScale: 2
     multishotDelaySeconds: 0.2
     hpAdd: 0

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -66,6 +67,7 @@ namespace Game.UI
         private Image[] _slotBackgrounds = new Image[SlotCount];
         private Image[] _slotIcons = new Image[SlotCount];
         private Text[] _slotCountTexts = new Text[SlotCount];
+        private GameObject[] _slotCountVisuals = new GameObject[SlotCount];
         private Text[] _statTexts = new Text[12];
         private int _contextSlotIndex = -1;
         private PlayerModel _player;
@@ -76,6 +78,7 @@ namespace Game.UI
         private BackpackUIConfigSO _backpackUIConfig;
         private readonly BackpackPresenter _presenter = new BackpackPresenter();
         private const int PreviewLayer = 31;
+        private const string SlotPrefabResourcePath = "UI/BackpackSlot";
         private RawImage _playerModelPreviewImage;
         private RenderTexture _playerModelPreviewTexture;
         private Camera _playerModelPreviewCamera;
@@ -88,8 +91,16 @@ namespace Game.UI
         private bool _previewPointerDragging;
         private Vector2 _previewPointerDownPosition;
         private float _previewPointerDownYaw;
+        private readonly Vector3[] _popupWorldCorners = new Vector3[4];
+        private Text _tooltipRightText;
 
         private const float PreviewDragThresholdPixels = 10f;
+        private static readonly Vector2 PopupOffset = new Vector2(12f, -12f);
+        private const float TooltipPanelWidth = 300f;
+        private const float TooltipMinHeight = 48f;
+        private const float TooltipPadding = 12f;
+        private const float TooltipWeaponLeftRightInset = 150f;
+        private const float TooltipWeaponRightLeftInset = 156f;
 
         protected override void Awake()
         {
@@ -119,35 +130,33 @@ namespace Game.UI
             var root = slotsRoot != null ? slotsRoot : transform.Find("ScrollView/Viewport/Content");
             if (root == null) root = transform.Find("Slots");
             if (slotsRoot == null) slotsRoot = root;
+            ClearSlotReferences();
+            EnsureSlotObjects(root);
             if (root != null && root.childCount >= SlotCount)
             {
                 for (int i = 0; i < SlotCount; i++)
                 {
                     _slotTransforms[i] = root.GetChild(i);
-                    var images = _slotTransforms[i].GetComponentsInChildren<Image>(true);
-                    if (images != null && images.Length >= 2)
-                    {
-                        _slotBackgrounds[i] = images[0];
-                        _slotIcons[i] = images[1];
-                    }
-                    else if (images != null && images.Length == 1)
-                    {
-                        _slotBackgrounds[i] = null;
-                        _slotIcons[i] = images[0];
-                    }
-                    else
-                    {
-                        _slotBackgrounds[i] = null;
-                        _slotIcons[i] = _slotTransforms[i].GetComponentInChildren<Image>(true);
-                    }
+                    _slotBackgrounds[i] = _slotTransforms[i].Find("Background")?.GetComponent<Image>();
+                    _slotIcons[i] = _slotTransforms[i].Find("Icon")?.GetComponent<Image>();
+                    _slotCountTexts[i] = FindNamedDescendant(_slotTransforms[i], "Count")?.GetComponent<Text>();
+                    _slotCountVisuals[i] = ResolveCountVisualRoot(_slotTransforms[i], _slotCountTexts[i]);
 
-                    // 禁用 Background Icon 的 RaycastTarget，避免阻挡滚轮事件
-                    if (_slotBackgrounds[i] != null)
-                        _slotBackgrounds[i].raycastTarget = false;
-                    if (_slotIcons[i] != null)
-                        _slotIcons[i].raycastTarget = false;
+                    if (_slotBackgrounds[i] == null || _slotIcons[i] == null)
+                    {
+                        var images = _slotTransforms[i].GetComponentsInChildren<Image>(true);
+                        if (_slotBackgrounds[i] == null)
+                            _slotBackgrounds[i] = System.Array.Find(images, img => img != null && img.transform != _slotTransforms[i] && img.name == "Background");
+                        if (_slotIcons[i] == null)
+                            _slotIcons[i] = System.Array.Find(images, img => img != null && img.transform != _slotTransforms[i] && img.name == "Icon");
+                        if (_slotIcons[i] == null && images != null && images.Length > 0)
+                            _slotIcons[i] = images[images.Length - 1];
+                    }
+                    if (_slotCountTexts[i] == null)
+                        _slotCountTexts[i] = _slotTransforms[i].GetComponentInChildren<Text>(true);
 
-                    _slotCountTexts[i] = _slotTransforms[i].GetComponentInChildren<Text>(true);
+                    ConfigureIconImage(_slotIcons[i]);
+                    ConfigureSlotRaycastTargets(i);
                     AddSlotListeners(_slotTransforms[i].gameObject, i);
                 }
             }
@@ -161,6 +170,7 @@ namespace Game.UI
                 statsRoot = FindChildByName("StatsRoot");
             if (equippedWeaponIcon == null)
                 equippedWeaponIcon = FindChildByName("EquippedWeaponIcon")?.GetComponent<Image>();
+            ConfigureIconImage(equippedWeaponIcon);
 
             if (statsRoot != null)
             {
@@ -173,12 +183,61 @@ namespace Game.UI
             if (contextMenuPanel == null) contextMenuPanel = transform.Find("ContextMenuPanel")?.gameObject;
             if (btnEquip == null && contextMenuPanel != null) btnEquip = contextMenuPanel.transform.Find("Btn_Equip")?.GetComponent<Button>();
             if (btnSell == null && contextMenuPanel != null) btnSell = contextMenuPanel.transform.Find("Btn_Sell")?.GetComponent<Button>();
+            EnsureWeaponTooltipColumns();
+            ConfigureTooltipRaycastTargets();
+            BindContextMenuButtons();
+        }
+
+        private static void ConfigureIconImage(Image image)
+        {
+            if (image == null)
+                return;
+
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+        }
+
+        private void ClearSlotReferences()
+        {
+            for (int i = 0; i < SlotCount; i++)
+            {
+                _slotTransforms[i] = null;
+                _slotBackgrounds[i] = null;
+                _slotIcons[i] = null;
+                _slotCountTexts[i] = null;
+                _slotCountVisuals[i] = null;
+            }
+        }
+
+        private void EnsureSlotObjects(Transform root)
+        {
+            if (root == null || root.childCount >= SlotCount || !Application.isPlaying)
+                return;
+
+            GameObject prefab = Resources.Load<GameObject>(SlotPrefabResourcePath);
+            if (prefab == null)
+            {
+                Debug.LogWarning("[BackpackPanel] 未找到背包格子预制体 Resources/UI/BackpackSlot。");
+                return;
+            }
+
+            for (int i = root.childCount; i < SlotCount; i++)
+            {
+                var slotGo = Instantiate(prefab, root);
+                if (slotGo == null)
+                    break;
+
+                slotGo.name = $"Slot{i}";
+                slotGo.SetActive(true);
+            }
         }
 
         private void AddSlotListeners(GameObject slotGo, int displayIndex)
         {
             var trigger = slotGo.GetComponent<EventTrigger>();
             if (trigger == null) trigger = slotGo.AddComponent<EventTrigger>();
+            if (trigger.triggers == null) trigger.triggers = new List<EventTrigger.Entry>();
+            else trigger.triggers.Clear();
 
             var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
             enter.callback.AddListener(_ => OnSlotPointerEnter(displayIndex));
@@ -196,6 +255,168 @@ namespace Game.UI
                     OnSlotRightClick(displayIndex);
             });
             trigger.triggers.Add(click);
+
+            var scroll = new EventTrigger.Entry { eventID = EventTriggerType.Scroll };
+            scroll.callback.AddListener(data => ForwardSlotScroll(data as PointerEventData));
+            trigger.triggers.Add(scroll);
+        }
+
+        private void ForwardSlotScroll(PointerEventData eventData)
+        {
+            if (eventData == null || scrollRect == null)
+                return;
+
+            scrollRect.OnScroll(eventData);
+        }
+
+        private void BindContextMenuButtons()
+        {
+            if (btnEquip != null)
+            {
+                btnEquip.onClick.RemoveListener(OnEquipClicked);
+                btnEquip.onClick.AddListener(OnEquipClicked);
+            }
+
+            if (btnSell != null)
+            {
+                btnSell.onClick.RemoveListener(OnSellClicked);
+                btnSell.onClick.AddListener(OnSellClicked);
+            }
+        }
+
+        private void ConfigureTooltipRaycastTargets()
+        {
+            if (tooltipPanel == null)
+                return;
+
+            var graphics = tooltipPanel.GetComponentsInChildren<Graphic>(true);
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                if (graphics[i] != null)
+                    graphics[i].raycastTarget = false;
+            }
+        }
+
+        private void EnsureWeaponTooltipColumns()
+        {
+            if (!Application.isPlaying || tooltipPanel == null || tooltipText == null || _tooltipRightText != null)
+                return;
+
+            var rightTextGo = new GameObject("TooltipRightText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            rightTextGo.layer = tooltipText.gameObject.layer;
+            rightTextGo.transform.SetParent(tooltipPanel.transform, false);
+
+            _tooltipRightText = rightTextGo.GetComponent<Text>();
+            CopyTooltipTextStyle(tooltipText, _tooltipRightText);
+            _tooltipRightText.alignment = TextAnchor.UpperLeft;
+            _tooltipRightText.raycastTarget = false;
+            _tooltipRightText.gameObject.SetActive(false);
+        }
+
+        private static void CopyTooltipTextStyle(Text source, Text target)
+        {
+            if (source == null || target == null)
+                return;
+
+            target.font = source.font;
+            target.fontSize = source.fontSize;
+            target.fontStyle = source.fontStyle;
+            target.lineSpacing = source.lineSpacing;
+            target.supportRichText = source.supportRichText;
+            target.resizeTextForBestFit = source.resizeTextForBestFit;
+            target.resizeTextMinSize = source.resizeTextMinSize;
+            target.resizeTextMaxSize = source.resizeTextMaxSize;
+            target.horizontalOverflow = source.horizontalOverflow;
+            target.verticalOverflow = source.verticalOverflow;
+            target.alignByGeometry = source.alignByGeometry;
+            target.color = source.color;
+        }
+
+        private void ConfigureGenericTooltipLayout()
+        {
+            SetTooltipPanelWidth(TooltipPanelWidth);
+            ConfigureTooltipTextRect(tooltipText, TooltipPadding, TooltipPadding, TooltipPadding, TooltipPadding);
+            if (_tooltipRightText != null)
+            {
+                _tooltipRightText.text = string.Empty;
+                _tooltipRightText.gameObject.SetActive(false);
+            }
+        }
+
+        private void ConfigureWeaponTooltipLayout()
+        {
+            SetTooltipPanelWidth(TooltipPanelWidth);
+            ConfigureTooltipTextRect(tooltipText, TooltipPadding, TooltipPadding, TooltipWeaponLeftRightInset, TooltipPadding);
+            ConfigureTooltipTextRect(_tooltipRightText, TooltipWeaponRightLeftInset, TooltipPadding, TooltipPadding, TooltipPadding);
+            if (_tooltipRightText != null)
+                _tooltipRightText.gameObject.SetActive(true);
+        }
+
+        private static void ConfigureTooltipTextRect(Text text, float left, float top, float right, float bottom)
+        {
+            if (text == null)
+                return;
+
+            var rect = text.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(left, bottom);
+            rect.offsetMax = new Vector2(-right, -top);
+        }
+
+        private void SetTooltipPanelWidth(float width)
+        {
+            if (tooltipPanel == null)
+                return;
+
+            var rect = tooltipPanel.GetComponent<RectTransform>();
+            if (rect == null)
+                return;
+
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+        }
+
+        private void RefreshTooltipPanelHeight()
+        {
+            if (tooltipPanel == null)
+                return;
+
+            var panelRect = tooltipPanel.GetComponent<RectTransform>();
+            if (panelRect == null)
+                return;
+
+            Canvas.ForceUpdateCanvases();
+
+            float contentHeight = 0f;
+            if (tooltipText != null)
+                contentHeight = Mathf.Max(contentHeight, tooltipText.preferredHeight);
+            if (_tooltipRightText != null && _tooltipRightText.gameObject.activeSelf)
+                contentHeight = Mathf.Max(contentHeight, _tooltipRightText.preferredHeight);
+
+            float height = Mathf.Max(TooltipMinHeight, contentHeight + TooltipPadding * 2f);
+            panelRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        }
+
+        private void ConfigureSlotRaycastTargets(int displayIndex)
+        {
+            if (_slotTransforms == null || displayIndex < 0 || displayIndex >= _slotTransforms.Length)
+                return;
+
+            var slotTransform = _slotTransforms[displayIndex];
+            if (slotTransform == null)
+                return;
+
+            var graphics = slotTransform.GetComponentsInChildren<Graphic>(true);
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                if (graphics[i] != null)
+                    graphics[i].raycastTarget = false;
+            }
+
+            if (_slotBackgrounds[displayIndex] != null)
+                _slotBackgrounds[displayIndex].raycastTarget = true;
+            else if (_slotIcons[displayIndex] != null)
+                _slotIcons[displayIndex].raycastTarget = true;
         }
 
         private void OnSortChanged(int value)
@@ -355,6 +576,7 @@ namespace Game.UI
             var bg = displayIndex < _slotBackgrounds.Length ? _slotBackgrounds[displayIndex] : null;
             var icon = _slotIcons[displayIndex];
             var countTxt = displayIndex < _slotCountTexts.Length ? _slotCountTexts[displayIndex] : null;
+            var countVisual = displayIndex < _slotCountVisuals.Length ? _slotCountVisuals[displayIndex] : null;
 
             WeaponRarity? rarity = null;
             if (slot != null && !slot.IsEmpty)
@@ -372,6 +594,7 @@ namespace Game.UI
 
             if (icon != null) icon.enabled = false;
             if (countTxt != null) countTxt.text = "";
+            if (countVisual != null) countVisual.SetActive(false);
 
             if (slot == null || slot.IsEmpty)
                 return;
@@ -388,7 +611,8 @@ namespace Game.UI
             {
                 var entry = _itemDisplayDb?.GetEntry(slot.stackItemId);
                 if (entry?.icon != null && icon != null) { icon.sprite = entry.icon; icon.enabled = true; }
-                if (countTxt != null) countTxt.text = slot.stackCount > 1 ? slot.stackCount.ToString() : "";
+                if (countTxt != null) countTxt.text = slot.stackCount > 0 ? slot.stackCount.ToString() : "";
+                if (countVisual != null) countVisual.SetActive(slot.stackCount > 0);
             }
         }
 
@@ -399,25 +623,23 @@ namespace Game.UI
             var slot = _player.GetSlot(modelIndex);
             if (slot == null || slot.IsEmpty) { HideTooltip(); return; }
 
-            string text = "";
             if (slot.IsWeapon && slot.weapon != null)
             {
-                var w = slot.weapon;
-                var entry = _weaponDb?.GetEntryByWeaponId(w.weaponId);
-                text = (entry?.displayName ?? w.weaponId) + "\n品质: " + w.rarity;
-                text += "\n生命 +" + w.rolledHp + " 攻击 +" + w.rolledAttack + " 防御 +" + w.rolledDefense;
-                if (w.rolledHpRegen != 0) text += " 生命回复 +" + w.rolledHpRegen;
-                if (w.rolledCritRate > 0) text += " 暴击率 +" + (w.rolledCritRate * 100) + "%";
+                SetWeaponTooltip(slot.weapon);
             }
             else if (slot.IsStack)
             {
                 var entry = _itemDisplayDb?.GetEntry(slot.stackItemId);
-                text = (entry?.displayName ?? slot.stackItemId) + " x" + slot.stackCount;
+                string text = (entry?.displayName ?? slot.stackItemId) + " x" + slot.stackCount;
                 if (!string.IsNullOrEmpty(entry?.description)) text += "\n" + entry.description;
+                SetGenericTooltip(text);
+            }
+            else
+            {
+                SetGenericTooltip(string.Empty);
             }
 
-            if (tooltipText != null) tooltipText.text = text;
-            if (tooltipPanel != null) tooltipPanel.SetActive(true);
+            ShowPopupAtSlot(tooltipPanel, displayIndex);
         }
 
         private void OnSlotPointerExit()
@@ -437,21 +659,124 @@ namespace Game.UI
             var slot = _player.GetSlot(modelIndex);
             if (slot == null || slot.IsEmpty) return;
 
+            HideTooltip();
             _contextSlotIndex = modelIndex;
             if (contextMenuPanel != null) contextMenuPanel.SetActive(true);
             if (btnEquip != null) btnEquip.gameObject.SetActive(slot.IsWeapon);
             if (btnSell != null) btnSell.gameObject.SetActive(true);
-            if (contextMenuPanel != null && contextMenuPanel.activeSelf)
-            {
-                var rt = contextMenuPanel.GetComponent<RectTransform>();
-                if (rt != null) rt.anchoredPosition = UnityEngine.Input.mousePosition;
-            }
+            ShowPopupAtSlot(contextMenuPanel, displayIndex);
         }
 
         private void HideContextMenu()
         {
             _contextSlotIndex = -1;
             if (contextMenuPanel != null) contextMenuPanel.SetActive(false);
+        }
+
+        private void SetGenericTooltip(string text)
+        {
+            ConfigureGenericTooltipLayout();
+            if (tooltipText != null)
+                tooltipText.text = text;
+            RefreshTooltipPanelHeight();
+        }
+
+        private void SetWeaponTooltip(WeaponInstance weapon)
+        {
+            if (weapon == null)
+            {
+                SetGenericTooltip(string.Empty);
+                return;
+            }
+
+            EnsureWeaponTooltipColumns();
+            if (_tooltipRightText == null)
+            {
+                SetGenericTooltip(BuildWeaponTooltipFallbackText(weapon));
+                return;
+            }
+
+            var entry = _weaponDb?.GetEntryByWeaponId(weapon.weaponId);
+            var leftSb = new StringBuilder();
+            var rightSb = new StringBuilder();
+
+            leftSb.Append(entry?.displayName ?? weapon.weaponId);
+            leftSb.Append("\n品质: ").Append(GetWeaponRarityDisplayName(weapon.rarity));
+            rightSb.Append('\n');
+
+            AppendWeaponStatLine(leftSb, rightSb, "生命", FormatSignedValue(weapon.rolledHp, 0), "法力", FormatSignedValue(weapon.rolledMp, 0));
+            AppendWeaponStatLine(leftSb, rightSb, "攻击", FormatSignedValue(weapon.rolledAttack, 0), "防御", FormatSignedValue(weapon.rolledDefense, 0));
+            AppendWeaponStatLine(leftSb, rightSb, "回血", FormatSignedValue(weapon.rolledHpRegen, 1), "回蓝", FormatSignedValue(weapon.rolledMpRegen, 1));
+            AppendWeaponStatLine(leftSb, rightSb, "暴击", FormatSignedPercent(weapon.rolledCritRate), "爆伤", FormatSignedPercent(weapon.rolledCritDmg));
+            AppendWeaponStatLine(leftSb, rightSb, "攻速", FormatSignedPercent(weapon.rolledAttackSpeed), "移速", FormatSignedPercent(weapon.rolledMoveSpeed));
+
+            ConfigureWeaponTooltipLayout();
+            tooltipText.text = leftSb.ToString();
+            _tooltipRightText.text = rightSb.ToString();
+            RefreshTooltipPanelHeight();
+        }
+
+        private static string BuildWeaponTooltipFallbackText(WeaponInstance weapon)
+        {
+            var sb = new StringBuilder();
+            sb.Append(weapon.weaponId);
+            sb.Append("\n品质: ").Append(GetWeaponRarityDisplayName(weapon.rarity));
+            AppendWeaponFallbackLine(sb, "生命", FormatSignedValue(weapon.rolledHp, 0), "法力", FormatSignedValue(weapon.rolledMp, 0));
+            AppendWeaponFallbackLine(sb, "攻击", FormatSignedValue(weapon.rolledAttack, 0), "防御", FormatSignedValue(weapon.rolledDefense, 0));
+            AppendWeaponFallbackLine(sb, "回血", FormatSignedValue(weapon.rolledHpRegen, 1), "回蓝", FormatSignedValue(weapon.rolledMpRegen, 1));
+            AppendWeaponFallbackLine(sb, "暴击", FormatSignedPercent(weapon.rolledCritRate), "爆伤", FormatSignedPercent(weapon.rolledCritDmg));
+            AppendWeaponFallbackLine(sb, "攻速", FormatSignedPercent(weapon.rolledAttackSpeed), "移速", FormatSignedPercent(weapon.rolledMoveSpeed));
+            return sb.ToString();
+        }
+
+        private static void AppendWeaponStatLine(StringBuilder leftSb, StringBuilder rightSb, string leftLabel, string leftValue, string rightLabel, string rightValue)
+        {
+            leftSb.Append('\n').Append(FormatWeaponStatCell(leftLabel, leftValue));
+            rightSb.Append('\n').Append(FormatWeaponStatCell(rightLabel, rightValue));
+        }
+
+        private static void AppendWeaponFallbackLine(StringBuilder sb, string leftLabel, string leftValue, string rightLabel, string rightValue)
+        {
+            sb.Append('\n')
+              .Append(FormatWeaponStatCell(leftLabel, leftValue))
+              .Append("  ")
+              .Append(FormatWeaponStatCell(rightLabel, rightValue));
+        }
+
+        private static string FormatWeaponStatCell(string label, string value)
+        {
+            string safeLabel = string.IsNullOrEmpty(label) ? "--" : label;
+            string safeValue = string.IsNullOrEmpty(value) ? "--" : value;
+            return safeLabel + ": " + safeValue;
+        }
+
+        private static string FormatSignedValue(float value, int decimals)
+        {
+            string format = decimals <= 0 ? "F0" : "F" + decimals;
+            return value >= 0f ? "+" + value.ToString(format) : value.ToString(format);
+        }
+
+        private static string FormatSignedPercent(float value)
+        {
+            float percent = value * 100f;
+            return percent >= 0f ? "+" + percent.ToString("F1") + "%" : percent.ToString("F1") + "%";
+        }
+
+        private static string GetWeaponRarityDisplayName(WeaponRarity rarity)
+        {
+            switch (rarity)
+            {
+                case WeaponRarity.Common:
+                    return "普通";
+                case WeaponRarity.Rare:
+                    return "精良";
+                case WeaponRarity.Epic:
+                    return "史诗";
+                case WeaponRarity.Legendary:
+                    return "传说";
+                default:
+                    return rarity.ToString();
+            }
         }
 
         private void OnEquipClicked()
@@ -507,6 +832,85 @@ namespace Game.UI
             }
 
             return null;
+        }
+
+        private static Transform FindNamedDescendant(Transform root, string name)
+        {
+            if (root == null || string.IsNullOrEmpty(name))
+                return null;
+
+            var all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i] != null && all[i] != root && all[i].name == name)
+                    return all[i];
+            }
+
+            return null;
+        }
+
+        private static GameObject ResolveCountVisualRoot(Transform slotTransform, Text countText)
+        {
+            if (slotTransform == null || countText == null)
+                return null;
+
+            Transform current = countText.transform;
+            while (current.parent != null && current.parent != slotTransform)
+                current = current.parent;
+
+            return current.gameObject;
+        }
+
+        private void ShowPopupAtSlot(GameObject popup, int displayIndex)
+        {
+            if (popup == null)
+                return;
+
+            popup.SetActive(true);
+
+            if (displayIndex < 0 || displayIndex >= _slotTransforms.Length)
+                return;
+
+            var slotRect = _slotTransforms[displayIndex] as RectTransform;
+            var popupRect = popup.GetComponent<RectTransform>();
+            if (slotRect == null || popupRect == null)
+                return;
+
+            Canvas.ForceUpdateCanvases();
+            slotRect.GetWorldCorners(_popupWorldCorners);
+            Vector3 slotCenter = (_popupWorldCorners[0] + _popupWorldCorners[2]) * 0.5f;
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(GetUiCamera(), slotCenter);
+            PositionPopupAtScreenPoint(popupRect, screenPoint, PopupOffset);
+        }
+
+        private void PositionPopupAtScreenPoint(RectTransform popupRect, Vector2 screenPoint, Vector2 offset)
+        {
+            var parentRect = popupRect.parent as RectTransform;
+            if (parentRect == null)
+                return;
+
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, screenPoint, GetUiCamera(), out var localPoint))
+                return;
+
+            popupRect.pivot = new Vector2(0f, 1f);
+            var anchored = localPoint + offset;
+            var size = popupRect.rect.size;
+            var bounds = parentRect.rect;
+            anchored.x = Mathf.Clamp(anchored.x, bounds.xMin, bounds.xMax - size.x);
+            anchored.y = Mathf.Clamp(anchored.y, bounds.yMin + size.y, bounds.yMax);
+            popupRect.anchoredPosition = anchored;
+        }
+
+        private Camera GetUiCamera()
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null)
+                return null;
+
+            var rootCanvas = canvas.rootCanvas;
+            return rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? rootCanvas.worldCamera
+                : null;
         }
 
         private void RebuildPlayerModelPreview()

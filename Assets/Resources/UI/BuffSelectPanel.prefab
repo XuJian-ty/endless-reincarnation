@@ -933,7 +933,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f105f65fe8bcdb34d9276e1a98e24b9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  expandDuration: 2
+  expandDuration: 1
   panelBody: {fileID: 4747705718158390304}
   cardsContainer: {fileID: 5915926506121082376}
   card1: {fileID: 567851682885117373}

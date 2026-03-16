@@ -38,6 +38,11 @@ namespace Game.Presentation
         public void SetLocomotionSpeed(float speed)  => _animator.SetFloat(SpeedHash, speed);
         public float GetLocomotionSpeed()            => _animator.GetFloat(SpeedHash);
         public void SetGrounded(bool grounded)       => _animator.SetBool(IsGroundedHash, grounded);
+        public void SetPlaybackSpeed(float speed)
+        {
+            if (_animator != null)
+                _animator.speed = Mathf.Max(0.1f, speed);
+        }
 
         // ── 触发方法 ──────────────────────────────────────────────────────
         public void TriggerJump()   => SetExclusiveTrigger(JumpTrigger);

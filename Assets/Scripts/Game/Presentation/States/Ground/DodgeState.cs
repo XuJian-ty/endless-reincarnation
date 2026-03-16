@@ -19,7 +19,8 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.StartDodge(Ctx.Transform.forward, Ctx.DodgeSpeed);
-            Ctx.Anim.TriggerDodge();
+            TriggerConfiguredActionByActionId("Dodge", "Dodge");
+            StartConfiguredTimelineByActionId("Dodge");
         }
 
         protected override void OnExit()

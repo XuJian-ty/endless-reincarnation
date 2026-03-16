@@ -25,8 +25,8 @@ namespace Game.Data
     public class DropTableByLevel
     {
         [InspectorLabel("关卡编号")]
-        [Tooltip("关卡编号 1～5")]
-        [Range(1, 5)]
+        [Tooltip("从 1 开始的关卡编号，可继续扩展更多关卡。")]
+        [Min(1)]
         public int levelIndex = 1;
         [InspectorLabel("掉落条目")]
         public List<DropEntry> entries = new List<DropEntry>();
@@ -69,7 +69,7 @@ namespace Game.Data
     public class DropTableDatabaseSO : ScriptableObject
     {
         [InspectorLabel("关卡掉落表")]
-        [Tooltip("关卡 1～5 各一项，每项内为该关掉落条目列表")]
+        [Tooltip("按关卡编号组织的掉落表列表，可继续扩展更多关卡。")]
         public List<DropTableByLevel> levelTables = new List<DropTableByLevel>();
 
         /// <summary>根据关卡编号取掉落表；未找到返回 null</summary>

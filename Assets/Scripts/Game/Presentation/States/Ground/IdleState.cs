@@ -20,7 +20,8 @@ namespace Game.Presentation
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
             Ctx.Anim.SetLocomotionSpeed(0f);
             Ctx.Anim.SetGrounded(true);
-            Ctx.Anim.TriggerLocomotion();
+            TriggerConfiguredActionByActionId("Idle", "Locomotion");
+            StartConfiguredTimelineByActionId("Idle");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

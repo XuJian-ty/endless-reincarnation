@@ -233,13 +233,55 @@ namespace Game.Presentation
             var enemy = target.GetComponentInParent<EnemyController>();
             if (enemy != null)
             {
-                float damage = CombatCalculator.CalculateDamageFromEnemy(
-                    casterAttack,
+                float damage = CalculatePlayerSideDamage(ctx, damageMultiplier, enemy);
+                enemy.ApplyDamage(damage);
+            }
+        }
+
+        private static float CalculatePlayerSideDamage(ISkillExecutionContext ctx, float damageMultiplier, EnemyController enemy)
+        {
+            if (ctx == null || enemy == null)
+                return 0f;
+
+            PlayerController owningPlayer = PlayerBuffRuntimeUtility.ResolveOwningPlayer(ctx.CasterTransform);
+            if (owningPlayer?.PlayerModel == null)
+            {
+                return CombatCalculator.CalculateDamageFromEnemy(
+                    ctx.CasterAttack,
                     enemy.Defense,
                     0f,
                     enemy.DamageReduce) * damageMultiplier;
-                enemy.ApplyDamage(damage);
             }
+
+            Stats attackerStats = owningPlayer.PlayerModel.Stats;
+            float attackScale = 1f;
+            PlayerCloneActor cloneActor = ctx.CasterTransform != null ? ctx.CasterTransform.GetComponentInParent<PlayerCloneActor>() : null;
+            if (cloneActor != null)
+                attackScale = 0.5f;
+
+            float baseAttack = Mathf.Max(0f, attackerStats.Attack * attackScale);
+            float defFactor = Mathf.Max(0f, 0.1f + 270f / (enemy.Defense + 300f));
+            float damageBucket = Mathf.Max(0f, 1f + attackerStats.DamageBonus - Mathf.Clamp01(enemy.DamageReduce));
+            float finalDamage = baseAttack * Mathf.Max(0f, damageMultiplier) * defFactor * damageBucket;
+
+            bool isCrit = Random.value < attackerStats.CritRate;
+            if (isCrit)
+                finalDamage *= 1f + attackerStats.CritDmg;
+
+            finalDamage = Mathf.Max(0f, finalDamage);
+            if (finalDamage > 0f)
+            {
+                float lifeStealHeal = finalDamage * Mathf.Clamp01(attackerStats.LifeSteal);
+                if (lifeStealHeal > 0f)
+                {
+                    if (cloneActor != null)
+                        cloneActor.Heal(lifeStealHeal);
+                    else
+                        owningPlayer.PlayerModel.Heal(lifeStealHeal);
+                }
+            }
+
+            return finalDamage;
         }
 
         private static void RequestHitStop(float duration, float timeScale)
@@ -582,6 +624,7 @@ namespace Game.Presentation
             if (effect == null || effect.particlePrefab == null)
                 return null;
 
+            float rangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(caster);
             bool detachFromAnchor = effect.motion != null && effect.motion.IsActive;
             GameObject instance;
             if (anchor != null && !detachFromAnchor)
@@ -599,7 +642,7 @@ namespace Game.Presentation
                 instance = Object.Instantiate(effect.particlePrefab, position, rotation);
             }
 
-            instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale);
+            instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
             ConfigureVfxMotion(instance, effect.motion);
             ApplyCueMotion(instance, effect.motion, caster, anchor);
             return instance;

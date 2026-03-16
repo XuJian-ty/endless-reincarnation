@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using Game.Data;
+using Game.Presentation;
 using System.Collections.Generic;
 using System.IO;
 
@@ -365,7 +366,8 @@ namespace Game.Editor
             {
                 new EnemySpawnTaskDefinition
                 {
-                    enemyType = EnemyType.MeleeMinion,
+                    enemyType = EnemySpawnCategory.Minion,
+                    specificEnemyId = "melee_minion",
                     spawnRadius = 12f,
                     countMode = EnemySpawnCountMode.RandomRange,
                     randomMinCount = 2,
@@ -374,7 +376,8 @@ namespace Game.Editor
                 },
                 new EnemySpawnTaskDefinition
                 {
-                    enemyType = EnemyType.RangedMinion,
+                    enemyType = EnemySpawnCategory.Minion,
+                    specificEnemyId = "ranged_minion",
                     spawnRadius = 14f,
                     countMode = EnemySpawnCountMode.RandomRange,
                     randomMinCount = 1,
@@ -383,7 +386,7 @@ namespace Game.Editor
                 },
                 new EnemySpawnTaskDefinition
                 {
-                    enemyType = EnemyType.Elite,
+                    enemyType = EnemySpawnCategory.Elite,
                     spawnRadius = 10f,
                     countMode = EnemySpawnCountMode.Fixed,
                     fixedCount = 1,
@@ -391,7 +394,7 @@ namespace Game.Editor
                 },
                 new EnemySpawnTaskDefinition
                 {
-                    enemyType = EnemyType.Guardian,
+                    enemyType = EnemySpawnCategory.Guardian,
                     spawnRadius = 8f,
                     countMode = EnemySpawnCountMode.Fixed,
                     fixedCount = 1,
@@ -540,25 +543,64 @@ namespace Game.Editor
             var db = ScriptableObject.CreateInstance<LevelConfigDatabaseSO>();
             db.levels = new List<LevelConfigData>
             {
-                new LevelConfigData { levelIndex = 1, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
-                new LevelConfigData { levelIndex = 2, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
-                new LevelConfigData { levelIndex = 3, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
-                new LevelConfigData { levelIndex = 4, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
-                new LevelConfigData { levelIndex = 5, enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f },
+                new LevelConfigData { levelIndex = 1, sceneName = "Level_1", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 2, sceneName = "Level_2", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 3, sceneName = "Level_3", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 4, sceneName = "Level_4", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 5, sceneName = "Level_5", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
             };
             var asset = CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/关卡配置库.asset");
             if (asset != null && asset.levels != null && defaultSpawnPlanLibrary != null)
             {
                 bool changed = false;
+                DropTableDatabaseSO legacyDropTableDatabase = AssetDatabase.LoadAssetAtPath<DropTableDatabaseSO>($"{ResourcesConfigDir}/掉落表库.asset");
                 for (int i = 0; i < asset.levels.Count; i++)
                 {
                     LevelConfigData level = asset.levels[i];
-                    if (level == null || level.enemyGlobalSpawnPlanLibrary != null)
+                    if (level == null)
                         continue;
 
-                    level.enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary;
-                    level.enemyGlobalSpawnPlanIndex = 0;
-                    changed = true;
+                    if (level.enemyGlobalSpawnPlanLibrary == null)
+                    {
+                        level.enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary;
+                        level.enemyGlobalSpawnPlanIndex = 0;
+                        changed = true;
+                    }
+
+                    if ((level.eliteDropEntries == null || level.eliteDropEntries.Count == 0) && legacyDropTableDatabase != null)
+                    {
+                        DropTableByLevel legacyTable = legacyDropTableDatabase.GetTableForLevel(level.levelIndex);
+                        if (legacyTable?.entries != null && legacyTable.entries.Count > 0)
+                        {
+                            level.eliteDropEntries = new List<DropEntry>();
+                            for (int j = 0; j < legacyTable.entries.Count; j++)
+                            {
+                                DropEntry legacyEntry = legacyTable.entries[j];
+                                if (legacyEntry == null)
+                                    continue;
+
+                                level.eliteDropEntries.Add(new DropEntry
+                                {
+                                    itemType = legacyEntry.itemType,
+                                    weight = legacyEntry.weight
+                                });
+                            }
+
+                            changed = true;
+                        }
+                    }
+
+                    if (level.guardianDropEntries == null || level.guardianDropEntries.Count == 0)
+                    {
+                        level.guardianDropEntries = CloneDropEntries(level.eliteDropEntries);
+                        changed = true;
+                    }
+
+                    if (level.bossDropEntries == null || level.bossDropEntries.Count == 0)
+                    {
+                        level.bossDropEntries = CloneDropEntries(level.eliteDropEntries);
+                        changed = true;
+                    }
                 }
 
                 if (changed)
@@ -567,20 +609,26 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
         }
 
-        private static void CreateDropTableDatabase()
+        private static List<DropEntry> CloneDropEntries(List<DropEntry> source)
         {
-            EnsureConfigFolder();
-            var db = ScriptableObject.CreateInstance<DropTableDatabaseSO>();
-            db.levelTables = new List<DropTableByLevel>
+            var clonedEntries = new List<DropEntry>();
+            if (source == null)
+                return clonedEntries;
+
+            for (int i = 0; i < source.Count; i++)
             {
-                new DropTableByLevel { levelIndex = 1, entries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new DropTableByLevel { levelIndex = 2, entries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new DropTableByLevel { levelIndex = 3, entries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new DropTableByLevel { levelIndex = 4, entries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new DropTableByLevel { levelIndex = 5, entries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-            };
-            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/掉落表库.asset");
-            AssetDatabase.SaveAssets();
+                DropEntry entry = source[i];
+                if (entry == null)
+                    continue;
+
+                clonedEntries.Add(new DropEntry
+                {
+                    itemType = entry.itemType,
+                    weight = entry.weight
+                });
+            }
+
+            return clonedEntries;
         }
 
         private static void CreateWeaponDatabase()
@@ -638,18 +686,24 @@ namespace Game.Editor
             var enemySpawnPlanLibrary = CreateEnemySpawnPlanLibrary(enemySpawnTaskDatabase);
             CreateLocalEnemySpawnPlanLibrary(enemySpawnTaskDatabase);
             CreateLevelConfigDatabase(enemySpawnPlanLibrary);
-            CreateDropTableDatabase();
             CreateWeaponDatabase();
             CreatePlayerGrowthDatabase();
             CreateOrUpdateAsset(
                 ScriptableObject.CreateInstance<DifficultyScalingSO>(),
                 $"{ResourcesConfigDir}/难度系数.asset");
+            CreateOrUpdateAsset(
+                ScriptableObject.CreateInstance<LevelBossVisualConfigSO>(),
+                $"{ResourcesConfigDir}/最终Boss视觉配置.asset");
+            CreateOrUpdateAsset(
+                ScriptableObject.CreateInstance<PlayerCloneAIConfigSO>(),
+                $"{ResourcesConfigDir}/分身AI配置.asset");
             AssetDatabase.SaveAssets();
             CreateShopPriceConfig();
             CreatePotionConfig();
             CreateSkillConfigDatabase();
             CreateCharacterAnimationLibrary();
             CreateItemDisplayConfig();
+            CreateWorldPickupVisualConfig();
             CreateKeyRebindConfig();
             CreateBackpackUIConfig();
             CreateBuffConfig();
@@ -687,6 +741,19 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
         }
 
+        private static void CreateWorldPickupVisualConfig()
+        {
+            EnsureConfigFolder();
+            var so = ScriptableObject.CreateInstance<WorldPickupVisualConfigSO>();
+            so.iconScale = 0.2f;
+            so.spawnHeightOffset = 0.5f;
+            so.hoverAmplitude = 0.08f;
+            so.hoverFrequency = 2.4f;
+            so.pickupRadius = 0.7f;
+            CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/掉落物显示配置.asset");
+            AssetDatabase.SaveAssets();
+        }
+
         private static void CreateBackpackUIConfig()
         {
             EnsureConfigFolder();
@@ -711,11 +778,10 @@ namespace Game.Editor
                 new BuffEntry { buffId = BuffIds.HpRegen, type = BuffType.StatOnly, displayName = "生命回复提升", description = "生命回复速度+300%，快速回血", hpRegenAdd = 3f },
                 new BuffEntry { buffId = BuffIds.MpRegen, type = BuffType.StatOnly, displayName = "法力回复提升", description = "法力回复速度+300%，快速回蓝", mpRegenAdd = 3f },
                 new BuffEntry { buffId = BuffIds.Damage, type = BuffType.StatOnly, displayName = "伤害提升", description = "伤害提升50%，打得更痛", damageBonusAdd = 0.5f },
-                new BuffEntry { buffId = BuffIds.SuperArmor, type = BuffType.SuperArmor, displayName = "全程霸体", description = "全程霸体，不会被打断" },
-                new BuffEntry { buffId = BuffIds.SummonClone, type = BuffType.SummonClone, displayName = "召唤分身", description = "召唤分身协助战斗" },
-                new BuffEntry { buffId = BuffIds.Afterimage, type = BuffType.Afterimage, displayName = "攻击重影", description = "攻击附带重影，额外伤害" },
-                new BuffEntry { buffId = BuffIds.MeleeRangeExpand, type = BuffType.MeleeRangeExpand, displayName = "近战范围扩大", description = "武器碰撞体、伤害检测与特效范围均扩大100%", meleeRangeScale = 2f },
-                new BuffEntry { buffId = BuffIds.Multishot, type = BuffType.Multishot, displayName = "多重射击", description = "远程每次多发射一发子弹，间隔0.2秒", multishotDelaySeconds = 0.2f },
+                new BuffEntry { buffId = BuffIds.SuperArmor, type = BuffType.SuperArmorDamageReduce, displayName = "霸体加减伤", description = "全程霸体，且提供减伤", damageReduceAdd = 0.3f },
+                new BuffEntry { buffId = BuffIds.SummonClone, type = BuffType.SummonClone, displayName = "召唤分身", description = "召唤一个半透明分身跟随玩家，并由分身AI协助战斗", cloneFollowRadius = 2f, cloneOpacity = 0.45f },
+                new BuffEntry { buffId = BuffIds.Afterimage, type = BuffType.Afterimage, displayName = "攻击附带重影", description = "玩家攻击会延迟再次触发一份同源的伤害、特效与音效事件", afterimageDelaySeconds = 0.2f, afterimageDamageMultiplier = 0.5f },
+                new BuffEntry { buffId = BuffIds.DamageRangeExpand, type = BuffType.DamageRangeExpand, displayName = "伤害范围扩大", description = "特效、命中特效、伤害范围、碰撞体与射线距离均按倍数扩大", damageRangeScale = 2f },
             };
             CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/Buff配置.asset");
             AssetDatabase.SaveAssets();
@@ -758,41 +824,492 @@ namespace Game.Editor
         private static void CreateSkillConfigDatabase()
         {
             EnsureConfigFolder();
-            var db = ScriptableObject.CreateInstance<SkillConfigDatabaseSO>();
-            db.entries = new List<SkillConfigEntry>();
+            var db = BuildDefaultSkillConfigDatabase();
+            CreateOrMergeSkillConfigDatabaseAsset(db, $"{ResourcesConfigDir}/玩家动作及技能配置库.asset");
+            AssetDatabase.SaveAssets();
+        }
 
-            db.entries.Add(new SkillConfigEntry { skillId = "Attack0",      displayName = "普攻1",     isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "Attack0" });
-            db.entries.Add(new SkillConfigEntry { skillId = "Attack1",      displayName = "普攻2",     isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "Attack1" });
-            db.entries.Add(new SkillConfigEntry { skillId = "Attack2",      displayName = "普攻3",     isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "Attack2" });
-            db.entries.Add(new SkillConfigEntry { skillId = "Attack3",      displayName = "普攻4",     isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "Attack3" });
-            db.entries.Add(new SkillConfigEntry { skillId = "AirAttack",    displayName = "空中普攻",   isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "AirAttack" });
-            db.entries.Add(new SkillConfigEntry { skillId = "FallAttack",   displayName = "下落攻击",   isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "FallAttackLand" });
-            db.entries.Add(new SkillConfigEntry { skillId = "ChargeAttack", displayName = "蓄力攻击",   isPassive = false, entryGroup = PlayerSkillEntryGroup.BaseSkill,   mpCost = 0, animationTrigger = "ChargeRelease" });
+        private static SkillConfigDatabaseSO BuildDefaultSkillConfigDatabase()
+        {
+            var db = ScriptableObject.CreateInstance<SkillConfigDatabaseSO>();
+            db.entries = new List<SkillConfigEntry>
+            {
+                CreateBaseActionEntry("Idle", "待机", "Locomotion"),
+                CreateBaseActionEntry("Move", "移动", "Locomotion"),
+                CreateBaseActionEntry("Jump", "跳跃"),
+                CreateBaseActionEntry("Dodge", "闪避"),
+                CreateBaseActionEntry("Fall", "坠落"),
+                CreateBaseActionEntry("Land", "着陆"),
+                CreateBaseActionEntry("Attack0", "普攻1"),
+                CreateBaseActionEntry("Attack1", "普攻2"),
+                CreateBaseActionEntry("Attack2", "普攻3"),
+                CreateBaseActionEntry("Attack3", "普攻4"),
+                CreateBaseActionEntry("AirAttack", "空中普攻"),
+                CreateBaseActionEntry("ChargeStart", "蓄力开始"),
+                CreateBaseActionEntry("ChargeLoop", "蓄力循环"),
+                CreateBaseActionEntry("ChargeRelease", "蓄力结束"),
+                CreateBaseActionEntry("FallAttackStart", "下落攻击开始"),
+                CreateBaseActionEntry("FallAttackLoop", "下落攻击循环"),
+                CreateBaseActionEntry("FallAttackLand", "下落攻击结束"),
+                CreateBaseActionEntry("HitStun", "受击"),
+                CreateBaseActionEntry("PlayerDeath", "死亡", "Dead"),
+            };
 
             for (int i = 0; i < 4; i++)
-                db.entries.Add(new SkillConfigEntry
-                {
-                    skillId            = $"Skill{i}",
-                    displayName        = $"主动{i + 1}",
-                    isPassive          = false,
-                    entryGroup         = PlayerSkillEntryGroup.ActiveSkill,
-                    talentCost         = 2,
-                    mpCost             = 10,
-                    animationTrigger   = $"Skill{i}",
-                    activeSlotIndex    = i,
-                });
+                db.entries.Add(CreateActiveSkillEntry($"Skill{i}", $"主动{i + 1}"));
+
             for (int i = 1; i <= 12; i++)
+            {
                 db.entries.Add(new SkillConfigEntry
                 {
-                    skillId     = $"passive_{i}",
+                    skillId = $"passive_{i}",
                     displayName = $"被动{i}",
-                    isPassive   = true,
-                    entryGroup  = PlayerSkillEntryGroup.PassiveSkill,
-                    talentCost  = 1,
-                    mpCost      = 0,
+                    isPassive = true,
+                    entryGroup = PlayerSkillEntryGroup.PassiveSkill,
+                    talentCost = 1,
+                    mpCost = 0,
                 });
-            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/玩家技能配置库.asset");
-            AssetDatabase.SaveAssets();
+            }
+
+            return db;
+        }
+
+        private static SkillConfigDatabaseSO CreateOrMergeSkillConfigDatabaseAsset(SkillConfigDatabaseSO source, string assetPath)
+        {
+            string objectName = Path.GetFileNameWithoutExtension(assetPath);
+            source.name = objectName;
+
+            var existing = AssetDatabase.LoadAssetAtPath<SkillConfigDatabaseSO>(assetPath);
+            if (existing == null)
+            {
+                AssetDatabase.CreateAsset(source, assetPath);
+                return source;
+            }
+
+            MergeSkillConfigDatabase(existing, source);
+            MergeLegacyPlayerStateRules(existing);
+            UnityEngine.Object.DestroyImmediate(source);
+            EditorUtility.SetDirty(existing);
+            return existing;
+        }
+
+        private static void MergeSkillConfigDatabase(SkillConfigDatabaseSO existing, SkillConfigDatabaseSO defaults)
+        {
+            if (existing == null || defaults == null)
+                return;
+
+            if (existing.entries == null)
+                existing.entries = new List<SkillConfigEntry>();
+
+            for (int i = 0; i < defaults.entries.Count; i++)
+            {
+                SkillConfigEntry defaultEntry = defaults.entries[i];
+                if (defaultEntry == null)
+                    continue;
+
+                SkillConfigEntry existingEntry = FindSkillConfigEntry(existing.entries, defaultEntry);
+                if (existingEntry == null)
+                {
+                    existing.entries.Add(CloneSkillConfigEntry(defaultEntry));
+                    continue;
+                }
+
+                MergeSkillConfigEntry(existingEntry, defaultEntry);
+            }
+        }
+
+        private static SkillConfigEntry FindSkillConfigEntry(List<SkillConfigEntry> entries, SkillConfigEntry target)
+        {
+            if (entries == null || target == null)
+                return null;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                SkillConfigEntry entry = entries[i];
+                if (entry == null)
+                    continue;
+
+                if (!entry.IsPassiveSkill && !string.IsNullOrWhiteSpace(target.actionId)
+                    && string.Equals(entry.actionId, target.actionId, System.StringComparison.Ordinal))
+                    return entry;
+
+                if (!string.IsNullOrWhiteSpace(target.skillId)
+                    && string.Equals(entry.skillId, target.skillId, System.StringComparison.Ordinal))
+                    return entry;
+            }
+
+            return null;
+        }
+
+        private static void MergeSkillConfigEntry(SkillConfigEntry existing, SkillConfigEntry defaults)
+        {
+            if (existing == null || defaults == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(existing.actionId))
+                existing.actionId = defaults.actionId;
+            if (string.IsNullOrWhiteSpace(existing.skillId))
+                existing.skillId = defaults.skillId;
+            if (string.IsNullOrWhiteSpace(existing.displayName))
+                existing.displayName = defaults.displayName;
+            if (string.IsNullOrWhiteSpace(existing.animationTrigger))
+                existing.animationTrigger = defaults.animationTrigger;
+
+            existing.isPassive = defaults.isPassive;
+            existing.entryGroup = defaults.entryGroup;
+
+            if (existing.entryGroup == PlayerSkillEntryGroup.ActiveSkill)
+            {
+                if (existing.talentCost <= 0)
+                    existing.talentCost = defaults.talentCost;
+                if (existing.cooldownSeconds <= 0f)
+                    existing.cooldownSeconds = defaults.cooldownSeconds;
+            }
+
+            if (existing.actionPolicies == null || existing.actionPolicies.Count == 0)
+                existing.actionPolicies = CloneActionPolicies(defaults.actionPolicies);
+
+            if (existing.pendingReleaseRules == null || existing.pendingReleaseRules.Count == 0)
+                existing.pendingReleaseRules = ClonePendingReleaseRules(defaults.pendingReleaseRules);
+
+            if (!existing.overrideNaturalExitNormalizedTime && defaults.overrideNaturalExitNormalizedTime)
+            {
+                existing.overrideNaturalExitNormalizedTime = true;
+                existing.naturalExitNormalizedTime = defaults.naturalExitNormalizedTime;
+            }
+
+            if (existing.naturalExitTarget == PlayerStateNaturalExitTarget.None
+                && defaults.naturalExitTarget != PlayerStateNaturalExitTarget.None)
+                existing.naturalExitTarget = defaults.naturalExitTarget;
+        }
+
+        private static SkillConfigEntry CloneSkillConfigEntry(SkillConfigEntry source)
+        {
+            return new SkillConfigEntry
+            {
+                actionId = source.actionId,
+                skillId = source.skillId,
+                displayName = source.displayName,
+                isPassive = source.isPassive,
+                entryGroup = source.entryGroup,
+                talentCost = source.talentCost,
+                mpCost = source.mpCost,
+                animationTrigger = source.animationTrigger,
+                cooldownSeconds = source.cooldownSeconds,
+                passiveStatModifier = source.passiveStatModifier,
+                actionPolicies = CloneActionPolicies(source.actionPolicies),
+                pendingReleaseRules = ClonePendingReleaseRules(source.pendingReleaseRules),
+                overrideNaturalExitNormalizedTime = source.overrideNaturalExitNormalizedTime,
+                naturalExitNormalizedTime = source.naturalExitNormalizedTime,
+                naturalExitTarget = source.naturalExitTarget,
+            };
+        }
+
+        private static void MergeLegacyPlayerStateRules(SkillConfigDatabaseSO existing)
+        {
+            if (existing == null)
+                return;
+
+            PlayerStateRuleDatabaseSO legacy = AssetDatabase.LoadAssetAtPath<PlayerStateRuleDatabaseSO>($"{ResourcesConfigDir}/玩家状态规则.asset");
+            if (legacy == null || legacy.entries == null || legacy.entries.Count == 0)
+                return;
+
+            for (int i = 0; i < legacy.entries.Count; i++)
+            {
+                PlayerStateRuleEntry legacyEntry = legacy.entries[i];
+                if (legacyEntry == null || string.IsNullOrWhiteSpace(legacyEntry.stateId))
+                    continue;
+
+                string actionId = TrimStateSuffix(legacyEntry.stateId);
+                SkillConfigEntry target = existing.GetEntryByActionId(actionId);
+                if (target == null)
+                    continue;
+
+                if (target.actionPolicies == null || target.actionPolicies.Count == 0)
+                    target.actionPolicies = CloneActionPolicies(legacyEntry.actionPolicies);
+
+                if (target.pendingReleaseRules == null || target.pendingReleaseRules.Count == 0)
+                    target.pendingReleaseRules = ClonePendingReleaseRules(legacyEntry.pendingReleaseRules);
+
+                if (!target.overrideNaturalExitNormalizedTime && legacyEntry.overrideNaturalExitNormalizedTime)
+                {
+                    target.overrideNaturalExitNormalizedTime = true;
+                    target.naturalExitNormalizedTime = legacyEntry.naturalExitNormalizedTime;
+                }
+
+                if (target.naturalExitTarget == PlayerStateNaturalExitTarget.None
+                    && legacyEntry.naturalExitTarget != PlayerStateNaturalExitTarget.None)
+                    target.naturalExitTarget = legacyEntry.naturalExitTarget;
+            }
+        }
+
+        private static List<PlayerStateActionPolicyRule> CloneActionPolicies(List<PlayerStateActionPolicyRule> source)
+        {
+            List<PlayerStateActionPolicyRule> result = new List<PlayerStateActionPolicyRule>();
+            if (source == null)
+                return result;
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                PlayerStateActionPolicyRule rule = source[i];
+                if (rule == null)
+                    continue;
+
+                result.Add(new PlayerStateActionPolicyRule
+                {
+                    action = rule.action,
+                    policy = rule.policy,
+                });
+            }
+
+            return result;
+        }
+
+        private static List<PlayerStatePendingReleaseRule> ClonePendingReleaseRules(List<PlayerStatePendingReleaseRule> source)
+        {
+            List<PlayerStatePendingReleaseRule> result = new List<PlayerStatePendingReleaseRule>();
+            if (source == null)
+                return result;
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                PlayerStatePendingReleaseRule rule = source[i];
+                if (rule == null)
+                    continue;
+
+                result.Add(new PlayerStatePendingReleaseRule
+                {
+                    pendingAction = rule.pendingAction,
+                    normalizedTime = rule.normalizedTime,
+                });
+            }
+
+            return result;
+        }
+
+        private static string TrimStateSuffix(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            string normalized = value.Trim();
+            return normalized.EndsWith("State")
+                ? normalized.Substring(0, normalized.Length - "State".Length)
+                : normalized;
+        }
+
+        private static SkillConfigEntry CreateBaseActionEntry(string actionId, string displayName, string animationTrigger = null)
+        {
+            SkillConfigEntry entry = new SkillConfigEntry
+            {
+                actionId = actionId,
+                skillId = actionId,
+                displayName = displayName,
+                isPassive = false,
+                entryGroup = PlayerSkillEntryGroup.BaseSkill,
+                talentCost = 0,
+                mpCost = 0,
+                cooldownSeconds = 0f,
+                animationTrigger = string.IsNullOrWhiteSpace(animationTrigger) ? actionId : animationTrigger,
+            };
+
+            ApplyDefaultActionRules(entry);
+            return entry;
+        }
+
+        private static SkillConfigEntry CreateActiveSkillEntry(string actionId, string displayName)
+        {
+            SkillConfigEntry entry = new SkillConfigEntry
+            {
+                actionId = actionId,
+                skillId = actionId,
+                displayName = displayName,
+                isPassive = false,
+                entryGroup = PlayerSkillEntryGroup.ActiveSkill,
+                talentCost = 2,
+                mpCost = 10,
+                cooldownSeconds = 3f,
+                animationTrigger = actionId,
+            };
+
+            ApplyDefaultActionRules(entry);
+            return entry;
+        }
+
+        private static void ApplyDefaultActionRules(SkillConfigEntry entry)
+        {
+            if (entry == null || entry.IsPassiveSkill || string.IsNullOrWhiteSpace(entry.actionId))
+                return;
+
+            switch (entry.actionId)
+            {
+                case "Idle":
+                    AddPolicy(entry, GameAction.Walk, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Run, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Interrupt);
+                    break;
+                case "Move":
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Walk, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Run, TransitionPolicy.Ignore);
+                    break;
+                case "Jump":
+                case "Fall":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.AirAttack, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.FallAttack, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Walk, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Run, TransitionPolicy.Ignore);
+                    break;
+                case "Dodge":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+                    AddPending(entry, GameAction.Walk, 0.80f);
+                    AddPending(entry, GameAction.Run, 0.80f);
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
+                    break;
+                case "Land":
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
+                    break;
+                case "Attack0":
+                case "Attack1":
+                case "Attack2":
+                case "Attack3":
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
+                    AddPending(entry, GameAction.NormalAttack, entry.actionId == "Attack3" ? 0.60f : 0.70f);
+                    AddPending(entry, GameAction.Walk, entry.actionId == "Attack3" ? 0.70f : 0.80f);
+                    AddPending(entry, GameAction.Run, entry.actionId == "Attack3" ? 0.70f : 0.80f);
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
+                    break;
+                case "AirAttack":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.FallAttack, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.AirAttack, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Ignore);
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    break;
+                case "ChargeStart":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    entry.naturalExitTarget = PlayerStateNaturalExitTarget.ChargeLoopState;
+                    break;
+                case "ChargeLoop":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    break;
+                case "ChargeRelease":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.Walk, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.Run, TransitionPolicy.Buffer);
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
+                    break;
+                case "FallAttackStart":
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    entry.naturalExitTarget = PlayerStateNaturalExitTarget.FallAttackLoopState;
+                    break;
+                case "FallAttackLand":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.Walk, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.Run, TransitionPolicy.Buffer);
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
+                    break;
+                default:
+                    if (entry.entryGroup == PlayerSkillEntryGroup.ActiveSkill)
+                    {
+                        AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                        AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                        AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Interrupt);
+                        AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                        AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+                        entry.overrideNaturalExitNormalizedTime = true;
+                        entry.naturalExitNormalizedTime = 0.90f;
+                        entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
+                    }
+                    break;
+            }
+        }
+
+        private static void AddPolicy(SkillConfigEntry entry, GameAction action, TransitionPolicy policy)
+        {
+            if (entry == null)
+                return;
+
+            if (entry.actionPolicies == null)
+                entry.actionPolicies = new List<PlayerStateActionPolicyRule>();
+
+            for (int i = 0; i < entry.actionPolicies.Count; i++)
+            {
+                PlayerStateActionPolicyRule rule = entry.actionPolicies[i];
+                if (rule != null && rule.action == action)
+                {
+                    rule.policy = policy;
+                    return;
+                }
+            }
+
+            entry.actionPolicies.Add(new PlayerStateActionPolicyRule { action = action, policy = policy });
+        }
+
+        private static void AddPending(SkillConfigEntry entry, GameAction action, float normalizedTime)
+        {
+            if (entry == null)
+                return;
+
+            if (entry.pendingReleaseRules == null)
+                entry.pendingReleaseRules = new List<PlayerStatePendingReleaseRule>();
+
+            for (int i = 0; i < entry.pendingReleaseRules.Count; i++)
+            {
+                PlayerStatePendingReleaseRule rule = entry.pendingReleaseRules[i];
+                if (rule != null && rule.pendingAction == action)
+                {
+                    rule.normalizedTime = normalizedTime;
+                    return;
+                }
+            }
+
+            entry.pendingReleaseRules.Add(new PlayerStatePendingReleaseRule { pendingAction = action, normalizedTime = normalizedTime });
         }
 
         private static void CreateCharacterAnimationLibrary()

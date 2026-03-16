@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 683a1176901871647ba28fa4be535189, type: 3}
+  m_Name: "\u5206\u8EABAI\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  targetRefreshInterval: 0.12
+  decisionInterval: 0.06
+  ownerLeashDistance: 22
+  regroupDistance: 9
+  preferredMeleeDistance: 2.25
+  meleeDistanceTolerance: 0.35
+  tooCloseDistance: 1.35
+  orbitDistance: 1.9
+  orbitAngle: 42
+  orbitArrivalDistance: 0.2
+  combatMoveSpeedRatio: 0.96
+  attackCastRange: 2.7
+  skillCastRange: 8
+  chargeEnterRange: 4.8
+  dodgeThreatDistance: 4.2
+  dodgeCooldownSeconds: 1.2
+  dodgeDistance: 3.5
+  dodgeDuration: 0.22
+  chargeCooldownSeconds: 3
+  chargeHoldMinSeconds: 0.18
+  chargeHoldMaxSeconds: 0.4
+  aggression: 0.82
+  dodgeBias: 0.72
+  skillBias: 0.78
+  chargeBias: 0.68
+  comboBias: 0.72
+  orbitBias: 0.85

@@ -8,7 +8,7 @@ namespace Game.GameFlow
 {
     /// <summary>
     /// 全局敌人生成器：引用多条具体类型敌人生成数据，并按任务队列执行生成任务。
-    /// 只负责普通怪/精英/守卫者的全局生成，不负责 Boss。
+    /// 可生成小怪/精英/守卫者/Boss；通过本生成器刷出的 Boss 默认不计入关卡胜负。
     /// </summary>
     public class LevelEnemySpawner : MonoBehaviour
     {
@@ -63,6 +63,23 @@ namespace Game.GameFlow
                 return 0;
 
             return LevelEnemySpawnPlanner.CountPlannedGuardianSpawns(plan, taskDatabase, new System.Random(_seed));
+        }
+
+        public int GetPendingGuardianCount()
+        {
+            if (!EnsureSpawnTasksPrepared())
+                return 0;
+
+            int total = 0;
+            foreach (LevelEnemySpawnTaskRequest request in _pendingSpawnTasks)
+            {
+                if (request?.Definition == null || request.Definition.enemyType != EnemySpawnCategory.Guardian)
+                    continue;
+
+                total += Mathf.Max(0, request.SpawnCount);
+            }
+
+            return total;
         }
 
         private bool EnsureSpawnTasksPrepared()

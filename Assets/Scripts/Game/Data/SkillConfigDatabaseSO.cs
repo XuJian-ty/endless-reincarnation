@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Domain;
+using Game.Presentation;
 
 namespace Game.Data
 {
     public enum PlayerSkillEntryGroup
     {
-        [InspectorName("基础技能")]
+        [InspectorName("基础动作")]
         BaseSkill,
         [InspectorName("主动技能")]
         ActiveSkill,
@@ -16,13 +17,14 @@ namespace Game.Data
     }
 
     /// <summary>
-    /// 玩家单条技能配置。
+    /// 玩家单条动作/技能配置。
     ///
     /// 被动技能：isPassive=true，只需 skillId / displayName / talentCost，运行时由被动系统读取。
     /// 主动/基础技能：按 animationTrigger 与 skillId 绑定动画与技能逻辑。
     ///
     /// 触发链（主动/基础技能）：
-    ///   玩家按键 → 先检查玩家技能配置库中的条目是否可用/已解锁 → 向 Animator 发送 animationTrigger
+    ///   状态机根据输入和上下文得到动作ID → 先检查玩家动作及技能配置库中的条目是否可用/已解锁
+    ///   → 向 Animator 发送 animationTrigger
     ///   → SkillTimelineRunner 按 skillId 找到技能库中的定义 → 逐帧触发事件
     ///   → SkillEffectExecutor 执行伤害/特效/属性效果
     /// </summary>
@@ -30,8 +32,12 @@ namespace Game.Data
     public class SkillConfigEntry
     {
         [Header("─ 基础信息 ──────────────────────────")]
+        [InspectorLabel("动作ID（只读）")]
+        [Tooltip("基础动作/主动技能从状态机进入配置库时使用的映射标记。\n默认使用玩家状态类名去掉 State 后缀的结果，例如 Jump、Dodge、Attack0、Skill0。")]
+        public string actionId = "";
+
         [InspectorLabel("技能 ID（全局唯一）")]
-        [Tooltip("技能的唯一标识符，供技能树系统、存档和技能库引用。\n主动技能请直接填写技能库中的 skillId；被动技能填写自己的被动 skillId。")]
+        [Tooltip("基础动作/主动技能用于映射技能库中的技能效果定义。\n被动技能填写自己的被动 skillId。")]
         public string skillId = "";
 
         [InspectorLabel("显示名称")]
@@ -59,18 +65,47 @@ namespace Game.Data
         [Tooltip("播放该技能/动作时发送给 Animator 的 Trigger 名。留空时默认使用 skillId。")]
         public string animationTrigger = "";
 
-        [InspectorLabel("主动技能槽位")]
-        [Tooltip("仅主动技能使用。0~3 对应四个主动技能按键；-1 表示不参与主动技能按键触发。")]
-        public int activeSlotIndex = -1;
+        [InspectorLabel("冷却(秒)")]
+        [Tooltip("仅主动技能使用。释放成功后进入冷却，冷却未结束时不能再次释放。")]
+        [Min(0f)]
+        public float cooldownSeconds = 0f;
 
         [Header("─ 被动技能参数（PassiveSkill 时填写）─")]
         [InspectorLabel("被动属性加成")]
         [Tooltip("被动技能解锁后永久附加到玩家基础属性上的加成。")]
         public StatModifier passiveStatModifier = new StatModifier();
 
+        [Header("─ 状态规则（基础动作/主动技能）─")]
+        [InspectorLabel("动作策略表")]
+        public List<PlayerStateActionPolicyRule> actionPolicies = new List<PlayerStateActionPolicyRule>();
+
+        [InspectorLabel("缓存释放规则")]
+        public List<PlayerStatePendingReleaseRule> pendingReleaseRules = new List<PlayerStatePendingReleaseRule>();
+
+        [InspectorLabel("覆盖自然退出进度")]
+        public bool overrideNaturalExitNormalizedTime;
+
+        [InspectorLabel("自然退出进度")]
+        [Range(0f, 1f)]
+        public float naturalExitNormalizedTime = 0.9f;
+
+        [InspectorLabel("自然退出默认目标")]
+        public PlayerStateNaturalExitTarget naturalExitTarget = PlayerStateNaturalExitTarget.None;
+
         public string GetResolvedAnimationTrigger()
         {
-            return string.IsNullOrWhiteSpace(animationTrigger) ? skillId : animationTrigger.Trim();
+            if (!string.IsNullOrWhiteSpace(animationTrigger))
+                return animationTrigger.Trim();
+
+            if (!string.IsNullOrWhiteSpace(actionId))
+                return actionId.Trim();
+
+            return skillId;
+        }
+
+        public string GetResolvedActionId()
+        {
+            return string.IsNullOrWhiteSpace(actionId) ? string.Empty : actionId.Trim();
         }
 
         public bool IsPassiveSkill =>
@@ -83,27 +118,60 @@ namespace Game.Data
                 if (IsPassiveSkill)
                     return false;
 
-                if (entryGroup == PlayerSkillEntryGroup.ActiveSkill || activeSlotIndex >= 0)
-                    return true;
-
-                return !string.IsNullOrEmpty(skillId) &&
-                       skillId.StartsWith("Skill", StringComparison.Ordinal);
+                return entryGroup == PlayerSkillEntryGroup.ActiveSkill;
             }
         }
 
         public bool IsBaseSkill => !IsPassiveSkill && !IsActiveSkill;
+
+        public bool TryGetPolicy(GameAction action, out TransitionPolicy policy)
+        {
+            if (actionPolicies != null)
+            {
+                for (int i = 0; i < actionPolicies.Count; i++)
+                {
+                    PlayerStateActionPolicyRule rule = actionPolicies[i];
+                    if (rule != null && rule.action == action)
+                    {
+                        policy = rule.policy;
+                        return true;
+                    }
+                }
+            }
+
+            policy = TransitionPolicy.Ignore;
+            return false;
+        }
+
+        public bool TryGetPendingReleaseThreshold(GameAction action, out float threshold)
+        {
+            if (pendingReleaseRules != null)
+            {
+                for (int i = 0; i < pendingReleaseRules.Count; i++)
+                {
+                    PlayerStatePendingReleaseRule rule = pendingReleaseRules[i];
+                    if (rule != null && rule.pendingAction == action)
+                    {
+                        threshold = rule.normalizedTime;
+                        return true;
+                    }
+                }
+            }
+
+            threshold = 0f;
+            return false;
+        }
     }
 
     /// <summary>
-    /// 玩家技能配置库。
-    /// 存储所有可解锁技能的配置，顺序与技能树 UI 一致。
-    /// 建议布局：前 12 条被动（各 1 天赋点）+ 后 4 条主动（各 2 天赋点）。
+    /// 玩家动作及技能配置库。
+    /// 存储基础动作、主动技能、被动技能的统一配置。
     /// </summary>
-    [CreateAssetMenu(menuName = "游戏/配置/玩家技能配置库", fileName = "玩家技能配置库")]
+    [CreateAssetMenu(menuName = "游戏/配置/玩家动作及技能配置库", fileName = "玩家动作及技能配置库")]
     public class SkillConfigDatabaseSO : ScriptableObject
     {
         [InspectorLabel("技能配置列表")]
-        [Tooltip("顺序对应技能树的解锁顺序。\n建议：前 12 条被动（天赋点各1）+ 后 4 条主动（天赋点各2，填写耗蓝和动画索引）。")]
+        [Tooltip("顺序对应动作/技能的配置列表。基础动作和主动技能通过动作ID映射；被动技能只用于技能树和属性增强。")]
         public List<SkillConfigEntry> entries = new List<SkillConfigEntry>();
 
         public SkillConfigEntry GetEntry(string skillId)
@@ -111,6 +179,19 @@ namespace Game.Data
             if (entries == null || string.IsNullOrEmpty(skillId)) return null;
             foreach (var e in entries)
                 if (e.skillId == skillId) return e;
+            return null;
+        }
+
+        public SkillConfigEntry GetEntryByActionId(string actionId)
+        {
+            if (entries == null || string.IsNullOrWhiteSpace(actionId)) return null;
+            string normalized = actionId.Trim();
+            foreach (var e in entries)
+            {
+                if (e == null || e.IsPassiveSkill) continue;
+                if (string.Equals(e.GetResolvedActionId(), normalized, StringComparison.Ordinal))
+                    return e;
+            }
             return null;
         }
 
@@ -136,21 +217,13 @@ namespace Game.Data
 
         public SkillConfigEntry GetActiveEntryBySlot(int slotIndex)
         {
-            if (entries == null || slotIndex < 0) return null;
-            foreach (var e in entries)
-            {
-                if (e == null || !e.IsActiveSkill) continue;
-                if (e.activeSlotIndex == slotIndex)
-                    return e;
-            }
-
-            string fallbackSkillId = $"Skill{slotIndex}";
-            return GetEntry(fallbackSkillId);
+            if (slotIndex < 0) return null;
+            return GetEntryByActionId($"Skill{slotIndex}");
         }
 
-        public SkillConfigEntry GetBaseEntry(string skillId)
+        public SkillConfigEntry GetBaseEntry(string actionId)
         {
-            var entry = GetEntry(skillId);
+            var entry = GetEntryByActionId(actionId);
             return entry != null && entry.IsBaseSkill ? entry : null;
         }
     }

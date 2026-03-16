@@ -10,6 +10,7 @@ namespace Game.Presentation
         private const float FallbackDuration = 3f;
 
         private float _timer;
+        protected override string ActionId => "PlayerDeath";
 
         public float RemainingTime => Mathf.Max(0f, _timer);
         public float NormalizedProgress => 1f - Mathf.Clamp01(_timer / FallbackDuration);
@@ -22,7 +23,8 @@ namespace Game.Presentation
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
             Ctx.Mover.SetVerticalVelocity(0f);
             Ctx.Anim.SetLocomotionSpeed(0f);
-            Ctx.Anim.TriggerDead();
+            TriggerConfiguredActionByActionId(ActionId, "Dead");
+            StartConfiguredTimelineByActionId(ActionId);
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

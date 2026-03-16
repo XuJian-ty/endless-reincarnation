@@ -13,8 +13,8 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            TriggerConfiguredAction("ChargeAttack", "ChargeRelease");
-            StartTimelineSkill("ChargeAttack");
+            TriggerConfiguredActionByActionId("ChargeRelease", "ChargeRelease");
+            StartConfiguredTimelineByActionId("ChargeRelease");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

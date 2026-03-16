@@ -165,11 +165,21 @@ namespace Game.UI
 
             var ui = UIManager.GetInstance();
             bool hasBlockingPanelOpen = IsAnyBlockingPanelOpen(ui);
+            bool shouldBlockGameplay = hasBlockingPanelOpen;
             var gameplayInputEvents = Object.FindFirstObjectByType<GameplayInputEvents>();
             if (gameplayInputEvents != null)
-                gameplayInputEvents.SetGameplayMapEnabled(!hasBlockingPanelOpen);
+                gameplayInputEvents.SetGameplayMapEnabled(!shouldBlockGameplay);
 
-            CursorVisibilityController.ApplyPanelBlockState(hasBlockingPanelOpen);
+            var gsm = GameStateMachine.GetInstance();
+            if (gsm != null)
+            {
+                if (shouldBlockGameplay)
+                    gsm.Pause();
+                else if (gsm.CurrentState == GameStateMachine.State.Paused)
+                    gsm.Resume();
+            }
+
+            CursorVisibilityController.ApplyPanelBlockState(shouldBlockGameplay);
         }
 
         private static string GetOpenToggleablePanelName(UIManager ui)
@@ -210,6 +220,8 @@ namespace Game.UI
             if (_pendingOpens.Count == 0)
                 _panelOpening = false;
 
+            bool shouldBlockGameplay = hasBlockingPanelOpen || _panelOpening;
+
             if (_gameplayInputEvents == null)
                 _gameplayInputEvents = Object.FindFirstObjectByType<GameplayInputEvents>();
 
@@ -223,9 +235,18 @@ namespace Game.UI
             }
 
             if (_gameplayInputEvents != null)
-                _gameplayInputEvents.SetGameplayMapEnabled(!hasBlockingPanelOpen && !_panelOpening);
+                _gameplayInputEvents.SetGameplayMapEnabled(!shouldBlockGameplay);
 
-            CursorVisibilityController.ApplyPanelBlockState(hasBlockingPanelOpen);
+            var gsm = GameStateMachine.GetInstance();
+            if (gsm != null)
+            {
+                if (shouldBlockGameplay)
+                    gsm.Pause();
+                else if (gsm.CurrentState == GameStateMachine.State.Paused)
+                    gsm.Resume();
+            }
+
+            CursorVisibilityController.ApplyPanelBlockState(shouldBlockGameplay);
         }
     }
 }

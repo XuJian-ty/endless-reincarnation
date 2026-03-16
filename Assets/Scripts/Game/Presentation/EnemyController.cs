@@ -33,6 +33,7 @@ namespace Game.Presentation
 
         [Header("节奏控制")]
         [SerializeField, Min(0f)] private float _deathDisableDelay = 1.2f;
+        [SerializeField] private bool _countsAsLevelBoss = true;
 
         private EnemyRuntimeStats _stats;
         private readonly List<RuntimeStatModifier> _runtimeModifiers = new List<RuntimeStatModifier>();
@@ -170,6 +171,7 @@ namespace Game.Presentation
         }
 
         public bool IsAlive => !_dead;
+        public bool CountsAsLevelBoss => _countsAsLevelBoss;
         public EnemyIntent CurrentIntent { get; set; }
         public float HurtRemainingTime => _hurtRemainingTime;
         public bool IsHurt => _hurtRemainingTime > 0f;
@@ -423,6 +425,11 @@ namespace Game.Presentation
             return true;
         }
 
+        public void SetCountsAsLevelBoss(bool value)
+        {
+            _countsAsLevelBoss = value;
+        }
+
         public void CompleteActiveSkill()
         {
             bool enterIdleAfterCast = _activeSkill != null && _activeSkill.EnterIdleAfterCast;
@@ -664,7 +671,7 @@ namespace Game.Presentation
 
             if (_stats.type == EnemyType.Guardian)
                 EventCenter.GetInstance().EventTrigger(GameEvents.GuardianDied);
-            else if (_stats.type == EnemyType.Boss)
+            else if (_stats.type == EnemyType.Boss && GetComponent<LevelBossVisualMarker>() != null)
                 EventCenter.GetInstance().EventTrigger(GameEvents.BossDefeated, EnemyId);
 
             // 使用奖励系统处理玩家奖励，解耦 EnemyController 和 PlayerModel

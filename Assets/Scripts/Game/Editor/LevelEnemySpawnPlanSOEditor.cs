@@ -165,10 +165,46 @@ namespace Game.Editor
                 string countText = task.countMode == EnemySpawnCountMode.Fixed
                     ? $"固定{Mathf.Max(0, task.fixedCount)}"
                     : $"随机{Mathf.Max(0, task.randomMinCount)}~{Mathf.Max(task.randomMinCount, task.randomMaxCount)}";
-                labels.Add($"[{i}] {task.enemyType} | 半径{task.spawnRadius:0.##} | {countText}");
+                string variantText = ResolveVariantText(task);
+                labels.Add($"[{i}] {GetEnemyTypeText(task.enemyType)} | {variantText} | 半径{task.spawnRadius:0.##} | {countText}");
             }
 
             return labels;
+        }
+
+        private static string GetEnemyTypeText(EnemySpawnCategory type)
+        {
+            return type switch
+            {
+                EnemySpawnCategory.Minion => "小怪",
+                EnemySpawnCategory.MinionLegacyRanged => "小怪",
+                EnemySpawnCategory.Elite => "精英怪",
+                EnemySpawnCategory.Guardian => "守卫者",
+                EnemySpawnCategory.Boss => "Boss",
+                _ => type.ToString(),
+            };
+        }
+
+        private static string ResolveVariantText(EnemySpawnTaskDefinition task)
+        {
+            if (task == null || task.UseMixedVariants)
+                return "混合随机";
+
+            EnemyStatsDatabaseSO statsDb = Resources.Load<EnemyStatsDatabaseSO>("配置/敌人属性库");
+            if (statsDb?.entries != null)
+            {
+                for (int i = 0; i < statsDb.entries.Count; i++)
+                {
+                    EnemyStatsEntry entry = statsDb.entries[i];
+                    if (entry == null || string.IsNullOrWhiteSpace(entry.enemyId))
+                        continue;
+
+                    if (string.Equals(entry.enemyId.Trim(), task.specificEnemyId.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                        return string.IsNullOrWhiteSpace(entry.displayName) ? entry.enemyId.Trim() : entry.displayName.Trim();
+                }
+            }
+
+            return task.specificEnemyId.Trim();
         }
 
         private static void DrawSpawnModePopup(SerializedProperty property)

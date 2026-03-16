@@ -25,9 +25,6 @@ namespace Game.GameFlow
     /// </summary>
     public class GameStateMachine : BaseManager<GameStateMachine>
     {
-        // ── 常量 ──────────────────────────────────────────────────────────
-        private const int MaxLevelIndex = 5;
-
         // ── 流程状态枚举 ──────────────────────────────────────────────────
         public enum State
         {
@@ -70,7 +67,11 @@ namespace Game.GameFlow
 
         public static string GetLevelSceneName(int levelIndex)
         {
-            levelIndex = Mathf.Clamp(levelIndex, 1, MaxLevelIndex);
+            LevelConfigDatabaseSO configDatabase = ConfigManager.GetInstance()?.GetLevelConfigDatabase();
+            string configuredSceneName = configDatabase?.GetSceneNameForLevel(levelIndex);
+            if (!string.IsNullOrWhiteSpace(configuredSceneName))
+                return configuredSceneName;
+
             return $"{SceneNames.LevelPrefix}{levelIndex}";
         }
 
@@ -80,7 +81,8 @@ namespace Game.GameFlow
                 return false;
 
             int nextLevel = _currentRun.levelIndex + 1;
-            if (nextLevel > MaxLevelIndex)
+            int maxConfiguredLevelIndex = GetMaxConfiguredLevelIndex();
+            if (maxConfiguredLevelIndex > 0 && nextLevel > maxConfiguredLevelIndex)
                 return false;
 
             return CanLoadLevelScene(nextLevel);
@@ -189,6 +191,13 @@ namespace Game.GameFlow
             _currentPlayerName = string.IsNullOrWhiteSpace(playerName) ? "玩家" : playerName.Trim();
             _currentRun = run;
             _playerModel = playerModel;
+            if (_currentRun != null && _playerModel != null)
+            {
+                _playerModel.LoadFrom(_currentRun);
+                var buffConfig = ConfigManager.GetInstance()?.GetBuffConfig();
+                if (buffConfig != null)
+                    _playerModel.ReapplyBuffModifiers(buffConfig.GetModifierForBuff);
+            }
             Time.timeScale = 1f;
             SetState(State.InLevel);
         }
@@ -214,6 +223,12 @@ namespace Game.GameFlow
 
             _currentRun = restoredRun;
             _playerModel.LoadFrom(restoredRun);
+            if (!string.IsNullOrWhiteSpace(_currentRun.currentLevelBuffId))
+            {
+                _playerModel.RemoveBuff(_currentRun.currentLevelBuffId);
+                _currentRun.currentLevelBuffId = null;
+            }
+            _currentRun.pendingBuffSelection = true;
             _playerModel.TryConsumeItem(PlayerModel.ItemIds.Nectar, 1);
 
             _playerModel.SaveTo(_currentRun);
@@ -248,7 +263,8 @@ namespace Game.GameFlow
             if (_currentRun == null)
                 return false;
 
-            return TransitionToLevel(_currentRun.levelIndex);
+            RemoveCurrentLevelBuffFromRuntime();
+            return TransitionToLevel(_currentRun.levelIndex, true);
         }
 
         public bool TryAdvanceToNextLevel()
@@ -257,7 +273,8 @@ namespace Game.GameFlow
                 return false;
 
             int nextLevel = _currentRun.levelIndex + 1;
-            if (nextLevel > MaxLevelIndex || !CanLoadLevelScene(nextLevel))
+            int maxConfiguredLevelIndex = GetMaxConfiguredLevelIndex();
+            if ((maxConfiguredLevelIndex > 0 && nextLevel > maxConfiguredLevelIndex) || !CanLoadLevelScene(nextLevel))
                 return false;
 
             return TransitionToLevel(nextLevel);
@@ -333,16 +350,24 @@ namespace Game.GameFlow
             return Application.CanStreamedLevelBeLoaded(GetLevelSceneName(levelIndex));
         }
 
-        private bool TransitionToLevel(int levelIndex)
+        private bool TransitionToLevel(int levelIndex, bool forceBuffSelection = false)
         {
             if (_currentRun == null)
                 return false;
 
-            levelIndex = Mathf.Clamp(levelIndex, 1, MaxLevelIndex);
+            if (levelIndex < 1)
+                return false;
+
             if (!CanLoadLevelScene(levelIndex))
                 return false;
 
+            bool isAdvancingToDifferentLevel = _currentRun.levelIndex != levelIndex;
             _currentRun.levelIndex = levelIndex;
+            if (isAdvancingToDifferentLevel)
+                _currentRun.difficulty = Mathf.Max(1, _currentRun.difficulty + 1);
+            _currentRun.pendingBuffSelection = forceBuffSelection || isAdvancingToDifferentLevel;
+            if (_currentRun.pendingBuffSelection)
+                _currentRun.currentLevelBuffId = null;
             _currentRun.levelSnapshot = null;
             _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
             SaveCurrent();
@@ -358,6 +383,36 @@ namespace Game.GameFlow
             if (_state == newState) return;
             _state = newState;
             OnStateChanged?.Invoke(_state);
+        }
+
+        private void RemoveCurrentLevelBuffFromRuntime()
+        {
+            if (_currentRun == null || _playerModel == null || string.IsNullOrWhiteSpace(_currentRun.currentLevelBuffId))
+                return;
+
+            _playerModel.RemoveBuff(_currentRun.currentLevelBuffId);
+            _currentRun.currentLevelBuffId = null;
+            _currentRun.pendingBuffSelection = true;
+            _playerModel.SaveTo(_currentRun);
+        }
+
+        private static int GetMaxConfiguredLevelIndex()
+        {
+            LevelConfigDatabaseSO configDatabase = ConfigManager.GetInstance()?.GetLevelConfigDatabase();
+            if (configDatabase?.levels == null || configDatabase.levels.Count == 0)
+                return 0;
+
+            int maxLevelIndex = 0;
+            for (int i = 0; i < configDatabase.levels.Count; i++)
+            {
+                LevelConfigData level = configDatabase.levels[i];
+                if (level == null)
+                    continue;
+
+                maxLevelIndex = Mathf.Max(maxLevelIndex, level.levelIndex, i + 1);
+            }
+
+            return maxLevelIndex;
         }
     }
 }

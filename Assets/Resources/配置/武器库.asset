@@ -112,35 +112,35 @@ MonoBehaviour:
         max: 0.3
     legendary:
       hp:
-        min: 10
-        max: 30
+        min: 300
+        max: 500
       mp:
-        min: 10
-        max: 30
+        min: 300
+        max: 500
       attack:
-        min: 5
-        max: 15
+        min: 150
+        max: 200
       defense:
-        min: 2
-        max: 8
+        min: 400
+        max: 600
       hpRegen:
-        min: 0.5
-        max: 1.5
+        min: 30
+        max: 50
       mpRegen:
-        min: 0.5
-        max: 1.5
+        min: 30
+        max: 50
       critRate:
-        min: 0.4
-        max: 0.6
+        min: 0.5
+        max: 1
       critDmg:
-        min: 0.8
-        max: 1.2
+        min: 1
+        max: 2
       attackSpeed:
-        min: 0.1
-        max: 0.3
+        min: 0
+        max: 0
       moveSpeed:
-        min: 0.1
-        max: 0.3
+        min: 0.8
+        max: 1
   - weaponId: gun
     displayName: "\u67AA"
     icon: {fileID: 21300000, guid: 89c3fd7eaec48184e93f50ca73ae6369, type: 3}
@@ -209,14 +209,14 @@ MonoBehaviour:
         max: 0.3
     epic:
       hp:
-        min: 10
-        max: 30
+        min: 200
+        max: 300
       mp:
-        min: 10
-        max: 30
+        min: 200
+        max: 300
       attack:
-        min: 5
-        max: 15
+        min: 100
+        max: 150
       defense:
         min: 2
         max: 8
@@ -240,32 +240,32 @@ MonoBehaviour:
         max: 0.3
     legendary:
       hp:
-        min: 10
-        max: 30
+        min: 300
+        max: 500
       mp:
-        min: 10
-        max: 30
+        min: 300
+        max: 500
       attack:
-        min: 5
-        max: 15
+        min: 150
+        max: 200
       defense:
-        min: 2
-        max: 8
+        min: 400
+        max: 600
       hpRegen:
-        min: 0.5
-        max: 1.5
+        min: 30
+        max: 50
       mpRegen:
-        min: 0.5
-        max: 1.5
+        min: 30
+        max: 50
       critRate:
-        min: 0.4
-        max: 0.6
+        min: 0.5
+        max: 1
       critDmg:
-        min: 0.8
-        max: 1.2
+        min: 1
+        max: 2
       attackSpeed:
-        min: 0.1
-        max: 0.3
+        min: 0.3
+        max: 0.5
       moveSpeed:
-        min: 0.1
-        max: 0.3
+        min: 0.3
+        max: 0.5

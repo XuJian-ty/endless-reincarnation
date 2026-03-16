@@ -10,8 +10,8 @@ namespace Game.Presentation
 
         protected override void OnEnter()
         {
-            Ctx.Anim.TriggerFallAttackLoop();
-            StartTimelineSkill("FallAttackLoop");
+            TriggerConfiguredActionByActionId("FallAttackLoop", "FallAttackLoop");
+            StartConfiguredTimelineByActionId("FallAttackLoop");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

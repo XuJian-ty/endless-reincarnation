@@ -24,8 +24,8 @@ namespace Game.Presentation
             InitialIsRunning = null;
 
             Ctx.Anim.SetGrounded(true);
-            Ctx.Anim.TriggerLocomotion();
-            StartTimelineSkill("Locomotion");
+            TriggerConfiguredActionByActionId("Move", "Locomotion");
+            StartConfiguredTimelineByActionId("Move");
             UpdateAnimSpeed();
         }
 

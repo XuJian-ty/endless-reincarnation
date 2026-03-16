@@ -10,8 +10,8 @@ namespace Game.Presentation
     {
         protected override void OnEnter()
         {
-            Ctx.Anim.TriggerFall();
-            StartTimelineSkill("Fall");
+            TriggerConfiguredActionByActionId("Fall", "Fall");
+            StartConfiguredTimelineByActionId("Fall");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
