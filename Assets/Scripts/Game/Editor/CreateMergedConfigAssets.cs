@@ -15,7 +15,6 @@ namespace Game.Editor
     public static class CreateMergedConfigAssets
     {
         private const string ResourcesConfigDir = "Assets/Resources/配置";
-        private const string LegacyResourcesConfigDir = "Assets/Resources/閰嶇疆";
 
         private static void EnsureConfigFolder()
         {
@@ -24,16 +23,6 @@ namespace Game.Editor
 
             if (AssetDatabase.IsValidFolder(ResourcesConfigDir))
                 return;
-
-            // Migrate old mojibake folder name created by earlier scripts.
-            if (AssetDatabase.IsValidFolder(LegacyResourcesConfigDir))
-            {
-                string moveError = AssetDatabase.MoveAsset(LegacyResourcesConfigDir, ResourcesConfigDir);
-                if (!string.IsNullOrEmpty(moveError))
-                    Debug.LogWarning($"[配置] 迁移旧配置目录失败：{moveError}");
-                if (AssetDatabase.IsValidFolder(ResourcesConfigDir))
-                    return;
-            }
 
             string parentDir = Path.GetDirectoryName(ResourcesConfigDir)?.Replace("\\", "/");
             string folderName = Path.GetFileName(ResourcesConfigDir);
@@ -873,7 +862,6 @@ namespace Game.Editor
             }
 
             MergeSkillConfigDatabase(existing, source);
-            MergeLegacyPlayerStateRules(existing);
             UnityEngine.Object.DestroyImmediate(source);
             EditorUtility.SetDirty(existing);
             return existing;
@@ -991,44 +979,6 @@ namespace Game.Editor
             };
         }
 
-        private static void MergeLegacyPlayerStateRules(SkillConfigDatabaseSO existing)
-        {
-            if (existing == null)
-                return;
-
-            PlayerStateRuleDatabaseSO legacy = AssetDatabase.LoadAssetAtPath<PlayerStateRuleDatabaseSO>($"{ResourcesConfigDir}/玩家状态规则.asset");
-            if (legacy == null || legacy.entries == null || legacy.entries.Count == 0)
-                return;
-
-            for (int i = 0; i < legacy.entries.Count; i++)
-            {
-                PlayerStateRuleEntry legacyEntry = legacy.entries[i];
-                if (legacyEntry == null || string.IsNullOrWhiteSpace(legacyEntry.stateId))
-                    continue;
-
-                string actionId = TrimStateSuffix(legacyEntry.stateId);
-                SkillConfigEntry target = existing.GetEntryByActionId(actionId);
-                if (target == null)
-                    continue;
-
-                if (target.actionPolicies == null || target.actionPolicies.Count == 0)
-                    target.actionPolicies = CloneActionPolicies(legacyEntry.actionPolicies);
-
-                if (target.pendingReleaseRules == null || target.pendingReleaseRules.Count == 0)
-                    target.pendingReleaseRules = ClonePendingReleaseRules(legacyEntry.pendingReleaseRules);
-
-                if (!target.overrideNaturalExitNormalizedTime && legacyEntry.overrideNaturalExitNormalizedTime)
-                {
-                    target.overrideNaturalExitNormalizedTime = true;
-                    target.naturalExitNormalizedTime = legacyEntry.naturalExitNormalizedTime;
-                }
-
-                if (target.naturalExitTarget == PlayerStateNaturalExitTarget.None
-                    && legacyEntry.naturalExitTarget != PlayerStateNaturalExitTarget.None)
-                    target.naturalExitTarget = legacyEntry.naturalExitTarget;
-            }
-        }
-
         private static List<PlayerStateActionPolicyRule> CloneActionPolicies(List<PlayerStateActionPolicyRule> source)
         {
             List<PlayerStateActionPolicyRule> result = new List<PlayerStateActionPolicyRule>();
@@ -1071,17 +1021,6 @@ namespace Game.Editor
             }
 
             return result;
-        }
-
-        private static string TrimStateSuffix(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return string.Empty;
-
-            string normalized = value.Trim();
-            return normalized.EndsWith("State")
-                ? normalized.Substring(0, normalized.Length - "State".Length)
-                : normalized;
         }
 
         private static SkillConfigEntry CreateBaseActionEntry(string actionId, string displayName, string animationTrigger = null)

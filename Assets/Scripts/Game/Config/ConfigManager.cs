@@ -103,11 +103,7 @@ namespace Game
         public LevelGrowthSO GetLevelGrowth()
         {
             if (_levelGrowth == null)
-            {
                 _levelGrowth = Resources.Load<LevelGrowthSO>(ConfigPathPrefix + "玩家成长属性库");
-                if (_levelGrowth == null)
-                    _levelGrowth = Resources.Load<LevelGrowthSO>(ConfigPathPrefix + "玩家成长库");
-            }
             return _levelGrowth;
         }
 
@@ -149,24 +145,14 @@ namespace Game
         public SkillConfigDatabaseSO GetSkillConfigDatabase()
         {
             if (_skillConfigDatabase == null)
-            {
                 _skillConfigDatabase = Resources.Load<SkillConfigDatabaseSO>(ConfigPathPrefix + "玩家动作及技能配置库");
-                if (_skillConfigDatabase == null)
-                    _skillConfigDatabase = Resources.Load<SkillConfigDatabaseSO>(ConfigPathPrefix + "玩家技能配置库");
-                if (_skillConfigDatabase == null)
-                    _skillConfigDatabase = Resources.Load<SkillConfigDatabaseSO>(ConfigPathPrefix + "技能配置库");
-            }
             return _skillConfigDatabase;
         }
 
         public CharacterAnimationLibrarySO GetCharacterAnimationLibrary()
         {
             if (_characterAnimationLibrary == null)
-            {
                 _characterAnimationLibrary = Resources.Load<CharacterAnimationLibrarySO>(ConfigPathPrefix + "动画库");
-                if (_characterAnimationLibrary == null)
-                    _characterAnimationLibrary = Resources.Load<CharacterAnimationLibrarySO>(ConfigPathPrefix + "人物动画库");
-            }
             return _characterAnimationLibrary;
         }
 

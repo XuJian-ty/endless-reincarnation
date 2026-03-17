@@ -11,7 +11,7 @@ namespace Game.UI
     /// <summary>
     /// 关卡内声音设置面板：五项功能——（1）复选框开关关卡 BGM（2）滑块调 BGM 音量（3）下拉切换 BGM 曲目（4）复选框开关音效（5）滑块调音效音量。按当前存档保存（JSON）。
     /// 子控件约定：Toggle_Bgm、Slider_BgMusic、Dropdown_BgmTrack、Toggle_SoundEffects、Slider_SoundEffects、Btn_Close。
-    /// 曲目列表从 ScriptableObject 配置 LevelBgmTrackListSO（Resources/Config/LevelBgmTracks）读取。
+    /// 曲目列表从 ScriptableObject 配置 LevelBgmTrackListSO（Resources/配置/关卡BGM曲目列表）读取。
     /// </summary>
     public class LevelSoundPanel : BasePanel
     {

@@ -198,7 +198,6 @@ namespace Game.Saving
                     inventory        = new InventorySaveData(),
                     itemCounts       = new ItemCountSaveData { gold = 0, talentPoints = 0 },
                     equippedWeapon   = null,
-                    talentPoints     = 0,
                     buffIds          = new List<string>(),
                     unlockedSkillIds = new List<string>(),
                     defeatedBossIds  = new List<string>(),

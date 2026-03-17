@@ -221,6 +221,7 @@ namespace Game.Presentation
         public float AnimatorMoveForward => _animatorMoveSigned;
         public float AnimatorMoveStrafe => _animatorMoveStrafe;
         public float CurrentPoise => _currentPoise;
+        public float HeadHealthBarHeightOffset => Archetype != null ? Mathf.Max(0f, Archetype.headHealthBarHeightOffset) : 0f;
         public float CurrentHpRatio
         {
             get

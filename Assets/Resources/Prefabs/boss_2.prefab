@@ -968,7 +968,6 @@ GameObject:
   - component: {fileID: 1116743304846938418}
   - component: {fileID: 2600285806331264368}
   - component: {fileID: 870978124916948556}
-  - component: {fileID: 8817114475119864352}
   m_Layer: 6
   m_Name: EnemyHUD
   m_TagString: Untagged
@@ -1042,18 +1041,6 @@ MonoBehaviour:
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
   m_PresetInfoIsWorld: 1
---- !u!114 &8817114475119864352
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2895615784719373367}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 032c0785a9e98d84a9bc1d4ece703aae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &3198607658905254597
 GameObject:
   m_ObjectHideFlags: 0

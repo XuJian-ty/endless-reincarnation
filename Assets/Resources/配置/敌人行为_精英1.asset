@@ -19,21 +19,21 @@ MonoBehaviour:
   sectorRange: 16
   chaseBreakDistance: 28
   patrolRadius: 12
+  patrolHealPercentPerSecond: 0.05
   chaseInnerDistance: 3
   chaseOuterDistance: 5
   preferredSafetyDistanceOffset: 0.25
   combatDistanceTolerance: 0.75
   castRangeTolerance: 0.25
   retreatStepDistance: 2.6
-  tacticalHoldDuration: 0.12
   approachLeadTime: 0.15
   losProbeInterval: 0.1
   pathProbeInterval: 0.3
-  losBlockedPenaltySeconds: 0.35
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  headHealthBarHeightOffset: 2.25
   reactionMinSeconds: 0.08
   reactionMaxSeconds: 0.18
   decisionCommitSeconds: 0.24
@@ -49,6 +49,9 @@ MonoBehaviour:
   poiseBreakStunDuration: 0.34
   allowLightHitFlinch: 0
   superArmorWhileCasting: 0
+  hurtNaturalExitNormalizedTime: 0.9
+  hurtNaturalExitTarget: 0
+  locomotionSkillId: EnemyLocomotion
   skillSlots:
   - slotIndex: 0
     skillId: elite_1_combo
@@ -66,6 +69,8 @@ MonoBehaviour:
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
     skillId: elite_1_slam
@@ -83,4 +88,6 @@ MonoBehaviour:
     postCastIdleDuration: 0.3
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0

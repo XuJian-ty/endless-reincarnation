@@ -25,10 +25,7 @@ namespace Game.UI
 
         private const string CombatBarsRootName = "CombatHealthBarsRoot";
         private const string HeadBarTemplateName = "HeadBarTemplate";
-        private const string FinalBossBarRootName = "FinalBossHealthBarRoot";
         private const string FillName = "Fill";
-        private const string BossNameTextName = "Text_Name";
-        private const string BossValueTextName = "Text_Value";
         private static readonly Color EnemyHeadBarColor = new Color(0.86f, 0.22f, 0.22f, 0.95f);
         private static readonly Color CloneHeadBarColor = new Color(0.26f, 0.72f, 1f, 0.95f);
 
@@ -54,10 +51,6 @@ namespace Game.UI
         private Canvas _rootCanvas;
         private RectTransform _combatBarsRoot;
         private RectTransform _headBarTemplate;
-        private GameObject _finalBossBarRoot;
-        private Image _finalBossFillImage;
-        private Text _finalBossNameText;
-        private Text _finalBossValueText;
         private readonly Dictionary<EnemyController, RuntimeCombatBar> _enemyBars = new Dictionary<EnemyController, RuntimeCombatBar>();
         private readonly Dictionary<PlayerCloneActor, RuntimeCombatBar> _cloneBars = new Dictionary<PlayerCloneActor, RuntimeCombatBar>();
         private readonly List<EnemyController> _enemyBarCleanup = new List<EnemyController>();
@@ -95,13 +88,6 @@ namespace Game.UI
             _headBarTemplate = FindNamedDescendant(transform, HeadBarTemplateName) as RectTransform;
             if (_headBarTemplate != null)
                 _headBarTemplate.gameObject.SetActive(false);
-
-            Transform finalBossRoot = FindNamedDescendant(transform, FinalBossBarRootName);
-            _finalBossBarRoot = finalBossRoot != null ? finalBossRoot.gameObject : null;
-            _finalBossFillImage = finalBossRoot != null ? FindNamedDescendant(finalBossRoot, FillName)?.GetComponent<Image>() : null;
-            _finalBossNameText = finalBossRoot != null ? FindNamedDescendant(finalBossRoot, BossNameTextName)?.GetComponent<Text>() : null;
-            _finalBossValueText = finalBossRoot != null ? FindNamedDescendant(finalBossRoot, BossValueTextName)?.GetComponent<Text>() : null;
-            SetFinalBossBarVisible(false);
         }
 
         public override void ShowMe()
@@ -134,7 +120,6 @@ namespace Game.UI
             }
 
             ClearRuntimeCombatBars();
-            SetFinalBossBarVisible(false);
         }
 
         private void MarkDirty() => _dirty = true;
@@ -212,7 +197,6 @@ namespace Game.UI
             EnsureCombatBarUi();
             UpdateEnemyHeadBars();
             UpdateCloneHeadBars();
-            UpdateFinalBossBar();
         }
 
         private void EnsureCombatBarUi()
@@ -231,9 +215,6 @@ namespace Game.UI
 
             if (_headBarTemplate == null)
                 _headBarTemplate = CreateHeadBarTemplate();
-
-            if (_finalBossBarRoot == null || _finalBossFillImage == null)
-                CreateFinalBossBar();
         }
 
         private void UpdateEnemyHeadBars()
@@ -305,24 +286,6 @@ namespace Game.UI
                     true,
                     CloneHeadBarColor);
             }
-        }
-
-        private void UpdateFinalBossBar()
-        {
-            EnemyController finalBoss = FindActiveFinalBoss();
-            bool shouldShow = finalBoss != null && finalBoss.IsAlive && finalBoss.IsInCombatState;
-            SetFinalBossBarVisible(shouldShow);
-            if (!shouldShow)
-                return;
-
-            float maxHp = Mathf.Max(1f, finalBoss.MaxHp);
-            float ratio = Mathf.Clamp01(finalBoss.CurrentHp / maxHp);
-            if (_finalBossFillImage != null)
-                _finalBossFillImage.fillAmount = ratio;
-            if (_finalBossNameText != null)
-                _finalBossNameText.text = ResolveBossDisplayName(finalBoss);
-            if (_finalBossValueText != null)
-                _finalBossValueText.text = $"{finalBoss.CurrentHp:F0}/{maxHp:F0}";
         }
 
         private RuntimeCombatBar GetOrCreateEnemyBar(EnemyController enemy)
@@ -424,39 +387,12 @@ namespace Game.UI
             }
         }
 
-        private EnemyController FindActiveFinalBoss()
-        {
-            IReadOnlyList<EnemyController> activeEnemies = EnemyController.ActiveEnemies;
-            if (activeEnemies == null)
-                return null;
-
-            for (int i = 0; i < activeEnemies.Count; i++)
-            {
-                EnemyController enemy = activeEnemies[i];
-                if (IsFinalBoss(enemy))
-                    return enemy;
-            }
-
-            return null;
-        }
-
         private static bool IsFinalBoss(EnemyController enemy)
         {
             return enemy != null
                 && enemy.IsAlive
                 && enemy.EnemyCategory == EnemyType.Boss
                 && enemy.GetComponent<LevelBossVisualMarker>() != null;
-        }
-
-        private static string ResolveBossDisplayName(EnemyController enemy)
-        {
-            if (enemy == null)
-                return "最终Boss";
-
-            if (enemy.Archetype != null && !string.IsNullOrWhiteSpace(enemy.Archetype.displayName))
-                return enemy.Archetype.displayName;
-
-            return string.IsNullOrWhiteSpace(enemy.EnemyId) ? "最终Boss" : enemy.EnemyId;
         }
 
         private RectTransform CreateCombatBarsRoot()
@@ -514,90 +450,6 @@ namespace Game.UI
 
             root.SetActive(false);
             return rect;
-        }
-
-        private void CreateFinalBossBar()
-        {
-            Transform existing = FindNamedDescendant(transform, FinalBossBarRootName);
-            if (existing != null)
-            {
-                _finalBossBarRoot = existing.gameObject;
-                _finalBossFillImage = FindNamedDescendant(existing, FillName)?.GetComponent<Image>();
-                _finalBossNameText = FindNamedDescendant(existing, BossNameTextName)?.GetComponent<Text>();
-                _finalBossValueText = FindNamedDescendant(existing, BossValueTextName)?.GetComponent<Text>();
-                SetFinalBossBarVisible(false);
-                return;
-            }
-
-            Font font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            GameObject root = new GameObject(FinalBossBarRootName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            root.transform.SetParent(transform, false);
-            RectTransform rootRect = root.GetComponent<RectTransform>();
-            rootRect.anchorMin = new Vector2(0.5f, 0f);
-            rootRect.anchorMax = new Vector2(0.5f, 0f);
-            rootRect.pivot = new Vector2(0.5f, 0f);
-            rootRect.anchoredPosition = new Vector2(0f, 18f);
-            rootRect.sizeDelta = new Vector2(560f, 58f);
-
-            Image background = root.GetComponent<Image>();
-            background.color = new Color(0f, 0f, 0f, 0.55f);
-            background.raycastTarget = false;
-
-            GameObject fill = new GameObject(FillName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            fill.transform.SetParent(root.transform, false);
-            RectTransform fillRect = fill.GetComponent<RectTransform>();
-            fillRect.anchorMin = new Vector2(0f, 0f);
-            fillRect.anchorMax = new Vector2(1f, 1f);
-            fillRect.offsetMin = new Vector2(4f, 4f);
-            fillRect.offsetMax = new Vector2(-4f, -4f);
-
-            _finalBossFillImage = fill.GetComponent<Image>();
-            _finalBossFillImage.type = Image.Type.Filled;
-            _finalBossFillImage.fillMethod = Image.FillMethod.Horizontal;
-            _finalBossFillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
-            _finalBossFillImage.color = EnemyHeadBarColor;
-            _finalBossFillImage.raycastTarget = false;
-
-            GameObject nameGo = new GameObject(BossNameTextName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            nameGo.transform.SetParent(root.transform, false);
-            RectTransform nameRect = nameGo.GetComponent<RectTransform>();
-            nameRect.anchorMin = new Vector2(0f, 0f);
-            nameRect.anchorMax = new Vector2(0.5f, 1f);
-            nameRect.offsetMin = new Vector2(16f, 0f);
-            nameRect.offsetMax = new Vector2(-8f, 0f);
-
-            _finalBossNameText = nameGo.GetComponent<Text>();
-            _finalBossNameText.font = font;
-            _finalBossNameText.fontSize = 22;
-            _finalBossNameText.fontStyle = FontStyle.Bold;
-            _finalBossNameText.alignment = TextAnchor.MiddleLeft;
-            _finalBossNameText.color = Color.white;
-            _finalBossNameText.raycastTarget = false;
-
-            GameObject valueGo = new GameObject(BossValueTextName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            valueGo.transform.SetParent(root.transform, false);
-            RectTransform valueRect = valueGo.GetComponent<RectTransform>();
-            valueRect.anchorMin = new Vector2(0.5f, 0f);
-            valueRect.anchorMax = new Vector2(1f, 1f);
-            valueRect.offsetMin = new Vector2(8f, 0f);
-            valueRect.offsetMax = new Vector2(-16f, 0f);
-
-            _finalBossValueText = valueGo.GetComponent<Text>();
-            _finalBossValueText.font = font;
-            _finalBossValueText.fontSize = 20;
-            _finalBossValueText.fontStyle = FontStyle.Bold;
-            _finalBossValueText.alignment = TextAnchor.MiddleRight;
-            _finalBossValueText.color = Color.white;
-            _finalBossValueText.raycastTarget = false;
-
-            _finalBossBarRoot = root;
-            SetFinalBossBarVisible(false);
-        }
-
-        private void SetFinalBossBarVisible(bool visible)
-        {
-            if (_finalBossBarRoot != null && _finalBossBarRoot.activeSelf != visible)
-                _finalBossBarRoot.SetActive(visible);
         }
 
         private void RemoveEnemyBar(EnemyController enemy)

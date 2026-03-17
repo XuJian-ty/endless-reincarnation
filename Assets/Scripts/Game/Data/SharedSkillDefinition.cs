@@ -178,21 +178,6 @@ namespace Game.Data
     }
 
     [Serializable]
-    public class SkillCueEntry
-    {
-        [HideInInspector] public GameObject particlePrefab;
-        [HideInInspector] public AudioClip audioClip;
-        [HideInInspector] public CueAnchor anchor = CueAnchor.Caster;
-        [HideInInspector] public Vector3 offset = Vector3.zero;
-        [HideInInspector] public Vector3 rotationEuler = Vector3.zero;
-        [HideInInspector] public Vector3 scale = Vector3.one;
-        [HideInInspector] public SkillMotionSettings motion = new SkillMotionSettings();
-        [HideInInspector] public bool loop = false;
-        [HideInInspector] public SkillCueDestroyMode destroyMode = SkillCueDestroyMode.NaturalDestroy;
-        [HideInInspector] [Min(0f)] public float duration = 0f;
-    }
-
-    [Serializable]
     public class SkillDamageEffect
     {
         [InspectorLabel("伤害倍率")]

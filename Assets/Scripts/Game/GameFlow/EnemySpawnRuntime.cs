@@ -85,13 +85,9 @@ namespace Game.GameFlow
 
         public List<EnemySpawnVariantInfo> GetVariants(EnemySpawnCategory category)
         {
-            return category switch
-            {
-                EnemySpawnCategory.MinionLegacyRanged => GetVariants(EnemySpawnCategory.Minion),
-                _ => _variantsByCategory.TryGetValue(category, out List<EnemySpawnVariantInfo> variants)
-                    ? variants
-                    : null,
-            };
+            return _variantsByCategory.TryGetValue(category, out List<EnemySpawnVariantInfo> variants)
+                ? variants
+                : null;
         }
 
         public EnemySpawnVariantInfo GetVariant(string spawnId)
@@ -500,7 +496,7 @@ namespace Game.GameFlow
 
         private static bool definitionIsEnemy(EnemySpawnCategory category)
         {
-            return category is EnemySpawnCategory.Minion or EnemySpawnCategory.MinionLegacyRanged or EnemySpawnCategory.Elite or EnemySpawnCategory.Guardian or EnemySpawnCategory.Boss;
+            return category is EnemySpawnCategory.Minion or EnemySpawnCategory.Elite or EnemySpawnCategory.Guardian or EnemySpawnCategory.Boss;
         }
 
         private static GameObject ResolveSpawnPrefab(EnemySpawnCategory spawnType, string spawnId, EnemyType enemyType, EnemySpawnVariantCatalog catalog)

@@ -52,6 +52,9 @@ namespace Game.Presentation
             while (_processedSummonCloneCount < summonCloneCount)
             {
                 GameObject cloneObject = CreateCloneObject(_clones.Count + 1);
+                if (cloneObject == null)
+                    break;
+
                 PlayerCloneActor clone = cloneObject.GetComponent<PlayerCloneActor>();
                 if (clone == null)
                     clone = cloneObject.AddComponent<PlayerCloneActor>();
@@ -102,12 +105,14 @@ namespace Game.Presentation
             if (_clonePrefab == null)
                 _clonePrefab = Resources.Load<GameObject>(ClonePrefabResourcePath);
 
-            GameObject cloneObject = _clonePrefab != null
-                ? Instantiate(_clonePrefab, _owner.transform.position, _owner.transform.rotation)
-                : new GameObject($"PlayerClone_{cloneIndex}");
+            if (_clonePrefab == null)
+            {
+                Debug.LogError($"[PlayerCloneManager] 未找到分身预制体：Resources/{ClonePrefabResourcePath}");
+                return null;
+            }
 
-            if (_clonePrefab != null)
-                cloneObject.name = $"PlayerClone_{cloneIndex}";
+            GameObject cloneObject = Instantiate(_clonePrefab, _owner.transform.position, _owner.transform.rotation);
+            cloneObject.name = $"PlayerClone_{cloneIndex}";
 
             cloneObject.transform.position = _owner.transform.position;
             cloneObject.transform.rotation = _owner.transform.rotation;

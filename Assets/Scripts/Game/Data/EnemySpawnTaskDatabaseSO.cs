@@ -8,7 +8,6 @@ namespace Game.Data
     public enum EnemySpawnCategory
     {
         Minion = 0,
-        MinionLegacyRanged = 1,
         Elite = 2,
         Guardian = 3,
         Boss = 4,
@@ -62,9 +61,9 @@ namespace Game.Data
         public float spawnMinSpacing = 3f;
 
         public bool UseMixedVariants => string.IsNullOrWhiteSpace(specificSpawnId);
-        public bool IsMinionCategory => spawnType == EnemySpawnCategory.Minion || spawnType == EnemySpawnCategory.MinionLegacyRanged;
+        public bool IsMinionCategory => spawnType == EnemySpawnCategory.Minion;
         public bool IsGuardianCategory => spawnType == EnemySpawnCategory.Guardian;
-        public bool IsEnemyCategory => spawnType is EnemySpawnCategory.Minion or EnemySpawnCategory.MinionLegacyRanged or EnemySpawnCategory.Elite or EnemySpawnCategory.Guardian or EnemySpawnCategory.Boss;
+        public bool IsEnemyCategory => spawnType is EnemySpawnCategory.Minion or EnemySpawnCategory.Elite or EnemySpawnCategory.Guardian or EnemySpawnCategory.Boss;
 
         public int ResolveSpawnCount(System.Random rng)
         {

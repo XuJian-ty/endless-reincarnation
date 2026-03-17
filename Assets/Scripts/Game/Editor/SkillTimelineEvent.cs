@@ -17,9 +17,5 @@ namespace Game.Editor
         public List<SkillAttributeEffect> attributeEffects = new List<SkillAttributeEffect>();
         public List<SkillVfxEffect> vfxEffects = new List<SkillVfxEffect>();
         public List<SkillSfxEffect> sfxEffects = new List<SkillSfxEffect>();
-
-        public void UpgradeLegacyCueData()
-        {
-        }
     }
 }

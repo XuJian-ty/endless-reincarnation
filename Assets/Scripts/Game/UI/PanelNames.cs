@@ -12,7 +12,6 @@ namespace Game.UI
         public const string KeyConfig    = "KeyConfigPanel";
         public const string Menu         = "MenuPanel";
         public const string SkillTree    = "SkillTreePanel";
-        public const string Settings     = "SettingsPanel";
         /// <summary>主菜单场景用，仅调节主界面 BGM 音量</summary>
         public const string MainMenuSound = "MainMenuSoundPanel";
         /// <summary>关卡内菜单用，仅调节关卡内 BGM 音量（按存档保存）</summary>
@@ -55,7 +54,6 @@ namespace Game.UI
         public const E_UI_Layer KeyConfig    = E_UI_Layer.Mid;
         public const E_UI_Layer Menu         = E_UI_Layer.Top;
         public const E_UI_Layer SkillTree    = E_UI_Layer.Mid;
-        public const E_UI_Layer Settings     = E_UI_Layer.Top;
         public const E_UI_Layer MainMenuSound = E_UI_Layer.Top;
         public const E_UI_Layer LevelSound    = E_UI_Layer.Top;
         public const E_UI_Layer BattleMemory = E_UI_Layer.Mid;

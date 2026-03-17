@@ -2381,7 +2381,6 @@ namespace Game.Editor
 
         private static void EnsureVfxEffects(SkillTimelineEvent evt)
         {
-            evt.UpgradeLegacyCueData();
             if (evt.vfxEffects == null)
                 evt.vfxEffects = new List<SkillVfxEffect>();
         }
@@ -2394,7 +2393,6 @@ namespace Game.Editor
 
         private static void EnsureSfxEffects(SkillTimelineEvent evt)
         {
-            evt.UpgradeLegacyCueData();
             if (evt.sfxEffects == null)
                 evt.sfxEffects = new List<SkillSfxEffect>();
         }
@@ -3097,7 +3095,6 @@ namespace Game.Editor
                     _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetSfxEventList(skill).Count - 1);
                     break;
             }
-
             DestroyScenePreviewCueInstance();
             MarkDatabaseDirty();
         }
@@ -6001,8 +5998,6 @@ namespace Game.Editor
         {
             if (_animationLibrary == null)
                 _animationLibrary = Resources.Load<CharacterAnimationLibrarySO>("配置/动画库");
-            if (_animationLibrary == null)
-                _animationLibrary = Resources.Load<CharacterAnimationLibrarySO>("配置/人物动画库");
 
             EnsureAnimationSelectionIsValid();
             if (_previewClip == null)
@@ -6505,8 +6500,6 @@ namespace Game.Editor
             var warnings = new List<string>();
             if (evt == null)
                 return warnings;
-
-            evt.UpgradeLegacyCueData();
 
             if (GetDamageEffectCount(evt) == 0
                 && (evt.physicsEffects == null || evt.physicsEffects.Count == 0)

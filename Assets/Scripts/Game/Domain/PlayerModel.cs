@@ -258,13 +258,6 @@ namespace Game.Domain
             return AddWeapon(equippedWeapon);
         }
 
-        /// <summary>兼容：按格子取武器（若该格是武器格则返回实例）</summary>
-        public WeaponInstance GetWeaponAt(int index)
-        {
-            var slot = GetSlot(index);
-            return slot?.weapon;
-        }
-
         // ── 物品数量：金币/天赋点从 _currency；其余从格子汇总 ─────────────────────────
         public int GetItemCount(string itemId)
         {
@@ -543,27 +536,6 @@ namespace Game.Domain
                 loadedSlots = true;
             }
 
-            if (!loadedSlots && run.inventory != null)
-            {
-                int idx = 0;
-                if (run.inventory.weapons != null)
-                    foreach (var w in run.inventory.weapons)
-                    {
-                        if (idx >= SlotCount) break;
-                        _slots[idx].weapon = w;
-                        idx++;
-                    }
-                if (run.inventory.stacks != null)
-                    foreach (var s in run.inventory.stacks)
-                    {
-                        if (idx >= SlotCount) break;
-                        if (string.IsNullOrEmpty(s.itemId) || s.count <= 0) continue;
-                        _slots[idx].stackItemId = s.itemId;
-                        _slots[idx].stackCount = Math.Min(s.count, InventorySlot.MaxStack);
-                        idx++;
-                    }
-            }
-
             Equipment.LoadFrom(run.equippedWeapon);
 
             if (run.itemCounts != null)
@@ -575,11 +547,6 @@ namespace Game.Domain
                         if (!string.IsNullOrEmpty(s.itemId) && s.count > 0
                             && s.itemId != ItemIds.Gold && s.itemId != ItemIds.TalentPoint)
                             AddStackable(s.itemId, s.count);
-            }
-            else
-            {
-                Gold = run.player?.gold ?? 0;
-                TalentPoints = run.talentPoints;
             }
 
             BuffIds          = run.buffIds         != null ? new List<string>(run.buffIds)            : new List<string>();
@@ -598,7 +565,6 @@ namespace Game.Domain
             run.player.currentHp = CurrentHp;
             run.player.currentMp = CurrentMp;
             run.player.gold      = Gold;
-            run.talentPoints     = TalentPoints;
 
             if (run.inventory == null) run.inventory = new InventorySaveData();
             run.inventory.slots.Clear();
@@ -612,8 +578,6 @@ namespace Game.Domain
                     count  = s.stackCount
                 });
             }
-            run.inventory.weapons?.Clear();
-            run.inventory.stacks?.Clear();
 
             if (run.itemCounts == null) run.itemCounts = new ItemCountSaveData();
             run.itemCounts.gold = Gold;

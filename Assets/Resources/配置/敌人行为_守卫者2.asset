@@ -19,21 +19,21 @@ MonoBehaviour:
   sectorRange: 20
   chaseBreakDistance: 32
   patrolRadius: 14
+  patrolHealPercentPerSecond: 0.05
   chaseInnerDistance: 4.4
   chaseOuterDistance: 7
   preferredSafetyDistanceOffset: 0.25
   combatDistanceTolerance: 0.75
   castRangeTolerance: 0.25
   retreatStepDistance: 2.6
-  tacticalHoldDuration: 0.12
   approachLeadTime: 0.15
   losProbeInterval: 0.1
   pathProbeInterval: 0.3
-  losBlockedPenaltySeconds: 0.35
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  headHealthBarHeightOffset: 2.3
   reactionMinSeconds: 0.08
   reactionMaxSeconds: 0.16
   decisionCommitSeconds: 0.24
@@ -49,6 +49,9 @@ MonoBehaviour:
   poiseBreakStunDuration: 0.4
   allowLightHitFlinch: 0
   superArmorWhileCasting: 1
+  hurtNaturalExitNormalizedTime: 0.9
+  hurtNaturalExitTarget: 0
+  locomotionSkillId: EnemyLocomotion
   skillSlots:
   - slotIndex: 0
     skillId: guardian_2_bash
@@ -66,6 +69,8 @@ MonoBehaviour:
     postCastIdleDuration: 0.3
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
     skillId: guardian_2_chain_pull
@@ -83,4 +88,6 @@ MonoBehaviour:
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0

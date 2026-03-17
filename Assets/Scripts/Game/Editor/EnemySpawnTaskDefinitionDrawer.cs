@@ -124,9 +124,9 @@ namespace Game.Editor
                 return y;
 
             Rect rect = new Rect(totalRect.x, y, totalRect.width, EditorGUIUtility.singleLineHeight);
-            int selected = Mathf.Clamp(GetCategoryPopupIndex(property.enumValueIndex), 0, 5);
+            int selected = Mathf.Clamp(GetCategoryPopupIndex(property.intValue), 0, 5);
             selected = EditorGUI.Popup(rect, "生成类型", selected, new[] { "小怪", "精英怪", "守卫者", "Boss", "宝箱", "商店" });
-            property.enumValueIndex = selected switch
+            property.intValue = selected switch
             {
                 0 => (int)EnemySpawnCategory.Minion,
                 1 => (int)EnemySpawnCategory.Elite,
@@ -144,7 +144,7 @@ namespace Game.Editor
             if (spawnTypeProperty == null || specificSpawnIdProperty == null)
                 return y;
 
-            EnemySpawnCategory category = (EnemySpawnCategory)spawnTypeProperty.enumValueIndex;
+            EnemySpawnCategory category = (EnemySpawnCategory)spawnTypeProperty.intValue;
             if (!IsEnemyCategory(category))
             {
                 Rect textRect = new Rect(totalRect.x, y, totalRect.width, EditorGUIUtility.singleLineHeight);
@@ -194,13 +194,13 @@ namespace Game.Editor
             if (spawnTypeProperty == null)
                 return false;
 
-            EnemySpawnCategory category = (EnemySpawnCategory)spawnTypeProperty.enumValueIndex;
+            EnemySpawnCategory category = (EnemySpawnCategory)spawnTypeProperty.intValue;
             return IsEnemyCategory(category);
         }
 
-        private static int GetCategoryPopupIndex(int enumValueIndex)
+        private static int GetCategoryPopupIndex(int serializedValue)
         {
-            EnemySpawnCategory category = (EnemySpawnCategory)enumValueIndex;
+            EnemySpawnCategory category = (EnemySpawnCategory)serializedValue;
             return category switch
             {
                 EnemySpawnCategory.Elite => 1,
@@ -217,7 +217,6 @@ namespace Game.Editor
             return category switch
             {
                 EnemySpawnCategory.Minion => type == EnemyType.MeleeMinion || type == EnemyType.RangedMinion,
-                EnemySpawnCategory.MinionLegacyRanged => type == EnemyType.MeleeMinion || type == EnemyType.RangedMinion,
                 EnemySpawnCategory.Elite => type == EnemyType.Elite,
                 EnemySpawnCategory.Guardian => type == EnemyType.Guardian,
                 EnemySpawnCategory.Boss => type == EnemyType.Boss,
@@ -227,7 +226,7 @@ namespace Game.Editor
 
         private static bool IsEnemyCategory(EnemySpawnCategory category)
         {
-            return category is EnemySpawnCategory.Minion or EnemySpawnCategory.MinionLegacyRanged or EnemySpawnCategory.Elite or EnemySpawnCategory.Guardian or EnemySpawnCategory.Boss;
+            return category is EnemySpawnCategory.Minion or EnemySpawnCategory.Elite or EnemySpawnCategory.Guardian or EnemySpawnCategory.Boss;
         }
 
         private static float GetChildHeight(SerializedProperty property)
