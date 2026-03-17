@@ -28,8 +28,8 @@ namespace Game.Editor
                 SerializedProperty levelIndex = property.FindPropertyRelative("levelIndex");
                 SerializedProperty sceneName = property.FindPropertyRelative("sceneName");
                 SerializedProperty sceneGuid = property.FindPropertyRelative("sceneGuid");
-                SerializedProperty library = property.FindPropertyRelative("enemyGlobalSpawnPlanLibrary");
-                SerializedProperty planIndex = property.FindPropertyRelative("enemyGlobalSpawnPlanIndex");
+                SerializedProperty library = property.FindPropertyRelative("globalSpawnPlanLibrary");
+                SerializedProperty planIndex = property.FindPropertyRelative("globalSpawnPlanIndex");
                 SerializedProperty chestMinCount = property.FindPropertyRelative("chestMinCount");
                 SerializedProperty chestMaxCount = property.FindPropertyRelative("chestMaxCount");
                 SerializedProperty shopCount = property.FindPropertyRelative("shopCount");
@@ -69,7 +69,7 @@ namespace Game.Editor
             height += EditorGUIUtility.standardVerticalSpacing;
             height += GetChildHeight(property.FindPropertyRelative("levelIndex"));
             height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-            height += GetChildHeight(property.FindPropertyRelative("enemyGlobalSpawnPlanLibrary"));
+            height += GetChildHeight(property.FindPropertyRelative("globalSpawnPlanLibrary"));
             height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
             height += GetChildHeight(property.FindPropertyRelative("chestMinCount"));
             height += GetChildHeight(property.FindPropertyRelative("chestMaxCount"));

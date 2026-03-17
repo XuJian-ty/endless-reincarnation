@@ -92,8 +92,11 @@ namespace Game.Editor
         private bool _filterDamageWithOnHitSfx;
         private TimelineTrackType _newEventTrackType = TimelineTrackType.Damage;
         private bool _sceneHandlesEnabled = true;
+        private int _activeSceneDamageEventIndex = -1;
         private int _activeSceneDamageIndex = -1;
+        private int _activeSceneCueEventIndex = -1;
         private int _activeSceneCueIndex = -1;
+        private int _activeSceneHitVfxEventIndex = -1;
         private int _activeSceneHitVfxDamageIndex = -1;
         private int _activeSceneHitVfxIndex = -1;
         private readonly HashSet<string> _hiddenPreviewCueKeys = new HashSet<string>();
@@ -276,36 +279,47 @@ namespace Game.Editor
             if (!_sceneHandlesEnabled)
                 return;
 
-            SkillTimelineEvent evt = GetSelectedSceneEvent();
-            if (evt == null)
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
                 return;
 
             UpdateScenePreviewCueInstance();
 
-            if (_activeSceneCueIndex >= 0 && evt.vfxEffects != null && _activeSceneCueIndex < evt.vfxEffects.Count)
-                DrawCueSceneHandle(evt.vfxEffects[_activeSceneCueIndex]);
-
-            bool hasActiveHitVfx = _selectedEventTrackType == TimelineTrackType.Damage
-                && _activeSceneHitVfxDamageIndex >= 0
-                && _activeSceneHitVfxIndex >= 0;
-
-            if (_selectedEventTrackType == TimelineTrackType.Damage
-                && _activeSceneDamageIndex >= 0
-                && evt.damageEffects != null
-                && _activeSceneDamageIndex < evt.damageEffects.Count)
+            if (GetTrackEvent(skill, TimelineTrackType.Vfx, _activeSceneCueEventIndex) is SkillVfxEvent activeCueEvent
+                && _activeSceneCueIndex >= 0
+                && activeCueEvent.vfxEffects != null
+                && _activeSceneCueIndex < activeCueEvent.vfxEffects.Count
+                && TryGetTopLevelSceneCuePlaybackContext(activeCueEvent, out float topLevelTriggerTime, out Transform topLevelExplicitTarget))
             {
-                SkillDamageEffect damageEffect = evt.damageEffects[_activeSceneDamageIndex];
+                DrawCueSceneHandle(activeCueEvent.vfxEffects[_activeSceneCueIndex], topLevelTriggerTime, topLevelExplicitTarget, "特效效果");
+            }
+
+            if (GetTrackEvent(skill, TimelineTrackType.Damage, _activeSceneHitVfxEventIndex) is SkillDamageEvent activeHitVfxDamageEvent
+                && _activeSceneHitVfxDamageIndex >= 0
+                && activeHitVfxDamageEvent.damageEffects != null
+                && _activeSceneHitVfxDamageIndex < activeHitVfxDamageEvent.damageEffects.Count)
+            {
+                SkillDamageEffect damageEffect = activeHitVfxDamageEvent.damageEffects[_activeSceneHitVfxDamageIndex];
                 if (damageEffect?.onHitVfxEffects != null
-                    && _activeSceneHitVfxDamageIndex == _activeSceneDamageIndex
                     && _activeSceneHitVfxIndex >= 0
-                    && _activeSceneHitVfxIndex < damageEffect.onHitVfxEffects.Count)
+                    && _activeSceneHitVfxIndex < damageEffect.onHitVfxEffects.Count
+                    && TryGetOnHitSceneCuePlaybackContext(out float onHitTriggerTime, out Transform onHitExplicitTarget))
                 {
-                    DrawCueSceneHandle(damageEffect.onHitVfxEffects[_activeSceneHitVfxIndex]);
+                    DrawCueSceneHandle(damageEffect.onHitVfxEffects[_activeSceneHitVfxIndex], onHitTriggerTime, onHitExplicitTarget, "命中特效效果");
                 }
             }
 
-            if (!hasActiveHitVfx && _activeSceneDamageIndex >= 0 && evt.damageEffects != null && _activeSceneDamageIndex < evt.damageEffects.Count)
-                DrawDamageSceneHandle(evt.damageEffects[_activeSceneDamageIndex]);
+            if (GetTrackEvent(skill, TimelineTrackType.Damage, _activeSceneDamageEventIndex) is SkillDamageEvent activeDamageEvent
+                && _activeSceneDamageIndex >= 0
+                && activeDamageEvent.damageEffects != null
+                && _activeSceneDamageIndex < activeDamageEvent.damageEffects.Count)
+            {
+                SkillDamageEffect damageEffect = activeDamageEvent.damageEffects[_activeSceneDamageIndex];
+                if (TryGetActiveSceneDamageTriggerTime(out float activeDamageTriggerTime))
+                    DrawDamageSceneHandle(damageEffect, activeDamageTriggerTime);
+                else
+                    DrawDamageSceneHandle(damageEffect);
+            }
         }
 
         private void DrawTimelinePreviewVfxBounds()
@@ -1905,12 +1919,14 @@ namespace Game.Editor
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField($"伤害效果 {i + 1}", EditorStyles.miniBoldLabel);
-                if (GUILayout.Button(_activeSceneDamageIndex == i ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
+                bool isEditingDamage = _selectedEventTrackType == TimelineTrackType.Damage
+                    && _activeSceneDamageEventIndex == _selectedEventIndex
+                    && _activeSceneDamageIndex == i;
+                if (GUILayout.Button(isEditingDamage ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
                 {
-                    bool same = _activeSceneDamageIndex == i;
+                    bool same = isEditingDamage;
+                    _activeSceneDamageEventIndex = same ? -1 : _selectedEventIndex;
                     _activeSceneDamageIndex = same ? -1 : i;
-                    _activeSceneHitVfxDamageIndex = -1;
-                    _activeSceneHitVfxIndex = -1;
                     SceneView.RepaintAll();
                 }
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
@@ -2000,18 +2016,34 @@ namespace Game.Editor
             {
                 Undo.RecordObject(_database, "Remove Damage Effect");
                 evt.damageEffects.RemoveAt(removeIndex);
-                if (_activeSceneDamageIndex == removeIndex)
-                    _activeSceneDamageIndex = -1;
-                else if (_activeSceneDamageIndex > removeIndex)
-                    _activeSceneDamageIndex--;
-                if (_activeSceneHitVfxDamageIndex == removeIndex)
+                if (_selectedEventTrackType == TimelineTrackType.Damage
+                    && _activeSceneDamageEventIndex == _selectedEventIndex)
                 {
-                    _activeSceneHitVfxDamageIndex = -1;
-                    _activeSceneHitVfxIndex = -1;
-                    DestroyScenePreviewCueInstance();
+                    if (_activeSceneDamageIndex == removeIndex)
+                    {
+                        _activeSceneDamageEventIndex = -1;
+                        _activeSceneDamageIndex = -1;
+                    }
+                    else if (_activeSceneDamageIndex > removeIndex)
+                    {
+                        _activeSceneDamageIndex--;
+                    }
                 }
-                else if (_activeSceneHitVfxDamageIndex > removeIndex)
-                    _activeSceneHitVfxDamageIndex--;
+                if (_selectedEventTrackType == TimelineTrackType.Damage
+                    && _activeSceneHitVfxEventIndex == _selectedEventIndex)
+                {
+                    if (_activeSceneHitVfxDamageIndex == removeIndex)
+                    {
+                        _activeSceneHitVfxEventIndex = -1;
+                        _activeSceneHitVfxDamageIndex = -1;
+                        _activeSceneHitVfxIndex = -1;
+                        DestroyScenePreviewCueInstance();
+                    }
+                    else if (_activeSceneHitVfxDamageIndex > removeIndex)
+                    {
+                        _activeSceneHitVfxDamageIndex--;
+                    }
+                }
                 MarkDatabaseDirty();
             }
 
@@ -2170,8 +2202,11 @@ namespace Game.Editor
                     else
                         _hiddenPreviewCueKeys.Add(hiddenKey);
 
-                    if (!newVisible && _activeSceneCueIndex == i)
+                    if (!newVisible
+                        && _activeSceneCueEventIndex == _selectedEventIndex
+                        && _activeSceneCueIndex == i)
                     {
+                        _activeSceneCueEventIndex = -1;
                         _activeSceneCueIndex = -1;
                         DestroyScenePreviewCueInstance();
                     }
@@ -2179,13 +2214,15 @@ namespace Game.Editor
                     Repaint();
                     SceneView.RepaintAll();
                 }
-                if (GUILayout.Button(_activeSceneCueIndex == i ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
+                bool isEditingTopLevelCue = _activeSceneCueEventIndex == _selectedEventIndex
+                    && _activeSceneCueIndex == i;
+                if (GUILayout.Button(isEditingTopLevelCue ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
                 {
                     _hiddenPreviewCueKeys.Remove(hiddenKey);
-                    _activeSceneCueIndex = _activeSceneCueIndex == i ? -1 : i;
-                    _activeSceneHitVfxDamageIndex = -1;
-                    _activeSceneHitVfxIndex = -1;
-                    if (_activeSceneCueIndex >= 0)
+                    bool same = isEditingTopLevelCue;
+                    _activeSceneCueEventIndex = same ? -1 : _selectedEventIndex;
+                    _activeSceneCueIndex = same ? -1 : i;
+                    if (!same)
                         UpdateScenePreviewCueInstance();
                     else
                         DestroyScenePreviewCueInstance();
@@ -2231,13 +2268,20 @@ namespace Game.Editor
             {
                 Undo.RecordObject(_database, "Remove VFX Effect");
                 evt.vfxEffects.RemoveAt(removeIndex);
-                if (_activeSceneCueIndex == removeIndex)
+                if (_selectedEventTrackType == TimelineTrackType.Vfx
+                    && _activeSceneCueEventIndex == _selectedEventIndex
+                    && _activeSceneCueIndex == removeIndex)
                 {
+                    _activeSceneCueEventIndex = -1;
                     _activeSceneCueIndex = -1;
                     DestroyScenePreviewCueInstance();
                 }
-                else if (_activeSceneCueIndex > removeIndex)
+                else if (_selectedEventTrackType == TimelineTrackType.Vfx
+                    && _activeSceneCueEventIndex == _selectedEventIndex
+                    && _activeSceneCueIndex > removeIndex)
+                {
                     _activeSceneCueIndex--;
+                }
                 MarkDatabaseDirty();
             }
 
@@ -2594,9 +2638,12 @@ namespace Game.Editor
                     else
                         _hiddenPreviewCueKeys.Add(hiddenKey);
 
-                    bool isCurrentHidden = _activeSceneHitVfxDamageIndex == damageIndex && _activeSceneHitVfxIndex == i;
+                    bool isCurrentHidden = _activeSceneHitVfxEventIndex == _selectedEventIndex
+                        && _activeSceneHitVfxDamageIndex == damageIndex
+                        && _activeSceneHitVfxIndex == i;
                     if (!newVisible && isCurrentHidden)
                     {
+                        _activeSceneHitVfxEventIndex = -1;
                         _activeSceneHitVfxDamageIndex = -1;
                         _activeSceneHitVfxIndex = -1;
                         DestroyScenePreviewCueInstance();
@@ -2606,16 +2653,16 @@ namespace Game.Editor
                     SceneView.RepaintAll();
                 }
                 bool isEditingHitVfx = _selectedEventTrackType == TimelineTrackType.Damage
+                    && _activeSceneHitVfxEventIndex == _selectedEventIndex
                     && _activeSceneHitVfxDamageIndex == damageIndex
                     && _activeSceneHitVfxIndex == i;
                 if (GUILayout.Button(isEditingHitVfx ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
                 {
                     _hiddenPreviewCueKeys.Remove(hiddenKey);
                     bool same = isEditingHitVfx;
-                    _activeSceneDamageIndex = same ? _activeSceneDamageIndex : damageIndex;
+                    _activeSceneHitVfxEventIndex = same ? -1 : _selectedEventIndex;
                     _activeSceneHitVfxDamageIndex = same ? -1 : damageIndex;
                     _activeSceneHitVfxIndex = same ? -1 : i;
-                    _activeSceneCueIndex = -1;
                     if (!same)
                         UpdateScenePreviewCueInstance();
                     else
@@ -3002,6 +3049,26 @@ namespace Game.Editor
             {
                 case TimelineTrackType.Damage:
                     GetDamageEventList(skill).RemoveAt(_selectedEventIndex);
+                    if (_activeSceneDamageEventIndex == _selectedEventIndex)
+                    {
+                        _activeSceneDamageEventIndex = -1;
+                        _activeSceneDamageIndex = -1;
+                    }
+                    else if (_activeSceneDamageEventIndex > _selectedEventIndex)
+                    {
+                        _activeSceneDamageEventIndex--;
+                    }
+
+                    if (_activeSceneHitVfxEventIndex == _selectedEventIndex)
+                    {
+                        _activeSceneHitVfxEventIndex = -1;
+                        _activeSceneHitVfxDamageIndex = -1;
+                        _activeSceneHitVfxIndex = -1;
+                    }
+                    else if (_activeSceneHitVfxEventIndex > _selectedEventIndex)
+                    {
+                        _activeSceneHitVfxEventIndex--;
+                    }
                     _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetDamageEventList(skill).Count - 1);
                     break;
                 case TimelineTrackType.Physics:
@@ -3014,6 +3081,15 @@ namespace Game.Editor
                     break;
                 case TimelineTrackType.Vfx:
                     GetVfxEventList(skill).RemoveAt(_selectedEventIndex);
+                    if (_activeSceneCueEventIndex == _selectedEventIndex)
+                    {
+                        _activeSceneCueEventIndex = -1;
+                        _activeSceneCueIndex = -1;
+                    }
+                    else if (_activeSceneCueEventIndex > _selectedEventIndex)
+                    {
+                        _activeSceneCueEventIndex--;
+                    }
                     _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetVfxEventList(skill).Count - 1);
                     break;
                 case TimelineTrackType.Sfx:
@@ -3022,10 +3098,6 @@ namespace Game.Editor
                     break;
             }
 
-            _activeSceneDamageIndex = -1;
-            _activeSceneCueIndex = -1;
-            _activeSceneHitVfxDamageIndex = -1;
-            _activeSceneHitVfxIndex = -1;
             DestroyScenePreviewCueInstance();
             MarkDatabaseDirty();
         }
@@ -3043,8 +3115,11 @@ namespace Game.Editor
             GetSfxEventList(skill).Clear();
 
             _selectedEventIndex = -1;
+            _activeSceneDamageEventIndex = -1;
             _activeSceneDamageIndex = -1;
+            _activeSceneCueEventIndex = -1;
             _activeSceneCueIndex = -1;
+            _activeSceneHitVfxEventIndex = -1;
             _activeSceneHitVfxDamageIndex = -1;
             _activeSceneHitVfxIndex = -1;
             DestroyScenePreviewCueInstance();
@@ -4579,6 +4654,34 @@ namespace Game.Editor
             if (GetSelectedTimedEvent() is not SkillDamageEvent damageEvent)
                 return false;
 
+            return TryGetDamageEventTriggerTime(damageEvent, out triggerTime);
+        }
+
+        private bool TryGetActiveSceneDamageTriggerTime(out float triggerTime)
+        {
+            triggerTime = 0f;
+            return TryGetSceneDamageTriggerTime(_activeSceneDamageEventIndex, out triggerTime);
+        }
+
+        private bool TryGetSceneDamageTriggerTime(int damageEventIndex, out float triggerTime)
+        {
+            triggerTime = 0f;
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return false;
+
+            if (GetTrackEvent(skill, TimelineTrackType.Damage, damageEventIndex) is not SkillDamageEvent damageEvent)
+                return false;
+
+            return TryGetDamageEventTriggerTime(damageEvent, out triggerTime);
+        }
+
+        private bool TryGetDamageEventTriggerTime(SkillDamageEvent damageEvent, out float triggerTime)
+        {
+            triggerTime = 0f;
+            if (damageEvent == null)
+                return false;
+
             bool found = false;
             float resolvedTriggerTime = 0f;
             IteratePreviewTriggerTimes(damageEvent, time =>
@@ -5028,26 +5131,19 @@ namespace Game.Editor
 
         private void SelectEvent(TimelineTrackType trackType, int eventIndex)
         {
-            bool changed = _selectedEventTrackType != trackType || _selectedEventIndex != eventIndex;
             _selectedEventTrackType = trackType;
             _selectedEventIndex = eventIndex;
-
-            if (!changed)
-                return;
-
-            _activeSceneDamageIndex = -1;
-            _activeSceneCueIndex = -1;
-            _activeSceneHitVfxDamageIndex = -1;
-            _activeSceneHitVfxIndex = -1;
-            DestroyScenePreviewCueInstance();
         }
 
         private void ClearSelectedEvent()
         {
             _selectedEventTrackType = TimelineTrackType.Damage;
             _selectedEventIndex = -1;
+            _activeSceneDamageEventIndex = -1;
             _activeSceneDamageIndex = -1;
+            _activeSceneCueEventIndex = -1;
             _activeSceneCueIndex = -1;
+            _activeSceneHitVfxEventIndex = -1;
             _activeSceneHitVfxDamageIndex = -1;
             _activeSceneHitVfxIndex = -1;
             DestroyScenePreviewCueInstance();
@@ -5850,8 +5946,7 @@ namespace Game.Editor
                 return;
             }
 
-            List<GameObject> candidates = GetPreviewRootCandidates(_previewVictimFilter);
-            _previewVictimTarget = candidates.Count > 0 ? candidates[0] : null;
+            _previewVictimTarget = null;
         }
 
         private List<GameObject> GetPreviewRootCandidates()
@@ -6848,14 +6943,10 @@ namespace Game.Editor
             return timedEvent != null ? CreateLegacyEventView(timedEvent, _selectedEventTrackType) : null;
         }
 
-        private void DrawCueSceneHandle(SkillVfxEffect cue)
+        private void DrawCueSceneHandle(SkillVfxEffect cue, float triggerTime, Transform explicitTarget, string label)
         {
             if (cue == null || _previewTarget == null)
                 return;
-
-            float triggerTime = 0f;
-            Transform explicitTarget = null;
-            TryGetCurrentSceneCuePlaybackContext(out triggerTime, out explicitTarget);
 
             Transform anchor = ResolveCueAnchorTransform(cue.anchor, cue, explicitTarget);
             if (anchor == null)
@@ -6880,7 +6971,7 @@ namespace Game.Editor
 
             Color oldColor = Handles.color;
             Handles.color = new Color(0.18f, 0.9f, 1f, 1f);
-            DrawSceneTextLabel(worldPosition + Vector3.up * handleSize * 0.15f, "特效效果");
+            DrawSceneTextLabel(worldPosition + Vector3.up * handleSize * 0.15f, label);
 
             EditorGUI.BeginChangeCheck();
             Vector3 newWorldPosition = Handles.PositionHandle(worldPosition, worldRotation);
@@ -6896,7 +6987,7 @@ namespace Game.Editor
                 SceneView.RepaintAll();
             }
 
-            DrawSceneCueBounds();
+            DrawSceneCueBounds(cue, worldPosition, worldRotation);
 
             Handles.color = oldColor;
         }
@@ -7275,16 +7366,17 @@ namespace Game.Editor
 
         private bool IsSceneEditingTopLevelCue(int eventIndex, int effectIndex)
         {
-            return _activeSceneCueIndex >= 0
-                && _selectedEventIndex == eventIndex
+            return _activeSceneCueEventIndex >= 0
+                && _activeSceneCueEventIndex == eventIndex
                 && _activeSceneCueIndex == effectIndex;
         }
 
         private bool IsSceneEditingOnHitCue(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
         {
-            return _activeSceneHitVfxDamageIndex >= 0
+            return _activeSceneHitVfxEventIndex >= 0
+                && _activeSceneHitVfxDamageIndex >= 0
                 && _activeSceneHitVfxIndex >= 0
-                && _selectedEventIndex == eventIndex
+                && _activeSceneHitVfxEventIndex == eventIndex
                 && _activeSceneHitVfxDamageIndex == damageEffectIndex
                 && _activeSceneHitVfxIndex == onHitEffectIndex;
         }
@@ -7369,6 +7461,80 @@ namespace Game.Editor
             return true;
         }
 
+        private bool TryGetTopLevelSceneCuePlaybackContext(SkillVfxEvent evt, out float triggerTime, out Transform explicitTarget)
+        {
+            triggerTime = 0f;
+            explicitTarget = null;
+
+            if (evt == null || _activeSceneCueIndex < 0 || _previewTime + 0.0001f < evt.startTime)
+                return false;
+
+            triggerTime = evt.startTime;
+            if (evt.triggerMode == SkillEventTriggerMode.Repeated)
+            {
+                float interval = Mathf.Max(0.01f, evt.repeatInterval);
+                float repeatedEndTime = evt.activeDurationMode == SkillEventActiveDurationMode.UntilStateExit
+                    ? Mathf.Max(evt.startTime, GetPreviewStateExitTime())
+                    : evt.startTime + Mathf.Max(0f, evt.activeDuration);
+                float endTime = Mathf.Min(repeatedEndTime, _previewTime);
+                for (float time = evt.startTime; time <= endTime + 0.0001f; time += interval)
+                    triggerTime = time;
+            }
+
+            return true;
+        }
+
+        private bool TryGetOnHitSceneCuePlaybackContext(out float triggerTime, out Transform explicitTarget)
+        {
+            triggerTime = 0f;
+            explicitTarget = null;
+
+            GameObject explicitVictim = ResolveRootPreviewTarget(_previewVictimTarget);
+            if (explicitVictim == null
+                || _activeSceneHitVfxEventIndex < 0
+                || _activeSceneHitVfxDamageIndex < 0
+                || _activeSceneHitVfxIndex < 0)
+            {
+                return false;
+            }
+
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return false;
+
+            List<PreviewDamageHitResult> hits = CollectPreviewDamageHitHistory(skill);
+            PreviewDamageHitResult bestHit = null;
+            for (int i = 0; i < hits.Count; i++)
+            {
+                PreviewDamageHitResult hit = hits[i];
+                if (hit == null
+                    || hit.eventIndex != _activeSceneHitVfxEventIndex
+                    || hit.effectIndex != _activeSceneHitVfxDamageIndex
+                    || hit.hitTargets == null
+                    || hit.hitTargets.Count == 0
+                    || hit.hitTime > _previewTime + 0.0001f)
+                {
+                    continue;
+                }
+
+                if (bestHit == null || hit.hitTime > bestHit.hitTime)
+                    bestHit = hit;
+            }
+
+            if (bestHit == null)
+            {
+                if (!TryGetSceneDamageTriggerTime(_activeSceneHitVfxEventIndex, out triggerTime))
+                    return false;
+
+                explicitTarget = explicitVictim.transform;
+                return true;
+            }
+
+            triggerTime = bestHit.hitTime;
+            explicitTarget = bestHit.hitTargets[0];
+            return true;
+        }
+
         private bool TryEvaluatePreviewCueTransform(SkillVfxEffect cue, Transform explicitTarget, float triggerTime, out Vector3 position, out Quaternion rotation)
         {
             position = Vector3.zero;
@@ -7398,41 +7564,72 @@ namespace Game.Editor
             return true;
         }
 
-        private void DrawSceneCueBounds()
+        private void DrawSceneCueBounds(SkillVfxEffect cue, Vector3 worldPosition, Quaternion worldRotation)
         {
-            if (_scenePreviewCueInstance == null)
+            if (cue?.particlePrefab == null)
                 return;
 
-            Renderer[] renderers = _scenePreviewCueInstance.GetComponentsInChildren<Renderer>(true);
+            if (!TryGetCuePrefabLocalBounds(cue.particlePrefab, out Bounds localBounds))
+                return;
+
+            Color oldColor = Handles.color;
+            Matrix4x4 oldMatrix = Handles.matrix;
+            Handles.color = new Color(0.18f, 0.9f, 1f, 0.9f);
+            Handles.matrix = Matrix4x4.TRS(worldPosition, worldRotation, cue.scale);
+            Handles.DrawWireCube(localBounds.center, localBounds.size);
+            Handles.matrix = oldMatrix;
+            Handles.color = oldColor;
+        }
+
+        private static bool TryGetCuePrefabLocalBounds(GameObject prefab, out Bounds bounds)
+        {
+            bounds = default;
+            if (prefab == null)
+                return false;
+
+            Renderer[] renderers = prefab.GetComponentsInChildren<Renderer>(true);
             if (renderers == null || renderers.Length == 0)
-                return;
+                return false;
 
+            Transform root = prefab.transform;
             bool hasBounds = false;
-            Bounds bounds = default;
             for (int i = 0; i < renderers.Length; i++)
             {
                 Renderer renderer = renderers[i];
                 if (renderer == null)
                     continue;
 
+                Bounds rendererBounds = TransformLocalBoundsToRoot(root, renderer.transform, renderer.localBounds);
                 if (!hasBounds)
                 {
-                    bounds = renderer.bounds;
+                    bounds = rendererBounds;
                     hasBounds = true;
                 }
                 else
                 {
-                    bounds.Encapsulate(renderer.bounds);
+                    bounds.Encapsulate(rendererBounds);
                 }
             }
 
-            if (!hasBounds)
-                return;
+            return hasBounds;
+        }
 
-            Color oldColor = Handles.color;
-            Handles.color = new Color(0.18f, 0.9f, 1f, 0.9f);
-            Handles.DrawWireCube(bounds.center, bounds.size);
-            Handles.color = oldColor;
+        private static Bounds TransformLocalBoundsToRoot(Transform root, Transform source, Bounds localBounds)
+        {
+            Matrix4x4 matrix = root.worldToLocalMatrix * source.localToWorldMatrix;
+            Vector3 center = matrix.MultiplyPoint3x4(localBounds.center);
+            Vector3 extents = localBounds.extents;
+
+            Vector3 axisX = matrix.MultiplyVector(new Vector3(extents.x, 0f, 0f));
+            Vector3 axisY = matrix.MultiplyVector(new Vector3(0f, extents.y, 0f));
+            Vector3 axisZ = matrix.MultiplyVector(new Vector3(0f, 0f, extents.z));
+
+            Vector3 transformedExtents = new Vector3(
+                Mathf.Abs(axisX.x) + Mathf.Abs(axisY.x) + Mathf.Abs(axisZ.x),
+                Mathf.Abs(axisX.y) + Mathf.Abs(axisY.y) + Mathf.Abs(axisZ.y),
+                Mathf.Abs(axisX.z) + Mathf.Abs(axisY.z) + Mathf.Abs(axisZ.z));
+
+            return new Bounds(center, transformedExtents * 2f);
         }
 
         private void SimulateScenePreviewParticles(float localTime)

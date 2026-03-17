@@ -33,11 +33,26 @@ namespace Game.Presentation
             if (caster == null)
                 return null;
 
-            PlayerCloneActor cloneActor = caster.GetComponentInParent<PlayerCloneActor>();
+            PlayerCloneActor cloneActor = ResolveOwningClone(caster);
             if (cloneActor != null && cloneActor.Owner != null)
                 return cloneActor.Owner;
 
             return caster.GetComponentInParent<PlayerController>();
+        }
+
+        public static PlayerCloneActor ResolveOwningClone(Transform caster)
+        {
+            return caster != null ? caster.GetComponentInParent<PlayerCloneActor>() : null;
+        }
+
+        public static Stats ResolveCombatStats(Transform caster)
+        {
+            PlayerCloneActor cloneActor = ResolveOwningClone(caster);
+            if (cloneActor != null)
+                return cloneActor.CombatStats;
+
+            PlayerController player = caster != null ? caster.GetComponentInParent<PlayerController>() : null;
+            return player?.PlayerModel?.Stats;
         }
 
         public static int GetBuffStackCount(Transform caster, string buffId)
@@ -106,7 +121,7 @@ namespace Game.Presentation
             if (cloned == null)
                 return source;
 
-            ApplyAttackSpeed(player.PlayerModel, cloned, actionId);
+            ApplyAttackSpeed(ResolveCombatStats(caster), cloned, actionId);
             AppendAfterimageEvents(cloned.damageEvents, afterimageStackCount, delay, damageMultiplier);
             AppendAfterimageEvents(cloned.vfxEvents, afterimageStackCount, delay);
             AppendAfterimageEvents(cloned.sfxEvents, afterimageStackCount, delay);
@@ -118,20 +133,25 @@ namespace Game.Presentation
 
         public static float GetActionPlaybackSpeed(PlayerModel player, string actionId)
         {
-            if (player == null || string.IsNullOrWhiteSpace(actionId))
+            return GetActionPlaybackSpeed(player?.Stats, actionId);
+        }
+
+        public static float GetActionPlaybackSpeed(Stats stats, string actionId)
+        {
+            if (stats == null || string.IsNullOrWhiteSpace(actionId))
                 return 1f;
 
             return AttackSpeedAffectedActions.Contains(actionId.Trim())
-                ? Mathf.Max(0.1f, player.Stats.AttackSpeed)
+                ? Mathf.Max(0.1f, stats.AttackSpeed)
                 : 1f;
         }
 
-        private static void ApplyAttackSpeed(PlayerModel player, SharedSkillDefinition definition, string actionId)
+        private static void ApplyAttackSpeed(Stats stats, SharedSkillDefinition definition, string actionId)
         {
-            if (player == null || definition == null)
+            if (stats == null || definition == null)
                 return;
 
-            float playbackSpeed = GetActionPlaybackSpeed(player, actionId);
+            float playbackSpeed = GetActionPlaybackSpeed(stats, actionId);
             if (Mathf.Approximately(playbackSpeed, 1f))
                 return;
 

@@ -31,7 +31,7 @@ namespace Game.Editor
 
             if (database == null || database.tasks == null || database.tasks.Count == 0)
             {
-                EditorGUILayout.HelpBox("请先指定任务库并至少创建一条具体类型敌人生成数据。", MessageType.Info);
+                EditorGUILayout.HelpBox("请先指定任务库并至少创建一条具体类型生成数据。", MessageType.Info);
                 EditorGUILayout.PropertyField(plansProperty, true);
                 return;
             }
@@ -166,13 +166,13 @@ namespace Game.Editor
                     ? $"固定{Mathf.Max(0, task.fixedCount)}"
                     : $"随机{Mathf.Max(0, task.randomMinCount)}~{Mathf.Max(task.randomMinCount, task.randomMaxCount)}";
                 string variantText = ResolveVariantText(task);
-                labels.Add($"[{i}] {GetEnemyTypeText(task.enemyType)} | {variantText} | 半径{task.spawnRadius:0.##} | {countText}");
+                labels.Add($"[{i}] {GetSpawnTypeText(task.spawnType)} | {variantText} | 半径{task.spawnRadius:0.##} | {countText}");
             }
 
             return labels;
         }
 
-        private static string GetEnemyTypeText(EnemySpawnCategory type)
+        private static string GetSpawnTypeText(EnemySpawnCategory type)
         {
             return type switch
             {
@@ -181,13 +181,21 @@ namespace Game.Editor
                 EnemySpawnCategory.Elite => "精英怪",
                 EnemySpawnCategory.Guardian => "守卫者",
                 EnemySpawnCategory.Boss => "Boss",
+                EnemySpawnCategory.Chest => "宝箱",
+                EnemySpawnCategory.Shop => "商店",
                 _ => type.ToString(),
             };
         }
 
         private static string ResolveVariantText(EnemySpawnTaskDefinition task)
         {
-            if (task == null || task.UseMixedVariants)
+            if (task == null)
+                return "混合随机";
+
+            if (!task.IsEnemyCategory)
+                return task.UseMixedVariants ? "默认" : task.specificSpawnId.Trim();
+
+            if (task.UseMixedVariants)
                 return "混合随机";
 
             EnemyStatsDatabaseSO statsDb = Resources.Load<EnemyStatsDatabaseSO>("配置/敌人属性库");
@@ -199,12 +207,12 @@ namespace Game.Editor
                     if (entry == null || string.IsNullOrWhiteSpace(entry.enemyId))
                         continue;
 
-                    if (string.Equals(entry.enemyId.Trim(), task.specificEnemyId.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(entry.enemyId.Trim(), task.specificSpawnId.Trim(), System.StringComparison.OrdinalIgnoreCase))
                         return string.IsNullOrWhiteSpace(entry.displayName) ? entry.enemyId.Trim() : entry.displayName.Trim();
                 }
             }
 
-            return task.specificEnemyId.Trim();
+            return task.specificSpawnId.Trim();
         }
 
         private static void DrawSpawnModePopup(SerializedProperty property)
@@ -213,7 +221,7 @@ namespace Game.Editor
                 return;
 
             int selected = Mathf.Clamp(property.enumValueIndex, 0, 1);
-            selected = EditorGUILayout.Popup("生成模式", selected, new[] { "一次性生成所有敌人", "随时间逐渐生成敌人" });
+            selected = EditorGUILayout.Popup("生成模式", selected, new[] { "一次性生成所有对象", "随时间逐渐生成对象" });
             property.enumValueIndex = selected;
         }
     }

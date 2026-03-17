@@ -17,7 +17,7 @@ MonoBehaviour:
     baseHp: 10000
     baseMp: 100
     expToNext: 120
-    baseAttack: 999
+    baseAttack: 20
     baseDefense: 100
     baseHpRegen: 1
     baseMpRegen: 1

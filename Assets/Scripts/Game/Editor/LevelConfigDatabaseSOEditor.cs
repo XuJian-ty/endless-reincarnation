@@ -82,7 +82,7 @@ namespace Game.Editor
 
             EditorGUILayout.LabelField("关卡列表", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "这里按关卡槽位顺序管理关卡配置。支持直接拖拽调整顺序，删除当前选中的任意关卡。新增关卡后，记得同步补场景和对应敌人生成方案。",
+                "这里按关卡槽位顺序管理关卡配置。支持直接拖拽调整顺序，删除当前选中的任意关卡。新增关卡后，记得同步补场景和对应生成方案。",
                 MessageType.Info);
             _levelsList?.DoLayoutList();
 
@@ -109,8 +109,8 @@ namespace Game.Editor
             SerializedProperty levelIndex = newLevel.FindPropertyRelative("levelIndex");
             SerializedProperty sceneName = newLevel.FindPropertyRelative("sceneName");
             SerializedProperty sceneGuid = newLevel.FindPropertyRelative("sceneGuid");
-            SerializedProperty library = newLevel.FindPropertyRelative("enemyGlobalSpawnPlanLibrary");
-            SerializedProperty planIndex = newLevel.FindPropertyRelative("enemyGlobalSpawnPlanIndex");
+            SerializedProperty library = newLevel.FindPropertyRelative("globalSpawnPlanLibrary");
+            SerializedProperty planIndex = newLevel.FindPropertyRelative("globalSpawnPlanIndex");
             SerializedProperty chestMinCount = newLevel.FindPropertyRelative("chestMinCount");
             SerializedProperty chestMaxCount = newLevel.FindPropertyRelative("chestMaxCount");
             SerializedProperty shopCount = newLevel.FindPropertyRelative("shopCount");
@@ -134,7 +134,7 @@ namespace Game.Editor
             if (oldSize > 0)
             {
                 SerializedProperty previousLevel = levelsProperty.GetArrayElementAtIndex(oldSize - 1);
-                SerializedProperty previousLibrary = previousLevel?.FindPropertyRelative("enemyGlobalSpawnPlanLibrary");
+                SerializedProperty previousLibrary = previousLevel?.FindPropertyRelative("globalSpawnPlanLibrary");
                 if (previousLibrary != null)
                     library.objectReferenceValue = previousLibrary.objectReferenceValue;
             }

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.Data
 {
     /// <summary>
-    /// 单关配置：关卡编号、全局敌人生成方案库与方案索引、宝箱数量上下限、商店数量与布局参数。
+    /// 单关配置：关卡编号、全局生成方案库与方案索引、宝箱数量上下限、商店数量与布局参数。
     /// </summary>
     [Serializable]
     public class LevelConfigData
@@ -15,7 +16,7 @@ namespace Game.Data
         [Min(1)]
         public int levelIndex = 1;
 
-        [Header("敌人生成")]
+        [Header("生成方案")]
         [InspectorLabel("关卡场景名")]
         [Tooltip("运行时用于加载本关卡的场景名。")]
         [HideInInspector]
@@ -24,14 +25,16 @@ namespace Game.Data
         [HideInInspector]
         public string sceneGuid = "";
 
-        [InspectorLabel("全局敌人生成方案库")]
-        [Tooltip("必填。全局敌人生成器会从这份方案库中选择一个列表项执行生成任务。")]
-        public LevelEnemySpawnPlanSO enemyGlobalSpawnPlanLibrary;
+        [FormerlySerializedAs("enemyGlobalSpawnPlanLibrary")]
+        [InspectorLabel("全局生成方案库")]
+        [Tooltip("必填。全局生成器会从这份方案库中选择一个列表项执行生成任务。")]
+        public LevelEnemySpawnPlanSO globalSpawnPlanLibrary;
 
+        [FormerlySerializedAs("enemyGlobalSpawnPlanIndex")]
         [InspectorLabel("全局方案列表项")]
         [Min(0)]
-        [Tooltip("当前关卡使用的全局敌人生成方案列表项索引。")]
-        public int enemyGlobalSpawnPlanIndex = 0;
+        [Tooltip("当前关卡使用的全局生成方案列表项索引。")]
+        public int globalSpawnPlanIndex = 0;
 
         [Header("每格宝箱数量上下限")]
         [InspectorLabel("宝箱下限")] public int chestMinCount = 0;
@@ -121,7 +124,7 @@ namespace Game.Data
     }
 
     /// <summary>
-    /// 关卡配置库：列表每项对应一关（全局敌人生成方案、宝箱数量、商店数量、布局参数）。
+    /// 关卡配置库：列表每项对应一关（全局生成方案、宝箱数量、商店数量、布局参数）。
     /// </summary>
     [CreateAssetMenu(menuName = "游戏/配置/关卡配置库", fileName = "关卡配置库")]
     public class LevelConfigDatabaseSO : ScriptableObject

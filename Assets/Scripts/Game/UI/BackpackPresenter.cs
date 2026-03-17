@@ -22,6 +22,7 @@ namespace Game.UI
         private PlayerModel _player;
         private SortMode _sortMode = SortMode.AllQualityLowToHigh;
         private readonly int[] _displayOrder = new int[PlayerModel.SlotCount];
+        private ItemDisplayDatabaseSO _itemDisplayDatabase;
 
         public void Init(PlayerModel player)
         {
@@ -49,6 +50,9 @@ namespace Game.UI
                 return;
             }
 
+            if (_itemDisplayDatabase == null)
+                _itemDisplayDatabase = global::Game.ConfigManager.GetInstance()?.GetItemDisplayDatabase();
+
             var list = new List<int>();
             for (int i = 0; i < PlayerModel.SlotCount; i++) list.Add(i);
 
@@ -58,6 +62,11 @@ namespace Game.UI
                 var slot = _player.GetSlot(slotIndex);
                 if (slot == null || slot.IsEmpty) return 999f;
                 if (slot.IsWeapon && slot.weapon != null) return WeaponRarityOrder(slot.weapon.rarity);
+                if (slot.IsStack && !string.IsNullOrEmpty(slot.stackItemId))
+                {
+                    var entry = _itemDisplayDatabase?.GetEntry(slot.stackItemId);
+                    if (entry != null) return WeaponRarityOrder(entry.rarity);
+                }
                 return 0f;
             }
 

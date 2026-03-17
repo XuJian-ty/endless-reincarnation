@@ -29,7 +29,7 @@ namespace Game.Editor
 
             if (library == null || library.plans == null || library.plans.Count == 0)
             {
-                EditorGUILayout.HelpBox("请先指定局部敌人生成方案库并至少创建一条局部生成方案。", MessageType.Info);
+                EditorGUILayout.HelpBox("请先指定局部生成方案库并至少创建一条局部生成方案。", MessageType.Info);
                 EditorGUILayout.PropertyField(planIndexProperty, new GUIContent("局部方案列表项"));
                 return;
             }

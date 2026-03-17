@@ -163,13 +163,17 @@ MonoBehaviour:
       policy: 2
     - action: 6
       policy: 2
+    - action: 1
+      policy: 1
+    - action: 2
+      policy: 1
     pendingReleaseRules:
     - pendingAction: 1
       normalizedTime: 0.8
     - pendingAction: 2
       normalizedTime: 0.8
     overrideNaturalExitNormalizedTime: 1
-    naturalExitNormalizedTime: 0.9
+    naturalExitNormalizedTime: 0.8
     naturalExitTarget: 1
   - actionId: Fall
     skillId: Fall

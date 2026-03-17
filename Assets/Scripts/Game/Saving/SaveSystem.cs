@@ -214,7 +214,7 @@ namespace Game.Saving
             return save;
         }
 
-        /// <summary>创建一份编辑器直进关卡用的临时调试存档：1级、满血满蓝、传说最高词条剑枪。</summary>
+        /// <summary>创建一份编辑器直进关卡用的临时调试存档：1级、满血满蓝、四个主动技能已解锁、传说最高词条剑枪。</summary>
         public static SaveData NewDebugRun(int levelIndex = 1, int difficulty = 1)
         {
             SaveData save = NewGameRun(levelIndex, difficulty);
@@ -244,6 +244,7 @@ namespace Game.Saving
             run.player.currentHp = debugLevelEntry != null ? debugLevelEntry.baseHp : 1000f;
             run.player.currentMp = debugLevelEntry != null ? debugLevelEntry.baseMp : 1000f;
 
+            ApplyDebugUnlockedSkills(run);
             ApplyDebugStarterLoadout(run);
             return save;
         }
@@ -290,6 +291,39 @@ namespace Game.Saving
             run.equippedWeapon = debugSword;
             if (debugGun != null && run.inventory?.slots != null && run.inventory.slots.Count > 3)
                 run.inventory.slots[3].weapon = debugGun;
+        }
+
+        private static void ApplyDebugUnlockedSkills(RunData run)
+        {
+            if (run == null)
+                return;
+
+            run.unlockedSkillIds ??= new List<string>();
+            run.unlockedSkillIds.Clear();
+
+            SkillConfigDatabaseSO skillConfig = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (skillConfig != null)
+            {
+                for (int slotIndex = 0; slotIndex < 4; slotIndex++)
+                {
+                    SkillConfigEntry entry = skillConfig.GetActiveEntryBySlot(slotIndex);
+                    string skillId = entry?.skillId;
+                    if (string.IsNullOrWhiteSpace(skillId))
+                        skillId = $"Skill{slotIndex}";
+
+                    if (!run.unlockedSkillIds.Contains(skillId))
+                        run.unlockedSkillIds.Add(skillId);
+                }
+
+                return;
+            }
+
+            for (int slotIndex = 0; slotIndex < 4; slotIndex++)
+            {
+                string skillId = $"Skill{slotIndex}";
+                if (!run.unlockedSkillIds.Contains(skillId))
+                    run.unlockedSkillIds.Add(skillId);
+            }
         }
 
         private static WeaponInstance CreateMaximumRoll(WeaponDatabaseSO weaponDb, WeaponType type, WeaponRarity rarity)

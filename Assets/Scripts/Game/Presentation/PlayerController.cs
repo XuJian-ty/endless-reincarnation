@@ -63,6 +63,8 @@ namespace Game.Presentation
         private bool               _deathSequenceCompleted;
         private float              _temporarySuperArmorTimer;
         private float              _temporaryInvincibleTimer;
+        private float              _healthPotionRemainingTime;
+        private float              _manaPotionRemainingTime;
         private PlayerCloneManager _cloneManager;
         private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
 
@@ -94,6 +96,8 @@ namespace Game.Presentation
             _deathSequenceCompleted = false;
             _temporarySuperArmorTimer = 0f;
             _temporaryInvincibleTimer = 0f;
+            _healthPotionRemainingTime = 0f;
+            _manaPotionRemainingTime = 0f;
             StopDetachedTimelineRunners();
             _hitProtectionSystem = new HitProtectionSystem(_hitProtectionWindow, _hitProtectionThreshold, _hitProtectionDuration);
             ResolveCameraReference();
@@ -209,6 +213,18 @@ namespace Game.Presentation
         }
 
         private void OnChargeRelease(InputValue _) => _inputHandler.RegisterChargeRelease();
+
+        private void OnUseHealthPotion(InputValue value)
+        {
+            if (value.Get<float>() > 0.5f)
+                TryUsePotion(PlayerModel.ItemIds.PotionHp);
+        }
+
+        private void OnUseManaPotion(InputValue value)
+        {
+            if (value.Get<float>() > 0.5f)
+                TryUsePotion(PlayerModel.ItemIds.PotionMp);
+        }
 #endif
 
         // ── 受击入口 ───────────────────────────────────────────────────────
@@ -363,6 +379,56 @@ namespace Game.Presentation
             float mpRegen = Mathf.Max(0f, PlayerModel.Stats.MpRegen);
             if (mpRegen > 0f && PlayerModel.CurrentMp < PlayerModel.Stats.MaxMp)
                 PlayerModel.CurrentMp = Mathf.Min(PlayerModel.Stats.MaxMp, PlayerModel.CurrentMp + mpRegen * dt);
+
+            TickPotionEffects(dt);
+        }
+
+        private void TickPotionEffects(float dt)
+        {
+            PotionConfigSO potionConfig = ConfigManager.GetInstance()?.GetPotionConfig();
+            if (potionConfig == null)
+                return;
+
+            if (_healthPotionRemainingTime > 0f)
+            {
+                float deltaHp = PlayerModel.Stats.MaxHp * Mathf.Max(0f, potionConfig.hpPercentPerSecond) * dt;
+                if (deltaHp > 0f)
+                    PlayerModel.Heal(deltaHp);
+
+                _healthPotionRemainingTime = Mathf.Max(0f, _healthPotionRemainingTime - dt);
+            }
+
+            if (_manaPotionRemainingTime > 0f)
+            {
+                float deltaMp = PlayerModel.Stats.MaxMp * Mathf.Max(0f, potionConfig.mpPercentPerSecond) * dt;
+                if (deltaMp > 0f)
+                    PlayerModel.CurrentMp = Mathf.Min(PlayerModel.Stats.MaxMp, PlayerModel.CurrentMp + deltaMp);
+
+                _manaPotionRemainingTime = Mathf.Max(0f, _manaPotionRemainingTime - dt);
+            }
+        }
+
+        private void TryUsePotion(string itemId)
+        {
+            if (!_initialized || _deathSequenceStarted || PlayerModel == null || string.IsNullOrWhiteSpace(itemId))
+                return;
+
+            PotionConfigSO potionConfig = ConfigManager.GetInstance()?.GetPotionConfig();
+            if (potionConfig == null)
+                return;
+
+            if (!PlayerModel.TryConsumeItem(itemId, 1))
+                return;
+
+            float duration = Mathf.Max(0.1f, potionConfig.durationSeconds);
+            if (string.Equals(itemId, PlayerModel.ItemIds.PotionHp, StringComparison.Ordinal))
+            {
+                _healthPotionRemainingTime += duration;
+                return;
+            }
+
+            if (string.Equals(itemId, PlayerModel.ItemIds.PotionMp, StringComparison.Ordinal))
+                _manaPotionRemainingTime += duration;
         }
     }
 }

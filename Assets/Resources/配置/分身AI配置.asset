@@ -12,19 +12,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 683a1176901871647ba28fa4be535189, type: 3}
   m_Name: "\u5206\u8EABAI\u914D\u7F6E"
   m_EditorClassIdentifier: 
+  maxHpScale: 10
+  maxMpScale: 1
+  attackScale: 0.5
+  defenseScale: 1
+  lifeStealScale: 1
+  critRateScale: 1
+  critDmgScale: 1
+  attackSpeedScale: 1
+  moveSpeedScale: 1
+  hpRegenScale: 1
+  mpRegenScale: 1
+  damageBonusScale: 1
+  damageReduceScale: 1
   targetRefreshInterval: 0.12
   decisionInterval: 0.06
-  ownerLeashDistance: 22
-  regroupDistance: 9
-  preferredMeleeDistance: 2.25
+  ownerLeashDistance: 50
+  regroupDistance: 50
+  perceptionRadius: 40
+  targetStickiness: 0.18
+  targetMemoryDuration: 0.9
+  preferredMeleeDistance: 3
   meleeDistanceTolerance: 0.35
   tooCloseDistance: 1.35
   orbitDistance: 1.9
   orbitAngle: 42
   orbitArrivalDistance: 0.2
-  combatMoveSpeedRatio: 0.96
-  attackCastRange: 2.7
-  skillCastRange: 8
+  combatMoveSpeedRatio: 0.5
+  patrolMoveSpeedRatio: 0.5
+  combatWalkSpeedRatio: 0.5
+  combatRunSpeedRatio: 1
+  chaseDistanceThreshold: 1.6
+  attackCastRange: 3
+  skillCastRange: 5
   chargeEnterRange: 4.8
   dodgeThreatDistance: 4.2
   dodgeCooldownSeconds: 1.2
@@ -33,9 +53,13 @@ MonoBehaviour:
   chargeCooldownSeconds: 3
   chargeHoldMinSeconds: 0.18
   chargeHoldMaxSeconds: 0.4
-  aggression: 0.82
-  dodgeBias: 0.72
-  skillBias: 0.78
-  chargeBias: 0.68
-  comboBias: 0.72
+  aggression: 1
+  dodgeBias: 0.5
+  skillBias: 1
+  chargeBias: 0.2
+  comboBias: 1
   orbitBias: 0.85
+  dodgeDecisionPenalty: 0.18
+  skillDecisionPenalty: 0.12
+  chargeDecisionPenalty: 0.15
+  attackDecisionPenalty: 0.06

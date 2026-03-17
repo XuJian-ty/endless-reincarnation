@@ -38,13 +38,13 @@ namespace Game.Data
         public float taskInterval = 8f;
     }
 
-    [CreateAssetMenu(menuName = "游戏/配置/关卡敌人局部生成方案库", fileName = "关卡敌人局部生成方案库")]
+    [CreateAssetMenu(menuName = "游戏/配置/关卡局部生成方案库", fileName = "关卡局部生成方案库")]
     public class LevelLocalEnemySpawnPlanSO : ScriptableObject
     {
         [InspectorLabel("任务库")]
         public EnemySpawnTaskDatabaseSO taskDatabase;
 
-        [InspectorLabel("局部生成方案列表")]
+        [InspectorLabel("局部方案列表")]
         public List<LevelLocalEnemySpawnPlanDefinition> plans = new List<LevelLocalEnemySpawnPlanDefinition>();
 
         public LevelLocalEnemySpawnPlanDefinition GetPlanAt(int index)

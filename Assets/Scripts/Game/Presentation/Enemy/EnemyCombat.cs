@@ -28,9 +28,10 @@ namespace Game.Presentation
         private EnemyPerception _perception;
         private readonly Collider[] _overlapBuffer = new Collider[32];
         private readonly HashSet<string> _animParameterNames = new HashSet<string>();
+        private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
 
         private EnemyResolvedSkill _runningSkill;
-        private readonly SkillTimelineRunner _timelineRunner = new SkillTimelineRunner();
+        private SkillTimelineRunner _timelineRunner = new SkillTimelineRunner();
         private readonly SkillTimelineRunner _loopStateTimelineRunner = new SkillTimelineRunner();
         private int _handledSkillSequence;
         private EnemyIntentType _lastIntentType = EnemyIntentType.None;
@@ -55,6 +56,7 @@ namespace Game.Presentation
             if (GameStateMachine.GetInstance()?.IsGameplayPaused == true) return;
 
             UpdateAnimatorSpeed();
+            TickDetachedTimelineRunners(Time.deltaTime);
 
             if (!_controller.IsAlive)
             {
@@ -127,6 +129,8 @@ namespace Game.Presentation
                 _perception,
                 _overlapBuffer);
 
+            if (_timelineRunner == null)
+                _timelineRunner = new SkillTimelineRunner();
             _timelineRunner.Begin(_runningSkill.Definition, ctx, _runningSkill.CastDuration);
         }
 
@@ -134,19 +138,86 @@ namespace Game.Presentation
         {
             if (_runningSkill == null) return;
 
-            _timelineRunner.Tick(Time.deltaTime);
+            _timelineRunner?.Tick(Time.deltaTime);
 
-            if (_timelineRunner.IsComplete)
+            if (ShouldReleaseRunningSkill())
             {
                 _controller.CompleteActiveSkill();
-                ClearRunningSkill();
+                DetachRunningSkillTimeline();
+                _runningSkill = null;
             }
         }
 
         private void ClearRunningSkill()
         {
-            _timelineRunner.Stop();
+            _timelineRunner?.Stop();
             _runningSkill = null;
+        }
+
+        private bool ShouldReleaseRunningSkill()
+        {
+            if (_runningSkill == null)
+                return false;
+
+            if (_trackedNaturalExitTriggered)
+                return true;
+
+            if (IsCurrentStateNearEnd(_runningSkill.NaturalExitNormalizedTime))
+                return true;
+
+            if (_timelineRunner != null
+                && _runningSkill.CastDuration > 0f
+                && _timelineRunner.Elapsed >= _runningSkill.CastDuration)
+            {
+                return true;
+            }
+
+            return _timelineRunner != null && _timelineRunner.IsComplete;
+        }
+
+        private void DetachRunningSkillTimeline()
+        {
+            if (_timelineRunner == null)
+                return;
+
+            _timelineRunner.StopStateScopedCues();
+            if (_timelineRunner.HasPendingWork)
+                _detachedTimelineRunners.Add(_timelineRunner);
+            else
+                _timelineRunner.Stop();
+
+            _timelineRunner = new SkillTimelineRunner();
+        }
+
+        private void TickDetachedTimelineRunners(float deltaTime)
+        {
+            if (_detachedTimelineRunners.Count <= 0)
+                return;
+
+            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
+            {
+                SkillTimelineRunner runner = _detachedTimelineRunners[i];
+                if (runner == null)
+                {
+                    _detachedTimelineRunners.RemoveAt(i);
+                    continue;
+                }
+
+                runner.Tick(deltaTime);
+                if (runner.IsComplete)
+                    _detachedTimelineRunners.RemoveAt(i);
+            }
+        }
+
+        private void StopDetachedTimelineRunners()
+        {
+            if (_detachedTimelineRunners.Count <= 0)
+                return;
+
+            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
+                _detachedTimelineRunners[i]?.Stop();
+
+            _detachedTimelineRunners.Clear();
         }
 
         private void TickLoopStateTimeline()
@@ -352,6 +423,16 @@ namespace Game.Presentation
             if (string.IsNullOrEmpty(paramName)) return false;
             if (_animParameterNames.Count == 0) CacheAnimatorParameters();
             return _animParameterNames.Contains(paramName);
+        }
+
+        private void OnDisable()
+        {
+            StopDetachedTimelineRunners();
+        }
+
+        private void OnDestroy()
+        {
+            StopDetachedTimelineRunners();
         }
 
         private void WarnMissingAnimatorParameter(string param)

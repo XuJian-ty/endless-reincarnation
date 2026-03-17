@@ -37,6 +37,10 @@ namespace Game.Data
         [InspectorLabel("巡逻半径(米)")]
         [Min(0.1f)] public float patrolRadius = 10f;
 
+        [InspectorLabel("巡逻回血百分比/秒")]
+        [Tooltip("敌人处于巡逻状态时，每秒按最大生命百分比回复。0.05 代表每秒回复 5% 最大生命。")]
+        [Min(0f)] public float patrolHealPercentPerSecond = 0.05f;
+
         [Header("战术战斗")]
         [InspectorLabel("追击内圈(米)")]
         [Min(0.1f)] public float chaseInnerDistance = 6f;

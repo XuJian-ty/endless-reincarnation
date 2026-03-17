@@ -17,6 +17,8 @@ namespace Game.Presentation
     [RequireComponent(typeof(Collider))]
     public class EnemyController : MonoBehaviour, ICombatHardControlReceiver
     {
+        private static readonly List<EnemyController> ActiveEnemyControllers = new List<EnemyController>();
+
         [Serializable]
         private sealed class RuntimeStatModifier
         {
@@ -38,6 +40,7 @@ namespace Game.Presentation
         private EnemyRuntimeStats _stats;
         private readonly List<RuntimeStatModifier> _runtimeModifiers = new List<RuntimeStatModifier>();
         private readonly Dictionary<int, float> _lastSkillCastTimeBySlot = new Dictionary<int, float>();
+        private ActorHeadHealthBar _headHealthBar;
 
         private System.Random _rng;
         private bool _dead;
@@ -69,6 +72,7 @@ namespace Game.Presentation
         private bool _loggedMissingArchetypeError;
         private float _currentPoise;
         private bool _poiseInitialized;
+        private static readonly Color HeadHealthBarColor = new Color(0.86f, 0.22f, 0.22f, 0.95f);
 
         public float Defense
         {
@@ -171,6 +175,7 @@ namespace Game.Presentation
         }
 
         public bool IsAlive => !_dead;
+        public static IReadOnlyList<EnemyController> ActiveEnemies => ActiveEnemyControllers;
         public bool CountsAsLevelBoss => _countsAsLevelBoss;
         public EnemyIntent CurrentIntent { get; set; }
         public float HurtRemainingTime => _hurtRemainingTime;
@@ -183,6 +188,33 @@ namespace Game.Presentation
         public bool IsDecisionLocked => !_dead && Time.time < _decisionLockUntilTime;
         public bool IsIdling => !_dead && CurrentIntent.Type == EnemyIntentType.Idle && Time.time < _idleUntilTime;
         public bool IsInPostCastRecovery => !_dead && _isInPostCastRecovery && Time.time < _idleUntilTime;
+        public bool IsInCombatState
+        {
+            get
+            {
+                if (_dead)
+                    return false;
+
+                return CurrentIntent.Type switch
+                {
+                    EnemyIntentType.Search => true,
+                    EnemyIntentType.Chase => true,
+                    EnemyIntentType.Approach => true,
+                    EnemyIntentType.Punish => true,
+                    EnemyIntentType.Hold => true,
+                    EnemyIntentType.StrafeLeft => true,
+                    EnemyIntentType.StrafeRight => true,
+                    EnemyIntentType.Dodge => true,
+                    EnemyIntentType.Retreat => true,
+                    EnemyIntentType.Reposition => true,
+                    EnemyIntentType.CastSkill => true,
+                    EnemyIntentType.Hurt => true,
+                    EnemyIntentType.Idle => IsInPostCastRecovery,
+                    _ => false,
+                };
+            }
+        }
+        public bool IsInPatrolState => !_dead && !IsInCombatState;
         public bool HasCastingSuperArmor => IsCastingSkill && Archetype != null && Archetype.superArmorWhileCasting;
         public float AnimatorMoveBlend => _animatorMoveBlend;
         public float AnimatorMoveSigned => _animatorMoveSigned;
@@ -200,9 +232,11 @@ namespace Game.Presentation
 
         private void Awake()
         {
+            RegisterActiveEnemy();
             _rng = new System.Random();
             InitializeRuntimeState();
             EnsureInitialized();
+            EnsureHeadHealthBar();
         }
 
         private void Start()
@@ -244,6 +278,9 @@ namespace Game.Presentation
             TickPoiseRecovery(Time.deltaTime);
             if (!_dead && _bonusHpRegen > 0f)
                 Heal(_bonusHpRegen * Time.deltaTime);
+            if (!_dead && IsInPatrolState && Archetype != null && Archetype.patrolHealPercentPerSecond > 0f)
+                Heal(_stats.maxHp * Archetype.patrolHealPercentPerSecond * Time.deltaTime);
+            UpdateHeadHealthBar();
 
             if (CurrentIntent.Type == EnemyIntentType.Idle &&
                 !IsHurt &&
@@ -565,6 +602,7 @@ namespace Game.Presentation
             _stats = _stats.WithDamageApplied(amount);
             if (_stats.IsDead)
             {
+                RefreshHeadHealthBarOnDeath();
                 Die();
                 return true;
             }
@@ -653,6 +691,7 @@ namespace Game.Presentation
         {
             if (_dead) return;
             _dead = true;
+            UnregisterActiveEnemy();
             EnemySquadCoordinator.Release(this);
             CancelActiveSkill();
             ClearPostCastRecoveryState();
@@ -680,6 +719,19 @@ namespace Game.Presentation
                 Game.GameFlow.EnemyDeathRewardSystem.GrantRewards(player, _stats, position, _rng);
         }
 
+        private void RefreshHeadHealthBarOnDeath()
+        {
+            if (IsFinalBoss())
+                return;
+
+            if (_headHealthBar == null)
+                _headHealthBar = GetComponent<ActorHeadHealthBar>();
+            if (_headHealthBar == null)
+                return;
+
+            _headHealthBar.SetNormalized(0f);
+        }
+
         private void FinalizeDeath()
         {
             if (_deathFinalized)
@@ -687,6 +739,21 @@ namespace Game.Presentation
 
             _deathFinalized = true;
             Destroy(gameObject);
+        }
+
+        private void OnEnable()
+        {
+            RegisterActiveEnemy();
+        }
+
+        private void OnDisable()
+        {
+            UnregisterActiveEnemy();
+        }
+
+        private void OnDestroy()
+        {
+            UnregisterActiveEnemy();
         }
 
         private string ResolveConfiguredEnemyId()
@@ -882,6 +949,48 @@ namespace Game.Presentation
             float heavyHitThreshold = Mathf.Max(4f, maxPoise * 0.45f);
             if (damage >= heavyHitThreshold)
                 ApplyHardControl(Mathf.Max(0.05f, breakStunDuration * 0.55f));
+        }
+
+        private void EnsureHeadHealthBar()
+        {
+            if (_headHealthBar == null)
+                _headHealthBar = GetComponent<ActorHeadHealthBar>();
+            if (_headHealthBar == null)
+                _headHealthBar = gameObject.AddComponent<ActorHeadHealthBar>();
+
+            _headHealthBar.Configure(HeadHealthBarColor);
+        }
+
+        private void UpdateHeadHealthBar()
+        {
+            EnsureHeadHealthBar();
+            if (_headHealthBar == null)
+                return;
+
+            if (IsFinalBoss())
+            {
+                _headHealthBar.SetVisible(false);
+                return;
+            }
+
+            _headHealthBar.SetNormalized(CurrentHpRatio);
+            _headHealthBar.SetVisible(IsAlive && IsInCombatState);
+        }
+
+        private bool IsFinalBoss()
+        {
+            return EnemyCategory == EnemyType.Boss && GetComponent<LevelBossVisualMarker>() != null;
+        }
+
+        private void RegisterActiveEnemy()
+        {
+            if (!ActiveEnemyControllers.Contains(this))
+                ActiveEnemyControllers.Add(this);
+        }
+
+        private void UnregisterActiveEnemy()
+        {
+            ActiveEnemyControllers.Remove(this);
         }
 
     }

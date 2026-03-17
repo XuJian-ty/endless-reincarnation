@@ -16,7 +16,7 @@ MonoBehaviour:
   - enemyId: melee_minion
     displayName: "\u8FD1\u6218\u5C0F\u602A"
     type: 0
-    baseHp: 60
+    baseHp: 500
     baseAttack: 10
     baseDefense: 5
     baseMoveSpeed: 2
@@ -26,8 +26,8 @@ MonoBehaviour:
   - enemyId: ranged_minion
     displayName: "\u8FDC\u7A0B\u5C0F\u602A"
     type: 1
-    baseHp: 45
-    baseAttack: 12
+    baseHp: 500
+    baseAttack: 10
     baseDefense: 3
     baseMoveSpeed: 2
     goldMin: 10
@@ -36,8 +36,8 @@ MonoBehaviour:
   - enemyId: elite_1
     displayName: "\u7CBE\u82F11"
     type: 2
-    baseHp: 160
-    baseAttack: 18
+    baseHp: 1000
+    baseAttack: 20
     baseDefense: 8
     baseMoveSpeed: 2
     goldMin: 30
@@ -46,8 +46,8 @@ MonoBehaviour:
   - enemyId: elite_2
     displayName: "\u7CBE\u82F12"
     type: 2
-    baseHp: 180
-    baseAttack: 16
+    baseHp: 1000
+    baseAttack: 20
     baseDefense: 10
     baseMoveSpeed: 2
     goldMin: 30
@@ -56,8 +56,8 @@ MonoBehaviour:
   - enemyId: guardian_1
     displayName: "\u5B88\u536B\u80051"
     type: 3
-    baseHp: 260
-    baseAttack: 22
+    baseHp: 3000
+    baseAttack: 50
     baseDefense: 10
     baseMoveSpeed: 3
     goldMin: 0
@@ -66,8 +66,8 @@ MonoBehaviour:
   - enemyId: guardian_2
     displayName: "\u5B88\u536B\u80052"
     type: 3
-    baseHp: 300
-    baseAttack: 20
+    baseHp: 3000
+    baseAttack: 50
     baseDefense: 12
     baseMoveSpeed: 3
     goldMin: 0
@@ -76,8 +76,8 @@ MonoBehaviour:
   - enemyId: boss_1
     displayName: Boss1
     type: 4
-    baseHp: 750
-    baseAttack: 28
+    baseHp: 10000
+    baseAttack: 100
     baseDefense: 12
     baseMoveSpeed: 3
     goldMin: 0
@@ -86,8 +86,8 @@ MonoBehaviour:
   - enemyId: boss_2
     displayName: Boss2
     type: 4
-    baseHp: 820
-    baseAttack: 30
+    baseHp: 10000
+    baseAttack: 100
     baseDefense: 13
     baseMoveSpeed: 3
     goldMin: 0
@@ -96,8 +96,8 @@ MonoBehaviour:
   - enemyId: boss_3
     displayName: Boss3
     type: 4
-    baseHp: 900
-    baseAttack: 32
+    baseHp: 10000
+    baseAttack: 100
     baseDefense: 14
     baseMoveSpeed: 3
     goldMin: 0
@@ -106,8 +106,8 @@ MonoBehaviour:
   - enemyId: boss_4
     displayName: Boss4
     type: 4
-    baseHp: 980
-    baseAttack: 34
+    baseHp: 10000
+    baseAttack: 100
     baseDefense: 15
     baseMoveSpeed: 3
     goldMin: 0
@@ -116,8 +116,8 @@ MonoBehaviour:
   - enemyId: boss_5
     displayName: Boss5
     type: 4
-    baseHp: 1100
-    baseAttack: 36
+    baseHp: 10000
+    baseAttack: 100
     baseDefense: 16
     baseMoveSpeed: 3
     goldMin: 0

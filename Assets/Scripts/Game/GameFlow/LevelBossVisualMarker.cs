@@ -75,16 +75,16 @@ namespace Game.GameFlow
 
         private void ApplyConfig()
         {
-            LevelBossVisualConfigSO config = ConfigManager.GetInstance()?.GetLevelBossVisualConfig();
+            PlayerCloneAndLevelBossVisualConfigSO config = ConfigManager.GetInstance()?.GetPlayerCloneAndLevelBossVisualConfig();
             if (config == null)
                 return;
 
-            _markerColor = config.markerColor;
-            _minIntensity = config.minIntensity;
-            _maxIntensity = config.maxIntensity;
-            _pulseSpeed = config.pulseSpeed;
-            _range = config.range;
-            _offset = config.offset;
+            _markerColor = config.levelBoss.markerColor;
+            _minIntensity = config.levelBoss.minIntensity;
+            _maxIntensity = config.levelBoss.maxIntensity;
+            _pulseSpeed = config.levelBoss.pulseSpeed;
+            _range = config.levelBoss.range;
+            _offset = config.levelBoss.offset;
         }
     }
 }
