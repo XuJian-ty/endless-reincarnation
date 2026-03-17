@@ -98,14 +98,6 @@ namespace Game.Presentation
             _wasHurtLastFrame = _controller.IsHurt;
         }
 
-        /// <summary>
-        /// 旧动画事件入口已停用。敌人伤害统一由技能时间轴驱动，
-        /// 保留此方法仅为兼容旧动画片段中残留的 Animation Event。
-        /// </summary>
-        public void OnDealDamage(string damageName)
-        {
-        }
-
         // ── 内部 ─────────────────────────────────────────────────────────────
 
         private void BeginSkillCast(EnemyResolvedSkill skill, Vector3? targetPosition)

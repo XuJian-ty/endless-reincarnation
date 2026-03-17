@@ -6,7 +6,6 @@ namespace Game.Presentation
     [DisallowMultipleComponent]
     public sealed class ActorHeadHealthBar : MonoBehaviour
     {
-        private const string RootName = "HeadHealthBarRoot";
         private const string EnemyHudRootName = "EnemyHUD";
         private const string EnemyBarName = "EnemyHealthBar";
         private const string CloneHudRootName = "PlayerCloneHUD";
@@ -15,6 +14,8 @@ namespace Game.Presentation
         private const string FillName = "Fill";
         private const string ValueTextName = "Text_HP";
         private const string DefaultSortingLayerName = "Default";
+        private const float DefaultEnemyHeightOffset = 2f;
+        private const float DefaultCloneHeightOffset = 1.88f;
 
         private static readonly Color DefaultBackgroundColor = new Color(0f, 0f, 0f, 0.55f);
 
@@ -92,6 +93,8 @@ namespace Game.Presentation
 
             ResolveOrCreateRoot();
             ResolveOrCreateBarParts();
+            if (_rootRect == null || _barRect == null || _fillImage == null)
+                return;
 
             _canvas = _rootRect.GetComponent<Canvas>();
             if (_canvas == null)
@@ -111,9 +114,6 @@ namespace Game.Presentation
             if (_backgroundImage.sprite == null)
                 _backgroundImage.color = DefaultBackgroundColor;
             _backgroundImage.raycastTarget = false;
-
-            if (_fillImage == null)
-                _fillImage = CreateFill(_fillAreaRect != null ? _fillAreaRect : _barRect);
 
             _fillImage.type = Image.Type.Filled;
             _fillImage.fillMethod = Image.FillMethod.Horizontal;
@@ -155,13 +155,69 @@ namespace Game.Presentation
 
         private float ResolveHeightOffset()
         {
+            if (TryResolveCloneHeightOffset(out float cloneHeightOffset))
+                return cloneHeightOffset;
+
+            if (TryResolveEnemyHeightOffset(out float enemyHeightOffset))
+                return enemyHeightOffset;
+
             if (TryGetBounds(GetComponentsInChildren<Renderer>(true), out Bounds rendererBounds))
-                return Mathf.Max(1.2f, rendererBounds.max.y - transform.position.y + 0.18f);
+                return Mathf.Max(1.2f, rendererBounds.max.y - transform.position.y);
 
             if (TryGetBounds(GetComponentsInChildren<Collider>(true), out Bounds colliderBounds))
-                return Mathf.Max(1.2f, colliderBounds.max.y - transform.position.y + 0.18f);
+                return Mathf.Max(1.2f, colliderBounds.max.y - transform.position.y);
 
-            return 2f;
+            return DefaultEnemyHeightOffset;
+        }
+
+        private bool TryResolveCloneHeightOffset(out float heightOffset)
+        {
+            heightOffset = 0f;
+            PlayerCloneActor cloneActor = GetComponent<PlayerCloneActor>();
+            if (cloneActor == null)
+                return false;
+
+            if (cloneActor.HeadHealthBarHeightOffset > 0f)
+            {
+                heightOffset = cloneActor.HeadHealthBarHeightOffset;
+                return true;
+            }
+
+            CharacterController controller = GetComponent<CharacterController>();
+            if (controller != null)
+            {
+                float top = controller.center.y + controller.height * 0.5f;
+                heightOffset = Mathf.Max(1.2f, top - 0.12f);
+                return true;
+            }
+
+            heightOffset = DefaultCloneHeightOffset;
+            return true;
+        }
+
+        private bool TryResolveEnemyHeightOffset(out float heightOffset)
+        {
+            heightOffset = 0f;
+            EnemyController enemyController = GetComponent<EnemyController>();
+            if (enemyController == null)
+                return false;
+
+            if (enemyController.HeadHealthBarHeightOffset > 0f)
+            {
+                heightOffset = enemyController.HeadHealthBarHeightOffset;
+                return true;
+            }
+
+            Collider rootCollider = GetComponent<Collider>();
+            if (rootCollider != null)
+            {
+                float top = rootCollider.bounds.max.y - transform.position.y;
+                heightOffset = Mathf.Max(DefaultEnemyHeightOffset, top);
+                return true;
+            }
+
+            heightOffset = DefaultEnemyHeightOffset;
+            return true;
         }
 
         private static bool TryGetBounds<T>(T[] components, out Bounds bounds) where T : Component
@@ -216,23 +272,12 @@ namespace Game.Presentation
             _valueText = null;
             _usesExistingHud = false;
 
-            Transform existingRoot = transform.Find(RootName);
+            Transform existingRoot = FindNamedDescendant(transform, ResolveExistingHudRootName());
             if (existingRoot == null)
-            {
-                existingRoot = FindNamedDescendant(transform, ResolveExistingHudRootName());
-                _usesExistingHud = existingRoot != null;
-            }
-
-            if (existingRoot != null)
-                _rootRect = existingRoot as RectTransform;
-
-            if (_rootRect != null)
                 return;
 
-            GameObject rootObject = new GameObject(RootName, typeof(RectTransform), typeof(Canvas), typeof(Image));
-            rootObject.transform.SetParent(transform, false);
-            _rootRect = rootObject.GetComponent<RectTransform>();
-            _rootRect.sizeDelta = new Vector2(88f, 12f);
+            _rootRect = existingRoot as RectTransform;
+            _usesExistingHud = _rootRect != null;
         }
 
         private void ResolveOrCreateBarParts()
@@ -240,10 +285,10 @@ namespace Game.Presentation
             if (_rootRect == null)
                 return;
 
-            Transform barTransform = _usesExistingHud ? FindNamedDescendant(_rootRect, ResolveExistingBarName()) : _rootRect;
+            Transform barTransform = FindNamedDescendant(_rootRect, ResolveExistingBarName());
             _barRect = barTransform as RectTransform;
             if (_barRect == null)
-                _barRect = _rootRect;
+                return;
 
             Transform fillAreaTransform = FindNamedDescendant(_barRect, FillAreaName);
             _fillAreaRect = fillAreaTransform as RectTransform;
@@ -255,9 +300,6 @@ namespace Game.Presentation
             Transform valueTextTransform = FindNamedDescendant(_barRect, ValueTextName);
             if (valueTextTransform != null)
                 _valueText = valueTextTransform.GetComponent<Text>();
-
-            if (_usesExistingHud && _valueText == null)
-                _valueText = CreateValueText(_barRect);
         }
 
         private void ApplyExistingHudLayout()
@@ -353,41 +395,6 @@ namespace Game.Presentation
                 float maxHp = Mathf.Max(1f, clone.MaxHp);
                 _valueText.text = $"{clone.CurrentHp:F0}/{maxHp:F0}";
             }
-        }
-
-        private static Image CreateFill(RectTransform parent)
-        {
-            if (parent == null)
-                return null;
-
-            GameObject fillObject = new GameObject(FillName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            fillObject.transform.SetParent(parent, false);
-
-            RectTransform fillRect = fillObject.GetComponent<RectTransform>();
-            fillRect.anchorMin = Vector2.zero;
-            fillRect.anchorMax = Vector2.one;
-            fillRect.offsetMin = new Vector2(1f, 1f);
-            fillRect.offsetMax = new Vector2(-1f, -1f);
-
-            return fillObject.GetComponent<Image>();
-        }
-
-        private static Text CreateValueText(RectTransform parent)
-        {
-            if (parent == null)
-                return null;
-
-            Font font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-
-            GameObject textObject = new GameObject(ValueTextName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            textObject.transform.SetParent(parent, false);
-
-            Text text = textObject.GetComponent<Text>();
-            text.font = font;
-            text.color = Color.white;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.raycastTarget = false;
-            return text;
         }
 
         private static Transform FindNamedDescendant(Transform root, string name)

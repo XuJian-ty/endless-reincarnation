@@ -116,6 +116,8 @@ namespace Game.GameFlow
 
             if (_currentRun.checkpoint == null && _currentRun.levelIndex == 1)
             {
+                RestorePlayerHealthToFull();
+                _playerModel.SaveTo(_currentRun);
                 _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
                 SaveSystem.GetInstance().Save(saveId, new SaveData { version = SaveSystem.CurrentVersion, playerName = data.playerName, run = _currentRun });
             }
@@ -368,6 +370,9 @@ namespace Game.GameFlow
             _currentRun.pendingBuffSelection = forceBuffSelection || isAdvancingToDifferentLevel;
             if (_currentRun.pendingBuffSelection)
                 _currentRun.currentLevelBuffId = null;
+            if (isAdvancingToDifferentLevel)
+                RestorePlayerHealthToFull();
+            _playerModel?.SaveTo(_currentRun);
             _currentRun.levelSnapshot = null;
             _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
             SaveCurrent();
@@ -394,6 +399,15 @@ namespace Game.GameFlow
             _currentRun.currentLevelBuffId = null;
             _currentRun.pendingBuffSelection = true;
             _playerModel.SaveTo(_currentRun);
+        }
+
+        private void RestorePlayerHealthToFull()
+        {
+            if (_playerModel == null)
+                return;
+
+            _playerModel.CurrentHp = _playerModel.Stats.MaxHp;
+            _playerModel.CurrentMp = _playerModel.Stats.MaxMp;
         }
 
         private static int GetMaxConfiguredLevelIndex()

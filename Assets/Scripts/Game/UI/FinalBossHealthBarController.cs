@@ -12,10 +12,8 @@ namespace Game.UI
     {
         private const string FinalBossBarRootName = "FinalBossHealthBarRoot";
         private const string FillName = "Fill";
-        private const string BossNameTextName = "Text_Name";
-        private const string BossNameTextFallbackName = "Text_BossName";
-        private const string BossValueTextName = "Text_Value";
-        private const string BossValueTextFallbackName = "Text_HP";
+        private const string BossNameTextName = "Text_BossName";
+        private const string BossValueTextName = "Text_HP";
         private static readonly Color BossBarColor = new Color(0.86f, 0.22f, 0.22f, 0.95f);
 
         private GameObject _rootObject;
@@ -62,7 +60,7 @@ namespace Game.UI
                 _rootObject = existingRoot.gameObject;
 
             if (_rootObject == null)
-                _rootObject = CreateDefaultRoot();
+                return;
 
             _slider = _rootObject.GetComponent<Slider>();
             if (_slider == null)
@@ -72,20 +70,15 @@ namespace Game.UI
             _nameText = ResolveNameText();
             _valueText = ResolveValueText();
 
-            if (_fillImage == null)
-                _fillImage = CreateFill(_rootObject.transform);
+            if (_fillImage != null)
+            {
+                _fillImage.type = Image.Type.Filled;
+                _fillImage.fillMethod = Image.FillMethod.Horizontal;
+                _fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
+                _fillImage.color = BossBarColor;
+                _fillImage.raycastTarget = false;
+            }
 
-            if (_nameText == null)
-                _nameText = CreateText(_rootObject.transform, BossNameTextName, TextAnchor.MiddleLeft);
-
-            if (_valueText == null)
-                _valueText = CreateText(_rootObject.transform, BossValueTextName, TextAnchor.MiddleRight);
-
-            _fillImage.type = Image.Type.Filled;
-            _fillImage.fillMethod = Image.FillMethod.Horizontal;
-            _fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
-            _fillImage.color = BossBarColor;
-            _fillImage.raycastTarget = false;
             if (_slider != null)
             {
                 _slider.direction = Slider.Direction.LeftToRight;
@@ -94,72 +87,10 @@ namespace Game.UI
                 _slider.wholeNumbers = false;
                 _slider.interactable = false;
             }
-            _nameText.raycastTarget = false;
-            _valueText.raycastTarget = false;
-        }
-
-        private GameObject CreateDefaultRoot()
-        {
-            GameObject root = new GameObject(FinalBossBarRootName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            root.transform.SetParent(transform, false);
-
-            RectTransform rect = root.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 0f);
-            rect.anchorMax = new Vector2(0.5f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.anchoredPosition = new Vector2(0f, 18f);
-            rect.sizeDelta = new Vector2(560f, 58f);
-
-            Image background = root.GetComponent<Image>();
-            background.color = new Color(0f, 0f, 0f, 0.55f);
-            background.raycastTarget = false;
-            return root;
-        }
-
-        private static Image CreateFill(Transform parent)
-        {
-            GameObject fillObject = new GameObject(FillName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            fillObject.transform.SetParent(parent, false);
-
-            RectTransform rect = fillObject.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(4f, 4f);
-            rect.offsetMax = new Vector2(-4f, -4f);
-
-            return fillObject.GetComponent<Image>();
-        }
-
-        private static Text CreateText(Transform parent, string name, TextAnchor alignment)
-        {
-            Font font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-
-            GameObject textObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            textObject.transform.SetParent(parent, false);
-
-            RectTransform rect = textObject.GetComponent<RectTransform>();
-            if (alignment == TextAnchor.MiddleLeft)
-            {
-                rect.anchorMin = new Vector2(0f, 0f);
-                rect.anchorMax = new Vector2(0.5f, 1f);
-                rect.offsetMin = new Vector2(16f, 0f);
-                rect.offsetMax = new Vector2(-8f, 0f);
-            }
-            else
-            {
-                rect.anchorMin = new Vector2(0.5f, 0f);
-                rect.anchorMax = new Vector2(1f, 1f);
-                rect.offsetMin = new Vector2(8f, 0f);
-                rect.offsetMax = new Vector2(-16f, 0f);
-            }
-
-            Text text = textObject.GetComponent<Text>();
-            text.font = font;
-            text.fontSize = alignment == TextAnchor.MiddleLeft ? 22 : 20;
-            text.fontStyle = FontStyle.Bold;
-            text.alignment = alignment;
-            text.color = Color.white;
-            return text;
+            if (_nameText != null)
+                _nameText.raycastTarget = false;
+            if (_valueText != null)
+                _valueText.raycastTarget = false;
         }
 
         private void SetVisible(bool visible)
@@ -223,8 +154,6 @@ namespace Game.UI
         private Text ResolveNameText()
         {
             Transform nameTransform = FindNamedDescendant(_rootObject.transform, BossNameTextName);
-            if (nameTransform == null)
-                nameTransform = FindNamedDescendant(_rootObject.transform, BossNameTextFallbackName);
 
             if (nameTransform != null)
             {
@@ -239,8 +168,6 @@ namespace Game.UI
         private Text ResolveValueText()
         {
             Transform valueTransform = FindNamedDescendant(_rootObject.transform, BossValueTextName);
-            if (valueTransform == null)
-                valueTransform = FindNamedDescendant(_rootObject.transform, BossValueTextFallbackName);
 
             if (valueTransform != null)
             {

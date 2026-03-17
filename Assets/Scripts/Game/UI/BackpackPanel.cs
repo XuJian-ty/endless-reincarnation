@@ -139,7 +139,6 @@ namespace Game.UI
         private void ResolveReferences()
         {
             var root = slotsRoot != null ? slotsRoot : transform.Find("ScrollView/Viewport/Content");
-            if (root == null) root = transform.Find("Slots");
             if (slotsRoot == null) slotsRoot = root;
             ClearSlotReferences();
             EnsureSlotObjects(root);
@@ -191,11 +190,9 @@ namespace Game.UI
             }
 
             if (tooltipPanel == null) tooltipPanel = FindChildByName("RightTooltipPanel")?.gameObject;
-            if (tooltipPanel == null) tooltipPanel = FindChildByName("TooltipPanel")?.gameObject;
             if (tooltipText == null && tooltipPanel != null) tooltipText = tooltipPanel.transform.Find("TooltipLeftText")?.GetComponent<Text>();
             if (tooltipText == null && tooltipPanel != null) tooltipText = tooltipPanel.GetComponentInChildren<Text>(true);
             if (contextMenuPanel == null) contextMenuPanel = FindChildByName("RightContextMenuPanel")?.gameObject;
-            if (contextMenuPanel == null) contextMenuPanel = FindChildByName("ContextMenuPanel")?.gameObject;
             if (btnEquip == null && contextMenuPanel != null) btnEquip = contextMenuPanel.transform.Find("Btn_Equip")?.GetComponent<Button>();
             if (btnSell == null && contextMenuPanel != null) btnSell = contextMenuPanel.transform.Find("Btn_Sell")?.GetComponent<Button>();
 

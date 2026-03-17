@@ -19,6 +19,7 @@ MonoBehaviour:
   sectorRange: 22
   chaseBreakDistance: 40
   patrolRadius: 16
+  patrolHealPercentPerSecond: 0.05
   chaseInnerDistance: 5.5
   chaseOuterDistance: 17.5
   preferredSafetyDistanceOffset: 0.9
@@ -32,6 +33,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  headHealthBarHeightOffset: 1.5
   reactionMinSeconds: 0.07
   reactionMaxSeconds: 0.16
   decisionCommitSeconds: 0.22

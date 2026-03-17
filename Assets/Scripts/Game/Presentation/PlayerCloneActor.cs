@@ -55,6 +55,7 @@ namespace Game.Presentation
         private const float CloneGlowMaxIntensity = 1.75f;
         private const float CloneGlowPulseSpeed = 2.2f;
         private const float CloneGlowRange = 4.8f;
+        private const string CloneHudRootName = "PlayerCloneHUD";
 
         private sealed class CloneSkillExecutionContext : ISkillExecutionContext
         {
@@ -137,6 +138,7 @@ namespace Game.Presentation
         public Stats CombatStats => _combatStats;
         public float MaxHp => _combatStats.MaxHp;
         public float CurrentHp => _currentHp;
+        public float HeadHealthBarHeightOffset => _aiConfig != null ? Mathf.Max(0f, _aiConfig.headHealthBarHeightOffset) : 0f;
         public float CurrentHpRatio => MaxHp > 0f ? Mathf.Clamp01(_currentHp / MaxHp) : 0f;
         public float MaxMp => _combatStats.MaxMp;
         public float CurrentMp => _currentMp;
@@ -2168,7 +2170,13 @@ namespace Game.Presentation
         private void ClearVisualChildren()
         {
             for (int i = transform.childCount - 1; i >= 0; i--)
-                Destroy(transform.GetChild(i).gameObject);
+            {
+                Transform child = transform.GetChild(i);
+                if (child != null && child.name == CloneHudRootName)
+                    continue;
+
+                Destroy(child.gameObject);
+            }
         }
 
         private void DisableCloneBehaviours(GameObject root)

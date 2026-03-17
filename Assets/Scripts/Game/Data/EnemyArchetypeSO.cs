@@ -78,6 +78,11 @@ namespace Game.Data
         [InspectorLabel("感知视点高度(米)")]
         [Min(0f)] public float perceptionEyeHeight = 1.2f;
 
+        [Header("头顶UI")]
+        [InspectorLabel("头顶血条高度(米)")]
+        [Tooltip("头顶血条根节点相对敌人原点的本地高度。")]
+        [Min(0f)] public float headHealthBarHeightOffset = 2f;
+
         [Header("战斗人格")]
         [InspectorLabel("反应最短延迟(秒)")]
         [Tooltip("敌人在重新思考前至少要等待多久。更小会更灵敏，但也更像读输入。")]

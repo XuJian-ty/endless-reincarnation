@@ -9,7 +9,7 @@ namespace Game.UI
     /// <summary>
     /// 主菜单声音设置面板：三项功能——（1）复选框开关主界面 BGM（2）滑块调 BGM 音量（3）下拉切换 BGM 曲目。
     /// 子控件约定：Toggle_Bgm、Slider_BgMusic、Dropdown_BgmTrack、Btn_Close。数据存 PlayerPrefs（全局）。
-    /// 曲目列表从 ScriptableObject 配置 MainMenuBgmTrackListSO（Resources/Config/MainMenuBgmTracks）读取。
+    /// 曲目列表从 ScriptableObject 配置 MainMenuBgmTrackListSO（Resources/配置/主菜单BGM曲目列表）读取。
     /// </summary>
     public class MainMenuSoundPanel : BasePanel
     {

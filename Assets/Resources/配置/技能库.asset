@@ -1562,7 +1562,7 @@ MonoBehaviour:
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: crush
-        startTime: 0.5
+        startTime: 0.033333335
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
@@ -1589,7 +1589,19 @@ MonoBehaviour:
           hitStopTimeScale: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
-          onHitVfxEffects: []
+          onHitVfxEffects:
+          - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
           onHitSfxEffects: []
       physicsEvents:
       - eventId: crush
@@ -1604,8 +1616,40 @@ MonoBehaviour:
           height: 1
           duration: 0.18
       attributeEvents: []
-      vfxEvents: []
-      sfxEvents: []
+      vfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 1467176678092317590, guid: 3d2577ae792621e468ceedab40731658,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+      sfxEvents:
+      - eventId: evt_3
+        startTime: 0.033333335
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 3b540afc17f0166439c7d48d6648fd50, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
     - skillId: guardian_1_fortify
       displayName: Guardian 1 Fortify
       ignoreAnimationDamageEvents: 1
@@ -1681,16 +1725,12 @@ MonoBehaviour:
           height: 1
           duration: 0.18
       - eventId: impact
-        startTime: 0.28
+        startTime: 0.26666668
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
-        physicsEffects:
-        - effectType: 0
-          distance: 1
-          height: 1
-          duration: 0.14
+        physicsEffects: []
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
@@ -1801,8 +1841,7 @@ MonoBehaviour:
         activeDurationMode: 0
         repeatInterval: 0.1
         vfxEffects:
-        - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
-            type: 3}
+        - particlePrefab: {fileID: 0}
           anchor: 0
           offset: {x: 0, y: 0, z: 0}
           rotationEuler: {x: 0, y: 0, z: 0}
@@ -1812,21 +1851,8 @@ MonoBehaviour:
             speed: 0
             direction: {x: 0, y: 0, z: 1}
           destroyMode: 0
-          duration: 1.2333333
-      sfxEvents:
-      - eventId: evt_3
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        sfxEffects:
-        - audioClip: {fileID: 8300000, guid: f4f0e52ec48d74749af6ba987312ac67, type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          loop: 0
-          destroyMode: 0
           duration: 0
+      sfxEvents: []
     - skillId: boss_1_shot
       displayName: Boss 1 Shot
       ignoreAnimationDamageEvents: 1
@@ -1962,22 +1988,22 @@ MonoBehaviour:
       displayName: Boss 2 Cross Slash
       ignoreAnimationDamageEvents: 1
       damageEvents:
-      - eventId: cut_a
-        startTime: 0.22
+      - eventId: evt_4
+        startTime: 0.13333334
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
         damageEffects:
-        - damageMagnitude: 0.94499993
+        - damageMagnitude: 1
           detectionDuration: 0
           detectionType: 0
-          hitLayerName: Player
-          shape: 0
+          hitLayerName: Enemy
+          shape: 1
           centerOffset: {x: 0, y: 0, z: 0}
           rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 2.4
-          sectorAngle: 110
+          sphereRadius: 1.5
+          sectorAngle: 180
           boxSize: {x: 1, y: 1, z: 1}
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
@@ -1992,48 +2018,7 @@ MonoBehaviour:
           onHitAttributeEffects: []
           onHitVfxEffects: []
           onHitSfxEffects: []
-      - eventId: cut_b
-        startTime: 0.48
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        damageEffects:
-        - damageMagnitude: 1.7600001
-          detectionDuration: 0
-          detectionType: 0
-          hitLayerName: Player
-          shape: 0
-          centerOffset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 3.4
-          sectorAngle: 140
-          boxSize: {x: 1, y: 1, z: 1}
-          colliderNodeName: 
-          rayOriginOffset: {x: 0, y: 0, z: 0}
-          rayMaxDistance: 50
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          onHitPhysicsEffects: []
-          onHitAttributeEffects: []
-          onHitVfxEffects: []
-          onHitSfxEffects: []
-      physicsEvents:
-      - eventId: cut_b
-        startTime: 0.48
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        physicsEffects:
-        - effectType: 0
-          distance: 1
-          height: 1
-          duration: 0.1
+      physicsEvents: []
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
@@ -4331,7 +4316,7 @@ MonoBehaviour:
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: crush
-      startTime: 0.5
+      startTime: 0.033333335
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0
@@ -4358,7 +4343,19 @@ MonoBehaviour:
         hitStopTimeScale: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
-        onHitVfxEffects: []
+        onHitVfxEffects:
+        - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
         onHitSfxEffects: []
     physicsEvents:
     - eventId: crush
@@ -4373,8 +4370,40 @@ MonoBehaviour:
         height: 1
         duration: 0.18
     attributeEvents: []
-    vfxEvents: []
-    sfxEvents: []
+    vfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 1467176678092317590, guid: 3d2577ae792621e468ceedab40731658,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 0
+        duration: 0
+    sfxEvents:
+    - eventId: evt_3
+      startTime: 0.033333335
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 3b540afc17f0166439c7d48d6648fd50, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
   - skillId: guardian_1_fortify
     displayName: Guardian 1 Fortify
     ignoreAnimationDamageEvents: 1
@@ -4447,16 +4476,12 @@ MonoBehaviour:
         height: 1
         duration: 0.18
     - eventId: impact
-      startTime: 0.28
+      startTime: 0.26666668
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
-      physicsEffects:
-      - effectType: 0
-        distance: 1
-        height: 1
-        duration: 0.14
+      physicsEffects: []
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
@@ -4564,8 +4589,7 @@ MonoBehaviour:
       activeDurationMode: 0
       repeatInterval: 0.1
       vfxEffects:
-      - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
-          type: 3}
+      - particlePrefab: {fileID: 0}
         anchor: 0
         offset: {x: 0, y: 0, z: 0}
         rotationEuler: {x: 0, y: 0, z: 0}
@@ -4575,21 +4599,8 @@ MonoBehaviour:
           speed: 0
           direction: {x: 0, y: 0, z: 1}
         destroyMode: 0
-        duration: 1.2333333
-    sfxEvents:
-    - eventId: evt_3
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      sfxEffects:
-      - audioClip: {fileID: 8300000, guid: f4f0e52ec48d74749af6ba987312ac67, type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        loop: 0
-        destroyMode: 0
         duration: 0
+    sfxEvents: []
   - skillId: boss_1_shot
     displayName: Boss 1 Shot
     ignoreAnimationDamageEvents: 1
@@ -4722,22 +4733,22 @@ MonoBehaviour:
     displayName: Boss 2 Cross Slash
     ignoreAnimationDamageEvents: 1
     damageEvents:
-    - eventId: cut_a
-      startTime: 0.22
+    - eventId: evt_4
+      startTime: 0.13333334
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
       damageEffects:
-      - damageMagnitude: 0.94499993
+      - damageMagnitude: 1
         detectionDuration: 0
         detectionType: 0
-        hitLayerName: Player
-        shape: 0
+        hitLayerName: Enemy
+        shape: 1
         centerOffset: {x: 0, y: 0, z: 0}
         rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 2.4
-        sectorAngle: 110
+        sphereRadius: 1.5
+        sectorAngle: 180
         boxSize: {x: 1, y: 1, z: 1}
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
@@ -4752,48 +4763,7 @@ MonoBehaviour:
         onHitAttributeEffects: []
         onHitVfxEffects: []
         onHitSfxEffects: []
-    - eventId: cut_b
-      startTime: 0.48
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      damageEffects:
-      - damageMagnitude: 1.7600001
-        detectionDuration: 0
-        detectionType: 0
-        hitLayerName: Player
-        shape: 0
-        centerOffset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 3.4
-        sectorAngle: 140
-        boxSize: {x: 1, y: 1, z: 1}
-        colliderNodeName: 
-        rayOriginOffset: {x: 0, y: 0, z: 0}
-        rayMaxDistance: 50
-        motion:
-          enabled: 0
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        onHitPhysicsEffects: []
-        onHitAttributeEffects: []
-        onHitVfxEffects: []
-        onHitSfxEffects: []
-    physicsEvents:
-    - eventId: cut_b
-      startTime: 0.48
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      physicsEffects:
-      - effectType: 0
-        distance: 1
-        height: 1
-        duration: 0.1
+    physicsEvents: []
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []

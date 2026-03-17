@@ -41,8 +41,6 @@ namespace Game.Saving
         public InventorySaveData inventory = new InventorySaveData();
         public ItemCountSaveData itemCounts;
         public WeaponInstance    equippedWeapon;
-        /// <summary>兼容旧存档；新存档用 itemCounts.talentPoints</summary>
-        public int talentPoints;
         public List<string> buffIds          = new List<string>();
         public List<string> unlockedSkillIds = new List<string>();
         public List<string> defeatedBossIds  = new List<string>();
@@ -102,11 +100,8 @@ namespace Game.Saving
     [Serializable]
     public class InventorySaveData
     {
-        /// <summary>统一 50 格背包；若为 null 或数量不足 50，按旧格式 weapons+stacks 兼容读取。</summary>
+        /// <summary>统一 50 格背包。</summary>
         public List<InventorySlotSave> slots = new List<InventorySlotSave>();
-        /// <summary>兼容旧存档</summary>
-        public List<WeaponInstance> weapons = new List<WeaponInstance>();
-        public List<ItemStackSave> stacks = new List<ItemStackSave>();
     }
 
     [Serializable]

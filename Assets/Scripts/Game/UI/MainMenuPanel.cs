@@ -9,7 +9,7 @@ namespace Game.UI
     /// 主菜单面板（需求：一、开始界面）。
     /// 四个入口：新的游戏、加载存档、声音设置、退出游戏。
     /// 子控件约定：Btn_NewGame（新的游戏）、Btn_LoadGame（加载存档）、Btn_Settings（声音设置）、Btn_Quit（退出游戏）。
-    /// 主菜单 BGM 曲目列表从 ScriptableObject 配置 MainMenuBgmTrackListSO（Resources/Config/MainMenuBgmTracks）读取，主菜单 BGM 仍为全局（PlayerPrefs）。
+    /// 主菜单 BGM 曲目列表从 ScriptableObject 配置 MainMenuBgmTrackListSO（Resources/配置/主菜单BGM曲目列表）读取，主菜单 BGM 仍为全局（PlayerPrefs）。
     /// </summary>
     public class MainMenuPanel : BasePanel
     {

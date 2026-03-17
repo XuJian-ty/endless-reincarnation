@@ -239,8 +239,6 @@ namespace Game.UI
             SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
             if (skillDb == null)
                 skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家动作及技能配置库");
-            if (skillDb == null)
-                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家技能配置库");
 
             SkillConfigEntry entry = skillDb != null ? skillDb.GetEntryByActionId(actionId) : null;
             if (entry != null && entry.TryGetPendingReleaseThreshold(GameAction.NormalAttack, out float configured))
@@ -255,8 +253,6 @@ namespace Game.UI
             SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
             if (skillDb == null)
                 skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家动作及技能配置库");
-            if (skillDb == null)
-                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家技能配置库");
 
             SkillConfigEntry entry = skillDb != null ? skillDb.GetEntryByActionId(actionId) : null;
             if (entry != null && entry.overrideNaturalExitNormalizedTime)

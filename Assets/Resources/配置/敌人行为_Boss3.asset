@@ -19,21 +19,21 @@ MonoBehaviour:
   sectorRange: 24
   chaseBreakDistance: 44
   patrolRadius: 17
+  patrolHealPercentPerSecond: 0.05
   chaseInnerDistance: 6.5
   chaseOuterDistance: 18.5
   preferredSafetyDistanceOffset: 0.9
   combatDistanceTolerance: 1.1
   castRangeTolerance: 0.25
   retreatStepDistance: 4.2
-  tacticalHoldDuration: 0.12
   approachLeadTime: 0.25
   losProbeInterval: 0.1
   pathProbeInterval: 0.3
-  losBlockedPenaltySeconds: 0.35
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  headHealthBarHeightOffset: 1.5
   reactionMinSeconds: 0.07
   reactionMaxSeconds: 0.16
   decisionCommitSeconds: 0.22
@@ -49,6 +49,9 @@ MonoBehaviour:
   poiseBreakStunDuration: 0.45
   allowLightHitFlinch: 0
   superArmorWhileCasting: 1
+  hurtNaturalExitNormalizedTime: 0.9
+  hurtNaturalExitTarget: 0
+  locomotionSkillId: EnemyLocomotion
   skillSlots:
   - slotIndex: 0
     skillId: boss_3_pull_cleave
@@ -66,6 +69,8 @@ MonoBehaviour:
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
     skillId: boss_3_barrage
@@ -83,6 +88,8 @@ MonoBehaviour:
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 2
     skillId: boss_3_lunge
@@ -100,6 +107,8 @@ MonoBehaviour:
     postCastIdleDuration: 0.45
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 1
   - slotIndex: 3
     skillId: boss_3_drain
@@ -117,4 +126,6 @@ MonoBehaviour:
     postCastIdleDuration: 0.55
     rotateToTargetOnCast: 0
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 1

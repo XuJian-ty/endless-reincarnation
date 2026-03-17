@@ -177,7 +177,6 @@ namespace Game.Editor
             return type switch
             {
                 EnemySpawnCategory.Minion => "小怪",
-                EnemySpawnCategory.MinionLegacyRanged => "小怪",
                 EnemySpawnCategory.Elite => "精英怪",
                 EnemySpawnCategory.Guardian => "守卫者",
                 EnemySpawnCategory.Boss => "Boss",

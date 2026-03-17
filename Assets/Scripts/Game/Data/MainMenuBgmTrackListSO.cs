@@ -15,12 +15,9 @@ namespace Game.Data
         public List<BgmTrackEntry> tracks = new List<BgmTrackEntry>();
 
         private const string ResourcesPath = "配置/主菜单BGM曲目列表";
-        private const string LegacyResourcesPath = "Config/MainMenuBgmTracks";
-
         private static MainMenuBgmTrackListSO Load()
         {
-            var so = Resources.Load<MainMenuBgmTrackListSO>(ResourcesPath);
-            return so != null ? so : Resources.Load<MainMenuBgmTrackListSO>(LegacyResourcesPath);
+            return Resources.Load<MainMenuBgmTrackListSO>(ResourcesPath);
         }
 
         /// <summary>曲目数量。</summary>

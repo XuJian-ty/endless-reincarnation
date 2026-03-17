@@ -19,21 +19,21 @@ MonoBehaviour:
   sectorRange: 14
   chaseBreakDistance: 22
   patrolRadius: 10
+  patrolHealPercentPerSecond: 0.05
   chaseInnerDistance: 12
   chaseOuterDistance: 15.5
   preferredSafetyDistanceOffset: 0.9
   combatDistanceTolerance: 1.1
   castRangeTolerance: 0.25
   retreatStepDistance: 4.2
-  tacticalHoldDuration: 0.12
   approachLeadTime: 0.25
   losProbeInterval: 0.1
   pathProbeInterval: 0.3
-  losBlockedPenaltySeconds: 0.35
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
+  headHealthBarHeightOffset: 1.4
   reactionMinSeconds: 0.08
   reactionMaxSeconds: 0.18
   decisionCommitSeconds: 0.22
@@ -49,6 +49,9 @@ MonoBehaviour:
   poiseBreakStunDuration: 0.25
   allowLightHitFlinch: 1
   superArmorWhileCasting: 0
+  hurtNaturalExitNormalizedTime: 0.9
+  hurtNaturalExitTarget: 0
+  locomotionSkillId: EnemyLocomotion
   skillSlots:
   - slotIndex: 0
     skillId: ranged_minion_shot
@@ -66,4 +69,6 @@ MonoBehaviour:
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
     animationTrigger: 
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
     phaseAvailability: 0
