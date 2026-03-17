@@ -213,12 +213,49 @@ namespace Game.Domain
         }
 
         /// <summary>装备第 index 格的武器；若非武器格或空格则无效果</summary>
-        public void EquipWeaponAt(int index)
+        public bool EquipWeaponAt(int index)
         {
-            if (index < 0 || index >= SlotCount) return;
+            if (index < 0 || index >= SlotCount) return false;
             var slot = _slots[index];
-            if (slot?.weapon == null) return;
-            Equipment.Equip(slot.weapon);
+            if (slot?.weapon == null) return false;
+
+            WeaponInstance selectedWeapon = slot.weapon;
+            WeaponInstance previouslyEquipped = Equipment.EquippedWeapon;
+
+            if (ReferenceEquals(selectedWeapon, previouslyEquipped))
+            {
+                RemoveSlotAt(index);
+                return true;
+            }
+
+            Equipment.Equip(selectedWeapon);
+
+            if (previouslyEquipped != null)
+            {
+                slot.weapon = previouslyEquipped;
+                slot.stackItemId = null;
+                slot.stackCount = 0;
+            }
+            else
+            {
+                RemoveSlotAt(index);
+            }
+
+            return true;
+        }
+
+        /// <summary>卸下当前武器并放回背包；若背包已满则失败</summary>
+        public bool UnequipWeapon()
+        {
+            WeaponInstance equippedWeapon = Equipment.EquippedWeapon;
+            if (equippedWeapon == null)
+                return false;
+
+            if (!CanAddWeapon())
+                return false;
+
+            Equipment.Unequip();
+            return AddWeapon(equippedWeapon);
         }
 
         /// <summary>兼容：按格子取武器（若该格是武器格则返回实例）</summary>
@@ -300,7 +337,13 @@ namespace Game.Domain
         {
             int levels = Exp.AddExp(amount);
             if (levels > 0 && _levelGrowth != null)
+            {
+                float missingHp = Mathf.Max(0f, Stats.MaxHp - CurrentHp);
+                float missingMp = Mathf.Max(0f, Stats.MaxMp - CurrentMp);
                 _levelGrowth.GetStatsForLevel(Exp.Level, Stats);
+                CurrentHp = Mathf.Clamp(Stats.MaxHp - missingHp, 0f, Stats.MaxHp);
+                CurrentMp = Mathf.Clamp(Stats.MaxMp - missingMp, 0f, Stats.MaxMp);
+            }
             return levels;
         }
 
@@ -380,6 +423,53 @@ namespace Game.Domain
 
             ApplyPassiveSkillModifier(normalizedSkillId, config);
             return true;
+        }
+
+        public Stats BuildCloneSharedStatsSnapshot(SkillConfigDatabaseSO config, Func<string, StatModifier> getModifierForBuff)
+        {
+            Stats snapshot = new Stats();
+            if (_levelGrowth != null)
+                _levelGrowth.GetStatsForLevel(Exp.Level, snapshot);
+            else
+                ApplyDefaultLevel1Stats(snapshot);
+
+            WeaponInstance equippedWeapon = Equipment.EquippedWeapon;
+            if (equippedWeapon != null)
+                snapshot.AddModifier(equippedWeapon.ToModifier());
+
+            if (config != null && UnlockedSkillIds != null)
+            {
+                foreach (string skillId in UnlockedSkillIds)
+                {
+                    if (string.IsNullOrWhiteSpace(skillId))
+                        continue;
+
+                    SkillConfigEntry entry = config.GetEntry(skillId);
+                    if (entry == null || !entry.IsPassiveSkill || entry.passiveStatModifier == null)
+                        continue;
+
+                    snapshot.AddModifier(entry.passiveStatModifier.Clone());
+                }
+            }
+
+            if (getModifierForBuff != null && BuffIds != null)
+            {
+                for (int i = 0; i < BuffIds.Count; i++)
+                {
+                    string buffId = BuffIds[i];
+                    if (string.IsNullOrWhiteSpace(buffId)
+                        || string.Equals(buffId, Game.Data.BuffIds.SummonClone, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    StatModifier modifier = getModifierForBuff(buffId);
+                    if (modifier != null)
+                        snapshot.AddModifier(modifier.Clone());
+                }
+            }
+
+            return snapshot;
         }
 
         public void RefreshUnlockedSkillEffects(SkillConfigDatabaseSO config)
@@ -540,5 +630,26 @@ namespace Game.Domain
         public void Heal(float amount) => CurrentHp = Mathf.Min(Stats.MaxHp, CurrentHp + amount);
         public void SpendMp(float amount) => CurrentMp = Mathf.Max(0f, CurrentMp - amount);
         public bool CanSpendMp(float amount) => CurrentMp >= amount;
+
+        private static void ApplyDefaultLevel1Stats(Stats stats)
+        {
+            if (stats == null)
+                return;
+
+            stats.baseHp = 100f;
+            stats.baseMp = 100f;
+            stats.baseAttack = 20f;
+            stats.baseDefense = 100f;
+            stats.baseHpRegen = 1f;
+            stats.baseMpRegen = 1f;
+            stats.baseLifeSteal = 0f;
+            stats.baseCritRate = 0.05f;
+            stats.baseCritDmg = 1f;
+            stats.baseAttackSpeed = 1f;
+            stats.baseMoveSpeed = 6f;
+            stats.baseDamageBonus = 0f;
+            stats.baseDamageReduce = 0f;
+            stats.InvalidateCache();
+        }
     }
 }

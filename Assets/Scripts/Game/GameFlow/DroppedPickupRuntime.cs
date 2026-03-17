@@ -67,7 +67,7 @@ namespace Game.GameFlow
 
         private void ConfigureRuntimeComponents()
         {
-            WorldPickupVisualConfigSO visualConfig = ConfigManager.GetInstance()?.GetWorldPickupVisualConfig();
+            ItemDisplayDatabaseSO visualConfig = ConfigManager.GetInstance()?.GetItemDisplayDatabase();
 
             _iconRenderer = gameObject.AddComponent<SpriteRenderer>();
             _iconRenderer.sprite = GetFallbackSprite();
@@ -91,7 +91,7 @@ namespace Game.GameFlow
 
         private void ResetPosition(Vector3 position, System.Random rng)
         {
-            WorldPickupVisualConfigSO visualConfig = ConfigManager.GetInstance()?.GetWorldPickupVisualConfig();
+            ItemDisplayDatabaseSO visualConfig = ConfigManager.GetInstance()?.GetItemDisplayDatabase();
             Vector3 offset = Vector3.zero;
             if (rng != null)
             {
@@ -215,27 +215,27 @@ namespace Game.GameFlow
             return min + (float)rng.NextDouble() * (max - min);
         }
 
-        private static float GetIconScale(WorldPickupVisualConfigSO config)
+        private static float GetIconScale(ItemDisplayDatabaseSO config)
         {
             return config != null ? Mathf.Max(0.01f, config.iconScale) : DefaultIconScale;
         }
 
-        private static float GetSpawnHeightOffset(WorldPickupVisualConfigSO config)
+        private static float GetSpawnHeightOffset(ItemDisplayDatabaseSO config)
         {
             return config != null ? config.spawnHeightOffset : DefaultSpawnHeightOffset;
         }
 
-        private static float GetHoverAmplitude(WorldPickupVisualConfigSO config)
+        private static float GetHoverAmplitude(ItemDisplayDatabaseSO config)
         {
             return config != null ? Mathf.Max(0f, config.hoverAmplitude) : DefaultHoverAmplitude;
         }
 
-        private static float GetHoverFrequency(WorldPickupVisualConfigSO config)
+        private static float GetHoverFrequency(ItemDisplayDatabaseSO config)
         {
             return config != null ? Mathf.Max(0f, config.hoverFrequency) : DefaultHoverFrequency;
         }
 
-        private static float GetPickupRadius(WorldPickupVisualConfigSO config)
+        private static float GetPickupRadius(ItemDisplayDatabaseSO config)
         {
             return config != null ? Mathf.Max(0.01f, config.pickupRadius) : DefaultPickupRadius;
         }

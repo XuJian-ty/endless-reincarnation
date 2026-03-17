@@ -15,16 +15,16 @@ MonoBehaviour:
   entries:
   - actionName: Skill0
     bindingPart: 
-    displayName: "\u6280\u80FD0"
+    displayName: "\u6280\u80FD1"
   - actionName: Skill1
     bindingPart: 
-    displayName: "\u6280\u80FD1"
+    displayName: "\u6280\u80FD2"
   - actionName: Skill2
     bindingPart: 
-    displayName: "\u6280\u80FD2"
+    displayName: "\u6280\u80FD3"
   - actionName: Skill3
     bindingPart: 
-    displayName: "\u6280\u80FD3"
+    displayName: "\u6280\u80FD4"
   - actionName: UseHealthPotion
     bindingPart: 
     displayName: "\u56DE\u8840\u836F\u5242"

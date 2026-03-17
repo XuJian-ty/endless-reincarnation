@@ -216,6 +216,20 @@ namespace Game.Presentation
                 ? ctx.CasterTransform.GetComponent<EnemyController>()
                 : null;
 
+            var clone = target.GetComponentInParent<PlayerCloneActor>();
+            if (clone != null)
+            {
+                float damage = CombatCalculator.CalculateDamageFromEnemy(
+                    casterAttack,
+                    clone.Defense,
+                    casterEnemy != null ? casterEnemy.DamageBonus : 0f,
+                    clone.DamageReduce) * damageMultiplier;
+                clone.OnHit(damage, stunDuration);
+                if (casterEnemy != null && damage > 0f)
+                    casterEnemy.Heal(damage * casterEnemy.LifeSteal);
+                return;
+            }
+
             var player = target.GetComponentInParent<PlayerController>();
             if (player != null)
             {
@@ -244,7 +258,12 @@ namespace Game.Presentation
                 return 0f;
 
             PlayerController owningPlayer = PlayerBuffRuntimeUtility.ResolveOwningPlayer(ctx.CasterTransform);
-            if (owningPlayer?.PlayerModel == null)
+            PlayerCloneActor cloneActor = PlayerBuffRuntimeUtility.ResolveOwningClone(ctx.CasterTransform);
+            Stats attackerStats = cloneActor != null
+                ? cloneActor.CombatStats
+                : owningPlayer?.PlayerModel?.Stats;
+
+            if (attackerStats == null)
             {
                 return CombatCalculator.CalculateDamageFromEnemy(
                     ctx.CasterAttack,
@@ -253,13 +272,7 @@ namespace Game.Presentation
                     enemy.DamageReduce) * damageMultiplier;
             }
 
-            Stats attackerStats = owningPlayer.PlayerModel.Stats;
-            float attackScale = 1f;
-            PlayerCloneActor cloneActor = ctx.CasterTransform != null ? ctx.CasterTransform.GetComponentInParent<PlayerCloneActor>() : null;
-            if (cloneActor != null)
-                attackScale = 0.5f;
-
-            float baseAttack = Mathf.Max(0f, attackerStats.Attack * attackScale);
+            float baseAttack = Mathf.Max(0f, attackerStats.Attack);
             float defFactor = Mathf.Max(0f, 0.1f + 270f / (enemy.Defense + 300f));
             float damageBucket = Mathf.Max(0f, 1f + attackerStats.DamageBonus - Mathf.Clamp01(enemy.DamageReduce));
             float finalDamage = baseAttack * Mathf.Max(0f, damageMultiplier) * defFactor * damageBucket;
@@ -276,7 +289,7 @@ namespace Game.Presentation
                 {
                     if (cloneActor != null)
                         cloneActor.Heal(lifeStealHeal);
-                    else
+                    else if (owningPlayer?.PlayerModel != null)
                         owningPlayer.PlayerModel.Heal(lifeStealHeal);
                 }
             }
@@ -432,7 +445,14 @@ namespace Game.Presentation
                 return;
 
             PlayerController player = ctx.CasterTransform.GetComponent<PlayerController>();
-            player?.ApplyTemporarySuperArmor(effect.duration);
+            if (player != null)
+            {
+                player.ApplyTemporarySuperArmor(effect.duration);
+                return;
+            }
+
+            PlayerCloneActor clone = ctx.CasterTransform.GetComponent<PlayerCloneActor>();
+            clone?.ApplyTemporarySuperArmor(effect.duration);
         }
 
         private static void ApplySelfInvincibility(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
@@ -441,7 +461,14 @@ namespace Game.Presentation
                 return;
 
             PlayerController player = ctx.CasterTransform.GetComponent<PlayerController>();
-            player?.ApplyTemporaryInvincibility(effect.duration);
+            if (player != null)
+            {
+                player.ApplyTemporaryInvincibility(effect.duration);
+                return;
+            }
+
+            PlayerCloneActor clone = ctx.CasterTransform.GetComponent<PlayerCloneActor>();
+            clone?.ApplyTemporaryInvincibility(effect.duration);
         }
 
         private static void ApplyTargetPhysicsEffect(
@@ -461,6 +488,7 @@ namespace Game.Presentation
             {
                 ICombatHardControlReceiver hardControl =
                     target.GetComponentInParent<PlayerController>() as ICombatHardControlReceiver
+                    ?? target.GetComponentInParent<PlayerCloneActor>() as ICombatHardControlReceiver
                     ?? target.GetComponentInParent<EnemyController>() as ICombatHardControlReceiver;
                 hardControl?.ApplyHardControl(duration);
 
@@ -505,6 +533,13 @@ namespace Game.Presentation
         {
             if (target == null)
                 return;
+
+            var clone = target.GetComponentInParent<PlayerCloneActor>();
+            if (clone != null)
+            {
+                ApplyStatFieldToClone(clone, effect.statField, effect.magnitude, effect.duration, effect.usePercent);
+                return;
+            }
 
             var player = target.GetComponentInParent<PlayerController>();
             if (player != null)
@@ -559,6 +594,39 @@ namespace Game.Presentation
             {
                 model.Stats.AddModifier(modifier);
             }
+        }
+
+        private static void ApplyStatFieldToClone(
+            PlayerCloneActor clone,
+            SkillStatField field,
+            float magnitude,
+            float duration,
+            bool usePercent)
+        {
+            if (clone == null)
+                return;
+
+            if (field == SkillStatField.HP)
+            {
+                float amount = usePercent ? clone.MaxHp * magnitude : magnitude;
+                if (amount > 0f)
+                    clone.Heal(amount);
+                return;
+            }
+
+            if (field == SkillStatField.MP)
+            {
+                float amount = usePercent ? clone.MaxMp * magnitude : magnitude;
+                if (amount > 0f)
+                    clone.RestoreMp(amount);
+                return;
+            }
+
+            var modifier = BuildModifierForField(field, magnitude, usePercent ? 1f : 0f);
+            if (modifier == null)
+                return;
+
+            clone.ApplyStatModifier(modifier, duration);
         }
 
         private static void ApplyStatFieldToEnemy(
@@ -813,6 +881,10 @@ namespace Game.Presentation
         {
             if (collider == null)
                 return null;
+
+            var clone = collider.GetComponentInParent<PlayerCloneActor>();
+            if (clone != null)
+                return clone.transform;
 
             var player = collider.GetComponentInParent<PlayerController>();
             if (player != null)

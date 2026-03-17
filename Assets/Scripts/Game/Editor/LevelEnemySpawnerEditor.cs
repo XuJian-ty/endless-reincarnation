@@ -16,7 +16,7 @@ namespace Game.Editor
             SerializedProperty planLibrary = serializedObject.FindProperty("_planLibrary");
             SerializedProperty planIndex = serializedObject.FindProperty("_planIndex");
 
-            EditorGUILayout.PropertyField(planLibrary, new GUIContent("全局生成方案库"));
+            EditorGUILayout.PropertyField(planLibrary, new GUIContent("全局方案库"));
             DrawPlanSelector(planIndex, planLibrary.objectReferenceValue as LevelEnemySpawnPlanSO);
 
             serializedObject.ApplyModifiedProperties();
@@ -29,7 +29,7 @@ namespace Game.Editor
 
             if (library == null || library.plans == null || library.plans.Count == 0)
             {
-                EditorGUILayout.HelpBox("请先指定关卡敌人全局生成方案库并至少创建一条全局生成方案。", MessageType.Info);
+                EditorGUILayout.HelpBox("请先指定关卡全局生成方案库并至少创建一条全局生成方案。", MessageType.Info);
                 EditorGUILayout.PropertyField(planIndexProperty, new GUIContent("全局方案列表项"));
                 return;
             }

@@ -11,8 +11,12 @@ namespace Game.Presentation
     /// </summary>
     public class EnemyPerception : MonoBehaviour
     {
+        private const float CurrentTargetStickinessMultiplier = 0.82f;
+
+        private Transform _mainPlayer;
         private Transform _player;
         private PlayerController _playerController;
+        private PlayerCloneActor _targetCloneActor;
         private EnemyController _controller;
 
         private bool _hasLineOfSight;
@@ -102,19 +106,19 @@ namespace Game.Presentation
         {
             var gsm = GameStateMachine.GetInstance();
             if (gsm != null && gsm.LevelPlayerTransform != null)
-                _player = gsm.LevelPlayerTransform;
-            if (_player == null)
+                _mainPlayer = gsm.LevelPlayerTransform;
+            if (_mainPlayer == null)
             {
                 var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
                 if (player != null)
                 {
-                    _player = player.transform;
+                    _mainPlayer = player.transform;
                     _playerController = player;
                 }
             }
 
-            if (_playerController == null && _player != null)
-                _playerController = _player.GetComponent<PlayerController>();
+            if (_playerController == null && _mainPlayer != null)
+                _playerController = _mainPlayer.GetComponent<PlayerController>();
         }
 
         public void Tick()
@@ -135,14 +139,21 @@ namespace Game.Presentation
                 return;
             }
 
-            if (_player == null || !_player.gameObject.activeInHierarchy)
+            if (!TryResolveBestTarget(out Transform targetTransform, out PlayerController targetPlayerController, out PlayerCloneActor targetCloneActor))
             {
-                RefreshPlayerRef();
-                if (_player == null)
-                {
-                    ClearTargetState();
-                    return;
-                }
+                ClearTargetState();
+                return;
+            }
+
+            bool targetChanged = targetTransform != _player;
+            _player = targetTransform;
+            _playerController = targetPlayerController;
+            _targetCloneActor = targetCloneActor;
+            if (targetChanged)
+            {
+                _hasLastPlayerSample = false;
+                _nextLosProbeTime = 0f;
+                _nextPathProbeTime = 0f;
             }
 
             Vector3 playerPos = _player.position;
@@ -260,17 +271,39 @@ namespace Game.Presentation
 
         private void UpdatePlayerCombatObservation(EnemyArchetypeSO archetype)
         {
-            if (_playerController == null && _player != null)
+            if (_targetCloneActor == null && _playerController == null && _player != null)
                 _playerController = _player.GetComponent<PlayerController>();
-            if (_playerController == null)
+
+            if (_targetCloneActor != null)
             {
-                ClearPlayerCombatObservation();
+                ApplyObservedCombatObservation(
+                    _targetCloneActor.CurrentActionId,
+                    _targetCloneActor.StateRemainingTime,
+                    _targetCloneActor.StateNormalizedProgress,
+                    archetype);
                 return;
             }
 
-            ObservedPlayerAction = _playerController.CurrentActionId;
-            ObservedPlayerStateRemainingTime = Mathf.Max(0f, _playerController.StateRemainingTime);
-            ObservedPlayerStateNormalizedProgress = Mathf.Clamp01(_playerController.StateNormalizedProgress);
+            if (_playerController != null)
+            {
+                ApplyObservedCombatObservation(
+                    _playerController.CurrentActionId,
+                    _playerController.StateRemainingTime,
+                    _playerController.StateNormalizedProgress,
+                    archetype);
+                return;
+            }
+
+            ClearPlayerCombatObservation();
+        }
+
+        private void ApplyObservedCombatObservation(GameAction action, float remainingTime, float normalizedProgress, EnemyArchetypeSO archetype)
+        {
+            ObservedPlayerAction = action;
+            ObservedPlayerStateRemainingTime = Mathf.Max(0f, remainingTime);
+            ObservedPlayerStateNormalizedProgress = normalizedProgress >= 0f
+                ? Mathf.Clamp01(normalizedProgress)
+                : 0f;
 
             float threatWeight = ResolveActionThreatWeight(ObservedPlayerAction);
             float progressWeight = ResolveActionThreatProgress(
@@ -398,6 +431,9 @@ namespace Game.Presentation
         private void ClearTargetState()
         {
             HasTarget = false;
+            _player = null;
+            _playerController = null;
+            _targetCloneActor = null;
             TargetPosition = null;
             DistanceToPlayer = float.MaxValue;
             IsPlayerInSector = false;
@@ -411,6 +447,71 @@ namespace Game.Presentation
             LastKnownTargetPosition = Vector3.zero;
             LastSeenTargetTime = -1f;
             ClearPlayerCombatObservation();
+        }
+
+        private bool TryResolveBestTarget(out Transform targetTransform, out PlayerController targetPlayerController, out PlayerCloneActor targetCloneActor)
+        {
+            targetTransform = null;
+            targetPlayerController = null;
+            targetCloneActor = null;
+
+            float bestScore = float.MaxValue;
+            RefreshPlayerRef();
+            if (_playerController != null && _playerController.gameObject.activeInHierarchy && !_playerController.IsDead)
+            {
+                ConsiderTarget(
+                    _playerController.transform,
+                    _playerController,
+                    null,
+                    ref targetTransform,
+                    ref targetPlayerController,
+                    ref targetCloneActor,
+                    ref bestScore);
+            }
+
+            var clones = PlayerCloneActor.ActiveClones;
+            for (int i = 0; i < clones.Count; i++)
+            {
+                PlayerCloneActor clone = clones[i];
+                if (clone == null || !clone.gameObject.activeInHierarchy || !clone.IsAlive)
+                    continue;
+
+                ConsiderTarget(
+                    clone.transform,
+                    null,
+                    clone,
+                    ref targetTransform,
+                    ref targetPlayerController,
+                    ref targetCloneActor,
+                    ref bestScore);
+            }
+
+            return targetTransform != null;
+        }
+
+        private void ConsiderTarget(
+            Transform candidateTransform,
+            PlayerController candidatePlayerController,
+            PlayerCloneActor candidateCloneActor,
+            ref Transform targetTransform,
+            ref PlayerController targetPlayerController,
+            ref PlayerCloneActor targetCloneActor,
+            ref float bestScore)
+        {
+            if (candidateTransform == null)
+                return;
+
+            float score = (candidateTransform.position - transform.position).sqrMagnitude;
+            if (candidateTransform == _player)
+                score *= CurrentTargetStickinessMultiplier;
+
+            if (score >= bestScore)
+                return;
+
+            bestScore = score;
+            targetTransform = candidateTransform;
+            targetPlayerController = candidatePlayerController;
+            targetCloneActor = candidateCloneActor;
         }
     }
 }

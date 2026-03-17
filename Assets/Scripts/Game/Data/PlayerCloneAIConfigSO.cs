@@ -5,6 +5,46 @@ namespace Game.Data
     [CreateAssetMenu(menuName = "游戏/配置/分身AI配置", fileName = "分身AI配置")]
     public class PlayerCloneAIConfigSO : ScriptableObject
     {
+        [Header("属性倍率")]
+        [InspectorLabel("生命上限倍率")]
+        [Min(0f)] public float maxHpScale = 10f;
+
+        [InspectorLabel("法力上限倍率")]
+        [Min(0f)] public float maxMpScale = 1f;
+
+        [InspectorLabel("攻击倍率")]
+        [Min(0f)] public float attackScale = 0.5f;
+
+        [InspectorLabel("防御倍率")]
+        [Min(0f)] public float defenseScale = 1f;
+
+        [InspectorLabel("吸血倍率")]
+        [Min(0f)] public float lifeStealScale = 1f;
+
+        [InspectorLabel("暴击率倍率")]
+        [Min(0f)] public float critRateScale = 1f;
+
+        [InspectorLabel("暴击伤害倍率")]
+        [Min(0f)] public float critDmgScale = 1f;
+
+        [InspectorLabel("攻速倍率")]
+        [Min(0f)] public float attackSpeedScale = 1f;
+
+        [InspectorLabel("移速倍率")]
+        [Min(0f)] public float moveSpeedScale = 1f;
+
+        [InspectorLabel("生命回复倍率")]
+        [Min(0f)] public float hpRegenScale = 1f;
+
+        [InspectorLabel("法力回复倍率")]
+        [Min(0f)] public float mpRegenScale = 1f;
+
+        [InspectorLabel("增伤倍率")]
+        [Min(0f)] public float damageBonusScale = 1f;
+
+        [InspectorLabel("减伤倍率")]
+        [Min(0f)] public float damageReduceScale = 1f;
+
         [Header("决策")]
         [InspectorLabel("目标刷新间隔(秒)")]
         [Min(0.02f)] public float targetRefreshInterval = 0.12f;
@@ -17,6 +57,15 @@ namespace Game.Data
 
         [InspectorLabel("强制回位距离(米)")]
         [Min(1f)] public float regroupDistance = 9f;
+
+        [InspectorLabel("敌人感知半径(米)")]
+        [Min(1f)] public float perceptionRadius = 12f;
+
+        [InspectorLabel("目标切换黏性")]
+        [Range(0f, 1f)] public float targetStickiness = 0.18f;
+
+        [InspectorLabel("目标记忆时长(秒)")]
+        [Min(0f)] public float targetMemoryDuration = 0.9f;
 
         [Header("控距")]
         [InspectorLabel("理想近战距离(米)")]
@@ -39,6 +88,18 @@ namespace Game.Data
 
         [InspectorLabel("战斗移动速度倍率")]
         [Min(0.1f)] public float combatMoveSpeedRatio = 0.96f;
+
+        [InspectorLabel("巡逻移动速度倍率")]
+        [Min(0.1f)] public float patrolMoveSpeedRatio = 0.58f;
+
+        [InspectorLabel("战斗走路速度倍率")]
+        [Min(0.1f)] public float combatWalkSpeedRatio = 0.72f;
+
+        [InspectorLabel("追击跑步速度倍率")]
+        [Min(0.1f)] public float combatRunSpeedRatio = 1f;
+
+        [InspectorLabel("追击判定距离(米)")]
+        [Min(0.1f)] public float chaseDistanceThreshold = 1.6f;
 
         [Header("动作范围")]
         [InspectorLabel("普攻触发距离(米)")]
@@ -90,5 +151,18 @@ namespace Game.Data
 
         [InspectorLabel("绕侧倾向")]
         [Range(0f, 1f)] public float orbitBias = 0.85f;
+
+        [Header("决策惩罚")]
+        [InspectorLabel("连续闪避惩罚")]
+        [Min(0f)] public float dodgeDecisionPenalty = 0.18f;
+
+        [InspectorLabel("连续技能惩罚")]
+        [Min(0f)] public float skillDecisionPenalty = 0.12f;
+
+        [InspectorLabel("连续蓄力惩罚")]
+        [Min(0f)] public float chargeDecisionPenalty = 0.15f;
+
+        [InspectorLabel("连续普攻惩罚")]
+        [Min(0f)] public float attackDecisionPenalty = 0.06f;
     }
 }

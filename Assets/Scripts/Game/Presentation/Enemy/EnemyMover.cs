@@ -264,6 +264,7 @@ namespace Game.Presentation
                     _perception,
                     archetype,
                     desiredDistance,
+                    preferredSign,
                     out destination))
             {
                 return true;

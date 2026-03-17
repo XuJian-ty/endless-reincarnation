@@ -8,6 +8,11 @@ namespace Game.Presentation
     /// 技能时间轴运行器：接受 <see cref="SharedSkillDefinition"/> 并逐帧推进，
     /// 在合适的时间点调用 <see cref="SkillEffectExecutor"/> 中对应的五类事件执行入口。
     /// 玩家状态机和敌人战斗组件均可持有此实例。
+    ///
+    /// 这里的“时间轴”本质上是技能/动作效果时间线，不是动画状态机本身。
+    /// 它负责伤害检测、物理效果、属性效果、特效和音效这些运行时效果，
+    /// 允许在动作或技能动画已经自然退出后继续独立推进。
+    /// 因此调用方不应默认用它来决定动画是否切回 Locomotion，也不应默认用它来阻塞状态切换。
     /// </summary>
     public sealed class SkillTimelineRunner
     {
@@ -86,8 +91,9 @@ namespace Game.Presentation
         /// 开始播放技能时间轴。可反复调用以重置并复用同一实例。
         /// </summary>
         /// <param name="castDuration">
-        /// AI 总锁定时长（秒）。> 0 时，Duration = max(castDuration, 时间轴事件总时长)，
-        /// 保证 AI 在动画未结束前不会过早切换状态。玩家状态机可传入 -1（忽略此参数）。
+        /// AI/状态层可选的“动作占用时长”提示。> 0 时，Duration = max(castDuration, 时间轴事件总时长)；
+        /// 但这只是时间轴自身的持续时间参考，不代表动画或状态必须等到 Duration 结束后才能退出。
+        /// 玩家状态机可传入 -1（忽略此参数）。
         /// </param>
         public void Begin(SharedSkillDefinition definition, ISkillExecutionContext context, float castDuration = -1f)
         {
@@ -134,6 +140,11 @@ namespace Game.Presentation
             _cueRuntime.Stop();
         }
 
+        /// <summary>
+        /// 停止与当前动作状态强绑定的 Cue，但保留其余效果时间线继续运行。
+        /// 典型场景是：动作动画已经自然退出，状态机已切回 Locomotion，
+        /// 但拖尾伤害、残留特效或持续检测窗口仍需继续结算。
+        /// </summary>
         public void StopStateScopedCues()
         {
             _stateScopeEnded = true;

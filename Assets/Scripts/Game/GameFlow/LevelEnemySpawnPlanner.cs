@@ -24,7 +24,7 @@ namespace Game.GameFlow
     }
 
     /// <summary>
-    /// 将关卡敌人生成方案解析为运行时任务队列。
+    /// 将关卡生成方案解析为运行时任务队列。
     /// 仅负责规划，不直接做场景生成。
     /// </summary>
     public static class LevelEnemySpawnPlanner
@@ -62,7 +62,7 @@ namespace Game.GameFlow
                 if (definition == null)
                     continue;
 
-                if (definition.enemyType != EnemySpawnCategory.Guardian)
+                if (!definition.IsGuardianCategory)
                     continue;
 
                 int taskCount = Mathf.Max(0, assignment.taskCount);

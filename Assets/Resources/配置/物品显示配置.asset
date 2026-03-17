@@ -12,6 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2b2a58e6c7d4b84590eb10e734775c0, type: 3}
   m_Name: "\u7269\u54C1\u663E\u793A\u914D\u7F6E"
   m_EditorClassIdentifier: 
+  iconScale: 0.03
+  spawnHeightOffset: 0.1
+  hoverAmplitude: 0.05
+  hoverFrequency: 1
+  pickupRadius: 4
   entries:
   - itemId: potion_hp
     displayName: "\u56DE\u8840\u836F\u5242"

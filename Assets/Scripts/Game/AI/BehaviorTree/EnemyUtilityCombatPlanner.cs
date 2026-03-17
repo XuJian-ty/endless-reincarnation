@@ -69,6 +69,9 @@ namespace Game.AI
             public float Tolerance;
             public bool CanPressure;
             public int PreferredStrafeSign;
+            public float MobilityVariationPressure;
+            public int LastStrafeSign;
+            public int RepeatedSameStrafeSignCount;
             public EnemyResolvedSkill PlanningSkill;
             public float PlanningCooldownRemaining;
             public float ReactionDelay;
@@ -169,7 +172,7 @@ namespace Game.AI
             memory.SyncSearchAnchor(searchAnchor);
 
             Vector3 selfPosition = ctx.Controller.transform.position;
-            int preferredSign = EnemySquadCoordinator.GetPreferredStrafeSign(ctx.Controller);
+            int preferredSign = memory.ResolvePreferredStrafeSign(EnemySquadCoordinator.GetPreferredStrafeSign(ctx.Controller), now);
             float sweepDistance = ResolveSearchSweepDistance(ctx.Archetype);
             Vector3 searchPos = ResolveSearchPoint(selfPosition, ctx.Controller.transform.forward, searchAnchor, preferredSign, memory.SearchStep, sweepDistance);
             Vector3 delta = searchPos - selfPosition;
@@ -280,7 +283,11 @@ namespace Game.AI
             frame.DesiredDistance = desiredDistance;
             frame.Tolerance = Mathf.Max(0.1f, ctx.Archetype.combatDistanceTolerance);
             frame.CanPressure = EnemySquadCoordinator.CanPressure(ctx.Controller, ctx.Archetype, now);
-            frame.PreferredStrafeSign = EnemySquadCoordinator.GetPreferredStrafeSign(ctx.Controller);
+            int fallbackStrafeSign = EnemySquadCoordinator.GetPreferredStrafeSign(ctx.Controller);
+            frame.PreferredStrafeSign = ctx.Memory.ResolvePreferredStrafeSign(fallbackStrafeSign, now);
+            frame.MobilityVariationPressure = ctx.Memory.GetMobilityVariationPressure();
+            frame.LastStrafeSign = ctx.Memory.LastStrafeSign;
+            frame.RepeatedSameStrafeSignCount = ctx.Memory.RepeatedSameStrafeSignCount;
             frame.PlanningSkill = planningSkill;
             frame.PlanningCooldownRemaining = cooldownRemaining;
             frame.ReactionDelay = ctx.Archetype.GetRandomReactionDelay();
@@ -355,6 +362,7 @@ namespace Game.AI
             float score = 24f + frame.Archetype.aggression * 22f + Mathf.Min(distanceOvershoot, 6f) * 4.5f;
             if (!frame.CanPressure)
                 score -= 10f;
+            score -= GetIntentRepeatPenalty(frame, EnemyIntentType.Approach, 3f);
 
             EnemyIntent intent = new EnemyIntent
             {
@@ -382,6 +390,7 @@ namespace Game.AI
             float score = 34f + frame.Archetype.punishBias * 24f + frame.Perception.PunishOpportunityScore * 24f;
             if (!frame.CanPressure)
                 score -= 6f;
+            score -= GetIntentRepeatPenalty(frame, EnemyIntentType.Punish, 4f);
 
             EnemyIntent intent = new EnemyIntent
             {
@@ -418,11 +427,20 @@ namespace Game.AI
                 return default;
             }
 
-            float score = 20f + frame.Archetype.strafeBias * 20f + (frame.CanPressure ? 5f : 10f);
+            float score = 13f + frame.Archetype.strafeBias * 14f + (frame.CanPressure ? 3f : 8f);
             if (focus == EnemyCombatDecisionFocus.Punish)
                 score += frame.Archetype.punishBias * 8f;
-            if (sign != frame.PreferredStrafeSign)
-                score -= 1.5f;
+            score += sign == frame.PreferredStrafeSign ? 1f : 0f;
+            if (frame.LastStrafeSign != 0)
+            {
+                if (sign == -frame.LastStrafeSign)
+                    score += 5f + frame.MobilityVariationPressure * 10f;
+                else if (sign == frame.LastStrafeSign)
+                    score -= 3f + frame.RepeatedSameStrafeSignCount * 2.5f + frame.MobilityVariationPressure * 12f;
+            }
+
+            score -= frame.MobilityVariationPressure * (focus == EnemyCombatDecisionFocus.Punish ? 5f : 10f);
+            score -= GetIntentRepeatPenalty(frame, sign >= 0 ? EnemyIntentType.StrafeRight : EnemyIntentType.StrafeLeft, 5f);
 
             EnemyIntent intent = new EnemyIntent
             {
@@ -442,14 +460,24 @@ namespace Game.AI
         private static Candidate BuildRetreatCandidate(CombatFrame frame, EnemyCombatDecisionFocus focus)
         {
             bool tooClose = frame.Distance < frame.DesiredDistance - frame.Tolerance;
-            if (!tooClose && focus != EnemyCombatDecisionFocus.ThreatResponse)
+            bool wantsBreathingRoom = frame.MobilityVariationPressure >= 0.18f &&
+                                     frame.Distance <= frame.DesiredDistance + frame.Tolerance * 1.1f &&
+                                     frame.Perception.HasLineOfSight;
+
+            float retreatDesiredDistance = frame.DesiredDistance;
+            if (wantsBreathingRoom)
+                retreatDesiredDistance += Mathf.Lerp(1.1f, 2.4f, frame.MobilityVariationPressure);
+            else if (tooClose)
+                retreatDesiredDistance += 0.45f;
+
+            if (!tooClose && focus != EnemyCombatDecisionFocus.ThreatResponse && !wantsBreathingRoom)
                 return default;
 
             if (!EnemyTacticalNavigation.TryFindRetreatPoint(
                     frame.Controller,
                     frame.Archetype,
                     frame.TargetPosition,
-                    frame.DesiredDistance,
+                    retreatDesiredDistance,
                     frame.Distance,
                     out Vector3 retreatPoint))
             {
@@ -459,8 +487,11 @@ namespace Game.AI
             float score = 14f + frame.Archetype.caution * 16f + frame.Perception.ThreatScore * 12f;
             if (focus == EnemyCombatDecisionFocus.ThreatResponse)
                 score += frame.Archetype.dodgeBias * 12f;
+            if (wantsBreathingRoom)
+                score += 10f + frame.MobilityVariationPressure * 14f;
             if (frame.CanPressure && !frame.Perception.HasImmediateThreat)
-                score -= 8f;
+                score -= wantsBreathingRoom ? 3f : 8f;
+            score -= GetIntentRepeatPenalty(frame, EnemyIntentType.Retreat, 4.5f);
 
             EnemyIntent intent = new EnemyIntent
             {
@@ -480,7 +511,9 @@ namespace Game.AI
         private static Candidate BuildRepositionCandidate(CombatFrame frame, EnemyCombatDecisionFocus focus)
         {
             bool needFix = !frame.Perception.HasLineOfSight || !frame.Perception.HasReachablePath;
-            if (!needFix && focus != EnemyCombatDecisionFocus.ThreatResponse)
+            bool wantsVariation = frame.MobilityVariationPressure >= 0.28f &&
+                                  frame.Distance <= frame.DesiredDistance + frame.Tolerance * 1.6f;
+            if (!needFix && focus != EnemyCombatDecisionFocus.ThreatResponse && !wantsVariation)
                 return default;
 
             if (!EnemyTacticalNavigation.TryFindRepositionPoint(
@@ -488,6 +521,7 @@ namespace Game.AI
                     frame.Perception,
                     frame.Archetype,
                     frame.DesiredDistance,
+                    frame.PreferredStrafeSign,
                     out Vector3 repositionPoint))
             {
                 return default;
@@ -498,6 +532,9 @@ namespace Game.AI
                 score += 10f;
             if (focus == EnemyCombatDecisionFocus.ThreatResponse)
                 score += frame.Archetype.dodgeBias * 10f;
+            if (wantsVariation)
+                score += 8f + frame.MobilityVariationPressure * 12f;
+            score -= GetIntentRepeatPenalty(frame, EnemyIntentType.Reposition, 4f);
 
             EnemyIntent intent = new EnemyIntent
             {
@@ -532,6 +569,7 @@ namespace Game.AI
                 score += 4f;
             if (frame.PlanningSkill != null)
                 score += Mathf.Clamp(frame.PlanningCooldownRemaining, 0f, 0.35f) * 8f;
+            score -= GetIntentRepeatPenalty(frame, EnemyIntentType.Hold, 2.5f);
 
             EnemyIntent intent = new EnemyIntent
             {
@@ -557,6 +595,7 @@ namespace Game.AI
                 return default;
 
             float score = 36f + frame.Archetype.dodgeBias * 24f + frame.Perception.ThreatScore * 26f;
+            score -= GetIntentRepeatPenalty(frame, EnemyIntentType.Dodge, 6f);
             EnemyIntent intent = new EnemyIntent
             {
                 Type = EnemyIntentType.Dodge,
@@ -659,6 +698,11 @@ namespace Game.AI
                 EnemySkillRole.Pressure => 0.2f,
                 _ => 0f,
             };
+        }
+
+        private static float GetIntentRepeatPenalty(CombatFrame frame, EnemyIntentType intentType, float basePenalty)
+        {
+            return frame.Memory != null ? frame.Memory.GetIntentRepeatPenalty(intentType, basePenalty) : 0f;
         }
 
         private static void TryTakeBetterCandidate(ref Candidate best, Candidate candidate)

@@ -18,8 +18,10 @@ namespace Game.UI
 {
     /// <summary>
     /// 背包面板：左侧为玩家模型区、12 项属性（一行 2 个）、当前装备武器格；右侧为 50 格滚动视图（每行 5 格，鼠标滚轮垂直滚动），支持 6 种排序。
-    /// 约定：右侧 Slots 为 ScrollView/Viewport/Content，Content 下 50 个子物体依次为 Slot0..Slot49；每格下有 Image(图标)、Text(数量可选)。
-    /// 左侧需有 PlayerModelArea（可选）、StatsRoot（12 个 Text 或子节点）、EquippedWeaponIcon（Image）；排序下拉或按钮命名为 SortDropdown / Btn_Sort*。
+    /// 约定：右侧 Slots 为 ScrollView/Viewport/Content；运行时会自动补齐 50 个 Slot，每格下有 Image(图标)、Text(数量可选)。
+    /// 左侧需有 PlayerModelArea（可选）、StatsRoot（12 个 Text 或子节点）、EquippedWeaponIcon（Image）；
+    /// 右侧弹出面板建议命名为 RightTooltipPanel / RightContextMenuPanel，左侧预览弹出面板建议命名为 LeftTooltipPanel / LeftContextMenuPanel。
+    /// 排序下拉或按钮命名为 SortDropdown / Btn_Sort*。
     /// </summary>
     [ExecuteAlways]
     public class BackpackPanel : BasePanel
@@ -27,7 +29,7 @@ namespace Game.UI
         private static readonly int SlotCount = PlayerModel.SlotCount;
 
         [Header("右侧背包")]
-        [Tooltip("ScrollView 下的 Content（带 GridLayoutGroup，5 列），其下 50 个子物体为 Slot0..Slot49")]
+        [Tooltip("ScrollView 下的 Content（带 GridLayoutGroup，5 列）；运行时会自动补齐 50 个 Slot")]
         [SerializeField] private Transform slotsRoot;
         [SerializeField] private ScrollRect scrollRect;
 
@@ -63,6 +65,12 @@ namespace Game.UI
         [SerializeField] private Button btnEquip;
         [SerializeField] private Button btnSell;
 
+        [Header("左侧预览悬停与右键")]
+        [SerializeField] private GameObject previewTooltipPanel;
+        [SerializeField] private Text previewTooltipText;
+        [SerializeField] private GameObject previewContextMenuPanel;
+        [SerializeField] private Button btnUnequip;
+
         private Transform[] _slotTransforms = new Transform[SlotCount];
         private Image[] _slotBackgrounds = new Image[SlotCount];
         private Image[] _slotIcons = new Image[SlotCount];
@@ -93,6 +101,9 @@ namespace Game.UI
         private float _previewPointerDownYaw;
         private readonly Vector3[] _popupWorldCorners = new Vector3[4];
         private Text _tooltipRightText;
+        private Text _previewTooltipRightText;
+        private bool _previewPointerHovering;
+        private RectTransform _activePreviewTooltipAnchor;
 
         private const float PreviewDragThresholdPixels = 10f;
         private static readonly Vector2 PopupOffset = new Vector2(12f, -12f);
@@ -132,9 +143,10 @@ namespace Game.UI
             if (slotsRoot == null) slotsRoot = root;
             ClearSlotReferences();
             EnsureSlotObjects(root);
-            if (root != null && root.childCount >= SlotCount)
+            if (root != null)
             {
-                for (int i = 0; i < SlotCount; i++)
+                int bindCount = Mathf.Min(root.childCount, SlotCount);
+                for (int i = 0; i < bindCount; i++)
                 {
                     _slotTransforms[i] = root.GetChild(i);
                     _slotBackgrounds[i] = _slotTransforms[i].Find("Background")?.GetComponent<Image>();
@@ -178,13 +190,25 @@ namespace Game.UI
                     _statTexts[i] = statsRoot.GetChild(i).GetComponentInChildren<Text>(true);
             }
 
-            if (tooltipPanel == null) tooltipPanel = transform.Find("TooltipPanel")?.gameObject;
+            if (tooltipPanel == null) tooltipPanel = FindChildByName("RightTooltipPanel")?.gameObject;
+            if (tooltipPanel == null) tooltipPanel = FindChildByName("TooltipPanel")?.gameObject;
+            if (tooltipText == null && tooltipPanel != null) tooltipText = tooltipPanel.transform.Find("TooltipLeftText")?.GetComponent<Text>();
             if (tooltipText == null && tooltipPanel != null) tooltipText = tooltipPanel.GetComponentInChildren<Text>(true);
-            if (contextMenuPanel == null) contextMenuPanel = transform.Find("ContextMenuPanel")?.gameObject;
+            if (contextMenuPanel == null) contextMenuPanel = FindChildByName("RightContextMenuPanel")?.gameObject;
+            if (contextMenuPanel == null) contextMenuPanel = FindChildByName("ContextMenuPanel")?.gameObject;
             if (btnEquip == null && contextMenuPanel != null) btnEquip = contextMenuPanel.transform.Find("Btn_Equip")?.GetComponent<Button>();
             if (btnSell == null && contextMenuPanel != null) btnSell = contextMenuPanel.transform.Find("Btn_Sell")?.GetComponent<Button>();
-            EnsureWeaponTooltipColumns();
-            ConfigureTooltipRaycastTargets();
+
+            if (previewTooltipPanel == null) previewTooltipPanel = FindChildByName("LeftTooltipPanel")?.gameObject;
+            if (previewTooltipText == null && previewTooltipPanel != null) previewTooltipText = previewTooltipPanel.transform.Find("TooltipLeftText")?.GetComponent<Text>();
+            if (previewTooltipText == null && previewTooltipPanel != null) previewTooltipText = previewTooltipPanel.GetComponentInChildren<Text>(true);
+            if (previewContextMenuPanel == null) previewContextMenuPanel = FindChildByName("LeftContextMenuPanel")?.gameObject;
+            if (btnUnequip == null && previewContextMenuPanel != null) btnUnequip = previewContextMenuPanel.transform.Find("Btn_Unequip")?.GetComponent<Button>();
+
+            if (_tooltipRightText == null && tooltipPanel != null) _tooltipRightText = tooltipPanel.transform.Find("TooltipRightText")?.GetComponent<Text>();
+            if (_previewTooltipRightText == null && previewTooltipPanel != null) _previewTooltipRightText = previewTooltipPanel.transform.Find("TooltipRightText")?.GetComponent<Text>();
+            ConfigureTooltipRaycastTargets(tooltipPanel);
+            ConfigureTooltipRaycastTargets(previewTooltipPanel);
             BindContextMenuButtons();
         }
 
@@ -282,35 +306,25 @@ namespace Game.UI
                 btnSell.onClick.RemoveListener(OnSellClicked);
                 btnSell.onClick.AddListener(OnSellClicked);
             }
+
+            if (btnUnequip != null)
+            {
+                btnUnequip.onClick.RemoveListener(OnUnequipClicked);
+                btnUnequip.onClick.AddListener(OnUnequipClicked);
+            }
         }
 
-        private void ConfigureTooltipRaycastTargets()
+        private static void ConfigureTooltipRaycastTargets(GameObject panel)
         {
-            if (tooltipPanel == null)
+            if (panel == null)
                 return;
 
-            var graphics = tooltipPanel.GetComponentsInChildren<Graphic>(true);
+            var graphics = panel.GetComponentsInChildren<Graphic>(true);
             for (int i = 0; i < graphics.Length; i++)
             {
                 if (graphics[i] != null)
                     graphics[i].raycastTarget = false;
             }
-        }
-
-        private void EnsureWeaponTooltipColumns()
-        {
-            if (!Application.isPlaying || tooltipPanel == null || tooltipText == null || _tooltipRightText != null)
-                return;
-
-            var rightTextGo = new GameObject("TooltipRightText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            rightTextGo.layer = tooltipText.gameObject.layer;
-            rightTextGo.transform.SetParent(tooltipPanel.transform, false);
-
-            _tooltipRightText = rightTextGo.GetComponent<Text>();
-            CopyTooltipTextStyle(tooltipText, _tooltipRightText);
-            _tooltipRightText.alignment = TextAnchor.UpperLeft;
-            _tooltipRightText.raycastTarget = false;
-            _tooltipRightText.gameObject.SetActive(false);
         }
 
         private static void CopyTooltipTextStyle(Text source, Text target)
@@ -332,24 +346,24 @@ namespace Game.UI
             target.color = source.color;
         }
 
-        private void ConfigureGenericTooltipLayout()
+        private static void ConfigureGenericTooltipLayout(GameObject panel, Text primaryText, Text secondaryText)
         {
-            SetTooltipPanelWidth(TooltipPanelWidth);
-            ConfigureTooltipTextRect(tooltipText, TooltipPadding, TooltipPadding, TooltipPadding, TooltipPadding);
-            if (_tooltipRightText != null)
+            SetTooltipPanelWidth(panel, TooltipPanelWidth);
+            ConfigureTooltipTextRect(primaryText, TooltipPadding, TooltipPadding, TooltipPadding, TooltipPadding);
+            if (secondaryText != null)
             {
-                _tooltipRightText.text = string.Empty;
-                _tooltipRightText.gameObject.SetActive(false);
+                secondaryText.text = string.Empty;
+                secondaryText.gameObject.SetActive(false);
             }
         }
 
-        private void ConfigureWeaponTooltipLayout()
+        private static void ConfigureWeaponTooltipLayout(GameObject panel, Text primaryText, Text secondaryText)
         {
-            SetTooltipPanelWidth(TooltipPanelWidth);
-            ConfigureTooltipTextRect(tooltipText, TooltipPadding, TooltipPadding, TooltipWeaponLeftRightInset, TooltipPadding);
-            ConfigureTooltipTextRect(_tooltipRightText, TooltipWeaponRightLeftInset, TooltipPadding, TooltipPadding, TooltipPadding);
-            if (_tooltipRightText != null)
-                _tooltipRightText.gameObject.SetActive(true);
+            SetTooltipPanelWidth(panel, TooltipPanelWidth);
+            ConfigureTooltipTextRect(primaryText, TooltipPadding, TooltipPadding, TooltipWeaponLeftRightInset, TooltipPadding);
+            ConfigureTooltipTextRect(secondaryText, TooltipWeaponRightLeftInset, TooltipPadding, TooltipPadding, TooltipPadding);
+            if (secondaryText != null)
+                secondaryText.gameObject.SetActive(true);
         }
 
         private static void ConfigureTooltipTextRect(Text text, float left, float top, float right, float bottom)
@@ -364,34 +378,34 @@ namespace Game.UI
             rect.offsetMax = new Vector2(-right, -top);
         }
 
-        private void SetTooltipPanelWidth(float width)
+        private static void SetTooltipPanelWidth(GameObject panel, float width)
         {
-            if (tooltipPanel == null)
+            if (panel == null)
                 return;
 
-            var rect = tooltipPanel.GetComponent<RectTransform>();
+            var rect = panel.GetComponent<RectTransform>();
             if (rect == null)
                 return;
 
             rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         }
 
-        private void RefreshTooltipPanelHeight()
+        private static void RefreshTooltipPanelHeight(GameObject panel, Text primaryText, Text secondaryText)
         {
-            if (tooltipPanel == null)
+            if (panel == null)
                 return;
 
-            var panelRect = tooltipPanel.GetComponent<RectTransform>();
+            var panelRect = panel.GetComponent<RectTransform>();
             if (panelRect == null)
                 return;
 
             Canvas.ForceUpdateCanvases();
 
             float contentHeight = 0f;
-            if (tooltipText != null)
-                contentHeight = Mathf.Max(contentHeight, tooltipText.preferredHeight);
-            if (_tooltipRightText != null && _tooltipRightText.gameObject.activeSelf)
-                contentHeight = Mathf.Max(contentHeight, _tooltipRightText.preferredHeight);
+            if (primaryText != null)
+                contentHeight = Mathf.Max(contentHeight, primaryText.preferredHeight);
+            if (secondaryText != null && secondaryText.gameObject.activeSelf)
+                contentHeight = Mathf.Max(contentHeight, secondaryText.preferredHeight);
 
             float height = Mathf.Max(TooltipMinHeight, contentHeight + TooltipPadding * 2f);
             panelRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
@@ -431,7 +445,7 @@ namespace Game.UI
             if (!Application.isPlaying)
             {
                 ResolveReferences();
-                RebuildPlayerModelPreview();
+                DestroyPlayerModelPreview();
                 return;
             }
 
@@ -485,7 +499,13 @@ namespace Game.UI
                 if (ec != null) ec.RemoveEventListener(GameEvents.InventoryChanged, OnInventoryChanged);
             }
             DestroyPlayerModelPreview();
+            HideTooltip();
             HideContextMenu();
+        }
+
+        private void OnDestroy()
+        {
+            DestroyPlayerModelPreview();
         }
 
 #if UNITY_EDITOR
@@ -503,7 +523,7 @@ namespace Game.UI
                 return;
 
             ResolveReferences();
-            RebuildPlayerModelPreview();
+            DestroyPlayerModelPreview();
         }
 #endif
 
@@ -644,12 +664,25 @@ namespace Game.UI
 
         private void OnSlotPointerExit()
         {
-            HideTooltip();
+            HideRightTooltip();
         }
 
         private void HideTooltip()
         {
+            HideRightTooltip();
+            HidePreviewTooltip();
+        }
+
+        private void HideRightTooltip()
+        {
             if (tooltipPanel != null) tooltipPanel.SetActive(false);
+        }
+
+        private void HidePreviewTooltip()
+        {
+            _previewPointerHovering = false;
+            _activePreviewTooltipAnchor = null;
+            if (previewTooltipPanel != null) previewTooltipPanel.SetActive(false);
         }
 
         private void OnSlotRightClick(int displayIndex)
@@ -671,28 +704,43 @@ namespace Game.UI
         {
             _contextSlotIndex = -1;
             if (contextMenuPanel != null) contextMenuPanel.SetActive(false);
+            if (previewContextMenuPanel != null) previewContextMenuPanel.SetActive(false);
         }
 
         private void SetGenericTooltip(string text)
         {
-            ConfigureGenericTooltipLayout();
-            if (tooltipText != null)
-                tooltipText.text = text;
-            RefreshTooltipPanelHeight();
+            SetGenericTooltip(tooltipPanel, tooltipText, _tooltipRightText, text);
+        }
+
+        private static void SetGenericTooltip(GameObject panel, Text primaryText, Text secondaryText, string text)
+        {
+            ConfigureGenericTooltipLayout(panel, primaryText, secondaryText);
+            if (primaryText != null)
+                primaryText.text = text;
+            RefreshTooltipPanelHeight(panel, primaryText, secondaryText);
         }
 
         private void SetWeaponTooltip(WeaponInstance weapon)
         {
+            SetWeaponTooltip(tooltipPanel, tooltipText, ref _tooltipRightText, weapon);
+        }
+
+        private void SetPreviewWeaponTooltip(WeaponInstance weapon)
+        {
+            SetWeaponTooltip(previewTooltipPanel, previewTooltipText, ref _previewTooltipRightText, weapon);
+        }
+
+        private void SetWeaponTooltip(GameObject panel, Text primaryText, ref Text secondaryText, WeaponInstance weapon)
+        {
             if (weapon == null)
             {
-                SetGenericTooltip(string.Empty);
+                SetGenericTooltip(panel, primaryText, secondaryText, string.Empty);
                 return;
             }
 
-            EnsureWeaponTooltipColumns();
-            if (_tooltipRightText == null)
+            if (secondaryText == null)
             {
-                SetGenericTooltip(BuildWeaponTooltipFallbackText(weapon));
+                SetGenericTooltip(panel, primaryText, secondaryText, BuildWeaponTooltipFallbackText(weapon));
                 return;
             }
 
@@ -710,10 +758,10 @@ namespace Game.UI
             AppendWeaponStatLine(leftSb, rightSb, "暴击", FormatSignedPercent(weapon.rolledCritRate), "爆伤", FormatSignedPercent(weapon.rolledCritDmg));
             AppendWeaponStatLine(leftSb, rightSb, "攻速", FormatSignedPercent(weapon.rolledAttackSpeed), "移速", FormatSignedPercent(weapon.rolledMoveSpeed));
 
-            ConfigureWeaponTooltipLayout();
-            tooltipText.text = leftSb.ToString();
-            _tooltipRightText.text = rightSb.ToString();
-            RefreshTooltipPanelHeight();
+            ConfigureWeaponTooltipLayout(panel, primaryText, secondaryText);
+            primaryText.text = leftSb.ToString();
+            secondaryText.text = rightSb.ToString();
+            RefreshTooltipPanelHeight(panel, primaryText, secondaryText);
         }
 
         private static string BuildWeaponTooltipFallbackText(WeaponInstance weapon)
@@ -782,7 +830,8 @@ namespace Game.UI
         private void OnEquipClicked()
         {
             if (_contextSlotIndex < 0 || _player == null) return;
-            _player.EquipWeaponAt(_contextSlotIndex);
+            if (!_player.EquipWeaponAt(_contextSlotIndex))
+                return;
             EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
             HideContextMenu();
         }
@@ -804,11 +853,27 @@ namespace Game.UI
             HideContextMenu();
         }
 
+        private void OnUnequipClicked()
+        {
+            if (_player == null || _player.Equipment?.EquippedWeapon == null)
+            {
+                HideContextMenu();
+                return;
+            }
+
+            if (!_player.UnequipWeapon())
+                return;
+            EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
+            HideContextMenu();
+        }
+
         private void Update()
         {
-            if (contextMenuPanel != null && contextMenuPanel.activeSelf && UnityEngine.Input.GetMouseButtonDown(0))
+            if (UnityEngine.Input.GetMouseButtonDown(0))
             {
-                if (!RectTransformUtility.RectangleContainsScreenPoint(contextMenuPanel.GetComponent<RectTransform>(), UnityEngine.Input.mousePosition))
+                bool clickedRightMenu = IsPointerInsidePopup(contextMenuPanel);
+                bool clickedLeftMenu = IsPointerInsidePopup(previewContextMenuPanel);
+                if (!clickedRightMenu && !clickedLeftMenu)
                     HideContextMenu();
             }
 
@@ -866,20 +931,32 @@ namespace Game.UI
             if (popup == null)
                 return;
 
-            popup.SetActive(true);
-
             if (displayIndex < 0 || displayIndex >= _slotTransforms.Length)
                 return;
 
-            var slotRect = _slotTransforms[displayIndex] as RectTransform;
+            ShowPopupAtRect(popup, _slotTransforms[displayIndex] as RectTransform);
+        }
+
+        private void ShowPopupAtPreview(GameObject popup)
+        {
+            ShowPopupAtRect(popup, GetPreviewAnchorRect());
+        }
+
+        private void ShowPopupAtRect(GameObject popup, RectTransform anchorRect)
+        {
+            if (popup == null || anchorRect == null)
+                return;
+
+            popup.SetActive(true);
+
             var popupRect = popup.GetComponent<RectTransform>();
-            if (slotRect == null || popupRect == null)
+            if (popupRect == null)
                 return;
 
             Canvas.ForceUpdateCanvases();
-            slotRect.GetWorldCorners(_popupWorldCorners);
-            Vector3 slotCenter = (_popupWorldCorners[0] + _popupWorldCorners[2]) * 0.5f;
-            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(GetUiCamera(), slotCenter);
+            anchorRect.GetWorldCorners(_popupWorldCorners);
+            Vector3 anchorCenter = (_popupWorldCorners[0] + _popupWorldCorners[2]) * 0.5f;
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(GetUiCamera(), anchorCenter);
             PositionPopupAtScreenPoint(popupRect, screenPoint, PopupOffset);
         }
 
@@ -959,6 +1036,7 @@ namespace Game.UI
 
             _playerModelPreviewTexture = new RenderTexture(width, height, 16, RenderTextureFormat.ARGB32);
             _playerModelPreviewTexture.name = "BackpackPlayerPreviewRT";
+            _playerModelPreviewTexture.hideFlags = HideFlags.HideAndDontSave;
             _playerModelPreviewTexture.Create();
 
             var cameraGo = new GameObject("BackpackPlayerPreviewCamera");
@@ -1165,11 +1243,25 @@ namespace Game.UI
             _previewCombat.Unbind();
             _previewPointerTracking = false;
             _previewPointerDragging = false;
-            _playerModelPreviewAnimator = null;
             _playerModelPreviewTransform = null;
+            _activePreviewTooltipAnchor = null;
 
             if (_playerModelPreviewImage != null)
                 _playerModelPreviewImage.texture = null;
+
+            if (_playerModelPreviewCamera != null)
+                _playerModelPreviewCamera.targetTexture = null;
+
+            if (RenderTexture.active == _playerModelPreviewTexture)
+                RenderTexture.active = null;
+
+            if (_playerModelPreviewAnimator != null)
+            {
+                _playerModelPreviewAnimator.enabled = false;
+                _playerModelPreviewAnimator.runtimeAnimatorController = null;
+                _playerModelPreviewAnimator.avatar = null;
+            }
+            _playerModelPreviewAnimator = null;
 
             if (_playerModelPreviewCamera != null)
                 DestroyObjectImmediateSafe(_playerModelPreviewCamera.gameObject);
@@ -1181,7 +1273,8 @@ namespace Game.UI
 
             if (_playerModelPreviewTexture != null)
             {
-                _playerModelPreviewTexture.Release();
+                if (_playerModelPreviewTexture.IsCreated())
+                    _playerModelPreviewTexture.Release();
                 DestroyObjectImmediateSafe(_playerModelPreviewTexture);
             }
             _playerModelPreviewTexture = null;
@@ -1191,6 +1284,12 @@ namespace Game.UI
         {
             if (obj == null)
                 return;
+
+            if ((obj.hideFlags & HideFlags.HideAndDontSave) != 0)
+            {
+                DestroyImmediate(obj);
+                return;
+            }
 
             if (Application.isPlaying)
                 Destroy(obj);
@@ -1206,13 +1305,19 @@ namespace Game.UI
         private void HandlePreviewPointerInput()
         {
             if (_playerModelPreviewTransform == null || playerModelArea == null)
+            {
+                HidePreviewTooltip();
                 return;
+            }
 
             Vector2 mousePosition = UnityEngine.Input.mousePosition;
-            bool insidePreview = RectTransformUtility.RectangleContainsScreenPoint(
-                playerModelArea,
-                mousePosition,
-                GetUiEventCamera());
+            bool insidePreview = IsPointerInsidePreview(mousePosition);
+            bool insideEquippedWeaponIcon = IsPointerInsideEquippedWeaponIcon(mousePosition);
+
+            HandlePreviewHover(insideEquippedWeaponIcon);
+
+            if (UnityEngine.Input.GetMouseButtonDown(1) && insideEquippedWeaponIcon)
+                OnPreviewRightClick();
 
             if (UnityEngine.Input.GetMouseButtonDown(0) && insidePreview)
             {
@@ -1248,6 +1353,119 @@ namespace Game.UI
                 if (!wasDragging && shouldAttack)
                     _previewCombat.RequestNormalAttack();
             }
+        }
+
+        private void HandlePreviewHover(bool insidePreview)
+        {
+            var weapon = GetPreviewWeapon();
+            bool shouldShow = insidePreview
+                              && weapon != null
+                              && !_previewPointerTracking
+                              && !_previewPointerDragging
+                              && (previewContextMenuPanel == null || !previewContextMenuPanel.activeSelf);
+
+            if (!shouldShow)
+            {
+                if (_previewPointerHovering)
+                    HidePreviewTooltip();
+                return;
+            }
+
+            ShowPreviewTooltipAt(GetPreviewSlotAnchorRect(), weapon);
+        }
+
+        private void ShowPreviewTooltipAt(RectTransform anchorRect, WeaponInstance weapon)
+        {
+            if (anchorRect == null || weapon == null)
+                return;
+
+            if (_previewPointerTracking || _previewPointerDragging)
+                return;
+
+            if (previewContextMenuPanel != null && previewContextMenuPanel.activeSelf)
+                return;
+
+            SetPreviewWeaponTooltip(weapon);
+            if (!_previewPointerHovering
+                || previewTooltipPanel == null
+                || !previewTooltipPanel.activeSelf
+                || _activePreviewTooltipAnchor != anchorRect)
+            {
+                ShowPopupAtRect(previewTooltipPanel, anchorRect);
+            }
+
+            _previewPointerHovering = true;
+            _activePreviewTooltipAnchor = anchorRect;
+        }
+
+        private void OnPreviewRightClick()
+        {
+            OnPreviewRightClick(GetPreviewSlotAnchorRect());
+        }
+
+        private void OnPreviewRightClick(RectTransform anchorRect)
+        {
+            var weapon = GetPreviewWeapon();
+            if (weapon == null || anchorRect == null)
+                return;
+
+            HideTooltip();
+            HideContextMenu();
+            if (previewContextMenuPanel != null)
+                previewContextMenuPanel.SetActive(true);
+            if (btnUnequip != null)
+                btnUnequip.gameObject.SetActive(true);
+            ShowPopupAtRect(previewContextMenuPanel, anchorRect);
+        }
+
+        private WeaponInstance GetPreviewWeapon()
+        {
+            return _player?.Equipment?.EquippedWeapon;
+        }
+
+        private RectTransform GetPreviewAnchorRect()
+        {
+            if (_playerModelPreviewImage != null)
+                return _playerModelPreviewImage.rectTransform;
+            return playerModelArea;
+        }
+
+        private RectTransform GetPreviewSlotAnchorRect()
+        {
+            return equippedWeaponIcon != null ? equippedWeaponIcon.rectTransform : null;
+        }
+
+        private bool IsPointerInsideEquippedWeaponIcon(Vector2 screenPoint)
+        {
+            var iconRect = GetPreviewSlotAnchorRect();
+            if (iconRect == null)
+                return false;
+
+            return RectTransformUtility.RectangleContainsScreenPoint(
+                iconRect,
+                screenPoint,
+                GetUiEventCamera());
+        }
+
+        private bool IsPointerInsidePreview(Vector2 screenPoint)
+        {
+            var previewRect = GetPreviewAnchorRect();
+            if (previewRect == null)
+                return false;
+
+            return RectTransformUtility.RectangleContainsScreenPoint(
+                previewRect,
+                screenPoint,
+                GetUiEventCamera());
+        }
+
+        private bool IsPointerInsidePopup(GameObject popup)
+        {
+            if (popup == null || !popup.activeSelf)
+                return false;
+
+            var rect = popup.GetComponent<RectTransform>();
+            return rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, UnityEngine.Input.mousePosition, GetUiEventCamera());
         }
 
         private Camera GetUiEventCamera()

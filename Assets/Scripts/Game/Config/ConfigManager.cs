@@ -20,14 +20,13 @@ namespace Game
         private WeaponDatabaseSO _weaponDatabase;
         private LevelGrowthSO _levelGrowth;
         private DifficultyScalingSO _difficultyScaling;
-        private LevelBossVisualConfigSO _levelBossVisualConfig;
+        private PlayerCloneAndLevelBossVisualConfigSO _playerCloneAndLevelBossVisualConfig;
         private PlayerCloneAIConfigSO _playerCloneAIConfig;
         private ShopPriceConfigSO _shopPriceConfig;
         private PotionConfigSO _potionConfig;
         private SkillConfigDatabaseSO _skillConfigDatabase;
         private CharacterAnimationLibrarySO _characterAnimationLibrary;
         private ItemDisplayDatabaseSO _itemDisplayDatabase;
-        private WorldPickupVisualConfigSO _worldPickupVisualConfig;
         private SlotBackgroundConfigSO _slotBackgroundConfig;
         private KeyRebindConfigSO _keyRebindConfig;
         private BackpackUIConfigSO _backpackUIConfig;
@@ -119,11 +118,11 @@ namespace Game
             return _difficultyScaling;
         }
 
-        public LevelBossVisualConfigSO GetLevelBossVisualConfig()
+        public PlayerCloneAndLevelBossVisualConfigSO GetPlayerCloneAndLevelBossVisualConfig()
         {
-            if (_levelBossVisualConfig == null)
-                _levelBossVisualConfig = Resources.Load<LevelBossVisualConfigSO>(ConfigPathPrefix + "最终Boss视觉配置");
-            return _levelBossVisualConfig;
+            if (_playerCloneAndLevelBossVisualConfig == null)
+                _playerCloneAndLevelBossVisualConfig = Resources.Load<PlayerCloneAndLevelBossVisualConfigSO>(ConfigPathPrefix + "玩家分身和最终Boss视觉配置");
+            return _playerCloneAndLevelBossVisualConfig;
         }
 
         public PlayerCloneAIConfigSO GetPlayerCloneAIConfig()
@@ -176,13 +175,6 @@ namespace Game
             if (_itemDisplayDatabase == null)
                 _itemDisplayDatabase = Resources.Load<ItemDisplayDatabaseSO>(ConfigPathPrefix + "物品显示配置");
             return _itemDisplayDatabase;
-        }
-
-        public WorldPickupVisualConfigSO GetWorldPickupVisualConfig()
-        {
-            if (_worldPickupVisualConfig == null)
-                _worldPickupVisualConfig = Resources.Load<WorldPickupVisualConfigSO>(ConfigPathPrefix + "掉落物显示配置");
-            return _worldPickupVisualConfig;
         }
 
         public SlotBackgroundConfigSO GetSlotBackgroundConfig()

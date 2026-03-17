@@ -11,7 +11,7 @@ namespace Game.GameFlow
 {
     /// <summary>
     /// 关卡导演：负责关卡内阶段逻辑（守卫者计数、Boss 降临、击败后 Checkpoint 与选关）。
-    /// 挂在关卡场景空物体上，与 LevelBootstrapper、全局/局部敌人生成器配合。
+    /// 挂在关卡场景空物体上，与 LevelBootstrapper、全局/局部生成器配合。
     /// </summary>
     public class LevelDirector : MonoBehaviour
     {
@@ -57,7 +57,7 @@ namespace Game.GameFlow
         {
             _enemySpawner = EnsureEnemySpawnerReference(true);
             if (_enemySpawner == null && FindFirstObjectByType<LevelLocalEnemySpawner>() == null)
-                Debug.LogWarning("[LevelDirector] 场景中未找到 LevelEnemySpawner。若当前关卡不使用全局敌人生成器，可忽略此提示。", this);
+                Debug.LogWarning("[LevelDirector] 场景中未找到 LevelEnemySpawner。若当前关卡不使用全局生成器，可忽略此提示。", this);
 
             EventCenter.GetInstance().AddEventListener(GameEvents.GuardianDied, OnGuardianDied);
             EventCenter.GetInstance().AddEventListener<string>(GameEvents.BossDefeated, OnBossDefeated);
@@ -265,17 +265,17 @@ namespace Game.GameFlow
             if (run?.defeatedBossIds == null || run.defeatedBossIds.Count == 0)
             {
                 EnemySpawnVariantInfo randomVariant = bossVariants[_bossRng.Next(0, bossVariants.Count)];
-                return randomVariant != null ? randomVariant.enemyId : string.Empty;
+                return randomVariant != null ? randomVariant.spawnId : string.Empty;
             }
 
             var undefeatedBossIds = new System.Collections.Generic.List<string>();
             for (int i = 0; i < bossVariants.Count; i++)
             {
                 EnemySpawnVariantInfo variant = bossVariants[i];
-                if (variant == null || string.IsNullOrWhiteSpace(variant.enemyId))
+                if (variant == null || string.IsNullOrWhiteSpace(variant.spawnId))
                     continue;
 
-                string bossId = variant.enemyId;
+                string bossId = variant.spawnId;
                 if (!run.defeatedBossIds.Contains(bossId))
                     undefeatedBossIds.Add(bossId);
             }
@@ -283,7 +283,7 @@ namespace Game.GameFlow
             if (undefeatedBossIds.Count == 0)
             {
                 EnemySpawnVariantInfo randomVariant = bossVariants[_bossRng.Next(0, bossVariants.Count)];
-                return randomVariant != null ? randomVariant.enemyId : string.Empty;
+                return randomVariant != null ? randomVariant.spawnId : string.Empty;
             }
 
             return undefeatedBossIds[_bossRng.Next(0, undefeatedBossIds.Count)];
@@ -327,7 +327,7 @@ namespace Game.GameFlow
                 return _enemySpawner;
 
             LevelConfigData levelConfig = ResolveCurrentLevelConfig();
-            if (levelConfig?.enemyGlobalSpawnPlanLibrary == null)
+            if (levelConfig?.globalSpawnPlanLibrary == null)
                 return null;
 
             GameObject spawnerObject = new GameObject("LevelEnemySpawner");

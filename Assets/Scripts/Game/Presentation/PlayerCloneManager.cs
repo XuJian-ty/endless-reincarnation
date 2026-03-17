@@ -7,12 +7,16 @@ namespace Game.Presentation
 {
     public sealed class PlayerCloneManager : MonoBehaviour
     {
+        private const string ClonePrefabResourcePath = "Prefabs/PlayerClone";
         private readonly List<PlayerCloneActor> _clones = new List<PlayerCloneActor>();
         private PlayerController _owner;
+        private GameObject _clonePrefab;
+        private int _processedSummonCloneCount;
 
         public void Initialize(PlayerController owner)
         {
             _owner = owner;
+            _processedSummonCloneCount = 0;
             RefreshClonesImmediate();
         }
 
@@ -32,7 +36,7 @@ namespace Game.Presentation
             if (_owner == null || _owner.PlayerModel == null)
                 return;
 
-            int desiredCount = _owner.PlayerModel.GetBuffStackCount(BuffIds.SummonClone);
+            int summonCloneCount = _owner.PlayerModel.GetBuffStackCount(BuffIds.SummonClone);
             SummonCloneBuffSettings settings = PlayerBuffRuntimeUtility.GetSummonCloneSettings(_owner.transform);
 
             for (int i = _clones.Count - 1; i >= 0; i--)
@@ -42,22 +46,17 @@ namespace Game.Presentation
                     _clones.RemoveAt(i);
             }
 
-            while (_clones.Count > desiredCount)
-            {
-                int lastIndex = _clones.Count - 1;
-                PlayerCloneActor clone = _clones[lastIndex];
-                _clones.RemoveAt(lastIndex);
-                if (clone != null)
-                    Destroy(clone.gameObject);
-            }
+            if (summonCloneCount < _processedSummonCloneCount)
+                _processedSummonCloneCount = summonCloneCount;
 
-            while (_clones.Count < desiredCount)
+            while (_processedSummonCloneCount < summonCloneCount)
             {
-                GameObject cloneObject = new GameObject($"PlayerClone_{_clones.Count + 1}");
-                cloneObject.transform.position = _owner.transform.position;
-                cloneObject.transform.rotation = _owner.transform.rotation;
-                PlayerCloneActor clone = cloneObject.AddComponent<PlayerCloneActor>();
+                GameObject cloneObject = CreateCloneObject(_clones.Count + 1);
+                PlayerCloneActor clone = cloneObject.GetComponent<PlayerCloneActor>();
+                if (clone == null)
+                    clone = cloneObject.AddComponent<PlayerCloneActor>();
                 _clones.Add(clone);
+                _processedSummonCloneCount++;
             }
 
             for (int i = 0; i < _clones.Count; i++)
@@ -95,6 +94,24 @@ namespace Game.Presentation
             }
 
             _clones.Clear();
+            _processedSummonCloneCount = 0;
+        }
+
+        private GameObject CreateCloneObject(int cloneIndex)
+        {
+            if (_clonePrefab == null)
+                _clonePrefab = Resources.Load<GameObject>(ClonePrefabResourcePath);
+
+            GameObject cloneObject = _clonePrefab != null
+                ? Instantiate(_clonePrefab, _owner.transform.position, _owner.transform.rotation)
+                : new GameObject($"PlayerClone_{cloneIndex}");
+
+            if (_clonePrefab != null)
+                cloneObject.name = $"PlayerClone_{cloneIndex}";
+
+            cloneObject.transform.position = _owner.transform.position;
+            cloneObject.transform.rotation = _owner.transform.rotation;
+            return cloneObject;
         }
     }
 }

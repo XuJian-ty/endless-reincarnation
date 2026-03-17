@@ -7,15 +7,15 @@ using UnityEngine.AI;
 namespace Game.GameFlow
 {
     /// <summary>
-    /// 全局敌人生成器：引用多条具体类型敌人生成数据，并按任务队列执行生成任务。
-    /// 可生成小怪/精英/守卫者/Boss；通过本生成器刷出的 Boss 默认不计入关卡胜负。
+    /// 全局生成器：引用多条具体类型生成数据，并按任务队列执行生成任务。
+    /// 可生成敌人、宝箱、商店；通过本生成器刷出的 Boss 默认不计入关卡胜负。
     /// </summary>
     public class LevelEnemySpawner : MonoBehaviour
     {
         [Header("生成方案")]
-        [SerializeField] [Tooltip("为空时使用当前关卡配置里的全局敌人生成方案库。")]
+        [SerializeField] [Tooltip("为空时使用当前关卡配置里的全局生成方案库。")]
         private LevelEnemySpawnPlanSO _planLibrary;
-        [SerializeField] [Min(0)] [Tooltip("当前全局敌人生成器使用的方案列表项索引。")]
+        [SerializeField] [Min(0)] [Tooltip("当前全局生成器使用的方案列表项索引。")]
         private int _planIndex;
 
         private readonly Queue<LevelEnemySpawnTaskRequest> _pendingSpawnTasks = new Queue<LevelEnemySpawnTaskRequest>();
@@ -73,7 +73,7 @@ namespace Game.GameFlow
             int total = 0;
             foreach (LevelEnemySpawnTaskRequest request in _pendingSpawnTasks)
             {
-                if (request?.Definition == null || request.Definition.enemyType != EnemySpawnCategory.Guardian)
+                if (request?.Definition == null || !request.Definition.IsGuardianCategory)
                     continue;
 
                 total += Mathf.Max(0, request.SpawnCount);
@@ -95,13 +95,13 @@ namespace Game.GameFlow
             LevelConfigData levelConfig = ResolveCurrentLevelConfig();
             if (!TryResolveSpawnPlan(levelConfig, out _resolvedTaskDatabase, out _resolvedSpawnPlan))
             {
-                Debug.LogError("[LevelEnemySpawner] 未找到全局敌人生成方案。请在关卡配置或生成器字段中指定方案库和列表项。", this);
+                Debug.LogError("[LevelEnemySpawner] 未找到全局生成方案。请在关卡配置或生成器字段中指定方案库和列表项。", this);
                 return false;
             }
 
             if (_resolvedTaskDatabase == null)
             {
-                Debug.LogError("[LevelEnemySpawner] 全局敌人生成方案库未配置任务库。", this);
+                Debug.LogError("[LevelEnemySpawner] 全局生成方案库未配置任务库。", this);
                 return false;
             }
 
@@ -128,8 +128,8 @@ namespace Game.GameFlow
 
             if (library == null && levelConfig != null)
             {
-                library = levelConfig.enemyGlobalSpawnPlanLibrary;
-                planIndex = levelConfig.enemyGlobalSpawnPlanIndex;
+                library = levelConfig.globalSpawnPlanLibrary;
+                planIndex = levelConfig.globalSpawnPlanIndex;
             }
 
             if (library == null)

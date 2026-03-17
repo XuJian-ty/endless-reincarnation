@@ -10,7 +10,8 @@ namespace Game.AI
     /// </summary>
     public static class EnemyTacticalNavigation
     {
-        private static readonly float[] RepositionAngles = { 30f, -30f, 55f, -55f, 80f, -80f, 110f, -110f };
+        private static readonly float[] RepositionAnglesClockwiseFirst = { 55f, 30f, 80f, 110f, -30f, -55f, -80f, -110f };
+        private static readonly float[] RepositionAnglesCounterClockwiseFirst = { -55f, -30f, -80f, -110f, 30f, 55f, 80f, 110f };
 
         public static bool TryFindRetreatPoint(
             EnemyController controller,
@@ -44,6 +45,7 @@ namespace Game.AI
             EnemyPerception perception,
             EnemyArchetypeSO archetype,
             float desiredDistance,
+            int preferredStrafeSign,
             out Vector3 repositionPoint)
         {
             repositionPoint = Vector3.zero;
@@ -58,9 +60,10 @@ namespace Game.AI
                 fromPlayerToSelf = -controller.transform.forward;
             fromPlayerToSelf.Normalize();
 
-            for (int i = 0; i < RepositionAngles.Length; i++)
+            float[] angles = preferredStrafeSign >= 0 ? RepositionAnglesClockwiseFirst : RepositionAnglesCounterClockwiseFirst;
+            for (int i = 0; i < angles.Length; i++)
             {
-                Vector3 rotatedDir = Quaternion.Euler(0f, RepositionAngles[i], 0f) * fromPlayerToSelf;
+                Vector3 rotatedDir = Quaternion.Euler(0f, angles[i], 0f) * fromPlayerToSelf;
                 Vector3 rawCandidate = targetPos + rotatedDir * desiredDistance;
                 if (!TryGetReachablePoint(selfPos, rawCandidate, out Vector3 candidate))
                     continue;
@@ -96,8 +99,8 @@ namespace Game.AI
             Vector3 radial = toSelf.normalized;
             Vector3 tangential = Quaternion.Euler(0f, 90f * Mathf.Sign(strafeSign == 0 ? 1 : strafeSign), 0f) * radial;
             float lateralStep = archetype != null
-                ? Mathf.Max(0.8f, archetype.retreatStepDistance * 0.55f)
-                : 1.6f;
+                ? Mathf.Max(1.3f, archetype.retreatStepDistance * 0.95f)
+                : 2.1f;
 
             Vector3 rawCandidate = targetPos + radial * desiredDistance + tangential.normalized * lateralStep;
             if (!TryGetReachablePoint(selfPos, rawCandidate, out Vector3 candidate))

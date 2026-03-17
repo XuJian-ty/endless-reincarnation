@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.Data
 {
@@ -11,6 +12,8 @@ namespace Game.Data
         Elite = 2,
         Guardian = 3,
         Boss = 4,
+        Chest = 5,
+        Shop = 6,
     }
 
     public enum EnemySpawnCountMode
@@ -20,17 +23,19 @@ namespace Game.Data
     }
 
     /// <summary>
-    /// 单条具体类型敌人生成数据：描述一种敌人生成逻辑。
+    /// 单条具体类型生成数据：描述一种生成逻辑。
     /// 只提供数据，不直接参与生成行为。
     /// </summary>
     [Serializable]
     public class EnemySpawnTaskDefinition
     {
-        [InspectorLabel("敌人类型")]
-        public EnemySpawnCategory enemyType = EnemySpawnCategory.Minion;
+        [FormerlySerializedAs("enemyType")]
+        [InspectorLabel("生成类型")]
+        public EnemySpawnCategory spawnType = EnemySpawnCategory.Minion;
 
+        [FormerlySerializedAs("specificEnemyId")]
         [HideInInspector]
-        public string specificEnemyId = string.Empty;
+        public string specificSpawnId = string.Empty;
 
         [InspectorLabel("生成半径(米)")]
         [Min(1f)]
@@ -51,12 +56,15 @@ namespace Game.Data
         [Min(0)]
         public int randomMaxCount = 4;
 
-        [InspectorLabel("敌人最小间距(米)")]
+        [FormerlySerializedAs("enemyMinSpacing")]
+        [InspectorLabel("对象最小间距(米)")]
         [Min(0.1f)]
-        public float enemyMinSpacing = 3f;
+        public float spawnMinSpacing = 3f;
 
-        public bool UseMixedVariants => string.IsNullOrWhiteSpace(specificEnemyId);
-        public bool IsMinionCategory => enemyType == EnemySpawnCategory.Minion || enemyType == EnemySpawnCategory.MinionLegacyRanged;
+        public bool UseMixedVariants => string.IsNullOrWhiteSpace(specificSpawnId);
+        public bool IsMinionCategory => spawnType == EnemySpawnCategory.Minion || spawnType == EnemySpawnCategory.MinionLegacyRanged;
+        public bool IsGuardianCategory => spawnType == EnemySpawnCategory.Guardian;
+        public bool IsEnemyCategory => spawnType is EnemySpawnCategory.Minion or EnemySpawnCategory.MinionLegacyRanged or EnemySpawnCategory.Elite or EnemySpawnCategory.Guardian or EnemySpawnCategory.Boss;
 
         public int ResolveSpawnCount(System.Random rng)
         {
@@ -72,10 +80,10 @@ namespace Game.Data
         }
     }
 
-    [CreateAssetMenu(menuName = "游戏/配置/敌人生成任务库", fileName = "敌人生成任务库")]
+    [CreateAssetMenu(menuName = "游戏/配置/生成任务库", fileName = "生成任务库")]
     public class EnemySpawnTaskDatabaseSO : ScriptableObject
     {
-        [InspectorLabel("具体类型敌人生成数据列表")]
+        [InspectorLabel("具体类型生成数据列表")]
         public List<EnemySpawnTaskDefinition> tasks = new List<EnemySpawnTaskDefinition>();
 
         public EnemySpawnTaskDefinition GetTaskAt(int index)

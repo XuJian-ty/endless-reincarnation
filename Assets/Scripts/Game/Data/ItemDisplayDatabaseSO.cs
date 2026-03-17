@@ -23,6 +23,27 @@ namespace Game.Data
     [CreateAssetMenu(menuName = "游戏/配置/物品显示配置", fileName = "物品显示配置")]
     public class ItemDisplayDatabaseSO : ScriptableObject
     {
+        [Header("掉落物显示")]
+        [InspectorLabel("图标缩放")]
+        [Min(0.01f)]
+        public float iconScale = 0.2f;
+
+        [InspectorLabel("生成高度")]
+        public float spawnHeightOffset = 0.5f;
+
+        [InspectorLabel("悬浮幅度")]
+        [Min(0f)]
+        public float hoverAmplitude = 0.08f;
+
+        [InspectorLabel("悬浮频率")]
+        [Min(0f)]
+        public float hoverFrequency = 2.4f;
+
+        [InspectorLabel("拾取半径")]
+        [Min(0.01f)]
+        public float pickupRadius = 0.7f;
+
+        [Header("物品显示")]
         [InspectorLabel("物品列表")] public List<ItemDisplayEntry> entries = new List<ItemDisplayEntry>();
 
         public ItemDisplayEntry GetEntry(string itemId)

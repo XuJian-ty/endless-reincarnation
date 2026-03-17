@@ -7,13 +7,13 @@ using UnityEngine;
 namespace Game.GameFlow
 {
     /// <summary>
-    /// 局部敌人生成器：从局部敌人生成方案库中选择一个列表项，以自身位置为圆心执行生成任务。
-    /// 与全局敌人生成器平级独立，但复用同一套生成逻辑。
+    /// 局部生成器：从局部生成方案库中选择一个列表项，以自身位置为圆心执行生成任务。
+    /// 与全局生成器平级独立，但复用同一套敌人/宝箱/商店生成逻辑。
     /// </summary>
     public class LevelLocalEnemySpawner : MonoBehaviour
     {
         [Header("局部生成方案")]
-        [SerializeField] [Tooltip("局部敌人生成方案库。")]
+        [SerializeField] [Tooltip("局部生成方案库。")]
         private LevelLocalEnemySpawnPlanSO _planLibrary;
         [SerializeField] [Min(0)] [Tooltip("本局部生成器使用的方案列表项索引。")]
         private int _planIndex;
@@ -90,7 +90,7 @@ namespace Game.GameFlow
             if (!ResolvePlanIfNeeded())
                 return 0;
 
-            if (_resolvedTask.enemyType != EnemySpawnCategory.Guardian)
+            if (!_resolvedTask.IsGuardianCategory)
                 return 0;
 
             int taskCount = _resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnOnce
@@ -113,7 +113,7 @@ namespace Game.GameFlow
             if (!ResolvePlanIfNeeded())
                 return 0;
 
-            if (_resolvedTask.enemyType != EnemySpawnCategory.Guardian)
+            if (!_resolvedTask.IsGuardianCategory)
                 return 0;
 
             if (_resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnRepeatedly &&
@@ -134,7 +134,7 @@ namespace Game.GameFlow
 
             if (_planLibrary == null)
             {
-                Debug.LogWarning("[LevelLocalEnemySpawner] 未配置局部敌人生成方案库。", this);
+                Debug.LogWarning("[LevelLocalEnemySpawner] 未配置局部生成方案库。", this);
                 return false;
             }
 

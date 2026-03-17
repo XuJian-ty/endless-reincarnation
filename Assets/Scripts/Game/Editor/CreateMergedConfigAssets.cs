@@ -366,43 +366,43 @@ namespace Game.Editor
             {
                 new EnemySpawnTaskDefinition
                 {
-                    enemyType = EnemySpawnCategory.Minion,
-                    specificEnemyId = "melee_minion",
+                    spawnType = EnemySpawnCategory.Minion,
+                    specificSpawnId = "melee_minion",
                     spawnRadius = 12f,
                     countMode = EnemySpawnCountMode.RandomRange,
                     randomMinCount = 2,
                     randomMaxCount = 4,
-                    enemyMinSpacing = 3f,
+                    spawnMinSpacing = 3f,
                 },
                 new EnemySpawnTaskDefinition
                 {
-                    enemyType = EnemySpawnCategory.Minion,
-                    specificEnemyId = "ranged_minion",
+                    spawnType = EnemySpawnCategory.Minion,
+                    specificSpawnId = "ranged_minion",
                     spawnRadius = 14f,
                     countMode = EnemySpawnCountMode.RandomRange,
                     randomMinCount = 1,
                     randomMaxCount = 3,
-                    enemyMinSpacing = 3.5f,
+                    spawnMinSpacing = 3.5f,
                 },
                 new EnemySpawnTaskDefinition
                 {
-                    enemyType = EnemySpawnCategory.Elite,
+                    spawnType = EnemySpawnCategory.Elite,
                     spawnRadius = 10f,
                     countMode = EnemySpawnCountMode.Fixed,
                     fixedCount = 1,
-                    enemyMinSpacing = 4f,
+                    spawnMinSpacing = 4f,
                 },
                 new EnemySpawnTaskDefinition
                 {
-                    enemyType = EnemySpawnCategory.Guardian,
+                    spawnType = EnemySpawnCategory.Guardian,
                     spawnRadius = 8f,
                     countMode = EnemySpawnCountMode.Fixed,
                     fixedCount = 1,
-                    enemyMinSpacing = 5f,
+                    spawnMinSpacing = 5f,
                 },
             };
 
-            var asset = CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/敌人生成任务库.asset");
+            var asset = CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/生成任务库.asset");
             AssetDatabase.SaveAssets();
             return asset;
         }
@@ -430,7 +430,7 @@ namespace Game.Editor
                 }
             };
 
-            var asset = CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/关卡敌人全局生成方案库.asset");
+            var asset = CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/关卡全局生成方案库.asset");
             if (asset != null)
             {
                 bool changed = false;
@@ -495,7 +495,7 @@ namespace Game.Editor
                 },
             };
 
-            var asset = CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/关卡敌人局部生成方案库.asset");
+            var asset = CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/关卡局部生成方案库.asset");
             if (asset != null)
             {
                 bool changed = false;
@@ -543,11 +543,11 @@ namespace Game.Editor
             var db = ScriptableObject.CreateInstance<LevelConfigDatabaseSO>();
             db.levels = new List<LevelConfigData>
             {
-                new LevelConfigData { levelIndex = 1, sceneName = "Level_1", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new LevelConfigData { levelIndex = 2, sceneName = "Level_2", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new LevelConfigData { levelIndex = 3, sceneName = "Level_3", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new LevelConfigData { levelIndex = 4, sceneName = "Level_4", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new LevelConfigData { levelIndex = 5, sceneName = "Level_5", enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary, enemyGlobalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 1, sceneName = "Level_1", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 2, sceneName = "Level_2", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 3, sceneName = "Level_3", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 4, sceneName = "Level_4", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 5, sceneName = "Level_5", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
             };
             var asset = CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/关卡配置库.asset");
             if (asset != null && asset.levels != null && defaultSpawnPlanLibrary != null)
@@ -560,10 +560,10 @@ namespace Game.Editor
                     if (level == null)
                         continue;
 
-                    if (level.enemyGlobalSpawnPlanLibrary == null)
+                    if (level.globalSpawnPlanLibrary == null)
                     {
-                        level.enemyGlobalSpawnPlanLibrary = defaultSpawnPlanLibrary;
-                        level.enemyGlobalSpawnPlanIndex = 0;
+                        level.globalSpawnPlanLibrary = defaultSpawnPlanLibrary;
+                        level.globalSpawnPlanIndex = 0;
                         changed = true;
                     }
 
@@ -692,8 +692,8 @@ namespace Game.Editor
                 ScriptableObject.CreateInstance<DifficultyScalingSO>(),
                 $"{ResourcesConfigDir}/难度系数.asset");
             CreateOrUpdateAsset(
-                ScriptableObject.CreateInstance<LevelBossVisualConfigSO>(),
-                $"{ResourcesConfigDir}/最终Boss视觉配置.asset");
+                ScriptableObject.CreateInstance<PlayerCloneAndLevelBossVisualConfigSO>(),
+                $"{ResourcesConfigDir}/玩家分身和最终Boss视觉配置.asset");
             CreateOrUpdateAsset(
                 ScriptableObject.CreateInstance<PlayerCloneAIConfigSO>(),
                 $"{ResourcesConfigDir}/分身AI配置.asset");
@@ -703,7 +703,6 @@ namespace Game.Editor
             CreateSkillConfigDatabase();
             CreateCharacterAnimationLibrary();
             CreateItemDisplayConfig();
-            CreateWorldPickupVisualConfig();
             CreateKeyRebindConfig();
             CreateBackpackUIConfig();
             CreateBuffConfig();
@@ -719,10 +718,10 @@ namespace Game.Editor
             var so = ScriptableObject.CreateInstance<KeyRebindConfigSO>();
             so.entries = new List<KeyRebindEntry>
             {
-                new KeyRebindEntry { actionName = "Skill0", displayName = "技能0" },
-                new KeyRebindEntry { actionName = "Skill1", displayName = "技能1" },
-                new KeyRebindEntry { actionName = "Skill2", displayName = "技能2" },
-                new KeyRebindEntry { actionName = "Skill3", displayName = "技能3" },
+                new KeyRebindEntry { actionName = "Skill0", displayName = "技能1" },
+                new KeyRebindEntry { actionName = "Skill1", displayName = "技能2" },
+                new KeyRebindEntry { actionName = "Skill2", displayName = "技能3" },
+                new KeyRebindEntry { actionName = "Skill3", displayName = "技能4" },
                 new KeyRebindEntry { actionName = "UseHealthPotion", displayName = "回血药剂" },
                 new KeyRebindEntry { actionName = "UseManaPotion", displayName = "回蓝药剂" },
                 new KeyRebindEntry { actionName = "ToggleKeyConfig", displayName = "按键配置" },
@@ -738,19 +737,6 @@ namespace Game.Editor
                 new KeyRebindEntry { actionName = "ToggleCursor", displayName = "光标显隐" },
             };
             CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/按键重绑定配置.asset");
-            AssetDatabase.SaveAssets();
-        }
-
-        private static void CreateWorldPickupVisualConfig()
-        {
-            EnsureConfigFolder();
-            var so = ScriptableObject.CreateInstance<WorldPickupVisualConfigSO>();
-            so.iconScale = 0.2f;
-            so.spawnHeightOffset = 0.5f;
-            so.hoverAmplitude = 0.08f;
-            so.hoverFrequency = 2.4f;
-            so.pickupRadius = 0.7f;
-            CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/掉落物显示配置.asset");
             AssetDatabase.SaveAssets();
         }
 
@@ -1581,6 +1567,11 @@ namespace Game.Editor
         {
             EnsureConfigFolder();
             var db = ScriptableObject.CreateInstance<ItemDisplayDatabaseSO>();
+            db.iconScale = 0.2f;
+            db.spawnHeightOffset = 0.5f;
+            db.hoverAmplitude = 0.08f;
+            db.hoverFrequency = 2.4f;
+            db.pickupRadius = 0.7f;
             db.entries = new List<ItemDisplayEntry>
             {
                 new ItemDisplayEntry { itemId = "potion_hp",  displayName = "回血药剂",  description = "使用后每秒回复5%最大生命值，持续10秒。", rarity = WeaponRarity.Epic },

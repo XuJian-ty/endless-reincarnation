@@ -47,13 +47,13 @@ namespace Game.Data
         public float taskInterval = 8f;
     }
 
-    [CreateAssetMenu(menuName = "游戏/配置/关卡敌人全局生成方案库", fileName = "关卡敌人全局生成方案库")]
+    [CreateAssetMenu(menuName = "游戏/配置/关卡全局生成方案库", fileName = "关卡全局生成方案库")]
     public class LevelEnemySpawnPlanSO : ScriptableObject
     {
         [InspectorLabel("任务库")]
         public EnemySpawnTaskDatabaseSO taskDatabase;
 
-        [InspectorLabel("全局生成方案列表")]
+        [InspectorLabel("全局方案列表")]
         public List<LevelEnemyGlobalSpawnPlanDefinition> plans = new List<LevelEnemyGlobalSpawnPlanDefinition>();
 
         public LevelEnemyGlobalSpawnPlanDefinition GetPlanAt(int index)
