@@ -45,7 +45,7 @@ namespace Game.Data
     public class PlayerStateRuleEntry
     {
         [InspectorLabel("状态 ID")]
-        [Tooltip("默认填写状态类名，例如 IdleState、Attack0State、Skill0State。")]
+        [Tooltip("默认填写状态类名，例如 IdleState、Attack0State、ActiveSkillState。")]
         public string stateId = "";
 
         [InspectorLabel("动作策略表")]

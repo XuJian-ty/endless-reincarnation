@@ -40,7 +40,7 @@ namespace Game.Presentation
         private float _comboTimer;
 
         // ── 候选动作缓冲区（避免每帧 GC）────────────────────────────────
-        private readonly List<PendingActionData> _candidates = new List<PendingActionData>(12);
+        private readonly List<PendingActionData> _candidates = new List<PendingActionData>(16);
 
         public PlayerStateMachine(IPlayerContext ctx) => _ctx = ctx;
 
@@ -201,10 +201,13 @@ namespace Game.Presentation
             _candidates.Clear();
 
             if (input.DodgePressed)         _candidates.Add(new PendingActionData(GameAction.Dodge));
-            if (input.Skill0Pressed && CanTriggerActiveSkill(0)) _candidates.Add(new PendingActionData(GameAction.Skill, 0));
-            if (input.Skill1Pressed && CanTriggerActiveSkill(1)) _candidates.Add(new PendingActionData(GameAction.Skill, 1));
-            if (input.Skill2Pressed && CanTriggerActiveSkill(2)) _candidates.Add(new PendingActionData(GameAction.Skill, 2));
-            if (input.Skill3Pressed && CanTriggerActiveSkill(3)) _candidates.Add(new PendingActionData(GameAction.Skill, 3));
+            for (int pressedOrder = 0; pressedOrder < input.PressedSkillCount; pressedOrder++)
+            {
+                if (!input.TryGetPressedSkillIndexAt(pressedOrder, out int skillIndex) || !CanTriggerActiveSkill(skillIndex))
+                    continue;
+
+                _candidates.Add(new PendingActionData(GameAction.Skill, skillIndex));
+            }
             if (input.ChargeReleasePressed) _candidates.Add(new PendingActionData(GameAction.ChargeRelease));
             if (input.AltAttackPressed)     _candidates.Add(new PendingActionData(GameAction.FallAttack));
             if (input.ChargeStartPressed)   _candidates.Add(new PendingActionData(GameAction.ChargeStart));
@@ -234,13 +237,7 @@ namespace Game.Presentation
             if (!CanTriggerActiveSkill(skillIndex))
                 return;
 
-            switch (skillIndex)
-            {
-                case 0: ChangeState<Skill0State>(); break;
-                case 1: ChangeState<Skill1State>(); break;
-                case 2: ChangeState<Skill2State>(); break;
-                case 3: ChangeState<Skill3State>(); break;
-            }
+            ChangeState<ActiveSkillState>(state => state.Configure(skillIndex));
         }
 
         private bool CanTriggerActiveSkill(int slotIndex)

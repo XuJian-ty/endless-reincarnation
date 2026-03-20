@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tracks:
   - displayName: "\u5173\u53611"
-    clip: {fileID: 8300000, guid: 3b540afc17f0166439c7d48d6648fd50, type: 3}
+    clip: {fileID: 0}
   - displayName: "\u5173\u53612"
     clip: {fileID: 8300000, guid: bec7077ff08898940b5a46a5681c1308, type: 3}
   - displayName: "\u5173\u53613"

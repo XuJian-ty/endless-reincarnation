@@ -178,12 +178,32 @@ namespace Game.Data
     }
 
     [Serializable]
-    public class SkillDamageEffect
+    public class SkillHitDamageEffect
     {
         [InspectorLabel("伤害倍率")]
-        [Tooltip("当前伤害效果的最终伤害倍率。")]
+        [Tooltip("当前命中伤害效果的最终伤害倍率。")]
         [Min(0f)] public float damageMagnitude = 1f;
+    }
 
+    [Serializable]
+    public class SkillHitStopEffect
+    {
+        [InspectorLabel("命中停顿时长(秒)")]
+        [Tooltip("命中成功后附加的全局命中停顿时长。0 表示不触发命中停顿。")]
+        [Min(0f)] public float hitStopDuration = 0f;
+
+        [InspectorLabel("命中停顿速度")]
+        [Tooltip("命中停顿期间的全局时间缩放。0 表示完全停住，1 表示不减速。")]
+        [Range(0f, 1f)] public float hitStopTimeScale = 0f;
+
+        [InspectorLabel("同时停顿镜头转向")]
+        [Tooltip("勾选后，命中停顿期间会同时暂停玩家镜头转向输入。")]
+        public bool pauseCameraLookDuringHitStop = false;
+    }
+
+    [Serializable]
+    public class SkillDamageEffect
+    {
         [InspectorLabel("检测时长(秒)")]
         [Tooltip("每次伤害触发后，这条伤害判定会持续存在的时间。0 表示仅在触发瞬间检测一次；大于 0 表示在该时间窗口内持续检测，但同一目标只会在第一次进入时命中一次。对碰撞检测来说，这个时长就是武器碰撞器的开启时长。")]
         [Min(0f)] public float detectionDuration = 0f;
@@ -236,13 +256,23 @@ namespace Game.Data
         [Tooltip("用于实现向前推进的扇形、剑气判定等。碰撞检测模式暂不使用这组设置。")]
         public SkillMotionSettings motion = new SkillMotionSettings();
 
-        [InspectorLabel("命中停顿时长(秒)")]
-        [Tooltip("命中成功后附加的全局命中停顿时长。0 表示不触发命中停顿。")]
-        [Min(0f)] public float hitStopDuration = 0f;
+        [InspectorLabel("命中伤害效果")]
+        [Tooltip("命中成功后触发的伤害子效果。")]
+        public List<SkillHitDamageEffect> onHitDamageEffects = new List<SkillHitDamageEffect>();
 
-        [InspectorLabel("命中停顿速度")]
-        [Tooltip("命中停顿期间的全局时间缩放。0 表示完全停住，1 表示不减速。")]
-        [Range(0f, 1f)] public float hitStopTimeScale = 0f;
+        [InspectorLabel("命中停顿效果")]
+        [Tooltip("命中成功后触发的命中停顿子效果。")]
+        public SkillHitStopEffect onHitStopEffect = new SkillHitStopEffect();
+
+        [HideInInspector]
+        [FormerlySerializedAs("onHitStopEffects")]
+        public List<SkillHitStopEffect> legacyOnHitStopEffects = new List<SkillHitStopEffect>();
+
+        [HideInInspector] public float hitStopDuration = 0f;
+        [HideInInspector] public float hitStopTimeScale = 0f;
+        [HideInInspector] public bool pauseCameraLookDuringHitStop = false;
+        [HideInInspector] public float damageMagnitude = 1f;
+        [HideInInspector] public bool nestedSubEffectsOwnedByLists = false;
 
         [InspectorLabel("命中物理效果")]
         [Tooltip("仅在这条伤害效果命中目标后触发。")]
@@ -259,6 +289,125 @@ namespace Game.Data
         [InspectorLabel("命中音效效果(SFX)")]
         [Tooltip("仅在这条伤害效果命中目标后触发。")]
         public List<SkillSfxEffect> onHitSfxEffects = new List<SkillSfxEffect>();
+
+        public bool TryMigrateLegacySubEffects()
+        {
+            bool migrated = false;
+            onHitDamageEffects ??= new List<SkillHitDamageEffect>();
+            onHitStopEffect ??= new SkillHitStopEffect();
+            legacyOnHitStopEffects ??= new List<SkillHitStopEffect>();
+
+            if (nestedSubEffectsOwnedByLists
+                && onHitDamageEffects.Count > 0
+                && legacyOnHitStopEffects.Count == 0
+                && hitStopDuration <= 0f
+                && hitStopTimeScale <= 0f
+                && !pauseCameraLookDuringHitStop)
+            {
+                return false;
+            }
+
+            if (onHitDamageEffects.Count == 0)
+            {
+                onHitDamageEffects.Add(new SkillHitDamageEffect
+                {
+                    damageMagnitude = Mathf.Max(0f, damageMagnitude)
+                });
+                migrated = true;
+            }
+
+            bool hasLegacyHitStop =
+                hitStopDuration > 0f
+                || hitStopTimeScale > 0f
+                || pauseCameraLookDuringHitStop;
+            if (legacyOnHitStopEffects.Count > 0)
+            {
+                SkillHitStopEffect primaryLegacyHitStopEffect = null;
+                for (int i = 0; i < legacyOnHitStopEffects.Count; i++)
+                {
+                    SkillHitStopEffect effect = legacyOnHitStopEffects[i];
+                    if (effect != null)
+                    {
+                        primaryLegacyHitStopEffect = effect;
+                        break;
+                    }
+                }
+
+                if (primaryLegacyHitStopEffect != null
+                    && !HasConfiguredHitStopEffect(onHitStopEffect))
+                {
+                    onHitStopEffect = new SkillHitStopEffect
+                    {
+                        hitStopDuration = Mathf.Max(0f, primaryLegacyHitStopEffect.hitStopDuration),
+                        hitStopTimeScale = Mathf.Clamp01(primaryLegacyHitStopEffect.hitStopTimeScale),
+                        pauseCameraLookDuringHitStop = primaryLegacyHitStopEffect.pauseCameraLookDuringHitStop
+                    };
+                    migrated = true;
+                }
+            }
+
+            if (hasLegacyHitStop && !HasConfiguredHitStopEffect(onHitStopEffect))
+            {
+                onHitStopEffect = new SkillHitStopEffect
+                {
+                    hitStopDuration = Mathf.Max(0f, hitStopDuration),
+                    hitStopTimeScale = Mathf.Clamp01(hitStopTimeScale),
+                    pauseCameraLookDuringHitStop = pauseCameraLookDuringHitStop
+                };
+                migrated = true;
+            }
+
+            if (!migrated)
+                return false;
+
+            damageMagnitude = 0f;
+            hitStopDuration = 0f;
+            hitStopTimeScale = 0f;
+            pauseCameraLookDuringHitStop = false;
+            legacyOnHitStopEffects.Clear();
+            nestedSubEffectsOwnedByLists = true;
+            return true;
+        }
+
+        public List<SkillHitDamageEffect> GetEffectiveHitDamageEffects()
+        {
+            TryMigrateLegacySubEffects();
+            onHitDamageEffects ??= new List<SkillHitDamageEffect>();
+            return onHitDamageEffects;
+        }
+
+        public SkillHitStopEffect GetEffectiveHitStopEffect()
+        {
+            TryMigrateLegacySubEffects();
+            onHitStopEffect ??= new SkillHitStopEffect();
+            return onHitStopEffect;
+        }
+
+        public SkillHitDamageEffect GetPrimaryHitDamageEffect()
+        {
+            List<SkillHitDamageEffect> effects = GetEffectiveHitDamageEffects();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillHitDamageEffect effect = effects[i];
+                if (effect != null)
+                    return effect;
+            }
+
+            return null;
+        }
+
+        public SkillHitStopEffect GetPrimaryHitStopEffect()
+        {
+            return GetEffectiveHitStopEffect();
+        }
+
+        public static bool HasConfiguredHitStopEffect(SkillHitStopEffect effect)
+        {
+            return effect != null
+                && (effect.hitStopDuration > 0f
+                    || effect.hitStopTimeScale > 0f
+                    || effect.pauseCameraLookDuringHitStop);
+        }
     }
 
     [Serializable]
@@ -371,8 +520,13 @@ namespace Game.Data
     [Serializable]
     public class SkillDamageEvent : SkillTimedEventBase
     {
-        [InspectorLabel("伤害效果")]
-        [Tooltip("一条事件可以配置多条伤害效果，用于同一帧多段伤害。")]
+        [HideInInspector] public float hitStopDuration = 0f;
+        [HideInInspector] public float hitStopTimeScale = 0f;
+        [HideInInspector] public bool pauseCameraLookDuringHitStop = false;
+        [HideInInspector] public bool hitStopSettingsOwnedByEvent = false;
+
+        [InspectorLabel("命中效果")]
+        [Tooltip("一条命中事件可以配置多条命中效果，用于同一帧多段命中。")]
         public List<SkillDamageEffect> damageEffects = new List<SkillDamageEffect>();
 
         public float GetLifecycleEndTime()
@@ -399,6 +553,13 @@ namespace Game.Data
 
         public SkillDamageEffect GetPrimaryDamageEffect()
         {
+            SkillDamageEffect primaryEffect = FindPrimaryDamageEffect();
+            primaryEffect?.TryMigrateLegacySubEffects();
+            return primaryEffect;
+        }
+
+        private SkillDamageEffect FindPrimaryDamageEffect()
+        {
             if (damageEffects == null)
                 return null;
 
@@ -410,6 +571,34 @@ namespace Game.Data
             }
 
             return null;
+        }
+
+        public bool TryMigrateLegacyHitStopSettings()
+        {
+            if (!hitStopSettingsOwnedByEvent || damageEffects == null || damageEffects.Count == 0)
+                return false;
+
+            SkillDamageEffect primaryEffect = FindPrimaryDamageEffect();
+            if (primaryEffect == null)
+                return false;
+
+            primaryEffect.TryMigrateLegacySubEffects();
+            SkillHitStopEffect hitStopEffect = primaryEffect.GetEffectiveHitStopEffect();
+            if (!SkillDamageEffect.HasConfiguredHitStopEffect(hitStopEffect))
+            {
+                primaryEffect.onHitStopEffect = new SkillHitStopEffect
+                {
+                    hitStopDuration = Mathf.Max(0f, hitStopDuration),
+                    hitStopTimeScale = Mathf.Clamp01(hitStopTimeScale),
+                    pauseCameraLookDuringHitStop = pauseCameraLookDuringHitStop
+                };
+            }
+
+            hitStopDuration = 0f;
+            hitStopTimeScale = 0f;
+            pauseCameraLookDuringHitStop = false;
+            hitStopSettingsOwnedByEvent = false;
+            return true;
         }
     }
 
@@ -463,8 +652,8 @@ namespace Game.Data
         public bool ignoreAnimationDamageEvents = true;
 
         [Header("时间轴事件列表")]
-        [InspectorLabel("伤害事件列表")]
-        [Tooltip("按时间顺序触发的伤害事件节点。")]
+        [InspectorLabel("命中事件列表")]
+        [Tooltip("按时间顺序触发的命中事件节点。")]
         public List<SkillDamageEvent> damageEvents = new List<SkillDamageEvent>();
 
         [InspectorLabel("物理事件列表")]

@@ -8,11 +8,6 @@ namespace Game.Editor
     [CustomEditor(typeof(LevelConfigDatabaseSO))]
     public class LevelConfigDatabaseSOEditor : UnityEditor.Editor
     {
-        private const float DefaultCellSize = 40f;
-        private const int DefaultShopCount = 2;
-        private const int DefaultChestMin = 0;
-        private const int DefaultChestMax = 2;
-
         private ReorderableList _levelsList;
 
         private void OnEnable()
@@ -111,24 +106,38 @@ namespace Game.Editor
             SerializedProperty sceneGuid = newLevel.FindPropertyRelative("sceneGuid");
             SerializedProperty library = newLevel.FindPropertyRelative("globalSpawnPlanLibrary");
             SerializedProperty planIndex = newLevel.FindPropertyRelative("globalSpawnPlanIndex");
-            SerializedProperty chestMinCount = newLevel.FindPropertyRelative("chestMinCount");
-            SerializedProperty chestMaxCount = newLevel.FindPropertyRelative("chestMaxCount");
-            SerializedProperty shopCount = newLevel.FindPropertyRelative("shopCount");
-            SerializedProperty cellSize = newLevel.FindPropertyRelative("cellSize");
+            SerializedProperty minionGoldReward = newLevel.FindPropertyRelative("minionGoldReward");
+            SerializedProperty minionExpReward = newLevel.FindPropertyRelative("minionExpReward");
+            SerializedProperty shopGoodsEntries = newLevel.FindPropertyRelative("shopGoodsEntries");
+            SerializedProperty eliteGoldReward = newLevel.FindPropertyRelative("eliteGoldReward");
+            SerializedProperty eliteExpReward = newLevel.FindPropertyRelative("eliteExpReward");
             SerializedProperty eliteDropEntries = newLevel.FindPropertyRelative("eliteDropEntries");
+            SerializedProperty chestDropEntries = newLevel.FindPropertyRelative("chestDropEntries");
+            SerializedProperty guardianGoldReward = newLevel.FindPropertyRelative("guardianGoldReward");
+            SerializedProperty guardianExpReward = newLevel.FindPropertyRelative("guardianExpReward");
+            SerializedProperty guardianTalentReward = newLevel.FindPropertyRelative("guardianTalentReward");
             SerializedProperty guardianDropEntries = newLevel.FindPropertyRelative("guardianDropEntries");
+            SerializedProperty bossGoldReward = newLevel.FindPropertyRelative("bossGoldReward");
+            SerializedProperty bossExpReward = newLevel.FindPropertyRelative("bossExpReward");
             SerializedProperty bossDropEntries = newLevel.FindPropertyRelative("bossDropEntries");
 
             levelIndex.intValue = oldSize + 1;
             sceneName.stringValue = $"Level_{oldSize + 1}";
             sceneGuid.stringValue = string.Empty;
             planIndex.intValue = 0;
-            chestMinCount.intValue = DefaultChestMin;
-            chestMaxCount.intValue = DefaultChestMax;
-            shopCount.intValue = DefaultShopCount;
-            cellSize.floatValue = DefaultCellSize;
+            minionGoldReward.intValue = 10;
+            minionExpReward.intValue = 10;
+            shopGoodsEntries.arraySize = 0;
+            eliteGoldReward.intValue = 30;
+            eliteExpReward.intValue = 30;
+            chestDropEntries.arraySize = 0;
             eliteDropEntries.arraySize = 0;
+            guardianGoldReward.intValue = 0;
+            guardianExpReward.intValue = 0;
+            guardianTalentReward.intValue = 1;
             guardianDropEntries.arraySize = 0;
+            bossGoldReward.intValue = 0;
+            bossExpReward.intValue = 0;
             bossDropEntries.arraySize = 0;
 
             if (oldSize > 0)

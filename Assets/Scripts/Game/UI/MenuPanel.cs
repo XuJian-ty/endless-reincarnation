@@ -23,6 +23,13 @@ namespace Game.UI
             RegisterClick("Btn_Settings", () => UIManager.GetInstance().ShowPanel<LevelSoundPanel>(PanelNames.LevelSound, PanelLayers.LevelSound));
             RegisterClick("Btn_Quit", () =>
             {
+                if (BattleMemoryRuntimeContext.IsActive)
+                {
+                    UIManager.GetInstance().HidePanel(PanelNames.Menu);
+                    BattleMemorySceneRuntime.ExitToOrigin();
+                    return;
+                }
+
                 var boot = FindFirstObjectByType<LevelBootstrapper>();
                 if (boot != null)
                     boot.SaveAndQuit();
@@ -30,7 +37,11 @@ namespace Game.UI
                     GameStateMachine.GetInstance().SaveAndQuit();
                 UIManager.GetInstance().HidePanel(PanelNames.Menu);
             });
-            RegisterClick("Btn_BattleMemory", () => UIManager.GetInstance().ShowPanel<BattleMemoryPanel>(PanelNames.BattleMemory, PanelLayers.BattleMemory));
+            RegisterClick("Btn_BattleMemory", () =>
+            {
+                UIManager.GetInstance().HidePanel(PanelNames.Menu);
+                UIManager.GetInstance().ShowPanel<BattleMemoryPanel>(PanelNames.BattleMemory, PanelLayers.BattleMemory);
+            });
         }
 
         public override void ShowMe()
@@ -46,6 +57,12 @@ namespace Game.UI
         {
             var btn = GetControl<Button>("Btn_BattleMemory");
             if (btn == null) return;
+            if (BattleMemoryRuntimeContext.IsActive)
+            {
+                btn.gameObject.SetActive(false);
+                return;
+            }
+
             var run = LevelUIModelLocator.Get()?.CurrentRun ?? GameStateMachine.GetInstance()?.CurrentRun;
             btn.gameObject.SetActive(run != null && run.isGameCleared);
         }

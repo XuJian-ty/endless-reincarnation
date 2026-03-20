@@ -166,9 +166,20 @@ namespace Game.Editor
             };
         }
 
+        private static EnemyStatsGroupDefinition BuildEnemyStatsGroup(EnemyStatsEntry entry)
+        {
+            return new EnemyStatsGroupDefinition
+            {
+                groupId = entry.enemyId,
+                groupName = entry.displayName,
+                entries = new List<EnemyStatsEntry> { entry },
+            };
+        }
+
         private static EnemySkillSlotBinding BuildSkillSlot(
+            string enemyId,
             int slotIndex,
-            string skillId,
+            string displayName,
             float castRange = 3f,
             float cooldown = 1f,
             float castDuration = 0.6f,
@@ -188,7 +199,8 @@ namespace Game.Editor
             return new EnemySkillSlotBinding
             {
                 slotIndex            = slotIndex,
-                skillId              = skillId,
+                skillId              = $"{enemyId}Skill{slotIndex}",
+                displayName          = displayName,
                 castRange            = castRange,
                 minCastRange         = minCastRange,
                 idealCastRange       = idealCastRange > 0.01f ? idealCastRange : castRange,
@@ -199,7 +211,7 @@ namespace Game.Editor
                 canUseUnderThreat    = canUseUnderThreat,
                 cooldown             = cooldown,
                 castDuration         = castDuration,
-                animationTrigger     = animationTrigger,
+                animationTrigger     = string.IsNullOrWhiteSpace(animationTrigger) ? $"Skill{slotIndex}" : animationTrigger,
                 phaseAvailability    = phaseAvailability,
                 postCastIdleDuration = postCastIdleDuration,
                 enterIdleAfterCast   = enterIdleAfterCast,
@@ -329,20 +341,21 @@ namespace Game.Editor
         {
             EnsureConfigFolder();
             var db = ScriptableObject.CreateInstance<EnemyStatsDatabaseSO>();
-            db.entries = new List<EnemyStatsEntry>
+            db.groups = new List<EnemyStatsGroupDefinition>
             {
-                BuildEnemyStats("melee_minion", "近战小怪", EnemyType.MeleeMinion, 60f, 10f, 5f, 3.8f, 10, 10, 10),
-                BuildEnemyStats("ranged_minion", "远程小怪", EnemyType.RangedMinion, 45f, 12f, 3f, 3.6f, 10, 10, 10),
-                BuildEnemyStats("elite_1", "精英1", EnemyType.Elite, 160f, 18f, 8f, 4f, 30, 30, 30),
-                BuildEnemyStats("elite_2", "精英2", EnemyType.Elite, 180f, 16f, 10f, 3.9f, 30, 30, 30),
-                BuildEnemyStats("guardian_1", "守卫者1", EnemyType.Guardian, 260f, 22f, 10f, 4.2f, 0, 0, 0),
-                BuildEnemyStats("guardian_2", "守卫者2", EnemyType.Guardian, 300f, 20f, 12f, 3.9f, 0, 0, 0),
-                BuildEnemyStats("boss_1", "Boss1", EnemyType.Boss, 750f, 28f, 12f, 4.5f, 0, 0, 0),
-                BuildEnemyStats("boss_2", "Boss2", EnemyType.Boss, 820f, 30f, 13f, 4.4f, 0, 0, 0),
-                BuildEnemyStats("boss_3", "Boss3", EnemyType.Boss, 900f, 32f, 14f, 4.3f, 0, 0, 0),
-                BuildEnemyStats("boss_4", "Boss4", EnemyType.Boss, 980f, 34f, 15f, 4.2f, 0, 0, 0),
-                BuildEnemyStats("boss_5", "Boss5", EnemyType.Boss, 1100f, 36f, 16f, 4.1f, 0, 0, 0),
+                BuildEnemyStatsGroup(BuildEnemyStats("melee_minion", "近战小怪", EnemyType.MeleeMinion, 60f, 10f, 5f, 3.8f, 10, 10, 10)),
+                BuildEnemyStatsGroup(BuildEnemyStats("ranged_minion", "远程小怪", EnemyType.RangedMinion, 45f, 12f, 3f, 3.6f, 10, 10, 10)),
+                BuildEnemyStatsGroup(BuildEnemyStats("elite_1", "精英1", EnemyType.Elite, 160f, 18f, 8f, 4f, 30, 30, 30)),
+                BuildEnemyStatsGroup(BuildEnemyStats("elite_2", "精英2", EnemyType.Elite, 180f, 16f, 10f, 3.9f, 30, 30, 30)),
+                BuildEnemyStatsGroup(BuildEnemyStats("guardian_1", "守卫者1", EnemyType.Guardian, 260f, 22f, 10f, 4.2f, 0, 0, 0)),
+                BuildEnemyStatsGroup(BuildEnemyStats("guardian_2", "守卫者2", EnemyType.Guardian, 300f, 20f, 12f, 3.9f, 0, 0, 0)),
+                BuildEnemyStatsGroup(BuildEnemyStats("boss_1", "Boss1", EnemyType.Boss, 750f, 28f, 12f, 4.5f, 0, 0, 0)),
+                BuildEnemyStatsGroup(BuildEnemyStats("boss_2", "Boss2", EnemyType.Boss, 820f, 30f, 13f, 4.4f, 0, 0, 0)),
+                BuildEnemyStatsGroup(BuildEnemyStats("boss_3", "Boss3", EnemyType.Boss, 900f, 32f, 14f, 4.3f, 0, 0, 0)),
+                BuildEnemyStatsGroup(BuildEnemyStats("boss_4", "Boss4", EnemyType.Boss, 980f, 34f, 15f, 4.2f, 0, 0, 0)),
+                BuildEnemyStatsGroup(BuildEnemyStats("boss_5", "Boss5", EnemyType.Boss, 1100f, 36f, 16f, 4.1f, 0, 0, 0)),
             };
+            db.SyncFlatEntries();
             CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/敌人属性库.asset");
             AssetDatabase.SaveAssets();
         }
@@ -532,17 +545,16 @@ namespace Game.Editor
             var db = ScriptableObject.CreateInstance<LevelConfigDatabaseSO>();
             db.levels = new List<LevelConfigData>
             {
-                new LevelConfigData { levelIndex = 1, sceneName = "Level_1", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new LevelConfigData { levelIndex = 2, sceneName = "Level_2", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new LevelConfigData { levelIndex = 3, sceneName = "Level_3", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new LevelConfigData { levelIndex = 4, sceneName = "Level_4", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
-                new LevelConfigData { levelIndex = 5, sceneName = "Level_5", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, chestMinCount = 0, chestMaxCount = 2, shopCount = 2, cellSize = 40f, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 1, sceneName = "Level_1", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, minionGoldReward = 10, minionExpReward = 10, chestDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.45f }, new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.15f }, new DropEntry { itemType = "potion_mp", weight = 0.15f }, new DropEntry { itemType = "nectar", weight = 0.05f } }, eliteGoldReward = 30, eliteExpReward = 30, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianGoldReward = 0, guardianExpReward = 0, guardianTalentReward = 1, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossGoldReward = 0, bossExpReward = 0, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.3f }, new DropEntry { itemType = "weapon_rare", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 2, sceneName = "Level_2", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, minionGoldReward = 10, minionExpReward = 10, chestDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.25f }, new DropEntry { itemType = "weapon_rare", weight = 0.3f }, new DropEntry { itemType = "weapon_epic", weight = 0.15f }, new DropEntry { itemType = "potion_hp", weight = 0.1f }, new DropEntry { itemType = "potion_mp", weight = 0.1f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, eliteGoldReward = 30, eliteExpReward = 30, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianGoldReward = 0, guardianExpReward = 0, guardianTalentReward = 1, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossGoldReward = 0, bossExpReward = 0, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_common", weight = 0.15f }, new DropEntry { itemType = "weapon_rare", weight = 0.15f }, new DropEntry { itemType = "weapon_epic", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 3, sceneName = "Level_3", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, minionGoldReward = 10, minionExpReward = 10, chestDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.35f }, new DropEntry { itemType = "weapon_epic", weight = 0.25f }, new DropEntry { itemType = "potion_hp", weight = 0.15f }, new DropEntry { itemType = "potion_mp", weight = 0.15f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, eliteGoldReward = 30, eliteExpReward = 30, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianGoldReward = 0, guardianExpReward = 0, guardianTalentReward = 1, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossGoldReward = 0, bossExpReward = 0, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_rare", weight = 0.2f }, new DropEntry { itemType = "weapon_epic", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 4, sceneName = "Level_4", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, minionGoldReward = 10, minionExpReward = 10, chestDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.5f }, new DropEntry { itemType = "weapon_legendary", weight = 0.2f }, new DropEntry { itemType = "potion_hp", weight = 0.1f }, new DropEntry { itemType = "potion_mp", weight = 0.1f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, eliteGoldReward = 30, eliteExpReward = 30, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianGoldReward = 0, guardianExpReward = 0, guardianTalentReward = 1, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossGoldReward = 0, bossExpReward = 0, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_epic", weight = 0.3f }, new DropEntry { itemType = "weapon_legendary", weight = 0.1f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
+                new LevelConfigData { levelIndex = 5, sceneName = "Level_5", globalSpawnPlanLibrary = defaultSpawnPlanLibrary, globalSpawnPlanIndex = 0, minionGoldReward = 10, minionExpReward = 10, chestDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.6f }, new DropEntry { itemType = "potion_hp", weight = 0.15f }, new DropEntry { itemType = "potion_mp", weight = 0.15f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, eliteGoldReward = 30, eliteExpReward = 30, eliteDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, guardianGoldReward = 0, guardianExpReward = 0, guardianTalentReward = 1, guardianDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } }, bossGoldReward = 0, bossExpReward = 0, bossDropEntries = new List<DropEntry> { new DropEntry { itemType = "weapon_legendary", weight = 0.4f }, new DropEntry { itemType = "potion_hp", weight = 0.25f }, new DropEntry { itemType = "potion_mp", weight = 0.25f }, new DropEntry { itemType = "nectar", weight = 0.1f } } },
             };
             var asset = CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/关卡配置库.asset");
             if (asset != null && asset.levels != null && defaultSpawnPlanLibrary != null)
             {
                 bool changed = false;
-                DropTableDatabaseSO legacyDropTableDatabase = AssetDatabase.LoadAssetAtPath<DropTableDatabaseSO>($"{ResourcesConfigDir}/掉落表库.asset");
                 for (int i = 0; i < asset.levels.Count; i++)
                 {
                     LevelConfigData level = asset.levels[i];
@@ -556,29 +568,6 @@ namespace Game.Editor
                         changed = true;
                     }
 
-                    if ((level.eliteDropEntries == null || level.eliteDropEntries.Count == 0) && legacyDropTableDatabase != null)
-                    {
-                        DropTableByLevel legacyTable = legacyDropTableDatabase.GetTableForLevel(level.levelIndex);
-                        if (legacyTable?.entries != null && legacyTable.entries.Count > 0)
-                        {
-                            level.eliteDropEntries = new List<DropEntry>();
-                            for (int j = 0; j < legacyTable.entries.Count; j++)
-                            {
-                                DropEntry legacyEntry = legacyTable.entries[j];
-                                if (legacyEntry == null)
-                                    continue;
-
-                                level.eliteDropEntries.Add(new DropEntry
-                                {
-                                    itemType = legacyEntry.itemType,
-                                    weight = legacyEntry.weight
-                                });
-                            }
-
-                            changed = true;
-                        }
-                    }
-
                     if (level.guardianDropEntries == null || level.guardianDropEntries.Count == 0)
                     {
                         level.guardianDropEntries = CloneDropEntries(level.eliteDropEntries);
@@ -590,12 +579,65 @@ namespace Game.Editor
                         level.bossDropEntries = CloneDropEntries(level.eliteDropEntries);
                         changed = true;
                     }
+
+                    if (level.shopGoodsEntries == null || level.shopGoodsEntries.Count == 0)
+                    {
+                        level.shopGoodsEntries = CreateDefaultShopGoodsEntries(level.levelIndex);
+                        changed = true;
+                    }
                 }
 
                 if (changed)
                     EditorUtility.SetDirty(asset);
             }
             AssetDatabase.SaveAssets();
+        }
+
+        private static List<ShopGoodsEntry> CreateDefaultShopGoodsEntries(int levelIndex)
+        {
+            return levelIndex switch
+            {
+                <= 1 => new List<ShopGoodsEntry>
+                {
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "sword", weaponRarity = WeaponRarity.Common, spawnChance = 0.65f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "gun", weaponRarity = WeaponRarity.Common, spawnChance = 0.45f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_hp", spawnChance = 0.8f, minCount = 1, maxCount = 3 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_mp", spawnChance = 0.8f, minCount = 1, maxCount = 3 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "nectar", spawnChance = 0.25f, minCount = 1, maxCount = 1 },
+                },
+                2 => new List<ShopGoodsEntry>
+                {
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "sword", weaponRarity = WeaponRarity.Rare, spawnChance = 0.55f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "gun", weaponRarity = WeaponRarity.Rare, spawnChance = 0.55f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_hp", spawnChance = 0.85f, minCount = 2, maxCount = 4 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_mp", spawnChance = 0.85f, minCount = 2, maxCount = 4 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "nectar", spawnChance = 0.3f, minCount = 1, maxCount = 1 },
+                },
+                3 => new List<ShopGoodsEntry>
+                {
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "sword", weaponRarity = WeaponRarity.Rare, spawnChance = 0.45f, minCount = 1, maxCount = 2 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "gun", weaponRarity = WeaponRarity.Epic, spawnChance = 0.45f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_hp", spawnChance = 0.9f, minCount = 2, maxCount = 5 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_mp", spawnChance = 0.9f, minCount = 2, maxCount = 5 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "nectar", spawnChance = 0.35f, minCount = 1, maxCount = 2 },
+                },
+                4 => new List<ShopGoodsEntry>
+                {
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "sword", weaponRarity = WeaponRarity.Epic, spawnChance = 0.55f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "gun", weaponRarity = WeaponRarity.Epic, spawnChance = 0.55f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_hp", spawnChance = 0.9f, minCount = 3, maxCount = 6 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_mp", spawnChance = 0.9f, minCount = 3, maxCount = 6 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "nectar", spawnChance = 0.45f, minCount = 1, maxCount = 2 },
+                },
+                _ => new List<ShopGoodsEntry>
+                {
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "sword", weaponRarity = WeaponRarity.Legendary, spawnChance = 0.6f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.Weapon, weaponId = "gun", weaponRarity = WeaponRarity.Legendary, spawnChance = 0.6f, minCount = 1, maxCount = 1 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_hp", spawnChance = 0.95f, minCount = 4, maxCount = 7 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "potion_mp", spawnChance = 0.95f, minCount = 4, maxCount = 7 },
+                    new ShopGoodsEntry { goodsType = ShopGoodsType.StackableItem, itemId = "nectar", spawnChance = 0.55f, minCount = 1, maxCount = 3 },
+                },
+            };
         }
 
         private static List<DropEntry> CloneDropEntries(List<DropEntry> source)
@@ -1365,7 +1407,7 @@ namespace Game.Editor
                         12f,
                         20f,
                         10f,
-                        BuildSkillSlot(0, "melee_minion_chop",   castRange: 2.2f,  cooldown: 0.65f, castDuration: 0.72f, idealCastRange: 1.9f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.22f, punishWeight: 0.3f, repeatPenalty: 0.22f)),
+                        BuildSkillSlot("melee_minion", 0, "劈砍", castRange: 2.2f,  cooldown: 0.65f, castDuration: 0.72f, idealCastRange: 1.9f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.22f, punishWeight: 0.3f, repeatPenalty: 0.22f)),
                     $"{ResourcesConfigDir}/敌人行为_近战小怪.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1376,7 +1418,7 @@ namespace Game.Editor
                         14f,
                         22f,
                         10f,
-                        BuildSkillSlot(0, "ranged_minion_shot",  castRange: 12f,   cooldown: 1.2f,  castDuration: 0.85f, idealCastRange: 10.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.18f, punishWeight: 0.2f, repeatPenalty: 0.18f)),
+                        BuildSkillSlot("ranged_minion", 0, "射击", castRange: 12f,   cooldown: 1.2f,  castDuration: 0.85f, idealCastRange: 10.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.18f, punishWeight: 0.2f, repeatPenalty: 0.18f)),
                     $"{ResourcesConfigDir}/敌人行为_远程小怪.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1387,8 +1429,8 @@ namespace Game.Editor
                         16f,
                         28f,
                         12f,
-                        BuildSkillSlot(0, "elite_1_combo",       castRange: 2.6f,  cooldown: 0.95f, castDuration: 1f,    idealCastRange: 2.2f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.35f, repeatPenalty: 0.25f),
-                        BuildSkillSlot(1, "elite_1_slam",        castRange: 3f,    cooldown: 3.2f,  castDuration: 1.1f,  enterIdleAfterCast: true, postCastIdleDuration: 0.3f, idealCastRange: 2.7f, skillRole: EnemySkillRole.Punish, riskWeight: 0.48f, punishWeight: 0.82f, repeatPenalty: 0.34f)),
+                        BuildSkillSlot("elite_1", 0, "连斩",     castRange: 2.6f,  cooldown: 0.95f, castDuration: 1f,    idealCastRange: 2.2f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.35f, repeatPenalty: 0.25f),
+                        BuildSkillSlot("elite_1", 1, "重砸",     castRange: 3f,    cooldown: 3.2f,  castDuration: 1.1f,  enterIdleAfterCast: true, postCastIdleDuration: 0.3f, idealCastRange: 2.7f, skillRole: EnemySkillRole.Punish, riskWeight: 0.48f, punishWeight: 0.82f, repeatPenalty: 0.34f)),
                     $"{ResourcesConfigDir}/敌人行为_精英1.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1399,8 +1441,8 @@ namespace Game.Editor
                         17f,
                         30f,
                         12f,
-                        BuildSkillSlot(0, "elite_2_burst_shot",  castRange: 13f,   cooldown: 1.6f,  castDuration: 1.2f,  idealCastRange: 11.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.28f, punishWeight: 0.3f, repeatPenalty: 0.22f),
-                        BuildSkillSlot(1, "elite_2_hook_pull",   castRange: 4f,    cooldown: 3.6f,  castDuration: 1.1f,  minCastRange: 1.5f, idealCastRange: 3.4f, skillRole: EnemySkillRole.Punish, riskWeight: 0.4f, punishWeight: 0.72f, repeatPenalty: 0.28f, canUseUnderThreat: true)),
+                        BuildSkillSlot("elite_2", 0, "爆裂射击", castRange: 13f,   cooldown: 1.6f,  castDuration: 1.2f,  idealCastRange: 11.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.28f, punishWeight: 0.3f, repeatPenalty: 0.22f),
+                        BuildSkillSlot("elite_2", 1, "钩索拉扯", castRange: 4f,    cooldown: 3.6f,  castDuration: 1.1f,  minCastRange: 1.5f, idealCastRange: 3.4f, skillRole: EnemySkillRole.Punish, riskWeight: 0.4f, punishWeight: 0.72f, repeatPenalty: 0.28f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_精英2.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1411,8 +1453,8 @@ namespace Game.Editor
                         18f,
                         30f,
                         14f,
-                        BuildSkillSlot(0, "guardian_1_crush",    castRange: 2.8f,  cooldown: 3.5f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.35f, idealCastRange: 2.4f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.5f, punishWeight: 0.46f, repeatPenalty: 0.32f),
-                        BuildSkillSlot(1, "guardian_1_fortify",  castRange: 1f,    cooldown: 5f,    castDuration: 1f,    rotateToTargetOnCast: false, idealCastRange: 1f, skillRole: EnemySkillRole.Escape, riskWeight: 0.08f, punishWeight: 0f, repeatPenalty: 0.15f, canUseUnderThreat: true)),
+                        BuildSkillSlot("guardian_1", 0, "粉碎重击", castRange: 2.8f,  cooldown: 3.5f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.35f, idealCastRange: 2.4f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.5f, punishWeight: 0.46f, repeatPenalty: 0.32f),
+                        BuildSkillSlot("guardian_1", 1, "强固姿态", castRange: 1f,    cooldown: 5f,    castDuration: 1f,    rotateToTargetOnCast: false, idealCastRange: 1f, skillRole: EnemySkillRole.Escape, riskWeight: 0.08f, punishWeight: 0f, repeatPenalty: 0.15f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_守卫者1.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1423,8 +1465,8 @@ namespace Game.Editor
                         20f,
                         32f,
                         14f,
-                        BuildSkillSlot(0, "guardian_2_bash",     castRange: 3.2f,  cooldown: 3.4f,  castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.3f, idealCastRange: 2.8f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.42f, punishWeight: 0.4f, repeatPenalty: 0.28f),
-                        BuildSkillSlot(1, "guardian_2_chain_pull", castRange: 5f,  cooldown: 4.2f,  castDuration: 1.1f,  minCastRange: 2f, idealCastRange: 4.3f, skillRole: EnemySkillRole.Punish, riskWeight: 0.38f, punishWeight: 0.75f, repeatPenalty: 0.3f, canUseUnderThreat: true)),
+                        BuildSkillSlot("guardian_2", 0, "盾击",   castRange: 3.2f,  cooldown: 3.4f,  castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.3f, idealCastRange: 2.8f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.42f, punishWeight: 0.4f, repeatPenalty: 0.28f),
+                        BuildSkillSlot("guardian_2", 1, "锁链拖拽", castRange: 5f,  cooldown: 4.2f,  castDuration: 1.1f,  minCastRange: 2f, idealCastRange: 4.3f, skillRole: EnemySkillRole.Punish, riskWeight: 0.38f, punishWeight: 0.75f, repeatPenalty: 0.3f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_守卫者2.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1435,10 +1477,10 @@ namespace Game.Editor
                         22f,
                         40f,
                         16f,
-                        BuildSkillSlot(0, "boss_1_slash",        castRange: 3f,    cooldown: 2.2f,  castDuration: 0.9f,  idealCastRange: 2.6f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.35f, repeatPenalty: 0.2f),
-                        BuildSkillSlot(1, "boss_1_shot",         castRange: 14f,   cooldown: 2.8f,  castDuration: 1f,    idealCastRange: 12.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.22f, punishWeight: 0.25f, repeatPenalty: 0.18f),
-                        BuildSkillSlot(2, "boss_1_charge",       castRange: 5f,    cooldown: 4f,    castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.45f, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2f, idealCastRange: 4.2f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.48f, punishWeight: 0.58f, repeatPenalty: 0.3f, canUseUnderThreat: true),
-                        BuildSkillSlot(3, "boss_1_roar",         castRange: 8f,    cooldown: 5f,    castDuration: 1.2f,  enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7f, skillRole: EnemySkillRole.Escape, riskWeight: 0.18f, punishWeight: 0.18f, repeatPenalty: 0.25f, canUseUnderThreat: true)),
+                        BuildSkillSlot("boss_1", 0, "斩击",      castRange: 3f,    cooldown: 2.2f,  castDuration: 0.9f,  idealCastRange: 2.6f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.35f, repeatPenalty: 0.2f),
+                        BuildSkillSlot("boss_1", 1, "射击",      castRange: 14f,   cooldown: 2.8f,  castDuration: 1f,    idealCastRange: 12.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.22f, punishWeight: 0.25f, repeatPenalty: 0.18f),
+                        BuildSkillSlot("boss_1", 2, "冲锋",      castRange: 5f,    cooldown: 4f,    castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.45f, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2f, idealCastRange: 4.2f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.48f, punishWeight: 0.58f, repeatPenalty: 0.3f, canUseUnderThreat: true),
+                        BuildSkillSlot("boss_1", 3, "战吼",      castRange: 8f,    cooldown: 5f,    castDuration: 1.2f,  enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7f, skillRole: EnemySkillRole.Escape, riskWeight: 0.18f, punishWeight: 0.18f, repeatPenalty: 0.25f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss1.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1449,10 +1491,10 @@ namespace Game.Editor
                         23f,
                         42f,
                         16f,
-                        BuildSkillSlot(0, "boss_2_cross_slash",  castRange: 3.2f,  cooldown: 2.1f,  castDuration: 1f,    idealCastRange: 2.8f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.36f, repeatPenalty: 0.2f),
-                        BuildSkillSlot(1, "boss_2_volley",       castRange: 15f,   cooldown: 2.7f,  castDuration: 1.2f,  idealCastRange: 13.2f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.24f, punishWeight: 0.22f, repeatPenalty: 0.18f),
-                        BuildSkillSlot(2, "boss_2_crash",        castRange: 5.5f,  cooldown: 3.8f,  castDuration: 1.05f, enterIdleAfterCast: true,  postCastIdleDuration: 0.5f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.2f, idealCastRange: 4.7f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.45f, punishWeight: 0.62f, repeatPenalty: 0.3f, canUseUnderThreat: true),
-                        BuildSkillSlot(3, "boss_2_rage",         castRange: 8f,    cooldown: 4.8f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.2f, skillRole: EnemySkillRole.Escape, riskWeight: 0.16f, punishWeight: 0.16f, repeatPenalty: 0.24f, canUseUnderThreat: true)),
+                        BuildSkillSlot("boss_2", 0, "十字斩",    castRange: 3.2f,  cooldown: 2.1f,  castDuration: 1f,    idealCastRange: 2.8f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.28f, punishWeight: 0.36f, repeatPenalty: 0.2f),
+                        BuildSkillSlot("boss_2", 1, "连射",      castRange: 15f,   cooldown: 2.7f,  castDuration: 1.2f,  idealCastRange: 13.2f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.24f, punishWeight: 0.22f, repeatPenalty: 0.18f),
+                        BuildSkillSlot("boss_2", 2, "崩击",      castRange: 5.5f,  cooldown: 3.8f,  castDuration: 1.05f, enterIdleAfterCast: true,  postCastIdleDuration: 0.5f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.2f, idealCastRange: 4.7f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.45f, punishWeight: 0.62f, repeatPenalty: 0.3f, canUseUnderThreat: true),
+                        BuildSkillSlot("boss_2", 3, "狂怒",      castRange: 8f,    cooldown: 4.8f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.2f, skillRole: EnemySkillRole.Escape, riskWeight: 0.16f, punishWeight: 0.16f, repeatPenalty: 0.24f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss2.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1463,10 +1505,10 @@ namespace Game.Editor
                         24f,
                         44f,
                         17f,
-                        BuildSkillSlot(0, "boss_3_pull_cleave",  castRange: 4f,    cooldown: 2.4f,  castDuration: 1.05f, idealCastRange: 3.5f, skillRole: EnemySkillRole.Punish, riskWeight: 0.32f, punishWeight: 0.68f, repeatPenalty: 0.24f),
-                        BuildSkillSlot(1, "boss_3_barrage",      castRange: 15f,   cooldown: 2.9f,  castDuration: 1.25f, idealCastRange: 13.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.26f, punishWeight: 0.2f, repeatPenalty: 0.18f),
-                        BuildSkillSlot(2, "boss_3_lunge",        castRange: 5.8f,  cooldown: 3.9f,  castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.45f, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.4f, idealCastRange: 4.9f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.44f, punishWeight: 0.6f, repeatPenalty: 0.3f, canUseUnderThreat: true),
-                        BuildSkillSlot(3, "boss_3_drain",        castRange: 8.5f,  cooldown: 5.2f,  castDuration: 1.25f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.6f, skillRole: EnemySkillRole.Escape, riskWeight: 0.18f, punishWeight: 0.18f, repeatPenalty: 0.24f, canUseUnderThreat: true)),
+                        BuildSkillSlot("boss_3", 0, "勾拽劈斩",  castRange: 4f,    cooldown: 2.4f,  castDuration: 1.05f, idealCastRange: 3.5f, skillRole: EnemySkillRole.Punish, riskWeight: 0.32f, punishWeight: 0.68f, repeatPenalty: 0.24f),
+                        BuildSkillSlot("boss_3", 1, "弹幕",      castRange: 15f,   cooldown: 2.9f,  castDuration: 1.25f, idealCastRange: 13.5f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.26f, punishWeight: 0.2f, repeatPenalty: 0.18f),
+                        BuildSkillSlot("boss_3", 2, "突刺",      castRange: 5.8f,  cooldown: 3.9f,  castDuration: 1f,    enterIdleAfterCast: true,  postCastIdleDuration: 0.45f, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.4f, idealCastRange: 4.9f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.44f, punishWeight: 0.6f, repeatPenalty: 0.3f, canUseUnderThreat: true),
+                        BuildSkillSlot("boss_3", 3, "吸取",      castRange: 8.5f,  cooldown: 5.2f,  castDuration: 1.25f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.6f, skillRole: EnemySkillRole.Escape, riskWeight: 0.18f, punishWeight: 0.18f, repeatPenalty: 0.24f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss3.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1477,10 +1519,10 @@ namespace Game.Editor
                         25f,
                         46f,
                         17f,
-                        BuildSkillSlot(0, "boss_4_spin",         castRange: 3.5f,  cooldown: 2f,    castDuration: 1.15f, idealCastRange: 3f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.34f, punishWeight: 0.34f, repeatPenalty: 0.2f),
-                        BuildSkillSlot(1, "boss_4_piercing_shot", castRange: 15.5f, cooldown: 2.5f,  castDuration: 1f,    idealCastRange: 13.8f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.22f, punishWeight: 0.2f, repeatPenalty: 0.18f),
-                        BuildSkillSlot(2, "boss_4_pursuit",      castRange: 6.2f,  cooldown: 3.5f,  castDuration: 0.95f, enterIdleAfterCast: true,  postCastIdleDuration: 0.5f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.6f, idealCastRange: 5.2f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.42f, punishWeight: 0.56f, repeatPenalty: 0.28f, canUseUnderThreat: true),
-                        BuildSkillSlot(3, "boss_4_battlecry",    castRange: 8.8f,  cooldown: 4.4f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.8f, skillRole: EnemySkillRole.Escape, riskWeight: 0.14f, punishWeight: 0.16f, repeatPenalty: 0.22f, canUseUnderThreat: true)),
+                        BuildSkillSlot("boss_4", 0, "旋斩",      castRange: 3.5f,  cooldown: 2f,    castDuration: 1.15f, idealCastRange: 3f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.34f, punishWeight: 0.34f, repeatPenalty: 0.2f),
+                        BuildSkillSlot("boss_4", 1, "穿刺射击",  castRange: 15.5f, cooldown: 2.5f,  castDuration: 1f,    idealCastRange: 13.8f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.22f, punishWeight: 0.2f, repeatPenalty: 0.18f),
+                        BuildSkillSlot("boss_4", 2, "追猎突进",  castRange: 6.2f,  cooldown: 3.5f,  castDuration: 0.95f, enterIdleAfterCast: true,  postCastIdleDuration: 0.5f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.6f, idealCastRange: 5.2f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.42f, punishWeight: 0.56f, repeatPenalty: 0.28f, canUseUnderThreat: true),
+                        BuildSkillSlot("boss_4", 3, "战吼",      castRange: 8.8f,  cooldown: 4.4f,  castDuration: 1.15f, enterIdleAfterCast: true,  postCastIdleDuration: 0.55f, rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 7.8f, skillRole: EnemySkillRole.Escape, riskWeight: 0.14f, punishWeight: 0.16f, repeatPenalty: 0.22f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss4.asset"),
                 CreateOrUpdateAsset(
                     BuildEnemyArchetype(
@@ -1491,10 +1533,10 @@ namespace Game.Editor
                         26f,
                         48f,
                         18f,
-                        BuildSkillSlot(0, "boss_5_cleave",       castRange: 3.6f,  cooldown: 1.9f,  castDuration: 1f,    idealCastRange: 3.1f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.3f, punishWeight: 0.32f, repeatPenalty: 0.18f),
-                        BuildSkillSlot(1, "boss_5_storm",        castRange: 16f,   cooldown: 2.3f,  castDuration: 1.3f,  idealCastRange: 14.2f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.24f, punishWeight: 0.2f, repeatPenalty: 0.18f),
-                        BuildSkillSlot(2, "boss_5_stampede",     castRange: 6.5f,  cooldown: 3.3f,  castDuration: 1.05f, enterIdleAfterCast: true,  postCastIdleDuration: 0.6f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.8f, idealCastRange: 5.4f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.44f, punishWeight: 0.58f, repeatPenalty: 0.28f, canUseUnderThreat: true),
-                        BuildSkillSlot(3, "boss_5_regen_roar",   castRange: 9f,    cooldown: 4.2f,  castDuration: 1.25f, enterIdleAfterCast: true,  postCastIdleDuration: 0.6f,  rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 8f, skillRole: EnemySkillRole.Escape, riskWeight: 0.14f, punishWeight: 0.16f, repeatPenalty: 0.22f, canUseUnderThreat: true)),
+                        BuildSkillSlot("boss_5", 0, "横斩",      castRange: 3.6f,  cooldown: 1.9f,  castDuration: 1f,    idealCastRange: 3.1f, skillRole: EnemySkillRole.Pressure, riskWeight: 0.3f, punishWeight: 0.32f, repeatPenalty: 0.18f),
+                        BuildSkillSlot("boss_5", 1, "风暴射击",  castRange: 16f,   cooldown: 2.3f,  castDuration: 1.3f,  idealCastRange: 14.2f, skillRole: EnemySkillRole.AreaControl, riskWeight: 0.24f, punishWeight: 0.2f, repeatPenalty: 0.18f),
+                        BuildSkillSlot("boss_5", 2, "践踏冲锋",  castRange: 6.5f,  cooldown: 3.3f,  castDuration: 1.05f, enterIdleAfterCast: true,  postCastIdleDuration: 0.6f,  phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, minCastRange: 2.8f, idealCastRange: 5.4f, skillRole: EnemySkillRole.GapClose, riskWeight: 0.44f, punishWeight: 0.58f, repeatPenalty: 0.28f, canUseUnderThreat: true),
+                        BuildSkillSlot("boss_5", 3, "回复战吼",  castRange: 9f,    cooldown: 4.2f,  castDuration: 1.25f, enterIdleAfterCast: true,  postCastIdleDuration: 0.6f,  rotateToTargetOnCast: false, phaseAvailability: EnemySkillPhaseAvailability.LowHpOnly, idealCastRange: 8f, skillRole: EnemySkillRole.Escape, riskWeight: 0.14f, punishWeight: 0.16f, repeatPenalty: 0.22f, canUseUnderThreat: true)),
                     $"{ResourcesConfigDir}/敌人行为_Boss5.asset"),
             };
 

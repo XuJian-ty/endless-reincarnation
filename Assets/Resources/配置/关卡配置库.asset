@@ -15,14 +15,14 @@ MonoBehaviour:
   levels:
   - levelIndex: 1
     sceneName: Level_1
-    sceneGuid:
+    sceneGuid: 
     globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
       type: 2}
     globalSpawnPlanIndex: 0
-    chestMinCount: 0
-    chestMaxCount: 2
-    shopCount: 2
-    cellSize: 40
+    minionGoldReward: 10
+    minionExpReward: 10
+    eliteGoldReward: 30
+    eliteExpReward: 30
     eliteDropEntries:
     - itemType: weapon_common
       weight: 0.3
@@ -34,6 +34,20 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    chestDropEntries:
+    - itemType: weapon_common
+      weight: 1
+    - itemType: weapon_rare
+      weight: 0
+    - itemType: potion_hp
+      weight: 0
+    - itemType: potion_mp
+      weight: 0
+    - itemType: nectar
+      weight: 0
+    guardianGoldReward: 50
+    guardianExpReward: 50
+    guardianTalentReward: 1
     guardianDropEntries:
     - itemType: weapon_common
       weight: 0.3
@@ -45,6 +59,8 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    bossGoldReward: 200
+    bossExpReward: 200
     bossDropEntries:
     - itemType: weapon_common
       weight: 0.3
@@ -56,16 +72,52 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    shopGoodsEntries:
+    - goodsType: 1
+      itemId: 
+      weaponId: sword
+      weaponRarity: 0
+      spawnChance: 0.65
+      minCount: 1
+      maxCount: 1
+    - goodsType: 1
+      itemId: 
+      weaponId: gun
+      weaponRarity: 0
+      spawnChance: 0.45
+      minCount: 1
+      maxCount: 1
+    - goodsType: 0
+      itemId: potion_hp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.8
+      minCount: 1
+      maxCount: 3
+    - goodsType: 0
+      itemId: potion_mp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.8
+      minCount: 1
+      maxCount: 3
+    - goodsType: 0
+      itemId: nectar
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.25
+      minCount: 1
+      maxCount: 1
   - levelIndex: 2
     sceneName: Level_2
-    sceneGuid:
+    sceneGuid: 
     globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
       type: 2}
     globalSpawnPlanIndex: 1
-    chestMinCount: 0
-    chestMaxCount: 2
-    shopCount: 2
-    cellSize: 40
+    minionGoldReward: 10
+    minionExpReward: 10
+    eliteGoldReward: 30
+    eliteExpReward: 30
     eliteDropEntries:
     - itemType: weapon_common
       weight: 0.15
@@ -79,6 +131,22 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    chestDropEntries:
+    - itemType: weapon_common
+      weight: 0.15
+    - itemType: weapon_rare
+      weight: 0.15
+    - itemType: weapon_epic
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianGoldReward: 0
+    guardianExpReward: 0
+    guardianTalentReward: 1
     guardianDropEntries:
     - itemType: weapon_common
       weight: 0.15
@@ -92,6 +160,8 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    bossGoldReward: 0
+    bossExpReward: 0
     bossDropEntries:
     - itemType: weapon_common
       weight: 0.15
@@ -105,16 +175,52 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    shopGoodsEntries:
+    - goodsType: 1
+      itemId: 
+      weaponId: sword
+      weaponRarity: 1
+      spawnChance: 0.55
+      minCount: 1
+      maxCount: 1
+    - goodsType: 1
+      itemId: 
+      weaponId: gun
+      weaponRarity: 1
+      spawnChance: 0.55
+      minCount: 1
+      maxCount: 1
+    - goodsType: 0
+      itemId: potion_hp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.85
+      minCount: 2
+      maxCount: 4
+    - goodsType: 0
+      itemId: potion_mp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.85
+      minCount: 2
+      maxCount: 4
+    - goodsType: 0
+      itemId: nectar
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.3
+      minCount: 1
+      maxCount: 1
   - levelIndex: 3
     sceneName: Level_3
-    sceneGuid:
+    sceneGuid: 
     globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
       type: 2}
     globalSpawnPlanIndex: 2
-    chestMinCount: 0
-    chestMaxCount: 2
-    shopCount: 2
-    cellSize: 40
+    minionGoldReward: 10
+    minionExpReward: 10
+    eliteGoldReward: 30
+    eliteExpReward: 30
     eliteDropEntries:
     - itemType: weapon_rare
       weight: 0.2
@@ -126,6 +232,20 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    chestDropEntries:
+    - itemType: weapon_rare
+      weight: 0.2
+    - itemType: weapon_epic
+      weight: 0.2
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianGoldReward: 0
+    guardianExpReward: 0
+    guardianTalentReward: 1
     guardianDropEntries:
     - itemType: weapon_rare
       weight: 0.2
@@ -137,6 +257,8 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    bossGoldReward: 0
+    bossExpReward: 0
     bossDropEntries:
     - itemType: weapon_rare
       weight: 0.2
@@ -148,16 +270,52 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    shopGoodsEntries:
+    - goodsType: 1
+      itemId: 
+      weaponId: sword
+      weaponRarity: 1
+      spawnChance: 0.45
+      minCount: 1
+      maxCount: 2
+    - goodsType: 1
+      itemId: 
+      weaponId: gun
+      weaponRarity: 2
+      spawnChance: 0.45
+      minCount: 1
+      maxCount: 1
+    - goodsType: 0
+      itemId: potion_hp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.9
+      minCount: 2
+      maxCount: 5
+    - goodsType: 0
+      itemId: potion_mp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.9
+      minCount: 2
+      maxCount: 5
+    - goodsType: 0
+      itemId: nectar
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.35
+      minCount: 1
+      maxCount: 2
   - levelIndex: 4
     sceneName: Level_4
-    sceneGuid:
+    sceneGuid: 
     globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
       type: 2}
     globalSpawnPlanIndex: 3
-    chestMinCount: 0
-    chestMaxCount: 2
-    shopCount: 2
-    cellSize: 40
+    minionGoldReward: 10
+    minionExpReward: 10
+    eliteGoldReward: 30
+    eliteExpReward: 30
     eliteDropEntries:
     - itemType: weapon_epic
       weight: 0.3
@@ -169,6 +327,20 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    chestDropEntries:
+    - itemType: weapon_epic
+      weight: 0.3
+    - itemType: weapon_legendary
+      weight: 0.1
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianGoldReward: 0
+    guardianExpReward: 0
+    guardianTalentReward: 1
     guardianDropEntries:
     - itemType: weapon_epic
       weight: 0.3
@@ -180,6 +352,8 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    bossGoldReward: 0
+    bossExpReward: 0
     bossDropEntries:
     - itemType: weapon_epic
       weight: 0.3
@@ -191,16 +365,52 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    shopGoodsEntries:
+    - goodsType: 1
+      itemId: 
+      weaponId: sword
+      weaponRarity: 2
+      spawnChance: 0.55
+      minCount: 1
+      maxCount: 1
+    - goodsType: 1
+      itemId: 
+      weaponId: gun
+      weaponRarity: 2
+      spawnChance: 0.55
+      minCount: 1
+      maxCount: 1
+    - goodsType: 0
+      itemId: potion_hp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.9
+      minCount: 3
+      maxCount: 6
+    - goodsType: 0
+      itemId: potion_mp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.9
+      minCount: 3
+      maxCount: 6
+    - goodsType: 0
+      itemId: nectar
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.45
+      minCount: 1
+      maxCount: 2
   - levelIndex: 5
     sceneName: Level_5
-    sceneGuid:
+    sceneGuid: 
     globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
       type: 2}
     globalSpawnPlanIndex: 4
-    chestMinCount: 0
-    chestMaxCount: 2
-    shopCount: 2
-    cellSize: 40
+    minionGoldReward: 10
+    minionExpReward: 10
+    eliteGoldReward: 30
+    eliteExpReward: 30
     eliteDropEntries:
     - itemType: weapon_legendary
       weight: 0.4
@@ -210,6 +420,18 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    chestDropEntries:
+    - itemType: weapon_legendary
+      weight: 0.4
+    - itemType: potion_hp
+      weight: 0.25
+    - itemType: potion_mp
+      weight: 0.25
+    - itemType: nectar
+      weight: 0.1
+    guardianGoldReward: 0
+    guardianExpReward: 0
+    guardianTalentReward: 1
     guardianDropEntries:
     - itemType: weapon_legendary
       weight: 0.4
@@ -219,6 +441,8 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    bossGoldReward: 0
+    bossExpReward: 0
     bossDropEntries:
     - itemType: weapon_legendary
       weight: 0.4
@@ -228,3 +452,39 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    shopGoodsEntries:
+    - goodsType: 1
+      itemId: 
+      weaponId: sword
+      weaponRarity: 3
+      spawnChance: 0.6
+      minCount: 1
+      maxCount: 1
+    - goodsType: 1
+      itemId: 
+      weaponId: gun
+      weaponRarity: 3
+      spawnChance: 0.6
+      minCount: 1
+      maxCount: 1
+    - goodsType: 0
+      itemId: potion_hp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.95
+      minCount: 4
+      maxCount: 7
+    - goodsType: 0
+      itemId: potion_mp
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.95
+      minCount: 4
+      maxCount: 7
+    - goodsType: 0
+      itemId: nectar
+      weaponId: 
+      weaponRarity: 0
+      spawnChance: 0.55
+      minCount: 1
+      maxCount: 3

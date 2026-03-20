@@ -104,7 +104,9 @@ namespace Game.Presentation
         private static bool IsLookInputBlocked()
         {
             var gsm = GameStateMachine.GetInstance();
-            return gsm?.IsGameplayPaused == true || GameplayUIInputBridge.IsAnyGameplayPanelOpen();
+            return gsm?.IsGameplayPaused == true
+                   || GameplayUIInputBridge.IsAnyGameplayPanelOpen()
+                   || SkillEffectExecutor.IsCameraLookBlockedByHitStop;
         }
 
         private void EnsureReferences()

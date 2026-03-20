@@ -13,30 +13,23 @@ namespace Game.Presentation
         private const string FillAreaName = "Fill Area";
         private const string FillName = "Fill";
         private const string ValueTextName = "Text_HP";
-        private const string DefaultSortingLayerName = "Default";
         private const float DefaultEnemyHeightOffset = 2f;
         private const float DefaultCloneHeightOffset = 1.88f;
-
-        private static readonly Color DefaultBackgroundColor = new Color(0f, 0f, 0f, 0.55f);
 
         private RectTransform _rootRect;
         private RectTransform _barRect;
         private RectTransform _fillAreaRect;
         private Canvas _canvas;
-        private Image _backgroundImage;
         private Image _fillImage;
         private Text _valueText;
-        private Color _fillColor = Color.red;
         private float _heightOffset = 2f;
         private bool _initialized;
         private bool _usesExistingHud;
 
-        public void Configure(Color fillColor)
+        public void Configure()
         {
-            _fillColor = fillColor;
             EnsureUi();
             RefreshHeightOffset();
-            ApplyVisualState();
         }
 
         public void SetVisible(bool visible)
@@ -62,7 +55,7 @@ namespace Game.Presentation
         {
             EnsureUi();
             _heightOffset = ResolveHeightOffset();
-            if (_rootRect != null)
+            if (_rootRect != null && !_usesExistingHud)
                 _rootRect.localPosition = new Vector3(0f, _heightOffset, 0f);
         }
 
@@ -83,7 +76,8 @@ namespace Game.Presentation
                 return;
 
             _rootRect.rotation = worldCamera.transform.rotation;
-            ApplyStableScale();
+            if (!_usesExistingHud)
+                ApplyStableScale();
         }
 
         private void EnsureUi()
@@ -98,47 +92,15 @@ namespace Game.Presentation
 
             _canvas = _rootRect.GetComponent<Canvas>();
             if (_canvas == null)
-                _canvas = _rootRect.gameObject.AddComponent<Canvas>();
-            _canvas.renderMode = RenderMode.WorldSpace;
-            _canvas.overrideSorting = true;
-            _canvas.sortingLayerID = SortingLayer.NameToID(DefaultSortingLayerName);
-            _canvas.sortingOrder = 60;
-
-            if (_barRect == null)
-                _barRect = _rootRect;
-
-            _backgroundImage = _barRect.GetComponent<Image>();
-            if (_backgroundImage == null)
-                _backgroundImage = _barRect.gameObject.AddComponent<Image>();
-
-            if (_backgroundImage.sprite == null)
-                _backgroundImage.color = DefaultBackgroundColor;
-            _backgroundImage.raycastTarget = false;
-
-            _fillImage.type = Image.Type.Filled;
-            _fillImage.fillMethod = Image.FillMethod.Horizontal;
-            _fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
-            _fillImage.raycastTarget = false;
+                return;
 
             if (_usesExistingHud)
             {
-                ApplyExistingHudLayout();
                 EnsureExistingHudPartsActive();
             }
 
-            ApplyVisualState();
-            ApplyStableScale();
             RefreshValueText();
             _initialized = true;
-        }
-
-        private void ApplyVisualState()
-        {
-            if (_fillImage != null)
-                _fillImage.color = _fillColor;
-
-            if (_valueText != null)
-                _valueText.raycastTarget = false;
         }
 
         private void ApplyStableScale()
@@ -177,12 +139,6 @@ namespace Game.Presentation
             if (cloneActor == null)
                 return false;
 
-            if (cloneActor.HeadHealthBarHeightOffset > 0f)
-            {
-                heightOffset = cloneActor.HeadHealthBarHeightOffset;
-                return true;
-            }
-
             CharacterController controller = GetComponent<CharacterController>();
             if (controller != null)
             {
@@ -201,12 +157,6 @@ namespace Game.Presentation
             EnemyController enemyController = GetComponent<EnemyController>();
             if (enemyController == null)
                 return false;
-
-            if (enemyController.HeadHealthBarHeightOffset > 0f)
-            {
-                heightOffset = enemyController.HeadHealthBarHeightOffset;
-                return true;
-            }
 
             Collider rootCollider = GetComponent<Collider>();
             if (rootCollider != null)
@@ -290,6 +240,8 @@ namespace Game.Presentation
             if (_barRect == null)
                 return;
 
+            _barRect.localRotation = Quaternion.identity;
+
             Transform fillAreaTransform = FindNamedDescendant(_barRect, FillAreaName);
             _fillAreaRect = fillAreaTransform as RectTransform;
 
@@ -300,59 +252,6 @@ namespace Game.Presentation
             Transform valueTextTransform = FindNamedDescendant(_barRect, ValueTextName);
             if (valueTextTransform != null)
                 _valueText = valueTextTransform.GetComponent<Text>();
-        }
-
-        private void ApplyExistingHudLayout()
-        {
-            if (_rootRect == null)
-                return;
-
-            _rootRect.sizeDelta = new Vector2(100f, 100f);
-
-            if (_barRect != null && _barRect != _rootRect)
-            {
-                _barRect.anchorMin = new Vector2(0.5f, 0.5f);
-                _barRect.anchorMax = new Vector2(0.5f, 0.5f);
-                _barRect.pivot = new Vector2(0.5f, 0.5f);
-                _barRect.localRotation = Quaternion.identity;
-                _barRect.anchoredPosition = Vector2.zero;
-                _barRect.sizeDelta = new Vector2(88f, 12f);
-            }
-
-            if (_fillAreaRect != null)
-            {
-                _fillAreaRect.anchorMin = Vector2.zero;
-                _fillAreaRect.anchorMax = Vector2.one;
-                _fillAreaRect.offsetMin = new Vector2(1f, 1f);
-                _fillAreaRect.offsetMax = new Vector2(-1f, -1f);
-            }
-
-            if (_fillImage != null)
-            {
-                RectTransform fillRect = _fillImage.rectTransform;
-                fillRect.anchorMin = Vector2.zero;
-                fillRect.anchorMax = Vector2.one;
-                fillRect.offsetMin = Vector2.zero;
-                fillRect.offsetMax = Vector2.zero;
-            }
-
-            if (_valueText == null)
-                return;
-
-            RectTransform textRect = _valueText.rectTransform;
-            textRect.anchorMin = new Vector2(0.5f, 1f);
-            textRect.anchorMax = new Vector2(0.5f, 1f);
-            textRect.pivot = new Vector2(0.5f, 0f);
-            textRect.anchoredPosition = new Vector2(0f, 2f);
-            textRect.sizeDelta = new Vector2(120f, 16f);
-
-            if (_valueText.font == null)
-                _valueText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-
-            _valueText.fontSize = 10;
-            _valueText.alignment = TextAnchor.MiddleCenter;
-            _valueText.horizontalOverflow = HorizontalWrapMode.Overflow;
-            _valueText.verticalOverflow = VerticalWrapMode.Overflow;
         }
 
         private void EnsureExistingHudPartsActive()

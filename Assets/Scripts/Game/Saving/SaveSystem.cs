@@ -132,6 +132,23 @@ namespace Game.Saving
                 data.run.unlockedSkillIds ??= new List<string>();
                 data.run.defeatedBossIds  ??= new List<string>();
             }
+            if (data.run.levelSnapshot != null)
+            {
+                data.run.levelSnapshot.enemies ??= new List<EnemySnapshot>();
+                data.run.levelSnapshot.openedChestIds ??= new List<string>();
+                data.run.levelSnapshot.groundDrops ??= new List<GroundDropSave>();
+                data.run.levelSnapshot.shops ??= new List<ShopSnapshotSave>();
+                data.run.levelSnapshot.localSpawners ??= new List<LocalSpawnerSnapshotSave>();
+
+                for (int i = 0; i < data.run.levelSnapshot.enemies.Count; i++)
+                    data.run.levelSnapshot.enemies[i].skillCooldowns ??= new List<EnemySkillCooldownSave>();
+
+                if (data.run.levelSnapshot.globalSpawner != null)
+                    data.run.levelSnapshot.globalSpawner.pendingTasks ??= new List<SpawnTaskRequestSave>();
+
+                for (int i = 0; i < data.run.levelSnapshot.localSpawners.Count; i++)
+                    data.run.levelSnapshot.localSpawners[i].plannedSpawnCounts ??= new List<int>();
+            }
             if (data.run.levelBgmVolume <= 0f) data.run.levelBgmVolume = 1f;
             if (data.run.levelBgmTrackIndex < 0) data.run.levelBgmTrackIndex = 0;
             if (data.run.soundEffectsVolume < 0f) data.run.soundEffectsVolume = 1f;
@@ -177,11 +194,49 @@ namespace Game.Saving
         /// <summary>创建一份新存档（第一关、难度 1），写入并加入索引，返回新存档 id</summary>
         public string CreateNewSave(string playerName)
         {
-            var data = NewGameRun(1, 1);
-            data.playerName = string.IsNullOrWhiteSpace(playerName) ? "玩家" : playerName.Trim();
+            return CreateNewSave(playerName, 1, 1);
+        }
+
+        /// <summary>创建一份新存档（指定关卡与难度），写入并加入索引，返回新存档 id</summary>
+        public string CreateNewSave(string playerName, int levelIndex, int difficulty = 1)
+        {
+            var data = NewGameRun(Mathf.Max(1, levelIndex), Mathf.Max(1, difficulty));
+            data.playerName = NormalizePlayerName(playerName);
             string id = Guid.NewGuid().ToString("N");
             Save(id, data);
             return id;
+        }
+
+        /// <summary>按玩家名和关卡读取最近一份匹配存档；不存在则创建并返回。</summary>
+        public SaveData GetOrCreateSaveForPlayerAndLevel(string playerName, int levelIndex, out string saveId)
+        {
+            string normalizedPlayerName = NormalizePlayerName(playerName);
+            int normalizedLevelIndex = Mathf.Max(1, levelIndex);
+            var entries = GetAllSaveEntries();
+            for (int i = 0; i < entries.Count; i++)
+            {
+                SaveEntry entry = entries[i];
+                if (entry == null
+                    || entry.levelIndex != normalizedLevelIndex
+                    || !string.Equals(entry.playerName, normalizedPlayerName, StringComparison.Ordinal)
+                    || !HasSave(entry.id))
+                {
+                    continue;
+                }
+
+                SaveData existing = Load(entry.id);
+                if (existing?.run == null)
+                    continue;
+
+                saveId = entry.id;
+                return existing;
+            }
+
+            SaveData created = NewGameRun(normalizedLevelIndex, 1);
+            created.playerName = normalizedPlayerName;
+            saveId = Guid.NewGuid().ToString("N");
+            Save(saveId, created);
+            return created;
         }
 
         /// <summary>创建一个全新的 RunData（新游戏用），并包装成 SaveData</summary>
@@ -196,7 +251,7 @@ namespace Game.Saving
                     difficulty       = difficulty,
                     player           = new PlayerSaveData { level = 1, exp = 0 },
                     inventory        = new InventorySaveData(),
-                    itemCounts       = new ItemCountSaveData { gold = 0, talentPoints = 0 },
+                    itemCounts       = new ItemCountSaveData { gold = 500, talentPoints = 0 },
                     equippedWeapon   = null,
                     buffIds          = new List<string>(),
                     unlockedSkillIds = new List<string>(),
@@ -210,41 +265,6 @@ namespace Game.Saving
             };
 
             ApplyStarterLoadout(save.run);
-            return save;
-        }
-
-        /// <summary>创建一份编辑器直进关卡用的临时调试存档：1级、满血满蓝、四个主动技能已解锁、传说最高词条剑枪。</summary>
-        public static SaveData NewDebugRun(int levelIndex = 1, int difficulty = 1)
-        {
-            SaveData save = NewGameRun(levelIndex, difficulty);
-            RunData run = save?.run;
-            if (run == null)
-                return save;
-
-            int debugLevel = 1;
-            run.player.level = debugLevel;
-            run.player.exp = 0;
-
-            LevelGrowthSO levelGrowth = ConfigManager.GetInstance()?.GetLevelGrowth();
-            LevelGrowthEntry debugLevelEntry = null;
-            if (levelGrowth?.levels != null)
-            {
-                for (int i = 0; i < levelGrowth.levels.Count; i++)
-                {
-                    LevelGrowthEntry entry = levelGrowth.levels[i];
-                    if (entry != null && entry.level == debugLevel)
-                    {
-                        debugLevelEntry = entry;
-                        break;
-                    }
-                }
-            }
-
-            run.player.currentHp = debugLevelEntry != null ? debugLevelEntry.baseHp : 1000f;
-            run.player.currentMp = debugLevelEntry != null ? debugLevelEntry.baseMp : 1000f;
-
-            ApplyDebugUnlockedSkills(run);
-            ApplyDebugStarterLoadout(run);
             return save;
         }
 
@@ -275,79 +295,9 @@ namespace Game.Saving
                 run.inventory.slots[3].weapon = starterGun;
         }
 
-        private static void ApplyDebugStarterLoadout(RunData run)
+        private static string NormalizePlayerName(string playerName)
         {
-            if (run == null)
-                return;
-
-            WeaponDatabaseSO weaponDb = ConfigManager.GetInstance()?.GetWeaponDatabase();
-            if (weaponDb == null)
-                return;
-
-            WeaponInstance debugSword = CreateMaximumRoll(weaponDb, WeaponType.MeleeSword, WeaponRarity.Legendary);
-            WeaponInstance debugGun = CreateMaximumRoll(weaponDb, WeaponType.RangedGun, WeaponRarity.Legendary);
-
-            run.equippedWeapon = debugSword;
-            if (debugGun != null && run.inventory?.slots != null && run.inventory.slots.Count > 3)
-                run.inventory.slots[3].weapon = debugGun;
-        }
-
-        private static void ApplyDebugUnlockedSkills(RunData run)
-        {
-            if (run == null)
-                return;
-
-            run.unlockedSkillIds ??= new List<string>();
-            run.unlockedSkillIds.Clear();
-
-            SkillConfigDatabaseSO skillConfig = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
-            if (skillConfig != null)
-            {
-                for (int slotIndex = 0; slotIndex < 4; slotIndex++)
-                {
-                    SkillConfigEntry entry = skillConfig.GetActiveEntryBySlot(slotIndex);
-                    string skillId = entry?.skillId;
-                    if (string.IsNullOrWhiteSpace(skillId))
-                        skillId = $"Skill{slotIndex}";
-
-                    if (!run.unlockedSkillIds.Contains(skillId))
-                        run.unlockedSkillIds.Add(skillId);
-                }
-
-                return;
-            }
-
-            for (int slotIndex = 0; slotIndex < 4; slotIndex++)
-            {
-                string skillId = $"Skill{slotIndex}";
-                if (!run.unlockedSkillIds.Contains(skillId))
-                    run.unlockedSkillIds.Add(skillId);
-            }
-        }
-
-        private static WeaponInstance CreateMaximumRoll(WeaponDatabaseSO weaponDb, WeaponType type, WeaponRarity rarity)
-        {
-            WeaponEntryData entry = weaponDb?.GetEntry(type);
-            if (entry == null)
-                return null;
-
-            WeaponStatRanges ranges = entry.GetRangesFor(rarity);
-            return new WeaponInstance
-            {
-                weaponId = entry.weaponId,
-                type = entry.type,
-                rarity = rarity,
-                rolledHp = ranges.hp.max,
-                rolledMp = ranges.mp.max,
-                rolledAttack = ranges.attack.max,
-                rolledDefense = ranges.defense.max,
-                rolledHpRegen = rarity >= WeaponRarity.Rare ? ranges.hpRegen.max : 0f,
-                rolledMpRegen = rarity >= WeaponRarity.Rare ? ranges.mpRegen.max : 0f,
-                rolledCritRate = rarity >= WeaponRarity.Epic ? ranges.critRate.max : 0f,
-                rolledCritDmg = rarity >= WeaponRarity.Epic ? ranges.critDmg.max : 0f,
-                rolledAttackSpeed = rarity >= WeaponRarity.Legendary ? ranges.attackSpeed.max : 0f,
-                rolledMoveSpeed = rarity >= WeaponRarity.Legendary ? ranges.moveSpeed.max : 0f,
-            };
+            return string.IsNullOrWhiteSpace(playerName) ? "玩家" : playerName.Trim();
         }
 
         private static void SetStarterStack(List<InventorySlotSave> slots, int index, string itemId, int count)

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 #if ENABLE_INPUT_SYSTEM
@@ -42,23 +44,25 @@ namespace Game.Presentation
         private bool _jumpReceived;
         private bool _dodgeReceived;
         private bool _altAttackReceived;
-        private bool _skill0Received;
-        private bool _skill1Received;
-        private bool _skill2Received;
-        private bool _skill3Received;
 
         // ── InputAction 引用（在 Inspector 绑定或由 PlayerInput 注入）────
 #if ENABLE_INPUT_SYSTEM
+        private sealed class SkillInputBinding
+        {
+            public int slotIndex;
+            public InputAction action;
+            public Action<InputAction.CallbackContext> callback;
+            public bool received;
+        }
+
         private InputAction _moveAction;
         private InputAction _lookAction;
         private InputAction _jumpAction;
         private InputAction _dodgeAction;
         private InputAction _fallAttackAction;
-        private InputAction _skill0Action;
-        private InputAction _skill1Action;
-        private InputAction _skill2Action;
-        private InputAction _skill3Action;
         private InputAction _chargeStartAction;
+        private readonly List<SkillInputBinding> _skillBindings = new List<SkillInputBinding>(4);
+        private readonly List<int> _pressedSkillIndices = new List<int>(4);
 
         // ── 具名委托存储：订阅与取消订阅必须使用同一个引用 ──────────────
         // ⚠ Lambda 每次创建不同实例，用 -= 取消时根本不是原来那个！
@@ -66,10 +70,6 @@ namespace Game.Presentation
         private System.Action<InputAction.CallbackContext> _onJump;
         private System.Action<InputAction.CallbackContext> _onDodge;
         private System.Action<InputAction.CallbackContext> _onFallAttack;
-        private System.Action<InputAction.CallbackContext> _onSkill0;
-        private System.Action<InputAction.CallbackContext> _onSkill1;
-        private System.Action<InputAction.CallbackContext> _onSkill2;
-        private System.Action<InputAction.CallbackContext> _onSkill3;
 #endif
 
         // ── 当前帧快照（ManualUpdate 后可读）────────────────────────────
@@ -84,13 +84,10 @@ namespace Game.Presentation
             _jumpAction       = playerInput.actions["Jump"];
             _dodgeAction      = playerInput.actions["Dodge"];
             _fallAttackAction = playerInput.actions["FallAttack"];
-            _skill0Action     = playerInput.actions["Skill0"];
-            _skill1Action     = playerInput.actions["Skill1"];
-            _skill2Action     = playerInput.actions["Skill2"];
-            _skill3Action     = playerInput.actions["Skill3"];
             _chargeStartAction = playerInput.actions["ChargeStart"];
 
             SubscribeDirectActions();
+            SubscribeSkillActions(playerInput);
         }
 
         private void SubscribeDirectActions()
@@ -98,18 +95,37 @@ namespace Game.Presentation
             _onJump       = _ => _jumpReceived      = true;
             _onDodge      = _ => _dodgeReceived     = true;
             _onFallAttack = _ => _altAttackReceived = true;
-            _onSkill0     = _ => _skill0Received    = true;
-            _onSkill1     = _ => _skill1Received    = true;
-            _onSkill2     = _ => _skill2Received    = true;
-            _onSkill3     = _ => _skill3Received    = true;
 
             _jumpAction.performed       += _onJump;
             _dodgeAction.performed      += _onDodge;
             _fallAttackAction.performed += _onFallAttack;
-            _skill0Action.performed     += _onSkill0;
-            _skill1Action.performed     += _onSkill1;
-            _skill2Action.performed     += _onSkill2;
-            _skill3Action.performed     += _onSkill3;
+        }
+
+        private void SubscribeSkillActions(PlayerInput playerInput)
+        {
+            ClearSkillSubscriptions();
+
+            InputActionMap gameplayMap = playerInput?.actions?.FindActionMap("Gameplay", false);
+            if (gameplayMap == null)
+                return;
+
+            foreach (InputAction action in gameplayMap.actions)
+            {
+                if (!TryParseSkillActionName(action?.name, out int slotIndex))
+                    continue;
+
+                SkillInputBinding binding = new SkillInputBinding
+                {
+                    slotIndex = slotIndex,
+                    action = action,
+                };
+
+                binding.callback = _ => binding.received = true;
+                action.performed += binding.callback;
+                _skillBindings.Add(binding);
+            }
+
+            _skillBindings.Sort((left, right) => left.slotIndex.CompareTo(right.slotIndex));
         }
 
         private void OnDestroy()
@@ -119,10 +135,7 @@ namespace Game.Presentation
             _jumpAction.performed       -= _onJump;
             _dodgeAction.performed      -= _onDodge;
             _fallAttackAction.performed -= _onFallAttack;
-            _skill0Action.performed     -= _onSkill0;
-            _skill1Action.performed     -= _onSkill1;
-            _skill2Action.performed     -= _onSkill2;
-            _skill3Action.performed     -= _onSkill3;
+            ClearSkillSubscriptions();
         }
 #endif
 
@@ -147,6 +160,9 @@ namespace Game.Presentation
                 _isLmbHeld = phase == InputActionPhase.Started || phase == InputActionPhase.Performed;
             }
 
+            _pressedSkillIndices.Clear();
+            CollectPressedSkillIndices(_pressedSkillIndices);
+
             CurrentInput = new PlayerInputData(
                 moveInput:            moveRaw,
                 lookDelta:            lookRaw,
@@ -158,10 +174,7 @@ namespace Game.Presentation
                 chargeStartPressed:   Consume(ref _chargeStartReceived),
                 chargeReleasePressed: Consume(ref _chargeReleaseReceived),
                 altAttackPressed:     Consume(ref _altAttackReceived),
-                skill0:               Consume(ref _skill0Received),
-                skill1:               Consume(ref _skill1Received),
-                skill2:               Consume(ref _skill2Received),
-                skill3:               Consume(ref _skill3Received));
+                pressedSkillIndices:  _pressedSkillIndices);
 #else
             CurrentInput = default;
 #endif
@@ -194,5 +207,49 @@ namespace Game.Presentation
             flag = false;
             return true;
         }
+
+#if ENABLE_INPUT_SYSTEM
+        private void CollectPressedSkillIndices(List<int> pressedSkillIndices)
+        {
+            if (pressedSkillIndices == null)
+                return;
+
+            for (int i = 0; i < _skillBindings.Count; i++)
+            {
+                SkillInputBinding binding = _skillBindings[i];
+                if (binding == null || !Consume(ref binding.received))
+                    continue;
+
+                pressedSkillIndices.Add(binding.slotIndex);
+            }
+        }
+
+        private void ClearSkillSubscriptions()
+        {
+            for (int i = 0; i < _skillBindings.Count; i++)
+            {
+                SkillInputBinding binding = _skillBindings[i];
+                if (binding?.action == null || binding.callback == null)
+                    continue;
+
+                binding.action.performed -= binding.callback;
+            }
+
+            _skillBindings.Clear();
+        }
+
+        private static bool TryParseSkillActionName(string actionName, out int slotIndex)
+        {
+            slotIndex = -1;
+            if (string.IsNullOrWhiteSpace(actionName) ||
+                !actionName.StartsWith("Skill", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            string suffix = actionName.Substring("Skill".Length);
+            return int.TryParse(suffix, out slotIndex) && slotIndex >= 0;
+        }
+#endif
     }
 }

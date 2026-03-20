@@ -52,32 +52,36 @@ MonoBehaviour:
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
   locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 9100000, guid: da65e8e2f3f17fa44bcca80edcb4482d,
+    type: 2}
   skillSlots:
   - slotIndex: 0
-    skillId: boss_1_slash
+    skillId: boss_1Skill0
+    displayName: "\u6280\u80FD0"
     cooldown: 2
     castRange: 3
     minCastRange: 0
-    idealCastRange: 2.6
+    idealCastRange: 3
     skillRole: 2
     riskWeight: 0.28
     punishWeight: 0.35
     repeatPenalty: 0.2
-    canUseUnderThreat: 0
+    canUseUnderThreat: 1
     castDuration: 0.9
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
-    skillId: boss_1_shot
+    skillId: boss_1Skill1
+    displayName: "\u6280\u80FD1"
     cooldown: 2
-    castRange: 14
+    castRange: 4
     minCastRange: 0
-    idealCastRange: 12.5
+    idealCastRange: 4
     skillRole: 5
     riskWeight: 0.22
     punishWeight: 0.25
@@ -87,16 +91,17 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 2
-    skillId: boss_1_charge
+    skillId: boss_1Skill2
+    displayName: "\u6280\u80FD2"
     cooldown: 3
     castRange: 5
     minCastRange: 2
-    idealCastRange: 4.2
+    idealCastRange: 5
     skillRole: 1
     riskWeight: 0.48
     punishWeight: 0.58
@@ -104,15 +109,16 @@ MonoBehaviour:
     canUseUnderThreat: 1
     castDuration: 1
     enterIdleAfterCast: 1
-    postCastIdleDuration: 0.45
+    postCastIdleDuration: 0.3
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill2
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1
   - slotIndex: 3
-    skillId: boss_1_roar
-    cooldown: 4
+    skillId: boss_1Skill3
+    displayName: "\u6280\u80FD3"
+    cooldown: 3
     castRange: 8
     minCastRange: 0
     idealCastRange: 7
@@ -123,9 +129,9 @@ MonoBehaviour:
     canUseUnderThreat: 1
     castDuration: 1.2
     enterIdleAfterCast: 1
-    postCastIdleDuration: 0.55
+    postCastIdleDuration: 0.5
     rotateToTargetOnCast: 0
-    animationTrigger: 
+    animationTrigger: Skill3
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1

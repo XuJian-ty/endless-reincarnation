@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Data;
+using Game.Saving;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -28,6 +29,9 @@ namespace Game.GameFlow
         private EnemySpawnTaskDatabaseSO _resolvedTaskDatabase;
         private LevelEnemyGlobalSpawnPlanDefinition _resolvedSpawnPlan;
         private float _taskSpawnTimer;
+        private bool _restoredFromSnapshot;
+        private bool _restoreFinished;
+        private bool _executingInitialTasks;
 
         private void Awake()
         {
@@ -45,10 +49,20 @@ namespace Game.GameFlow
 
             _rng = new System.Random(_seed ^ 0x4A91);
             _variantCatalog = EnemySpawnRuntime.BuildVariantCatalog();
+            ApplySnapshotIfAvailable();
         }
 
         private void Start()
         {
+            if (_restoreFinished)
+            {
+                MarkFinished();
+                return;
+            }
+
+            if (_restoredFromSnapshot)
+                return;
+
             ExecuteInitialTasksIfNeeded();
         }
 
@@ -82,6 +96,82 @@ namespace Game.GameFlow
             return total;
         }
 
+        public string GetSnapshotId()
+        {
+            Vector3 position = transform.position;
+            string sceneName = gameObject.scene.IsValid() ? gameObject.scene.name : string.Empty;
+            return $"{sceneName}|{gameObject.name}|{position.x:F3}|{position.y:F3}|{position.z:F3}";
+        }
+
+        public bool TryBuildSnapshot(out GlobalSpawnerSnapshotSave snapshot)
+        {
+            snapshot = null;
+            if (!_tasksPrepared && !EnsureSpawnTasksPrepared())
+                return false;
+
+            if (_resolvedSpawnPlan == null)
+                return false;
+
+            snapshot = new GlobalSpawnerSnapshotSave
+            {
+                spawnerId = GetSnapshotId(),
+                isFinished = _restoreFinished || _pendingSpawnTasks.Count == 0,
+                taskSpawnTimer = Mathf.Max(0f, _taskSpawnTimer),
+                pendingTasks = new List<SpawnTaskRequestSave>(_pendingSpawnTasks.Count),
+            };
+
+            foreach (LevelEnemySpawnTaskRequest request in _pendingSpawnTasks)
+            {
+                if (request == null)
+                    continue;
+
+                snapshot.pendingTasks.Add(new SpawnTaskRequestSave
+                {
+                    taskIndex = request.TaskIndex,
+                    spawnCount = request.SpawnCount,
+                    remainingRetries = request.RemainingRetries,
+                    taskSeed = request.TaskSeed,
+                });
+            }
+
+            return true;
+        }
+
+        public void RestoreSnapshot(GlobalSpawnerSnapshotSave snapshot)
+        {
+            if (snapshot == null || !string.Equals(snapshot.spawnerId, GetSnapshotId(), StringComparison.Ordinal))
+                return;
+
+            if (!TryResolveSpawnPlan(ResolveCurrentLevelConfig(), out _resolvedTaskDatabase, out _resolvedSpawnPlan))
+                return;
+
+            _tasksPrepared = true;
+            _restoredFromSnapshot = true;
+            _restoreFinished = snapshot.isFinished;
+            _pendingSpawnTasks.Clear();
+            _usedTaskCenters.Clear();
+            _taskSpawnTimer = Mathf.Max(0f, snapshot.taskSpawnTimer);
+
+            if (_restoreFinished || snapshot.pendingTasks == null)
+                return;
+
+            for (int i = 0; i < snapshot.pendingTasks.Count; i++)
+            {
+                SpawnTaskRequestSave requestSave = snapshot.pendingTasks[i];
+                EnemySpawnTaskDefinition definition = _resolvedTaskDatabase?.GetTaskAt(requestSave.taskIndex);
+                if (definition == null)
+                    continue;
+
+                LevelEnemySpawnTaskRequest request = new LevelEnemySpawnTaskRequest(
+                    requestSave.taskIndex,
+                    definition,
+                    requestSave.spawnCount,
+                    requestSave.taskSeed);
+                request.RemainingRetries = Mathf.Max(0, requestSave.remainingRetries);
+                _pendingSpawnTasks.Enqueue(request);
+            }
+        }
+
         private bool EnsureSpawnTasksPrepared()
         {
             if (_tasksPrepared)
@@ -113,6 +203,29 @@ namespace Game.GameFlow
                 _pendingSpawnTasks.Enqueue(requests[i]);
 
             return true;
+        }
+
+        private void ApplySnapshotIfAvailable()
+        {
+            LevelSnapshot snapshot = GameStateMachine.GetInstance()?.CurrentRun?.levelSnapshot;
+            if (snapshot == null || snapshot.runtimeSnapshotVersion <= 0)
+                return;
+
+            if (snapshot.globalSpawner != null)
+            {
+                RestoreSnapshot(snapshot.globalSpawner);
+                return;
+            }
+
+            // 兼容旧运行时快照：当敌人已按快照恢复，但旧存档中尚未记录全局生成器状态时，
+            // 禁止全局生成器再次 fresh spawn，避免和快照敌人叠加。
+            _tasksPrepared = true;
+            _restoredFromSnapshot = true;
+            _restoreFinished = true;
+            _pendingSpawnTasks.Clear();
+            _usedTaskCenters.Clear();
+            _resolvedTaskDatabase = null;
+            _resolvedSpawnPlan = null;
         }
 
         private bool TryResolveSpawnPlan(
@@ -150,13 +263,21 @@ namespace Game.GameFlow
                 while (_pendingSpawnTasks.Count > 0)
                     TryExecuteNextSpawnTask();
 
-                Destroy(this);
+                MarkFinished();
                 return;
             }
 
             int initialTaskCount = Mathf.Min(_pendingSpawnTasks.Count, Mathf.Max(0, _resolvedSpawnPlan.initialTaskCount));
-            for (int i = 0; i < initialTaskCount; i++)
-                TryExecuteNextSpawnTask();
+            _executingInitialTasks = true;
+            try
+            {
+                for (int i = 0; i < initialTaskCount; i++)
+                    TryExecuteNextSpawnTask();
+            }
+            finally
+            {
+                _executingInitialTasks = false;
+            }
 
             _taskSpawnTimer = Mathf.Max(0.1f, _resolvedSpawnPlan.taskInterval);
         }
@@ -171,7 +292,7 @@ namespace Game.GameFlow
 
             if (_pendingSpawnTasks.Count == 0)
             {
-                Destroy(this);
+                MarkFinished();
                 return;
             }
 
@@ -192,7 +313,8 @@ namespace Game.GameFlow
             if (request?.Definition == null)
                 return false;
 
-            if (!TryFindTaskCenter(out Vector3 center))
+            System.Random taskRng = CreateTaskRandom(request);
+            if (!TryFindTaskCenter(taskRng, out Vector3 center))
             {
                 if (request.RemainingRetries > 0)
                 {
@@ -210,24 +332,35 @@ namespace Game.GameFlow
                 request.Definition,
                 request.SpawnCount,
                 center,
-                _rng,
+                taskRng,
                 _variantCatalog);
 
-            if (success && _resolvedSpawnPlan.spawnMode == GlobalEnemySpawnMode.SpawnAllAtOnce)
+            if (success && ShouldTrackTaskCenter())
                 _usedTaskCenters.Add(center);
 
             return success;
         }
 
-        private bool TryFindTaskCenter(out Vector3 center)
+        private bool TryFindTaskCenter(System.Random rng, out Vector3 center)
         {
-            if (_resolvedSpawnPlan.spawnMode == GlobalEnemySpawnMode.SpawnOverTime)
-                return TryUsePlayerPositionAsTaskCenter(out center);
+            if (_resolvedSpawnPlan.spawnMode == GlobalEnemySpawnMode.SpawnOverTime && !_executingInitialTasks)
+                return TryUsePlayerPositionAsTaskCenter(rng, out center);
 
-            return TrySampleTaskCenterFromFallback(out center);
+            return TrySampleTaskCenterFromFallback(rng, out center);
         }
 
-        private bool TrySampleTaskCenterFromFallback(out Vector3 center)
+        private bool ShouldTrackTaskCenter()
+        {
+            if (_resolvedSpawnPlan == null)
+                return false;
+
+            if (_resolvedSpawnPlan.spawnMode == GlobalEnemySpawnMode.SpawnAllAtOnce)
+                return true;
+
+            return _resolvedSpawnPlan.spawnMode == GlobalEnemySpawnMode.SpawnOverTime && _executingInitialTasks;
+        }
+
+        private bool TrySampleTaskCenterFromFallback(System.Random rng, out Vector3 center)
         {
             if (!TryGetFallbackBounds(out Bounds bounds))
             {
@@ -239,9 +372,9 @@ namespace Game.GameFlow
             for (int attempt = 0; attempt < attempts; attempt++)
             {
                 Vector3 candidate = new Vector3(
-                    RandomRange(bounds.min.x, bounds.max.x),
+                    RandomRange(rng, bounds.min.x, bounds.max.x),
                     bounds.center.y,
-                    RandomRange(bounds.min.z, bounds.max.z));
+                    RandomRange(rng, bounds.min.z, bounds.max.z));
 
                 if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 4f, NavMesh.AllAreas))
                     continue;
@@ -257,11 +390,11 @@ namespace Game.GameFlow
             return false;
         }
 
-        private bool TryUsePlayerPositionAsTaskCenter(out Vector3 center)
+        private bool TryUsePlayerPositionAsTaskCenter(System.Random rng, out Vector3 center)
         {
             Transform player = GameStateMachine.GetInstance()?.LevelPlayerTransform;
             if (player == null)
-                return TrySampleTaskCenterFromFallback(out center);
+                return TrySampleTaskCenterFromFallback(rng, out center);
 
             return EnemySpawnRuntime.TryResolveCenterOnNavMesh(player.position, out center);
         }
@@ -310,12 +443,27 @@ namespace Game.GameFlow
             return ConfigManager.GetInstance()?.GetLevelConfigDatabase()?.GetConfigForLevel(level);
         }
 
-        private float RandomRange(float min, float max)
+        private float RandomRange(System.Random rng, float min, float max)
         {
             if (min >= max)
                 return min;
 
-            return (float)(min + _rng.NextDouble() * (max - min));
+            if (rng == null)
+                return min;
+
+            return (float)(min + rng.NextDouble() * (max - min));
+        }
+
+        private System.Random CreateTaskRandom(LevelEnemySpawnTaskRequest request)
+        {
+            int retrySalt = Mathf.Max(0, 2 - Mathf.Max(0, request.RemainingRetries));
+            return new System.Random(unchecked(request.TaskSeed ^ (retrySalt * 0x45D9F3B)));
+        }
+
+        private void MarkFinished()
+        {
+            _restoreFinished = true;
+            enabled = false;
         }
 
     }

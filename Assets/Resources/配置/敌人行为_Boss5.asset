@@ -52,9 +52,12 @@ MonoBehaviour:
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
   locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 9100000, guid: c123a923b3462d8438dfe8317164440d,
+    type: 2}
   skillSlots:
   - slotIndex: 0
-    skillId: boss_5_cleave
+    skillId: boss_5Skill0
+    displayName: "\u6280\u80FD0"
     cooldown: 1.9
     castRange: 3.6
     minCastRange: 0
@@ -68,12 +71,13 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
-    skillId: boss_5_storm
+    skillId: boss_5Skill1
+    displayName: "\u6280\u80FD1"
     cooldown: 2.3
     castRange: 16
     minCastRange: 0
@@ -87,12 +91,13 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 2
-    skillId: boss_5_stampede
+    skillId: boss_5Skill2
+    displayName: "\u6280\u80FD2"
     cooldown: 3.3
     castRange: 6.5
     minCastRange: 2.8
@@ -106,12 +111,13 @@ MonoBehaviour:
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.6
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill2
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1
   - slotIndex: 3
-    skillId: boss_5_regen_roar
+    skillId: boss_5Skill3
+    displayName: "\u6280\u80FD3"
     cooldown: 4.2
     castRange: 9
     minCastRange: 0
@@ -125,7 +131,7 @@ MonoBehaviour:
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.6
     rotateToTargetOnCast: 0
-    animationTrigger: 
+    animationTrigger: Skill3
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1

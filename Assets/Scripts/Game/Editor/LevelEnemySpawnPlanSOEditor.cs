@@ -76,6 +76,8 @@ namespace Game.Editor
                 }
 
                 EditorGUILayout.EndVertical();
+                if (i < plansProperty.arraySize - 1)
+                    DrawPlanSeparator();
             }
 
             if (GUILayout.Button("添加全局生成方案"))
@@ -133,7 +135,10 @@ namespace Game.Editor
                 EditorGUILayout.PropertyField(taskCount, new GUIContent("生成任务数量"));
             }
 
-            if (GUILayout.Button("添加任务分配"))
+            float addButtonWidth = Mathf.Max(120f, EditorGUIUtility.currentViewWidth * 0.42f);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("添加任务分配", GUILayout.Width(addButtonWidth)))
             {
                 int index = assignmentsProperty.arraySize;
                 assignmentsProperty.InsertArrayElementAtIndex(index);
@@ -148,6 +153,17 @@ namespace Game.Editor
                         taskCount.intValue = 1;
                 }
             }
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private static void DrawPlanSeparator()
+        {
+            Rect rect = EditorGUILayout.GetControlRect(false, 15f);
+            rect.height = 10f;
+            rect.y += 2f;
+            EditorGUI.DrawRect(rect, Color.black);
+            EditorGUILayout.Space(5f);
         }
 
         private static List<string> BuildTaskLabels(EnemySpawnTaskDatabaseSO database)
@@ -198,11 +214,12 @@ namespace Game.Editor
                 return "混合随机";
 
             EnemyStatsDatabaseSO statsDb = Resources.Load<EnemyStatsDatabaseSO>("配置/敌人属性库");
-            if (statsDb?.entries != null)
+            IReadOnlyList<EnemyStatsEntry> allEntries = statsDb?.GetAllEntries();
+            if (allEntries != null)
             {
-                for (int i = 0; i < statsDb.entries.Count; i++)
+                for (int i = 0; i < allEntries.Count; i++)
                 {
-                    EnemyStatsEntry entry = statsDb.entries[i];
+                    EnemyStatsEntry entry = allEntries[i];
                     if (entry == null || string.IsNullOrWhiteSpace(entry.enemyId))
                         continue;
 

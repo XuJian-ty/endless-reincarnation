@@ -188,7 +188,15 @@ namespace Game.Presentation
                             if (effect == null)
                                 continue;
 
-                            effect.damageMagnitude *= Mathf.Max(0f, damageMultiplier);
+                            List<SkillHitDamageEffect> hitDamageEffects = effect.GetEffectiveHitDamageEffects();
+                            for (int hitDamageIndex = 0; hitDamageIndex < hitDamageEffects.Count; hitDamageIndex++)
+                            {
+                                SkillHitDamageEffect hitDamageEffect = hitDamageEffects[hitDamageIndex];
+                                if (hitDamageEffect == null)
+                                    continue;
+
+                                hitDamageEffect.damageMagnitude *= Mathf.Max(0f, damageMultiplier);
+                            }
                             duplicated.damageEffects[damageIndex] = effect;
                         }
                     }

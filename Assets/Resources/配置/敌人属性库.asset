@@ -12,6 +12,150 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17c7b8779dc814e4fae99ceecd591b70, type: 3}
   m_Name: "\u654C\u4EBA\u5C5E\u6027\u5E93"
   m_EditorClassIdentifier: 
+  groups:
+  - groupId: melee_minion
+    groupName: "\u8FD1\u6218\u5C0F\u602A"
+    entries:
+    - enemyId: melee_minion
+      displayName: "\u8FD1\u6218\u5C0F\u602A"
+      type: 0
+      baseHp: 500
+      baseAttack: 10
+      baseDefense: 5
+      baseMoveSpeed: 2
+      goldMin: 10
+      goldMax: 10
+      baseExp: 10
+  - groupId: ranged_minion
+    groupName: "\u8FDC\u7A0B\u5C0F\u602A"
+    entries:
+    - enemyId: ranged_minion
+      displayName: "\u8FDC\u7A0B\u5C0F\u602A"
+      type: 1
+      baseHp: 500
+      baseAttack: 10
+      baseDefense: 3
+      baseMoveSpeed: 2
+      goldMin: 10
+      goldMax: 10
+      baseExp: 10
+  - groupId: elite_1
+    groupName: "\u7CBE\u82F11"
+    entries:
+    - enemyId: elite_1
+      displayName: "\u7CBE\u82F11"
+      type: 2
+      baseHp: 1000
+      baseAttack: 20
+      baseDefense: 8
+      baseMoveSpeed: 2
+      goldMin: 30
+      goldMax: 30
+      baseExp: 30
+  - groupId: elite_2
+    groupName: "\u7CBE\u82F12"
+    entries:
+    - enemyId: elite_2
+      displayName: "\u7CBE\u82F12"
+      type: 2
+      baseHp: 1000
+      baseAttack: 20
+      baseDefense: 10
+      baseMoveSpeed: 2
+      goldMin: 30
+      goldMax: 30
+      baseExp: 30
+  - groupId: guardian_1
+    groupName: "\u5B88\u536B\u80051"
+    entries:
+    - enemyId: guardian_1
+      displayName: "\u5B88\u536B\u80051"
+      type: 3
+      baseHp: 3000
+      baseAttack: 50
+      baseDefense: 10
+      baseMoveSpeed: 3
+      goldMin: 0
+      goldMax: 0
+      baseExp: 0
+  - groupId: guardian_2
+    groupName: "\u5B88\u536B\u80052"
+    entries:
+    - enemyId: guardian_2
+      displayName: "\u5B88\u536B\u80052"
+      type: 3
+      baseHp: 3000
+      baseAttack: 50
+      baseDefense: 12
+      baseMoveSpeed: 3
+      goldMin: 0
+      goldMax: 0
+      baseExp: 0
+  - groupId: boss_1
+    groupName: Boss1
+    entries:
+    - enemyId: boss_1
+      displayName: Boss1
+      type: 4
+      baseHp: 10000
+      baseAttack: 100
+      baseDefense: 12
+      baseMoveSpeed: 3
+      goldMin: 0
+      goldMax: 0
+      baseExp: 0
+  - groupId: boss_2
+    groupName: Boss2
+    entries:
+    - enemyId: boss_2
+      displayName: Boss2
+      type: 4
+      baseHp: 10000
+      baseAttack: 100
+      baseDefense: 13
+      baseMoveSpeed: 3
+      goldMin: 0
+      goldMax: 0
+      baseExp: 0
+  - groupId: boss_3
+    groupName: Boss3
+    entries:
+    - enemyId: boss_3
+      displayName: Boss3
+      type: 4
+      baseHp: 10000
+      baseAttack: 100
+      baseDefense: 14
+      baseMoveSpeed: 3
+      goldMin: 0
+      goldMax: 0
+      baseExp: 0
+  - groupId: boss_4
+    groupName: Boss4
+    entries:
+    - enemyId: boss_4
+      displayName: Boss4
+      type: 4
+      baseHp: 10000
+      baseAttack: 100
+      baseDefense: 15
+      baseMoveSpeed: 3
+      goldMin: 0
+      goldMax: 0
+      baseExp: 0
+  - groupId: boss_5
+    groupName: Boss5
+    entries:
+    - enemyId: boss_5
+      displayName: Boss5
+      type: 4
+      baseHp: 10000
+      baseAttack: 100
+      baseDefense: 16
+      baseMoveSpeed: 3
+      goldMin: 0
+      goldMax: 0
+      baseExp: 0
   entries:
   - enemyId: melee_minion
     displayName: "\u8FD1\u6218\u5C0F\u602A"

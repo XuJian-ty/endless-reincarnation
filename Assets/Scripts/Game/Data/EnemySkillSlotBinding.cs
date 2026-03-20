@@ -40,6 +40,10 @@ namespace Game.Data
         [Tooltip("引用技能库中的 skillId。敌人通过这个 ID 绑定技能时间轴定义。")]
         public string skillId = "";
 
+        [InspectorLabel("显示名称")]
+        [Tooltip("仅用于编辑器中区分该技能槽的用途说明。")]
+        public string displayName = "";
+
         [Header("AI 战斗参数")]
         [InspectorLabel("冷却时间(秒)")]
         [Tooltip("该槽位再次可用前需要等待的时间。")]
@@ -95,7 +99,7 @@ namespace Game.Data
 
         [Header("动画")]
         [InspectorLabel("动画 Trigger")]
-        [Tooltip("发送给 Animator 的 Trigger 名。留空时默认使用 CastSkill{槽位索引}。")]
+        [Tooltip("发送给 Animator 的 Trigger 名。留空时默认使用 Skill{槽位索引}。")]
         public string animationTrigger = "";
 
         [InspectorLabel("自然退出进度")]

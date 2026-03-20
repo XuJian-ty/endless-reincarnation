@@ -15,49 +15,80 @@ namespace Game.GameFlow
             if (player == null)
                 return;
 
+            if (BattleMemoryRuntimeContext.IsActive)
+                return;
+
             if (rng == null)
                 rng = new System.Random();
+
+            LevelConfigData levelConfig = ResolveCurrentLevelConfig();
 
             switch (enemyStats.type)
             {
                 case EnemyType.Guardian:
-                    GrantGuardianRewards(player, deathPosition, rng);
+                    GrantGuardianRewards(player, enemyStats, deathPosition, levelConfig, rng);
                     break;
 
                 case EnemyType.Boss:
-                    GrantBossRewards(player, deathPosition, rng);
+                    GrantBossRewards(player, enemyStats, deathPosition, levelConfig, rng);
                     break;
 
                 default:
-                    GrantNormalEnemyRewards(player, enemyStats, deathPosition, rng);
+                    GrantNormalEnemyRewards(player, enemyStats, deathPosition, rng, levelConfig);
                     break;
             }
         }
 
-        private static void GrantGuardianRewards(PlayerModel player, Vector3 deathPosition, System.Random rng)
+        private static void GrantGuardianRewards(PlayerModel player, EnemyRuntimeStats enemyStats, Vector3 deathPosition, LevelConfigData levelConfig, System.Random rng)
         {
-            player.AddItemCount(PlayerModel.ItemIds.TalentPoint, 1);
+            GrantFixedRewards(player, enemyStats, levelConfig, rng);
+            int talentPoints = levelConfig != null
+                ? levelConfig.GetTalentPointReward(enemyStats.type)
+                : 1;
+            player.AddItemCount(PlayerModel.ItemIds.TalentPoint, Mathf.Max(0, talentPoints));
             TryDropLoot(player, deathPosition, rng, EnemyType.Guardian);
         }
 
-        private static void GrantBossRewards(PlayerModel player, Vector3 deathPosition, System.Random rng)
+        private static void GrantBossRewards(PlayerModel player, EnemyRuntimeStats enemyStats, Vector3 deathPosition, LevelConfigData levelConfig, System.Random rng)
         {
+            GrantFixedRewards(player, enemyStats, levelConfig, rng);
             TryDropLoot(player, deathPosition, rng, EnemyType.Boss);
         }
 
-        private static void GrantNormalEnemyRewards(PlayerModel player, EnemyRuntimeStats enemyStats, Vector3 deathPosition, System.Random rng)
+        private static void GrantNormalEnemyRewards(PlayerModel player, EnemyRuntimeStats enemyStats, Vector3 deathPosition, System.Random rng, LevelConfigData levelConfig)
         {
-            int levelsGained = player.AddExp(enemyStats.expReward);
-            if (levelsGained > 0)
-                EventCenter.GetInstance().EventTrigger(GameEvents.PlayerLevelUp, player.Exp.Level);
-
-            int minGold = Mathf.Min(enemyStats.goldMin, enemyStats.goldMax);
-            int maxGold = Mathf.Max(enemyStats.goldMin, enemyStats.goldMax);
-            int gold = rng.Next(minGold, maxGold + 1);
-            player.AddItemCount(PlayerModel.ItemIds.Gold, gold);
+            GrantFixedRewards(player, enemyStats, levelConfig, rng);
 
             if (enemyStats.type == EnemyType.Elite)
                 TryDropLoot(player, deathPosition, rng, EnemyType.Elite);
+        }
+
+        private static void GrantFixedRewards(PlayerModel player, EnemyRuntimeStats enemyStats, LevelConfigData levelConfig, System.Random rng)
+        {
+            int expReward = ResolveExpReward(enemyStats, levelConfig);
+            int levelsGained = player.AddExp(expReward);
+            if (levelsGained > 0)
+                EventCenter.GetInstance().EventTrigger(GameEvents.PlayerLevelUp, player.Exp.Level);
+
+            int gold = ResolveGoldReward(enemyStats, levelConfig, rng);
+            player.AddItemCount(PlayerModel.ItemIds.Gold, gold);
+        }
+
+        private static int ResolveGoldReward(EnemyRuntimeStats enemyStats, LevelConfigData levelConfig, System.Random rng)
+        {
+            if (levelConfig != null)
+                return levelConfig.GetGoldReward(enemyStats.type);
+
+            int minGold = Mathf.Min(enemyStats.goldMin, enemyStats.goldMax);
+            int maxGold = Mathf.Max(enemyStats.goldMin, enemyStats.goldMax);
+            return rng.Next(minGold, maxGold + 1);
+        }
+
+        private static int ResolveExpReward(EnemyRuntimeStats enemyStats, LevelConfigData levelConfig)
+        {
+            return levelConfig != null
+                ? levelConfig.GetExpReward(enemyStats.type)
+                : Mathf.Max(0, enemyStats.expReward);
         }
 
         private static void TryDropLoot(PlayerModel player, Vector3 position, System.Random rng, EnemyType enemyType)
@@ -110,6 +141,13 @@ namespace Game.GameFlow
         {
             var gsm = GameStateMachine.GetInstance();
             return gsm?.CurrentRun?.levelIndex ?? 1;
+        }
+
+        private static LevelConfigData ResolveCurrentLevelConfig()
+        {
+            var cfg = ConfigManager.GetInstance();
+            var levelConfigDb = cfg?.GetLevelConfigDatabase();
+            return levelConfigDb?.GetConfigForLevel(GetCurrentLevel());
         }
 
         private static bool TryGetWeaponRarity(string dropId, out WeaponRarity rarity)

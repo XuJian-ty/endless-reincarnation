@@ -26,41 +26,41 @@ MonoBehaviour:
     spawnRadius: 20
     countMode: 1
     fixedCount: 1
-    randomMinCount: 2
-    randomMaxCount: 3
-    spawnMinSpacing: 5
+    randomMinCount: 8
+    randomMaxCount: 10
+    spawnMinSpacing: 1
   - spawnType: 2
     specificSpawnId: 
     spawnRadius: 20
     countMode: 1
     fixedCount: 3
-    randomMinCount: 1
-    randomMaxCount: 2
+    randomMinCount: 5
+    randomMaxCount: 8
+    spawnMinSpacing: 2
+  - spawnType: 3
+    specificSpawnId: 
+    spawnRadius: 15
+    countMode: 0
+    fixedCount: 2
+    randomMinCount: 0
+    randomMaxCount: 0
     spawnMinSpacing: 5
   - spawnType: 3
     specificSpawnId: 
     spawnRadius: 20
     countMode: 0
-    fixedCount: 1
+    fixedCount: 4
     randomMinCount: 0
     randomMaxCount: 0
-    spawnMinSpacing: 0
+    spawnMinSpacing: 5
   - spawnType: 3
     specificSpawnId: 
-    spawnRadius: 20
+    spawnRadius: 25
     countMode: 0
-    fixedCount: 2
+    fixedCount: 6
     randomMinCount: 0
     randomMaxCount: 0
-    spawnMinSpacing: 0
-  - spawnType: 3
-    specificSpawnId: 
-    spawnRadius: 20
-    countMode: 0
-    fixedCount: 3
-    randomMinCount: 0
-    randomMaxCount: 0
-    spawnMinSpacing: 0
+    spawnMinSpacing: 5
   - spawnType: 4
     specificSpawnId: 
     spawnRadius: 20
@@ -71,15 +71,15 @@ MonoBehaviour:
     spawnMinSpacing: 0
   - spawnType: 5
     specificSpawnId: 
-    spawnRadius: 20
+    spawnRadius: 10
     countMode: 1
     fixedCount: 1
-    randomMinCount: 3
-    randomMaxCount: 5
-    spawnMinSpacing: 5
+    randomMinCount: 2
+    randomMaxCount: 3
+    spawnMinSpacing: 3
   - spawnType: 6
     specificSpawnId: 
-    spawnRadius: 20
+    spawnRadius: 10
     countMode: 0
     fixedCount: 1
     randomMinCount: 0

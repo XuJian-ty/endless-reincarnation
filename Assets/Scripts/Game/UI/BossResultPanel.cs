@@ -18,6 +18,7 @@ namespace Game.UI
         private Text _detailText;
         private Text _advanceButtonText;
         private string _detailPrefix;
+        private string _messagePrefix;
 
         protected override void Awake()
         {
@@ -33,6 +34,7 @@ namespace Game.UI
             var advanceButton = GetControl<Button>("Btn_Advance");
             _advanceButtonText = advanceButton != null ? advanceButton.GetComponentInChildren<Text>(true) : null;
             _detailPrefix = _detailText != null ? _detailText.text : string.Empty;
+            _messagePrefix = _messageText != null ? _messageText.text : string.Empty;
         }
 
         public void ShowResult(int clearedLevel, string bossId, bool hasNextLevel, Action onRetry, Action onAdvanceOrFinish)
@@ -40,8 +42,18 @@ namespace Game.UI
             _onRetry = onRetry;
             _onAdvanceOrFinish = onAdvanceOrFinish;
 
+            if (_messageText != null && !string.IsNullOrWhiteSpace(_messagePrefix))
+                _messageText.text = _messagePrefix;
+
             if (_detailText != null)
-                _detailText.text = $"{_detailPrefix}{clearedLevel}";
+            {
+                string detail = hasNextLevel
+                    ? "可选择重打本关，或继续前往下一关。"
+                    : "可选择重打本关，或留在当前关卡继续探索。";
+                _detailText.text = string.IsNullOrWhiteSpace(_detailPrefix)
+                    ? detail
+                    : $"{_detailPrefix}{clearedLevel}";
+            }
 
             gameObject.SetActive(true);
         }
@@ -126,7 +138,7 @@ namespace Game.UI
             RuntimeOverlayPanelBuilder.CreateButton(
                 window,
                 "Btn_Advance",
-                "进入下一关",
+                "继续探索",
                 new Vector2(140f, -118f),
                 new Vector2(220f, 58f),
                 new Color(0.25f, 0.42f, 0.3f, 1f),

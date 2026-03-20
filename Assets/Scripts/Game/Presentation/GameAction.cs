@@ -27,6 +27,6 @@ namespace Game.Presentation
         Dodge,
 
         // ── 技能 ──────────────────────────────────────────────────────────
-        Skill,           // PendingActionData.SkillIndex 记录具体技能编号（0-3）
+        Skill,           // PendingActionData.SkillIndex 记录具体技能编号
     }
 }

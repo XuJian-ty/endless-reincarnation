@@ -65,6 +65,10 @@ namespace Game.Presentation
         private float              _temporaryInvincibleTimer;
         private float              _healthPotionRemainingTime;
         private float              _manaPotionRemainingTime;
+        private float              _hpRegenTickAccumulator;
+        private float              _mpRegenTickAccumulator;
+        private float              _healthPotionTickAccumulator;
+        private float              _manaPotionTickAccumulator;
         private PlayerCloneManager _cloneManager;
         private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
 
@@ -98,6 +102,10 @@ namespace Game.Presentation
             _temporaryInvincibleTimer = 0f;
             _healthPotionRemainingTime = 0f;
             _manaPotionRemainingTime = 0f;
+            _hpRegenTickAccumulator = 0f;
+            _mpRegenTickAccumulator = 0f;
+            _healthPotionTickAccumulator = 0f;
+            _manaPotionTickAccumulator = 0f;
             StopDetachedTimelineRunners();
             _hitProtectionSystem = new HitProtectionSystem(_hitProtectionWindow, _hitProtectionThreshold, _hitProtectionDuration);
             ResolveCameraReference();
@@ -372,13 +380,23 @@ namespace Game.Presentation
             if (PlayerModel == null || dt <= 0f || _deathSequenceStarted)
                 return;
 
-            float hpRegen = Mathf.Max(0f, PlayerModel.Stats.HpRegen);
-            if (hpRegen > 0f && PlayerModel.CurrentHp < PlayerModel.Stats.MaxHp)
-                PlayerModel.Heal(hpRegen * dt);
+            _hpRegenTickAccumulator += dt;
+            while (_hpRegenTickAccumulator >= 1f)
+            {
+                _hpRegenTickAccumulator -= 1f;
+                float hpRegen = Mathf.Max(0f, PlayerModel.Stats.HpRegen);
+                if (hpRegen > 0f && PlayerModel.CurrentHp < PlayerModel.Stats.MaxHp)
+                    ApplyHealWithCombatNumber(hpRegen);
+            }
 
-            float mpRegen = Mathf.Max(0f, PlayerModel.Stats.MpRegen);
-            if (mpRegen > 0f && PlayerModel.CurrentMp < PlayerModel.Stats.MaxMp)
-                PlayerModel.CurrentMp = Mathf.Min(PlayerModel.Stats.MaxMp, PlayerModel.CurrentMp + mpRegen * dt);
+            _mpRegenTickAccumulator += dt;
+            while (_mpRegenTickAccumulator >= 1f)
+            {
+                _mpRegenTickAccumulator -= 1f;
+                float mpRegen = Mathf.Max(0f, PlayerModel.Stats.MpRegen);
+                if (mpRegen > 0f && PlayerModel.CurrentMp < PlayerModel.Stats.MaxMp)
+                    ApplyManaWithCombatNumber(mpRegen);
+            }
 
             TickPotionEffects(dt);
         }
@@ -391,20 +409,38 @@ namespace Game.Presentation
 
             if (_healthPotionRemainingTime > 0f)
             {
-                float deltaHp = PlayerModel.Stats.MaxHp * Mathf.Max(0f, potionConfig.hpPercentPerSecond) * dt;
-                if (deltaHp > 0f)
-                    PlayerModel.Heal(deltaHp);
-
+                float activeDelta = Mathf.Min(dt, _healthPotionRemainingTime);
                 _healthPotionRemainingTime = Mathf.Max(0f, _healthPotionRemainingTime - dt);
+                _healthPotionTickAccumulator += activeDelta;
+                while (_healthPotionTickAccumulator >= 1f)
+                {
+                    _healthPotionTickAccumulator -= 1f;
+                    float deltaHp = PlayerModel.Stats.MaxHp * Mathf.Max(0f, potionConfig.hpPercentPerSecond);
+                    if (deltaHp > 0f && PlayerModel.CurrentHp < PlayerModel.Stats.MaxHp)
+                        ApplyHealWithCombatNumber(deltaHp);
+                }
+            }
+            else
+            {
+                _healthPotionTickAccumulator = 0f;
             }
 
             if (_manaPotionRemainingTime > 0f)
             {
-                float deltaMp = PlayerModel.Stats.MaxMp * Mathf.Max(0f, potionConfig.mpPercentPerSecond) * dt;
-                if (deltaMp > 0f)
-                    PlayerModel.CurrentMp = Mathf.Min(PlayerModel.Stats.MaxMp, PlayerModel.CurrentMp + deltaMp);
-
+                float activeDelta = Mathf.Min(dt, _manaPotionRemainingTime);
                 _manaPotionRemainingTime = Mathf.Max(0f, _manaPotionRemainingTime - dt);
+                _manaPotionTickAccumulator += activeDelta;
+                while (_manaPotionTickAccumulator >= 1f)
+                {
+                    _manaPotionTickAccumulator -= 1f;
+                    float deltaMp = PlayerModel.Stats.MaxMp * Mathf.Max(0f, potionConfig.mpPercentPerSecond);
+                    if (deltaMp > 0f && PlayerModel.CurrentMp < PlayerModel.Stats.MaxMp)
+                        ApplyManaWithCombatNumber(deltaMp);
+                }
+            }
+            else
+            {
+                _manaPotionTickAccumulator = 0f;
             }
         }
 
@@ -429,6 +465,30 @@ namespace Game.Presentation
 
             if (string.Equals(itemId, PlayerModel.ItemIds.PotionMp, StringComparison.Ordinal))
                 _manaPotionRemainingTime += duration;
+        }
+
+        private void ApplyHealWithCombatNumber(float amount)
+        {
+            if (PlayerModel == null || amount <= 0f)
+                return;
+
+            float before = PlayerModel.CurrentHp;
+            PlayerModel.Heal(amount);
+            float applied = PlayerModel.CurrentHp - before;
+            if (applied > 0f)
+                CombatNumberDispatcher.PublishHeal(transform, applied);
+        }
+
+        private void ApplyManaWithCombatNumber(float amount)
+        {
+            if (PlayerModel == null || amount <= 0f)
+                return;
+
+            float before = PlayerModel.CurrentMp;
+            PlayerModel.CurrentMp = Mathf.Min(PlayerModel.Stats.MaxMp, PlayerModel.CurrentMp + amount);
+            float applied = PlayerModel.CurrentMp - before;
+            if (applied > 0f)
+                CombatNumberDispatcher.PublishMana(transform, applied);
         }
     }
 }

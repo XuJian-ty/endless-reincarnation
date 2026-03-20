@@ -10,16 +10,18 @@ namespace Game.GameFlow
     /// </summary>
     public sealed class LevelEnemySpawnTaskRequest
     {
-        public LevelEnemySpawnTaskRequest(int taskIndex, EnemySpawnTaskDefinition definition, int spawnCount)
+        public LevelEnemySpawnTaskRequest(int taskIndex, EnemySpawnTaskDefinition definition, int spawnCount, int taskSeed)
         {
             TaskIndex = taskIndex;
             Definition = definition;
             SpawnCount = Mathf.Max(0, spawnCount);
+            TaskSeed = taskSeed;
         }
 
         public int TaskIndex { get; }
         public EnemySpawnTaskDefinition Definition { get; }
         public int SpawnCount { get; }
+        public int TaskSeed { get; }
         public int RemainingRetries { get; set; } = 2;
     }
 
@@ -95,7 +97,8 @@ namespace Game.GameFlow
                     requests.Add(new LevelEnemySpawnTaskRequest(
                         assignment.taskIndex,
                         definition,
-                        definition.ResolveSpawnCount(rng)));
+                        definition.ResolveSpawnCount(rng),
+                        rng != null ? rng.Next() : Environment.TickCount));
                 }
             }
         }

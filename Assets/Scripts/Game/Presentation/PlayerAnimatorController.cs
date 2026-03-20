@@ -28,7 +28,6 @@ namespace Game.Presentation
         private static readonly int FallTrigger      = Animator.StringToHash("Fall");
         private static readonly int DeadTrigger      = Animator.StringToHash("Dead");
         private static readonly string[] AttackTriggerNames = { "Attack0", "Attack1", "Attack2", "Attack3" };
-        private static readonly string[] SkillTriggerNames  = { "Skill0", "Skill1", "Skill2", "Skill3" };
 
         private Animator _animator;
         private readonly HashSet<string> _parameterNames = new HashSet<string>();
@@ -71,10 +70,10 @@ namespace Game.Presentation
 
         public void TriggerSkill(int skillIndex)
         {
-            if (skillIndex < 0 || skillIndex >= SkillTriggerNames.Length)
+            if (skillIndex < 0)
                 return;
 
-            TriggerAction(SkillTriggerNames[skillIndex]);
+            TriggerAction($"Skill{skillIndex}");
         }
 
         public bool TriggerAction(string triggerName)

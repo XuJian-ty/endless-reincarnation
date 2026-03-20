@@ -157,11 +157,12 @@ namespace Game.Editor
             List<string> optionIds = new List<string> { string.Empty };
 
             EnemyStatsDatabaseSO statsDb = Resources.Load<EnemyStatsDatabaseSO>("配置/敌人属性库");
-            if (statsDb?.entries != null)
+            IReadOnlyList<EnemyStatsEntry> allEntries = statsDb?.GetAllEntries();
+            if (allEntries != null)
             {
-                for (int i = 0; i < statsDb.entries.Count; i++)
+                for (int i = 0; i < allEntries.Count; i++)
                 {
-                    EnemyStatsEntry entry = statsDb.entries[i];
+                    EnemyStatsEntry entry = allEntries[i];
                     if (entry == null || string.IsNullOrWhiteSpace(entry.enemyId) || !MatchesCategory(category, entry.type))
                         continue;
 

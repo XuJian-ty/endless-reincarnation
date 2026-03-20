@@ -12,8 +12,9 @@ namespace Game.GameFlow
 {
     /// <summary>
     /// Level entry orchestration for scene startup.
-    /// Handles fallback debug startup, player placement, HUD setup, and buff selection.
+    /// Handles direct-scene save startup, player placement, HUD setup, and buff selection.
     /// </summary>
+    [DefaultExecutionOrder(-1000)]
     public class LevelBootstrapper : MonoBehaviour
     {
         [Header("玩家")]
@@ -32,6 +33,15 @@ namespace Game.GameFlow
 
         private UIDeathChoiceHandler _deathChoiceHandler;
 
+        private void Awake()
+        {
+            var gsm = GameStateMachine.GetInstance();
+            if (gsm?.CurrentRun != null && gsm.Player != null)
+                return;
+
+            TryAdoptDirectSceneSaveContext(gsm, out _, out _);
+        }
+
         private void Start()
         {
             var gsm = GameStateMachine.GetInstance();
@@ -40,13 +50,14 @@ namespace Game.GameFlow
 
             if (run == null || playerModel == null)
             {
-                run = CreateFallbackRun();
-                playerModel = new PlayerModel(ConfigManager.GetInstance().GetLevelGrowth());
-                gsm?.AdoptRuntimeContext(run, playerModel);
-                Debug.LogWarning(
-                    "[LevelBootstrapper] No valid RunData was found. Created fallback debug data. " +
-                    "Use the main menu flow for normal gameplay.");
+                if (!TryAdoptDirectSceneSaveContext(gsm, out run, out playerModel))
+                {
+                    Debug.LogError("[LevelBootstrapper] Failed to create or load the direct scene save context.");
+                    return;
+                }
             }
+
+            BattleMemorySceneRuntime.TryAdoptPreviewContext(gsm, ref run, ref playerModel);
 
             ResolveSceneReferences();
             EnsurePlayerInstance(run);
@@ -85,9 +96,17 @@ namespace Game.GameFlow
 
             var ui = UIManager.GetInstance();
             if (ui != null)
+            {
                 ui.ShowPanel<PlayerInfoHUDPanel>(PanelNames.PlayerInfoHUD, PanelLayers.PlayerInfoHUD);
+                ui.ShowPanel<FinalBossHealthBarOverlay>(PanelNames.FinalBossHealthBarOverlay, PanelLayers.FinalBossHealthBarOverlay);
+                ui.ShowPanel<FloatingNumberOverlay>(PanelNames.FloatingNumberOverlay, PanelLayers.FloatingNumberOverlay);
+            }
 
             DropdownScrollForwarder.EnsureExistsInScene();
+
+            bool isBattleMemoryScene = BattleMemorySceneRuntime.TryPrepareScene(this);
+            if (!isBattleMemoryScene && run.levelSnapshot != null)
+                StartCoroutine(RestoreLevelSnapshotState(run.levelSnapshot));
 
             Debug.Log($"[LevelBootstrapper] Level {run.levelIndex} initialized. Difficulty {run.difficulty}.");
         }
@@ -103,7 +122,11 @@ namespace Game.GameFlow
 
             var ui = UIManager.GetInstance();
             if (ui != null)
+            {
+                ui.HidePanel(PanelNames.FloatingNumberOverlay);
+                ui.HidePanel(PanelNames.FinalBossHealthBarOverlay);
                 ui.HidePanel(PanelNames.PlayerInfoHUD);
+            }
         }
 
         private void HandlePlayerDied()
@@ -113,33 +136,55 @@ namespace Game.GameFlow
 
         public void SaveAndQuit()
         {
+            CaptureRuntimeSnapshot();
             var gsm = GameStateMachine.GetInstance();
-            var run = gsm?.CurrentRun;
-            if (run != null && playerController != null)
-            {
-                var pos = playerController.transform.position;
-                run.levelSnapshot ??= new LevelSnapshot();
-                run.levelSnapshot.playerX = pos.x;
-                run.levelSnapshot.playerY = pos.y;
-                run.levelSnapshot.playerZ = pos.z;
-                run.levelSnapshot.playerYaw = playerController.transform.eulerAngles.y;
-            }
-
             gsm?.SaveAndQuit();
         }
 
-        private RunData CreateFallbackRun()
+        public void CaptureRuntimeSnapshot()
         {
-            int levelIndex = ResolveFallbackLevelIndex();
-            var configDb = ConfigManager.GetInstance().GetLevelConfigDatabase();
-            if (configDb != null)
-            {
-                var config = configDb.GetConfigForLevel(levelIndex);
-                if (config != null)
-                    levelIndex = config.levelIndex;
-            }
+            var gsm = GameStateMachine.GetInstance();
+            var run = gsm?.CurrentRun;
+            if (run == null || playerController == null)
+                return;
 
-            return SaveSystem.NewDebugRun(levelIndex, 1).run;
+            var pos = playerController.transform.position;
+            run.levelSnapshot ??= new LevelSnapshot();
+            run.levelSnapshot.playerX = pos.x;
+            run.levelSnapshot.playerY = pos.y;
+            run.levelSnapshot.playerZ = pos.z;
+            run.levelSnapshot.playerYaw = playerController.transform.eulerAngles.y;
+            run.levelSnapshot.runtimeSnapshotVersion = 1;
+
+            CaptureEnemySnapshots(run.levelSnapshot);
+            CaptureShopSnapshots(run.levelSnapshot);
+            CaptureGroundDropSnapshots(run.levelSnapshot);
+            CaptureSpawnerSnapshots(run.levelSnapshot);
+            CaptureLevelDirectorSnapshot(run.levelSnapshot);
+        }
+
+        private bool TryAdoptDirectSceneSaveContext(GameStateMachine gsm, out RunData run, out PlayerModel playerModel)
+        {
+            run = null;
+            playerModel = null;
+
+            if (gsm == null)
+                return false;
+
+            SaveSystem saveSystem = SaveSystem.GetInstance();
+            if (saveSystem == null)
+                return false;
+
+            int levelIndex = ResolveFallbackLevelIndex();
+            SaveData data = saveSystem.GetOrCreateSaveForPlayerAndLevel("天依", levelIndex, out string saveId);
+            if (data?.run == null)
+                return false;
+
+            run = data.run;
+            playerModel = new PlayerModel(ConfigManager.GetInstance().GetLevelGrowth());
+            gsm.AdoptRuntimeContext(run, playerModel, data.playerName, saveId);
+            Debug.Log($"[LevelBootstrapper] Adopted direct scene save '{data.playerName}' for level {levelIndex}.");
+            return true;
         }
 
         private void PlacePlayer(Vector3 pos, Quaternion rotation)
@@ -313,6 +358,202 @@ namespace Game.GameFlow
             run.currentLevelBuffId = buffId;
             playerModel.SaveTo(run);
             gsm.SaveCurrent();
+        }
+
+        private System.Collections.IEnumerator RestoreLevelSnapshotState(LevelSnapshot snapshot)
+        {
+            yield return null;
+
+            if (snapshot == null)
+                yield break;
+
+            RestoreOpenedChests(snapshot);
+            RestoreEnemySnapshots(snapshot);
+            RestoreShopSnapshots(snapshot);
+            RestoreGroundDrops(snapshot);
+        }
+
+        private static void CaptureEnemySnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            snapshot.enemies ??= new List<EnemySnapshot>();
+            snapshot.enemies.Clear();
+
+            EnemyController[] enemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                EnemyController enemy = enemies[i];
+                if (enemy != null && enemy.TryBuildSnapshot(out EnemySnapshot enemySnapshot))
+                    snapshot.enemies.Add(enemySnapshot);
+            }
+        }
+
+        private static void CaptureShopSnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            snapshot.shops ??= new List<ShopSnapshotSave>();
+            snapshot.shops.Clear();
+
+            HutaoShopInteractable[] shops = UnityEngine.Object.FindObjectsByType<HutaoShopInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < shops.Length; i++)
+            {
+                HutaoShopInteractable shop = shops[i];
+                if (shop != null && shop.TryBuildSnapshot(out ShopSnapshotSave shopSnapshot))
+                    snapshot.shops.Add(shopSnapshot);
+            }
+        }
+
+        private static void CaptureGroundDropSnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            snapshot.groundDrops ??= new List<GroundDropSave>();
+            snapshot.groundDrops.Clear();
+
+            DroppedPickupRuntime[] drops = UnityEngine.Object.FindObjectsByType<DroppedPickupRuntime>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < drops.Length; i++)
+            {
+                DroppedPickupRuntime drop = drops[i];
+                if (drop != null && drop.TryBuildSave(out GroundDropSave groundDropSave))
+                    snapshot.groundDrops.Add(groundDropSave);
+            }
+        }
+
+        private static void CaptureSpawnerSnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            LevelEnemySpawner[] globalSpawners = UnityEngine.Object.FindObjectsByType<LevelEnemySpawner>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            LevelEnemySpawner globalSpawner = globalSpawners.Length > 0 ? globalSpawners[0] : null;
+            if (globalSpawner != null && globalSpawner.TryBuildSnapshot(out GlobalSpawnerSnapshotSave globalSnapshot))
+                snapshot.globalSpawner = globalSnapshot;
+            else
+                snapshot.globalSpawner = null;
+
+            snapshot.localSpawners ??= new List<LocalSpawnerSnapshotSave>();
+            snapshot.localSpawners.Clear();
+
+            LevelLocalEnemySpawner[] localSpawners = UnityEngine.Object.FindObjectsByType<LevelLocalEnemySpawner>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < localSpawners.Length; i++)
+            {
+                LevelLocalEnemySpawner spawner = localSpawners[i];
+                if (spawner != null && spawner.TryBuildSnapshot(out LocalSpawnerSnapshotSave localSnapshot))
+                    snapshot.localSpawners.Add(localSnapshot);
+            }
+        }
+
+        private static void CaptureLevelDirectorSnapshot(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            LevelDirector[] directors = UnityEngine.Object.FindObjectsByType<LevelDirector>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            LevelDirector director = directors.Length > 0 ? directors[0] : null;
+            if (director != null && director.TryBuildSnapshot(out LevelDirectorSnapshotSave directorSnapshot))
+                snapshot.levelDirector = directorSnapshot;
+            else
+                snapshot.levelDirector = null;
+        }
+
+        private static void RestoreOpenedChests(LevelSnapshot snapshot)
+        {
+            if (snapshot?.openedChestIds == null || snapshot.openedChestIds.Count == 0)
+                return;
+
+            HashSet<string> openedChestIds = new HashSet<string>(snapshot.openedChestIds);
+            ChestInteractable[] chests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < chests.Length; i++)
+            {
+                ChestInteractable chest = chests[i];
+                if (chest != null && openedChestIds.Contains(chest.GetSnapshotId()))
+                    UnityEngine.Object.Destroy(chest.gameObject);
+            }
+        }
+
+        private static void RestoreEnemySnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot == null || snapshot.runtimeSnapshotVersion <= 0)
+                return;
+
+            EnemyController[] currentEnemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < currentEnemies.Length; i++)
+            {
+                EnemyController enemy = currentEnemies[i];
+                if (enemy == null)
+                    continue;
+
+                enemy.gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(enemy.gameObject);
+            }
+
+            SanitizeEnemySnapshots(snapshot);
+            EnemySpawnVariantCatalog catalog = EnemySpawnRuntime.BuildVariantCatalog();
+            if (snapshot.enemies == null)
+                return;
+
+            for (int i = 0; i < snapshot.enemies.Count; i++)
+                EnemySpawnRuntime.SpawnEnemyFromSnapshot(snapshot.enemies[i], catalog);
+        }
+
+        private static void SanitizeEnemySnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot?.enemies == null)
+                return;
+
+            bool allowLevelBoss = snapshot.levelDirector != null &&
+                                  snapshot.levelDirector.bossSpawned &&
+                                  !snapshot.levelDirector.bossDefeated;
+            for (int i = 0; i < snapshot.enemies.Count; i++)
+            {
+                EnemySnapshot enemySnapshot = snapshot.enemies[i];
+                if (enemySnapshot == null)
+                    continue;
+
+                if (enemySnapshot.enemyType != (int)EnemyType.Boss || !allowLevelBoss)
+                    enemySnapshot.countsAsLevelBoss = false;
+            }
+        }
+
+        private static void RestoreShopSnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot?.shops == null || snapshot.shops.Count == 0)
+                return;
+
+            Dictionary<string, ShopSnapshotSave> snapshotsById = new Dictionary<string, ShopSnapshotSave>();
+            for (int i = 0; i < snapshot.shops.Count; i++)
+            {
+                ShopSnapshotSave shopSnapshot = snapshot.shops[i];
+                if (shopSnapshot == null || string.IsNullOrWhiteSpace(shopSnapshot.shopId))
+                    continue;
+
+                snapshotsById[shopSnapshot.shopId] = shopSnapshot;
+            }
+
+            HutaoShopInteractable[] shops = UnityEngine.Object.FindObjectsByType<HutaoShopInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < shops.Length; i++)
+            {
+                HutaoShopInteractable shop = shops[i];
+                if (shop == null)
+                    continue;
+
+                if (snapshotsById.TryGetValue(shop.GetSnapshotId(), out ShopSnapshotSave shopSnapshot))
+                    shop.RestoreSnapshot(shopSnapshot);
+            }
+        }
+
+        private static void RestoreGroundDrops(LevelSnapshot snapshot)
+        {
+            if (snapshot?.groundDrops == null || snapshot.groundDrops.Count == 0)
+                return;
+
+            for (int i = 0; i < snapshot.groundDrops.Count; i++)
+                DroppedPickupRuntime.SpawnFromSave(snapshot.groundDrops[i]);
         }
     }
 }

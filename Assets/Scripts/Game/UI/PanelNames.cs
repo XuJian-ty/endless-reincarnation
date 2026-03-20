@@ -17,6 +17,8 @@ namespace Game.UI
         /// <summary>关卡内菜单用，仅调节关卡内 BGM 音量（按存档保存）</summary>
         public const string LevelSound    = "LevelSoundPanel";
         public const string BattleMemory = "BattleMemoryPanel";
+        public const string Dialogue    = "DialoguePanel";
+        public const string Shop        = "ShopPanel";
         public const string NamePanel    = "NamePanel";
         public const string SaveList    = "SaveListPanel";
         public const string MainMenu    = "MainMenuPanel";
@@ -25,6 +27,9 @@ namespace Game.UI
         public const string Loading      = "LoadingPanel";
         public const string BuffSelect   = "BuffSelectPanel";
         public const string PlayerInfoHUD = "PlayerInfoHUDPanel";
+        public const string FinalBossHealthBarOverlay = "FinalBossHealthBarOverlay";
+        public const string FloatingNumberOverlay = "FloatingNumberOverlay";
+        public const string BossArrivalNotice = "BossArrivalNoticePanel";
         public const string DeathChoice = "DeathChoicePanel";
         public const string BossResult = "BossResultPanel";
 
@@ -40,6 +45,8 @@ namespace Game.UI
             BuffSelect,
             LevelSound,
             BattleMemory,
+            Dialogue,
+            Shop,
             DeathChoice,
             BossResult,
         };
@@ -57,6 +64,8 @@ namespace Game.UI
         public const E_UI_Layer MainMenuSound = E_UI_Layer.Top;
         public const E_UI_Layer LevelSound    = E_UI_Layer.Top;
         public const E_UI_Layer BattleMemory = E_UI_Layer.Mid;
+        public const E_UI_Layer Dialogue = E_UI_Layer.Top;
+        public const E_UI_Layer Shop = E_UI_Layer.Mid;
         public const E_UI_Layer NamePanel    = E_UI_Layer.Mid;
         public const E_UI_Layer SaveList     = E_UI_Layer.Mid;
         public const E_UI_Layer MainMenu    = E_UI_Layer.Mid;
@@ -64,6 +73,9 @@ namespace Game.UI
         public const E_UI_Layer Loading     = E_UI_Layer.System;
         public const E_UI_Layer BuffSelect  = E_UI_Layer.System;
         public const E_UI_Layer PlayerInfoHUD = E_UI_Layer.Bot;
+        public const E_UI_Layer FinalBossHealthBarOverlay = E_UI_Layer.Bot;
+        public const E_UI_Layer FloatingNumberOverlay = E_UI_Layer.Bot;
+        public const E_UI_Layer BossArrivalNotice = E_UI_Layer.Top;
         public const E_UI_Layer DeathChoice = E_UI_Layer.System;
         public const E_UI_Layer BossResult = E_UI_Layer.System;
     }

@@ -10,7 +10,7 @@ namespace Game.Presentation
 
         public readonly GameAction Action;
 
-        /// <summary>仅对 GameAction.Skill 有意义（0-3），其他动作忽略此字段</summary>
+        /// <summary>仅对 GameAction.Skill 有意义，记录具体技能槽位索引；其他动作忽略此字段。</summary>
         public readonly int SkillIndex;
 
         public bool IsEmpty => Action == GameAction.None;

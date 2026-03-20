@@ -49,6 +49,7 @@ namespace Game.Presentation
         private static readonly List<Transform> DamageTargetsScratch = new List<Transform>(16);
         private static readonly HashSet<Transform> DamageTargetSet = new HashSet<Transform>();
         private static HitStopRunner _hitStopRunner;
+        public static bool IsCameraLookBlockedByHitStop => _hitStopRunner != null && _hitStopRunner.IsCameraLookBlocked;
 
         public static void ExecuteDamageEvent(SkillDamageEvent evt, ISkillExecutionContext ctx)
             => ExecuteDamageEvent(evt, ctx, null);
@@ -58,6 +59,7 @@ namespace Game.Presentation
             if (evt == null || ctx == null)
                 return;
 
+            evt.TryMigrateLegacyHitStopSettings();
             if (evt.damageEffects != null)
             {
                 for (int damageIndex = 0; damageIndex < evt.damageEffects.Count; damageIndex++)
@@ -65,30 +67,38 @@ namespace Game.Presentation
                     var damageEffect = evt.damageEffects[damageIndex];
                     if (damageEffect == null)
                         continue;
-                    ExecuteDamageEffect(damageEffect, ctx, null, null, null, cueRuntime);
+
+                    ExecuteDamageEffect(
+                        damageEffect,
+                        ctx,
+                        null,
+                        null,
+                        null,
+                        cueRuntime,
+                        null);
                 }
             }
         }
 
-        public static void ExecuteDamageEffect(
+        public static bool ExecuteDamageEffect(
             SkillDamageEffect damageEffect,
             ISkillExecutionContext ctx,
             HashSet<Transform> alreadyHitTargets)
         {
-            ExecuteDamageEffect(damageEffect, ctx, alreadyHitTargets, null, null, null);
+            return ExecuteDamageEffect(damageEffect, ctx, alreadyHitTargets, null, null, null, null);
         }
 
-        public static void ExecuteDamageEffect(
+        public static bool ExecuteDamageEffect(
             SkillDamageEffect damageEffect,
             ISkillExecutionContext ctx,
             HashSet<Transform> alreadyHitTargets,
             SkillCollisionHitbox collisionHitbox,
             object collisionToken)
         {
-            ExecuteDamageEffect(damageEffect, ctx, alreadyHitTargets, collisionHitbox, collisionToken, null);
+            return ExecuteDamageEffect(damageEffect, ctx, alreadyHitTargets, collisionHitbox, collisionToken, null, null);
         }
 
-        public static void ExecuteDamageEffect(
+        public static bool ExecuteDamageEffect(
             SkillDamageEffect damageEffect,
             ISkillExecutionContext ctx,
             HashSet<Transform> alreadyHitTargets,
@@ -98,7 +108,9 @@ namespace Game.Presentation
             SkillDetectionMotionFrame? motionFrame = null)
         {
             if (damageEffect == null || ctx == null)
-                return;
+                return false;
+
+            damageEffect.TryMigrateLegacySubEffects();
 
             DetectedTargetsScratch.Clear();
             DetectedTargetSet.Clear();
@@ -112,7 +124,7 @@ namespace Game.Presentation
                     motionFrame,
                     out int hitCount))
             {
-                return;
+                return false;
             }
 
             DamageTargetsScratch.Clear();
@@ -135,7 +147,7 @@ namespace Game.Presentation
             }
 
             if (DamageTargetsScratch.Count <= 0)
-                return;
+                return false;
 
             if (alreadyHitTargets != null)
             {
@@ -143,17 +155,33 @@ namespace Game.Presentation
                     alreadyHitTargets.Add(DamageTargetsScratch[i]);
             }
 
-            float finalMultiplier = Mathf.Max(0f, damageEffect.damageMagnitude);
             float stunDuration = 0.2f;
-
-            if (finalMultiplier > 0f)
+            List<SkillHitDamageEffect> hitDamageEffects = damageEffect.GetEffectiveHitDamageEffects();
+            for (int damageIndex = 0; damageIndex < hitDamageEffects.Count; damageIndex++)
             {
+                SkillHitDamageEffect hitDamageEffect = hitDamageEffects[damageIndex];
+                if (hitDamageEffect == null)
+                    continue;
+
+                float finalMultiplier = Mathf.Max(0f, hitDamageEffect.damageMagnitude);
+                if (finalMultiplier <= 0f)
+                    continue;
+
                 for (int i = 0; i < DamageTargetsScratch.Count; i++)
                     ApplyDamageToTarget(DamageTargetsScratch[i], ctx, finalMultiplier, stunDuration);
             }
 
-            RequestHitStop(damageEffect.hitStopDuration, damageEffect.hitStopTimeScale);
+            SkillHitStopEffect hitStopEffect = damageEffect.GetEffectiveHitStopEffect();
+            if (SkillDamageEffect.HasConfiguredHitStopEffect(hitStopEffect))
+            {
+                RequestHitStop(
+                    hitStopEffect.hitStopDuration,
+                    hitStopEffect.hitStopTimeScale,
+                    hitStopEffect.pauseCameraLookDuringHitStop);
+            }
+
             ApplyOnHitEffects(damageEffect, ctx, DamageTargetsScratch, cueRuntime);
+            return true;
         }
 
         public static void ExecutePhysicsEvent(SkillPhysicsEvent evt, ISkillExecutionContext ctx)
@@ -247,13 +275,15 @@ namespace Game.Presentation
             var enemy = target.GetComponentInParent<EnemyController>();
             if (enemy != null)
             {
-                float damage = CalculatePlayerSideDamage(ctx, damageMultiplier, enemy);
+                float damage = CalculatePlayerSideDamage(ctx, damageMultiplier, enemy, out bool isCrit);
                 enemy.ApplyDamage(damage);
+                CombatNumberDispatcher.PublishDamage(enemy.transform, damage, isCrit);
             }
         }
 
-        private static float CalculatePlayerSideDamage(ISkillExecutionContext ctx, float damageMultiplier, EnemyController enemy)
+        private static float CalculatePlayerSideDamage(ISkillExecutionContext ctx, float damageMultiplier, EnemyController enemy, out bool isCrit)
         {
+            isCrit = false;
             if (ctx == null || enemy == null)
                 return 0f;
 
@@ -272,38 +302,34 @@ namespace Game.Presentation
                     enemy.DamageReduce) * damageMultiplier;
             }
 
-            float baseAttack = Mathf.Max(0f, attackerStats.Attack);
-            float defFactor = Mathf.Max(0f, 0.1f + 270f / (enemy.Defense + 300f));
-            float damageBucket = Mathf.Max(0f, 1f + attackerStats.DamageBonus - Mathf.Clamp01(enemy.DamageReduce));
-            float finalDamage = baseAttack * Mathf.Max(0f, damageMultiplier) * defFactor * damageBucket;
+            CombatCalculator.CalculateDamage(
+                attackerStats,
+                damageMultiplier,
+                enemy.Defense,
+                () => Random.value,
+                enemy.DamageReduce,
+                out float finalDamage,
+                out isCrit,
+                out float lifeStealHeal);
 
-            bool isCrit = Random.value < attackerStats.CritRate;
-            if (isCrit)
-                finalDamage *= 1f + attackerStats.CritDmg;
-
-            finalDamage = Mathf.Max(0f, finalDamage);
-            if (finalDamage > 0f)
+            if (lifeStealHeal > 0f)
             {
-                float lifeStealHeal = finalDamage * Mathf.Clamp01(attackerStats.LifeSteal);
-                if (lifeStealHeal > 0f)
-                {
-                    if (cloneActor != null)
-                        cloneActor.Heal(lifeStealHeal);
-                    else if (owningPlayer?.PlayerModel != null)
-                        owningPlayer.PlayerModel.Heal(lifeStealHeal);
-                }
+                if (cloneActor != null)
+                    ApplyHealToClone(cloneActor, lifeStealHeal, true);
+                else if (owningPlayer != null)
+                    ApplyHealToPlayer(owningPlayer, lifeStealHeal, true);
             }
 
             return finalDamage;
         }
 
-        private static void RequestHitStop(float duration, float timeScale)
+        private static void RequestHitStop(float duration, float timeScale, bool pauseCameraLookDuringHitStop)
         {
             if (duration <= 0f)
                 return;
 
             float clampedScale = Mathf.Clamp01(timeScale);
-            if (clampedScale >= 0.999f || Time.timeScale <= 0f)
+            if (clampedScale >= 0.999f)
                 return;
 
             if (_hitStopRunner == null)
@@ -314,7 +340,10 @@ namespace Game.Presentation
                 _hitStopRunner = go.AddComponent<HitStopRunner>();
             }
 
-            _hitStopRunner.Apply(duration, clampedScale);
+            if (Time.timeScale <= 0f && !_hitStopRunner.IsActive)
+                return;
+
+            _hitStopRunner.Apply(duration, clampedScale, pauseCameraLookDuringHitStop);
         }
 
         private static void ApplyOnHitEffects(
@@ -568,7 +597,7 @@ namespace Game.Presentation
             {
                 float amount = usePercent ? model.Stats.MaxHp * magnitude : magnitude;
                 if (amount > 0f)
-                    model.Heal(amount);
+                    ApplyHealToPlayer(player, amount, true);
                 return;
             }
 
@@ -576,7 +605,7 @@ namespace Game.Presentation
             {
                 float amount = usePercent ? model.Stats.MaxMp * magnitude : magnitude;
                 if (amount > 0f)
-                    model.CurrentMp = Mathf.Min(model.Stats.MaxMp, model.CurrentMp + amount);
+                    ApplyManaToPlayer(player, amount, true);
                 return;
             }
 
@@ -610,7 +639,7 @@ namespace Game.Presentation
             {
                 float amount = usePercent ? clone.MaxHp * magnitude : magnitude;
                 if (amount > 0f)
-                    clone.Heal(amount);
+                    ApplyHealToClone(clone, amount, true);
                 return;
             }
 
@@ -618,7 +647,7 @@ namespace Game.Presentation
             {
                 float amount = usePercent ? clone.MaxMp * magnitude : magnitude;
                 if (amount > 0f)
-                    clone.RestoreMp(amount);
+                    ApplyManaToClone(clone, amount, false);
                 return;
             }
 
@@ -652,6 +681,54 @@ namespace Game.Presentation
                 enemy.ApplyTimedStatModifier(modifier, duration);
             else
                 enemy.ApplyTimedStatModifier(modifier, float.MaxValue);
+        }
+
+        private static void ApplyHealToPlayer(PlayerController player, float amount, bool showNumber)
+        {
+            if (player?.PlayerModel == null || amount <= 0f)
+                return;
+
+            float before = player.PlayerModel.CurrentHp;
+            player.PlayerModel.Heal(amount);
+            float applied = player.PlayerModel.CurrentHp - before;
+            if (showNumber && applied > 0f)
+                CombatNumberDispatcher.PublishHeal(player.transform, applied);
+        }
+
+        private static void ApplyManaToPlayer(PlayerController player, float amount, bool showNumber)
+        {
+            if (player?.PlayerModel == null || amount <= 0f)
+                return;
+
+            float before = player.PlayerModel.CurrentMp;
+            player.PlayerModel.CurrentMp = Mathf.Min(player.PlayerModel.Stats.MaxMp, player.PlayerModel.CurrentMp + amount);
+            float applied = player.PlayerModel.CurrentMp - before;
+            if (showNumber && applied > 0f)
+                CombatNumberDispatcher.PublishMana(player.transform, applied);
+        }
+
+        private static void ApplyHealToClone(PlayerCloneActor clone, float amount, bool showNumber)
+        {
+            if (clone == null || amount <= 0f)
+                return;
+
+            float before = clone.CurrentHp;
+            clone.Heal(amount);
+            float applied = clone.CurrentHp - before;
+            if (showNumber && applied > 0f)
+                CombatNumberDispatcher.PublishHeal(clone.transform, applied);
+        }
+
+        private static void ApplyManaToClone(PlayerCloneActor clone, float amount, bool showNumber)
+        {
+            if (clone == null || amount <= 0f)
+                return;
+
+            float before = clone.CurrentMp;
+            clone.RestoreMp(amount);
+            float applied = clone.CurrentMp - before;
+            if (showNumber && applied > 0f)
+                CombatNumberDispatcher.PublishMana(clone.transform, applied);
         }
 
         private static void PlayVfxEffects(List<SkillVfxEffect> effects, Transform caster, Transform target, SkillCueRuntimeScope cueRuntime)
@@ -948,10 +1025,14 @@ namespace Game.Presentation
             private float _remainingUnscaled;
             private float _restoreScale = 1f;
             private float _appliedScale = 1f;
+            private bool _pauseCameraLookDuringHitStop;
 
-            public void Apply(float duration, float timeScale)
+            public bool IsActive => _active;
+            public bool IsCameraLookBlocked => _active && _pauseCameraLookDuringHitStop;
+
+            public void Apply(float duration, float timeScale, bool pauseCameraLookDuringHitStop)
             {
-                if (duration <= 0f || Time.timeScale <= 0f)
+                if (duration <= 0f || (Time.timeScale <= 0f && !_active))
                     return;
 
                 float clampedScale = Mathf.Clamp01(timeScale);
@@ -960,6 +1041,7 @@ namespace Game.Presentation
                     _restoreScale = Time.timeScale;
                     _remainingUnscaled = duration;
                     _appliedScale = clampedScale;
+                    _pauseCameraLookDuringHitStop = pauseCameraLookDuringHitStop;
                     Time.timeScale = _appliedScale;
                     _active = true;
                     return;
@@ -967,8 +1049,8 @@ namespace Game.Presentation
 
                 _remainingUnscaled = Mathf.Max(_remainingUnscaled, duration);
                 _appliedScale = Mathf.Min(_appliedScale, clampedScale);
-                if (Time.timeScale > 0f)
-                    Time.timeScale = _appliedScale;
+                _pauseCameraLookDuringHitStop |= pauseCameraLookDuringHitStop;
+                Time.timeScale = _appliedScale;
             }
 
             private void Update()
@@ -976,12 +1058,10 @@ namespace Game.Presentation
                 if (!_active)
                     return;
 
-                if (Mathf.Approximately(Time.timeScale, 0f))
-                    return;
-
                 if (!Mathf.Approximately(Time.timeScale, _appliedScale))
                 {
                     _active = false;
+                    _pauseCameraLookDuringHitStop = false;
                     return;
                 }
 
@@ -991,6 +1071,7 @@ namespace Game.Presentation
 
                 Time.timeScale = _restoreScale;
                 _active = false;
+                _pauseCameraLookDuringHitStop = false;
             }
         }
 

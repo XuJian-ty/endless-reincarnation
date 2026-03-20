@@ -14,7 +14,7 @@ namespace Game.Data
     }
 
     /// <summary>
-    /// 按键配置面板的 16 行数据：Action 名、复合绑定子名（可选）、显示名。顺序与 KeyList 下 16 行一致。
+    /// 按键配置面板的动态行数据：Action 名、复合绑定子名（可选）、显示名。
     /// </summary>
     [CreateAssetMenu(menuName = "游戏/配置/按键重绑定配置", fileName = "按键重绑定配置")]
     public class KeyRebindConfigSO : ScriptableObject

@@ -29,8 +29,3 @@ MonoBehaviour:
     taskTotalMode: 0
     totalTaskCount: 1
     taskInterval: 8
-  - taskIndex: 6
-    spawnMode: 0
-    taskTotalMode: 1
-    totalTaskCount: 1
-    taskInterval: 3
