@@ -22,7 +22,6 @@ namespace Game.Editor
                 int oldIndent = EditorGUI.indentLevel;
                 EditorGUI.indentLevel++;
 
-                var damageMagnitude = property.FindPropertyRelative("damageMagnitude");
                 var detectionDuration = property.FindPropertyRelative("detectionDuration");
                 var detectionType = property.FindPropertyRelative("detectionType");
                 var hitLayerName = property.FindPropertyRelative("hitLayerName");
@@ -36,8 +35,8 @@ namespace Game.Editor
                 var rayOriginOffset = property.FindPropertyRelative("rayOriginOffset");
                 var rayMaxDistance = property.FindPropertyRelative("rayMaxDistance");
                 var motion = property.FindPropertyRelative("motion");
-                var hitStopDuration = property.FindPropertyRelative("hitStopDuration");
-                var hitStopTimeScale = property.FindPropertyRelative("hitStopTimeScale");
+                var onHitDamageEffects = property.FindPropertyRelative("onHitDamageEffects");
+                var onHitStopEffect = property.FindPropertyRelative("onHitStopEffect");
                 var onHitPhysicsEffects = property.FindPropertyRelative("onHitPhysicsEffects");
                 var onHitAttributeEffects = property.FindPropertyRelative("onHitAttributeEffects");
                 var onHitVfxEffects = property.FindPropertyRelative("onHitVfxEffects");
@@ -51,7 +50,6 @@ namespace Game.Editor
                     : AttackShapeType.Sphere;
 
                 float y = position.y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                y = DrawProperty(y, position, damageMagnitude);
                 y = DrawProperty(y, position, detectionDuration);
                 y = DrawProperty(y, position, detectionType);
                 y = DrawProperty(y, position, hitLayerName);
@@ -85,8 +83,8 @@ namespace Game.Editor
                 }
 
                 y = DrawProperty(y, position, motion);
-                y = DrawProperty(y, position, hitStopDuration);
-                y = DrawProperty(y, position, hitStopTimeScale);
+                y = DrawProperty(y, position, onHitStopEffect);
+                y = DrawProperty(y, position, onHitDamageEffects);
                 y = DrawProperty(y, position, onHitPhysicsEffects);
                 y = DrawProperty(y, position, onHitAttributeEffects);
                 y = DrawProperty(y, position, onHitVfxEffects);
@@ -114,7 +112,6 @@ namespace Game.Editor
                 : AttackShapeType.Sphere;
 
             height += EditorGUIUtility.standardVerticalSpacing;
-            height += GetChildHeight(property.FindPropertyRelative("damageMagnitude"));
             height += GetChildHeight(property.FindPropertyRelative("detectionDuration"));
             height += GetChildHeight(detectionType);
             height += GetChildHeight(property.FindPropertyRelative("hitLayerName"));
@@ -148,8 +145,8 @@ namespace Game.Editor
             }
 
             height += GetChildHeight(property.FindPropertyRelative("motion"));
-            height += GetChildHeight(property.FindPropertyRelative("hitStopDuration"));
-            height += GetChildHeight(property.FindPropertyRelative("hitStopTimeScale"));
+            height += GetChildHeight(property.FindPropertyRelative("onHitStopEffect"));
+            height += GetChildHeight(property.FindPropertyRelative("onHitDamageEffects"));
             height += GetChildHeight(property.FindPropertyRelative("onHitPhysicsEffects"));
             height += GetChildHeight(property.FindPropertyRelative("onHitAttributeEffects"));
             height += GetChildHeight(property.FindPropertyRelative("onHitVfxEffects"));

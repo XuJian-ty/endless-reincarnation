@@ -207,6 +207,8 @@ namespace Game.Presentation
             if (evt?.damageEffects == null || _context == null)
                 return;
 
+            evt.TryMigrateLegacyHitStopSettings();
+
             for (int i = 0; i < evt.damageEffects.Count; i++)
             {
                 SkillDamageEffect effect = evt.damageEffects[i];

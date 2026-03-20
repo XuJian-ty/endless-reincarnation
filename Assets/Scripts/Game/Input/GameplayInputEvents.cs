@@ -128,6 +128,14 @@ namespace Game.Input
             }
         }
 
+        public InputAction FindAction(string actionName)
+        {
+            if (string.IsNullOrWhiteSpace(actionName))
+                return null;
+
+            return _uiMap?.FindAction(actionName) ?? _gameplayMap?.FindAction(actionName);
+        }
+
         private void OnToggleBackpackPerformed(InputAction.CallbackContext _) => _toggleBackpackRequested?.Invoke();
         private void OnToggleSkillTreePerformed(InputAction.CallbackContext _) => _toggleSkillTreeRequested?.Invoke();
         private void OnToggleKeyConfigPerformed(InputAction.CallbackContext _) => _toggleKeyConfigRequested?.Invoke();

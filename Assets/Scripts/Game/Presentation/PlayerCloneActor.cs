@@ -49,7 +49,6 @@ namespace Game.Presentation
         private const float AttackComboWindowDuration = PlayerStateMachine.ComboWindowDuration;
         private static readonly Color CloneTintColor = new Color(0.42f, 0.76f, 1f, 1f);
         private static readonly Color CloneEmissionColor = new Color(0.16f, 0.58f, 1f, 1f);
-        private static readonly Color CloneHeadHealthBarColor = new Color(0.26f, 0.72f, 1f, 0.95f);
         private static readonly Vector3 CloneGlowOffset = new Vector3(0f, 1.35f, 0f);
         private const float CloneGlowMinIntensity = 0.85f;
         private const float CloneGlowMaxIntensity = 1.75f;
@@ -111,6 +110,8 @@ namespace Game.Presentation
         private float _hardControlTimer;
         private float _temporarySuperArmorTimer;
         private float _temporaryInvincibleTimer;
+        private float _hpRegenTickAccumulator;
+        private float _mpRegenTickAccumulator;
         private float _currentHp;
         private float _currentMp;
         private int _comboStage;
@@ -138,7 +139,6 @@ namespace Game.Presentation
         public Stats CombatStats => _combatStats;
         public float MaxHp => _combatStats.MaxHp;
         public float CurrentHp => _currentHp;
-        public float HeadHealthBarHeightOffset => _aiConfig != null ? Mathf.Max(0f, _aiConfig.headHealthBarHeightOffset) : 0f;
         public float CurrentHpRatio => MaxHp > 0f ? Mathf.Clamp01(_currentHp / MaxHp) : 0f;
         public float MaxMp => _combatStats.MaxMp;
         public float CurrentMp => _currentMp;
@@ -171,6 +171,8 @@ namespace Game.Presentation
             _hardControlTimer = 0f;
             _temporarySuperArmorTimer = 0f;
             _temporaryInvincibleTimer = 0f;
+            _hpRegenTickAccumulator = 0f;
+            _mpRegenTickAccumulator = 0f;
             _actionLockTimer = 0f;
             _comboStage = 0;
             _comboNextIndex = -1;
@@ -1904,13 +1906,35 @@ namespace Game.Presentation
             if (dt <= 0f)
                 return;
 
-            float hpRegen = Mathf.Max(0f, _combatStats.HpRegen);
-            if (hpRegen > 0f && _currentHp < MaxHp)
-                Heal(hpRegen * dt);
+            _hpRegenTickAccumulator += dt;
+            while (_hpRegenTickAccumulator >= 1f)
+            {
+                _hpRegenTickAccumulator -= 1f;
+                float hpRegen = Mathf.Max(0f, _combatStats.HpRegen);
+                if (hpRegen > 0f && _currentHp < MaxHp)
+                    ApplyHealWithCombatNumber(hpRegen);
+            }
 
-            float mpRegen = Mathf.Max(0f, _combatStats.MpRegen);
-            if (mpRegen > 0f && _currentMp < MaxMp)
-                RestoreMp(mpRegen * dt);
+            _mpRegenTickAccumulator += dt;
+            while (_mpRegenTickAccumulator >= 1f)
+            {
+                _mpRegenTickAccumulator -= 1f;
+                float mpRegen = Mathf.Max(0f, _combatStats.MpRegen);
+                if (mpRegen > 0f && _currentMp < MaxMp)
+                    RestoreMp(mpRegen);
+            }
+        }
+
+        private void ApplyHealWithCombatNumber(float amount)
+        {
+            if (amount <= 0f || MaxHp <= 0f)
+                return;
+
+            float before = _currentHp;
+            Heal(amount);
+            float applied = _currentHp - before;
+            if (applied > 0f)
+                CombatNumberDispatcher.PublishHeal(transform, applied);
         }
 
         private void TickTemporaryCombatFlags(float dt)
@@ -2655,7 +2679,7 @@ namespace Game.Presentation
             if (_headHealthBar == null)
                 _headHealthBar = gameObject.AddComponent<ActorHeadHealthBar>();
 
-            _headHealthBar.Configure(CloneHeadHealthBarColor);
+            _headHealthBar.Configure();
         }
 
         private void UpdateHeadHealthBar()

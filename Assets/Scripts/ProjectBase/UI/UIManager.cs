@@ -145,7 +145,12 @@ public class UIManager : BaseManager<UIManager>
             var panel = obj.GetComponent<T>();
             if (panel == null)
             {
-                Debug.LogError($"[UIManager] 面板预制体 '{panelName}' 上未找到组件 {typeof(T).Name}，已销毁该对象。");
+                panel = obj.AddComponent<T>();
+            }
+
+            if (panel == null)
+            {
+                Debug.LogError($"[UIManager] 面板预制体 '{panelName}' 上未找到组件 {typeof(T).Name}，且补挂失败，已销毁该对象。");
                 GameObject.Destroy(obj);
                 return;
             }

@@ -13,7 +13,7 @@ namespace Game.Presentation
         public EnemyIntentType Type;
         /// <summary>移动/追击目标位置；CastSkill 时可为 null</summary>
         public Vector3? TargetPosition;
-        /// <summary>CastSkill 时的技能槽位 0～3</summary>
+        /// <summary>CastSkill 时的技能槽位索引，由当前敌人的行为资产定义。</summary>
         public int SkillSlot;
 
         public bool HasTargetPosition => TargetPosition.HasValue;

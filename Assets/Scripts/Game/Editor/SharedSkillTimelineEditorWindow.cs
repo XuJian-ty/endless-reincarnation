@@ -788,7 +788,7 @@ namespace Game.Editor
                             Repaint();
                         }
 
-                        _showDamageEvents = GUILayout.Toggle(_showDamageEvents, "伤害", compactMidButtonStyle, GUILayout.Width(38f));
+                        _showDamageEvents = GUILayout.Toggle(_showDamageEvents, "命中", compactMidButtonStyle, GUILayout.Width(38f));
                         _showPhysicsEvents = GUILayout.Toggle(_showPhysicsEvents, "物理", compactMidButtonStyle, GUILayout.Width(38f));
                         _showAttributeEvents = GUILayout.Toggle(_showAttributeEvents, "属性", compactMidButtonStyle, GUILayout.Width(38f));
                         _showVfxEvents = GUILayout.Toggle(_showVfxEvents, "特效", compactMidButtonStyle, GUILayout.Width(38f));
@@ -810,7 +810,7 @@ namespace Game.Editor
                     GUILayout.BeginHorizontal();
                     try
                     {
-                        GUILayout.Label("伤害筛选", compactLabelStyle, GUILayout.Width(48f));
+                        GUILayout.Label("命中筛选", compactLabelStyle, GUILayout.Width(48f));
                         _filterDamageWithOnHitPhysics = GUILayout.Toggle(_filterDamageWithOnHitPhysics, "有物理", compactLeftButtonStyle, GUILayout.Width(48f));
                         _filterDamageWithOnHitAttribute = GUILayout.Toggle(_filterDamageWithOnHitAttribute, "有属性", compactMidButtonStyle, GUILayout.Width(48f));
                         _filterDamageWithOnHitVfx = GUILayout.Toggle(_filterDamageWithOnHitVfx, "有特效", compactMidButtonStyle, GUILayout.Width(48f));
@@ -1851,63 +1851,45 @@ namespace Game.Editor
                 view = CreateLegacyEventView(timedEvent, _selectedEventTrackType);
             }
 
-            DrawEventValidationWarnings(view);
+            DrawEventValidationWarnings(view, timedEvent);
 
             if (_selectedEventTrackType == TimelineTrackType.Damage)
-                DrawDamageEffectsEditor(view);
-            else
-                DrawAddEventSection("伤害效果", TimelineTrackType.Damage, timedEvent.startTime);
+                DrawDamageEffectsEditor(view, timedEvent as SkillDamageEvent);
 
             if (_selectedEventTrackType == TimelineTrackType.Physics)
                 DrawPhysicsEffectsEditor(view);
-            else
-                DrawAddEventSection("物理效果", TimelineTrackType.Physics, timedEvent.startTime);
 
             if (_selectedEventTrackType == TimelineTrackType.Attribute)
                 DrawAttributeEffectsEditor(view);
-            else
-                DrawAddEventSection("属性效果", TimelineTrackType.Attribute, timedEvent.startTime);
 
             if (_selectedEventTrackType == TimelineTrackType.Vfx)
                 DrawVfxEffectsEditor(view);
-            else
-                DrawAddEventSection("特效效果", TimelineTrackType.Vfx, timedEvent.startTime);
 
             if (_selectedEventTrackType == TimelineTrackType.Sfx)
                 DrawSfxEffectsEditor(view);
-            else
-                DrawAddEventSection("音效效果", TimelineTrackType.Sfx, timedEvent.startTime);
         }
 
-        private void DrawAddEventSection(string title, TimelineTrackType trackType, float startTime)
-        {
-            EditorGUILayout.Space(8f);
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
-            if (GUILayout.Button("添加", GUILayout.Width(48f)))
-            {
-                SharedSkillDefinition skill = GetSelectedSkill();
-                if (skill != null)
-                    AddEvent(skill, trackType, startTime);
-            }
-            GUILayout.EndHorizontal();
-            EditorGUILayout.HelpBox("当前选中的是其他类型事件。点击添加会创建同一时间点的新事件，并自动切换选中。", MessageType.None);
-            EditorGUILayout.EndVertical();
-        }
-
-        private void DrawDamageEffectsEditor(SkillTimelineEvent evt)
+        private void DrawDamageEffectsEditor(SkillTimelineEvent evt, SkillDamageEvent damageEvent)
         {
             EnsureDamageEffects(evt);
 
+            if (damageEvent != null && damageEvent.hitStopSettingsOwnedByEvent)
+            {
+                Undo.RecordObject(_database, "Migrate Damage Event Hit Stop");
+                if (damageEvent.TryMigrateLegacyHitStopSettings())
+                    MarkDatabaseDirty();
+            }
+
             EditorGUILayout.Space(8f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("伤害效果", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("命中效果", EditorStyles.boldLabel);
             if (GUILayout.Button("添加", GUILayout.Width(48f)))
             {
-                Undo.RecordObject(_database, "Add Damage Effect");
-                evt.damageEffects.Add(new SkillDamageEffect());
+                Undo.RecordObject(_database, "Add Hit Effect");
+                SkillDamageEffect newEffect = new SkillDamageEffect();
+                newEffect.TryMigrateLegacySubEffects();
+                evt.damageEffects.Add(newEffect);
                 MarkDatabaseDirty();
             }
             GUILayout.EndHorizontal();
@@ -1916,9 +1898,10 @@ namespace Game.Editor
             for (int i = 0; i < evt.damageEffects.Count; i++)
             {
                 SkillDamageEffect effect = evt.damageEffects[i] ?? (evt.damageEffects[i] = new SkillDamageEffect());
+                effect.TryMigrateLegacySubEffects();
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"伤害效果 {i + 1}", EditorStyles.miniBoldLabel);
+                EditorGUILayout.LabelField($"命中效果 {i + 1}", EditorStyles.miniBoldLabel);
                 bool isEditingDamage = _selectedEventTrackType == TimelineTrackType.Damage
                     && _activeSceneDamageEventIndex == _selectedEventIndex
                     && _activeSceneDamageIndex == i;
@@ -1934,7 +1917,6 @@ namespace Game.Editor
                 GUILayout.EndHorizontal();
 
                 EditorGUI.BeginChangeCheck();
-                float newDamageMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("伤害倍率", effect.damageMagnitude));
                 float newDetectionDuration = Mathf.Max(0f, EditorGUILayout.FloatField("检测时长(秒)", effect.detectionDuration));
                 EditorGUILayout.LabelField("检测时长(帧)", FormatFrameOnly(newDetectionDuration), EditorStyles.miniLabel);
                 DamageDetectionType newDetectionType = (DamageDetectionType)EditorGUILayout.EnumPopup("检测方式", effect.detectionType);
@@ -1977,15 +1959,10 @@ namespace Game.Editor
                 }
 
                 DrawMotionSettingsEditor("移动设置", newMotion);
-                if (newDetectionType == DamageDetectionType.Collision && newMotion.enabled)
-                    EditorGUILayout.HelpBox("碰撞检测模式暂不使用这组移动设置。", MessageType.Info);
 
-                float newHitStopDuration = Mathf.Max(0f, EditorGUILayout.FloatField("命中停顿时长(秒)", effect.hitStopDuration));
-                float newHitStopTimeScale = Mathf.Clamp01(EditorGUILayout.Slider("命中停顿速度", effect.hitStopTimeScale, 0f, 1f));
                 if (EditorGUI.EndChangeCheck())
                 {
-                    Undo.RecordObject(_database, "Edit Damage Effect");
-                    effect.damageMagnitude = newDamageMagnitude;
+                    Undo.RecordObject(_database, "Edit Hit Effect");
                     effect.detectionDuration = SnapDuration(newDetectionDuration);
                     effect.detectionType = newDetectionType;
                     effect.hitLayerName = newHitLayerName;
@@ -1999,11 +1976,13 @@ namespace Game.Editor
                     effect.rayOriginOffset = newRayOriginOffset;
                     effect.rayMaxDistance = Mathf.Max(0.01f, newRayMaxDistance);
                     effect.motion = newMotion;
-                    effect.hitStopDuration = newHitStopDuration;
-                    effect.hitStopTimeScale = newHitStopTimeScale;
                     MarkDatabaseDirty();
                 }
 
+                DrawHitStopEffectEditor(effect);
+                if (newDetectionType == DamageDetectionType.Collision && newMotion.enabled)
+                    EditorGUILayout.HelpBox("碰撞检测模式暂不使用这组移动设置。", MessageType.Info);
+                DrawNestedHitDamageEffectsEditor(effect);
                 DrawNestedPhysicsEffectsEditor(effect);
                 DrawNestedAttributeEffectsEditor(effect);
                 DrawNestedVfxEffectsEditor(effect, i);
@@ -2361,6 +2340,20 @@ namespace Game.Editor
                 evt.physicsEffects = new List<SkillPhysicsEffect>();
         }
 
+        private static void EnsureHitDamageEffects(SkillDamageEffect effect)
+        {
+            effect?.TryMigrateLegacySubEffects();
+            if (effect != null && effect.onHitDamageEffects == null)
+                effect.onHitDamageEffects = new List<SkillHitDamageEffect>();
+        }
+
+        private static void EnsureHitStopEffect(SkillDamageEffect effect)
+        {
+            effect?.TryMigrateLegacySubEffects();
+            if (effect != null && effect.onHitStopEffect == null)
+                effect.onHitStopEffect = new SkillHitStopEffect();
+        }
+
         private static void EnsurePhysicsEffects(SkillDamageEffect effect)
         {
             if (effect.onHitPhysicsEffects == null)
@@ -2401,6 +2394,86 @@ namespace Game.Editor
         {
             if (effect.onHitSfxEffects == null)
                 effect.onHitSfxEffects = new List<SkillSfxEffect>();
+        }
+
+        private void DrawNestedHitDamageEffectsEditor(SkillDamageEffect damageEffect)
+        {
+            EnsureHitDamageEffects(damageEffect);
+            DrawNestedHitDamageEffectsList("命中伤害效果", damageEffect.onHitDamageEffects);
+        }
+
+        private void DrawNestedHitDamageEffectsList(string title, List<SkillHitDamageEffect> effects)
+        {
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                Undo.RecordObject(_database, "Add Nested Hit Damage Effect");
+                effects.Add(new SkillHitDamageEffect());
+                MarkDatabaseDirty();
+            }
+            GUILayout.EndHorizontal();
+
+            int removeIndex = -1;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillHitDamageEffect effect = effects[i] ?? (effects[i] = new SkillHitDamageEffect());
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"命中伤害效果 {i + 1}", EditorStyles.miniBoldLabel);
+                if (GUILayout.Button("删除", GUILayout.Width(48f)))
+                    removeIndex = i;
+                GUILayout.EndHorizontal();
+
+                EditorGUI.BeginChangeCheck();
+                float newDamageMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("伤害倍率", effect.damageMagnitude));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_database, "Edit Nested Hit Damage Effect");
+                    effect.damageMagnitude = newDamageMagnitude;
+                    MarkDatabaseDirty();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0)
+            {
+                Undo.RecordObject(_database, "Remove Nested Hit Damage Effect");
+                effects.RemoveAt(removeIndex);
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawHitStopEffectEditor(SkillDamageEffect damageEffect)
+        {
+            EnsureHitStopEffect(damageEffect);
+            SkillHitStopEffect effect = damageEffect?.onHitStopEffect;
+            if (effect == null)
+                return;
+
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.LabelField("命中停顿效果", EditorStyles.miniBoldLabel);
+
+            EditorGUI.BeginChangeCheck();
+            float newHitStopDuration = Mathf.Max(0f, EditorGUILayout.FloatField("命中停顿时长(秒)", effect.hitStopDuration));
+            float newHitStopTimeScale = Mathf.Clamp01(EditorGUILayout.Slider("命中停顿速度", effect.hitStopTimeScale, 0f, 1f));
+            bool newPauseCameraLookDuringHitStop = EditorGUILayout.Toggle("同时停顿镜头转向", effect.pauseCameraLookDuringHitStop);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Hit Stop Effect");
+                effect.hitStopDuration = newHitStopDuration;
+                effect.hitStopTimeScale = newHitStopTimeScale;
+                effect.pauseCameraLookDuringHitStop = newPauseCameraLookDuringHitStop;
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
         }
 
         private void DrawNestedPhysicsEffectsEditor(SkillDamageEffect damageEffect)
@@ -2837,11 +2910,13 @@ namespace Game.Editor
             switch (trackType)
             {
                 case TimelineTrackType.Damage:
+                    var hitEffect = new SkillDamageEffect();
+                    hitEffect.TryMigrateLegacySubEffects();
                     var damageEvent = new SkillDamageEvent
                     {
                         eventId = eventId,
                         startTime = startTime,
-                        damageEffects = new List<SkillDamageEffect> { new SkillDamageEffect() },
+                        damageEffects = new List<SkillDamageEffect> { hitEffect },
                     };
                     GetDamageEventList(skill).Add(damageEvent);
                     newIndex = GetDamageEventList(skill).Count - 1;
@@ -4390,7 +4465,7 @@ namespace Game.Editor
                     : "未命中";
 
                 string subSummary = BuildOnHitEffectSummary(hit.effect);
-                string text = $"[伤害轨] {GetDamageDetectionDisplayName(hit.effect)} -> {targetNames}";
+                string text = $"[命中轨] {GetDamageDetectionDisplayName(hit.effect)} -> {targetNames}";
                 if (!string.IsNullOrWhiteSpace(subSummary))
                     text += $" / {subSummary}";
 
@@ -4773,7 +4848,7 @@ namespace Game.Editor
                                     },
                                     DamageDetectionType.Raycast => "射线检测",
                                     DamageDetectionType.Collision => $"碰撞命中盒:{effect.colliderNodeName}",
-                                    _ => "伤害检测",
+                                    _ => "命中检测",
                                 };
 
                                 int onHitCount = (effect.onHitPhysicsEffects?.Count ?? 0)
@@ -5049,7 +5124,7 @@ namespace Game.Editor
         private static string GetDamageDetectionDisplayName(SkillDamageEffect effect)
         {
             if (effect == null)
-                return "伤害检测";
+                return "命中检测";
 
             return effect.detectionType switch
             {
@@ -5064,7 +5139,7 @@ namespace Game.Editor
                 DamageDetectionType.Collision => string.IsNullOrWhiteSpace(effect.colliderNodeName)
                     ? "碰撞命中盒"
                     : $"碰撞命中盒:{effect.colliderNodeName}",
-                _ => "伤害检测",
+                _ => "命中检测",
             };
         }
 
@@ -5073,7 +5148,12 @@ namespace Game.Editor
             if (effect == null)
                 return string.Empty;
 
+            effect.TryMigrateLegacySubEffects();
             var parts = new List<string>();
+            if (effect.onHitDamageEffects != null && effect.onHitDamageEffects.Count > 0)
+                parts.Add($"命中伤害:{JoinHitDamageEffectValues(effect.onHitDamageEffects)}");
+            if (SkillDamageEffect.HasConfiguredHitStopEffect(effect.onHitStopEffect))
+                parts.Add($"命中停顿:{FormatHitStopEffectName(effect.onHitStopEffect)}");
             if (effect.onHitPhysicsEffects != null && effect.onHitPhysicsEffects.Count > 0)
                 parts.Add($"命中物理:{JoinPhysicsEffectNames(effect.onHitPhysicsEffects)}");
             if (effect.onHitAttributeEffects != null && effect.onHitAttributeEffects.Count > 0)
@@ -5083,6 +5163,30 @@ namespace Game.Editor
             if (effect.onHitSfxEffects != null && effect.onHitSfxEffects.Count > 0)
                 parts.Add($"命中音效:{JoinSfxEffectNames(effect.onHitSfxEffects)}");
             return string.Join(" / ", parts);
+        }
+
+        private static string JoinHitDamageEffectValues(List<SkillHitDamageEffect> effects)
+        {
+            if (effects == null || effects.Count == 0)
+                return string.Empty;
+
+            var values = new List<string>();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                SkillHitDamageEffect effect = effects[i];
+                if (effect != null)
+                    values.Add(effect.damageMagnitude.ToString("0.##"));
+            }
+
+            return string.Join("、", values);
+        }
+
+        private static string FormatHitStopEffectName(SkillHitStopEffect effect)
+        {
+            if (!SkillDamageEffect.HasConfiguredHitStopEffect(effect))
+                return string.Empty;
+
+            return $"{effect.hitStopDuration:0.##}s@{effect.hitStopTimeScale:0.##}";
         }
 
         private static string JoinVfxEffectNames(List<SkillVfxEffect> effects)
@@ -6288,7 +6392,7 @@ namespace Game.Editor
         {
             return trackType switch
             {
-                TimelineTrackType.Damage => "伤害轨",
+                TimelineTrackType.Damage => "命中轨",
                 TimelineTrackType.Physics => "物理轨",
                 TimelineTrackType.Attribute => "属性轨",
                 TimelineTrackType.Vfx => "特效轨",
@@ -6308,7 +6412,7 @@ namespace Game.Editor
 
             string prefix = !string.IsNullOrEmpty(view.eventId) ? view.eventId : trackType switch
             {
-                TimelineTrackType.Damage => "伤害",
+                TimelineTrackType.Damage => "命中",
                 TimelineTrackType.Physics => "物理",
                 TimelineTrackType.Attribute => "属性",
                 TimelineTrackType.Vfx => "特效",
@@ -6363,7 +6467,7 @@ namespace Game.Editor
         private static string GetFirstDamageEffectName(SkillTimelineEvent evt)
         {
             if (evt == null)
-                return "伤害";
+                return "命中";
 
             if (evt.damageEffects != null)
             {
@@ -6376,13 +6480,13 @@ namespace Game.Editor
                 }
             }
 
-            return "伤害";
+            return "命中";
         }
 
         private static string GetDamageEffectLabel(SkillDamageEffect effect)
         {
             if (effect == null)
-                return "伤害";
+                return "命中";
 
             return effect.detectionType switch
             {
@@ -6488,14 +6592,14 @@ namespace Game.Editor
             return string.Empty;
         }
 
-        private void DrawEventValidationWarnings(SkillTimelineEvent evt)
+        private void DrawEventValidationWarnings(SkillTimelineEvent evt, SkillTimedEventBase timedEvent)
         {
-            List<string> warnings = CollectEventWarnings(evt);
+            List<string> warnings = CollectEventWarnings(evt, timedEvent);
             for (int i = 0; i < warnings.Count; i++)
                 EditorGUILayout.HelpBox(warnings[i], MessageType.Warning);
         }
 
-        private List<string> CollectEventWarnings(SkillTimelineEvent evt)
+        private List<string> CollectEventWarnings(SkillTimelineEvent evt, SkillTimedEventBase timedEvent)
         {
             var warnings = new List<string>();
             if (evt == null)
@@ -6517,7 +6621,7 @@ namespace Game.Editor
             if (evt.vfxEffects != null && evt.vfxEffects.Count > 0) topLevelTypeCount++;
             if (evt.sfxEffects != null && evt.sfxEffects.Count > 0) topLevelTypeCount++;
             if (topLevelTypeCount > 1)
-                warnings.Add("当前事件混合了多种顶层类型。按新工作流，建议一条事件只负责一种顶层类型；命中后的附加效果请配在伤害效果内部。");
+                warnings.Add("当前事件混合了多种顶层类型。按新工作流，建议一条事件只负责一种顶层类型；命中后的附加效果请配在命中效果内部。");
 
             if (evt.triggerMode == SkillEventTriggerMode.Repeated)
             {
@@ -6545,40 +6649,45 @@ namespace Game.Editor
                     var effect = evt.damageEffects[i];
                     if (effect == null)
                     {
-                        warnings.Add($"伤害效果 {i + 1} 为空引用。");
+                        warnings.Add($"命中效果 {i + 1} 为空引用。");
                         continue;
                     }
 
                     if (string.IsNullOrWhiteSpace(effect.hitLayerName))
-                        warnings.Add($"伤害效果 {i + 1} 没有填写命中层级名。");
+                        warnings.Add($"命中效果 {i + 1} 没有填写命中层级名。");
 
                     if (effect.detectionType == DamageDetectionType.RangeOverlap)
                     {
                         if ((effect.shape == AttackShapeType.Sphere || effect.shape == AttackShapeType.Sector) && effect.sphereRadius <= 0f)
-                            warnings.Add($"伤害效果 {i + 1} 的球体半径必须大于 0。");
+                            warnings.Add($"命中效果 {i + 1} 的球体半径必须大于 0。");
 
                         if (effect.shape == AttackShapeType.Sector && effect.sectorAngle <= 0f)
-                            warnings.Add($"伤害效果 {i + 1} 的扇形角度必须大于 0。");
+                            warnings.Add($"命中效果 {i + 1} 的扇形角度必须大于 0。");
 
                         if (effect.shape == AttackShapeType.Box &&
                             (effect.boxSize.x <= 0f || effect.boxSize.y <= 0f || effect.boxSize.z <= 0f))
                         {
-                            warnings.Add($"伤害效果 {i + 1} 的盒体尺寸必须全部大于 0。");
+                            warnings.Add($"命中效果 {i + 1} 的盒体尺寸必须全部大于 0。");
                         }
                     }
                     else if (effect.detectionType == DamageDetectionType.Collision)
                     {
                         if (string.IsNullOrWhiteSpace(effect.colliderNodeName))
-                            warnings.Add($"伤害效果 {i + 1} 使用碰撞检测时必须填写武器命中盒对象名。");
+                            warnings.Add($"命中效果 {i + 1} 使用碰撞检测时必须填写武器命中盒对象名。");
                     }
                     else if (effect.detectionType == DamageDetectionType.Raycast)
                     {
                         if (effect.rayMaxDistance <= 0f)
-                            warnings.Add($"伤害效果 {i + 1} 的射线最大距离必须大于 0。");
+                            warnings.Add($"命中效果 {i + 1} 的射线最大距离必须大于 0。");
                     }
 
-                    if (effect.hitStopDuration > 0f && effect.hitStopTimeScale >= 0.999f)
-                        warnings.Add($"伤害效果 {i + 1} 配了命中停顿时长，但命中停顿速度为 1，等于没有停顿效果。");
+                    SkillHitStopEffect hitStopEffect = effect.GetEffectiveHitStopEffect();
+                    if (SkillDamageEffect.HasConfiguredHitStopEffect(hitStopEffect)
+                        && hitStopEffect.hitStopDuration > 0f
+                        && hitStopEffect.hitStopTimeScale >= 0.999f)
+                    {
+                        warnings.Add($"命中效果 {i + 1} 的命中停顿效果配了命中停顿时长，但命中停顿速度为 1，等于没有停顿效果。");
+                    }
 
                     if (effect.onHitPhysicsEffects != null)
                     {
@@ -6586,7 +6695,7 @@ namespace Game.Editor
                         {
                             SkillPhysicsEffect physics = effect.onHitPhysicsEffects[j];
                             if (physics != null && physics.IsTopLevelOnly)
-                                warnings.Add($"伤害效果 {i + 1} 的命中物理效果 {j + 1} 使用了仅限顶层的 {physics.effectType}。");
+                                warnings.Add($"命中效果 {i + 1} 的命中物理效果 {j + 1} 使用了仅限顶层的 {physics.effectType}。");
                         }
                     }
                 }
@@ -6744,19 +6853,19 @@ namespace Game.Editor
                     Transform hitboxNode = FindChildRecursive(_previewTarget.transform, effect.colliderNodeName);
                     if (hitboxNode == null)
                     {
-                        warnings.Add($"伤害轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 在当前预览对象中不存在。");
+                        warnings.Add($"命中轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 在当前预览对象中不存在。");
                         continue;
                     }
 
                     Collider hitboxCollider = hitboxNode.GetComponent<Collider>();
                     if (hitboxCollider == null)
                     {
-                        warnings.Add($"伤害轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 没有 Collider。");
+                        warnings.Add($"命中轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 没有 Collider。");
                         continue;
                     }
 
                     if (!hitboxCollider.isTrigger)
-                        warnings.Add($"伤害轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 当前未勾选 Is Trigger。运行时会自动改为 Trigger，但编辑时建议直接按 Trigger 配置。");
+                        warnings.Add($"命中轨事件#{eventIndex + 1} 的命中盒对象 “{effect.colliderNodeName}” 当前未勾选 Is Trigger。运行时会自动改为 Trigger，但编辑时建议直接按 Trigger 配置。");
                 }
             }
         }
@@ -7039,7 +7148,7 @@ namespace Game.Editor
 
             Color oldColor = Handles.color;
             Handles.color = new Color(1f, 0.25f, 0.25f, 1f);
-            DrawSceneTextLabel(origin + Vector3.up * handleSize * 0.15f, "伤害范围");
+            DrawSceneTextLabel(origin + Vector3.up * handleSize * 0.15f, "命中范围");
 
             EditorGUI.BeginChangeCheck();
             Vector3 newOrigin = Handles.PositionHandle(origin, rotation);

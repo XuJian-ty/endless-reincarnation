@@ -8,6 +8,11 @@ namespace Game.Editor
     [CustomPropertyDrawer(typeof(LevelConfigData))]
     public class LevelConfigDataDrawer : PropertyDrawer
     {
+        private const float SectionSeparatorThickness = 3f;
+        private static readonly Color SectionTitleColor = new Color(0.86f, 0.2f, 0.2f, 1f);
+        private static readonly Color SectionSeparatorColor = new Color(0.18f, 0.45f, 0.9f, 1f);
+        private static GUIStyle _sectionTitleStyle;
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property == null)
@@ -30,12 +35,19 @@ namespace Game.Editor
                 SerializedProperty sceneGuid = property.FindPropertyRelative("sceneGuid");
                 SerializedProperty library = property.FindPropertyRelative("globalSpawnPlanLibrary");
                 SerializedProperty planIndex = property.FindPropertyRelative("globalSpawnPlanIndex");
-                SerializedProperty chestMinCount = property.FindPropertyRelative("chestMinCount");
-                SerializedProperty chestMaxCount = property.FindPropertyRelative("chestMaxCount");
-                SerializedProperty shopCount = property.FindPropertyRelative("shopCount");
-                SerializedProperty cellSize = property.FindPropertyRelative("cellSize");
+                SerializedProperty minionGoldReward = property.FindPropertyRelative("minionGoldReward");
+                SerializedProperty minionExpReward = property.FindPropertyRelative("minionExpReward");
+                SerializedProperty shopGoodsEntries = property.FindPropertyRelative("shopGoodsEntries");
+                SerializedProperty eliteGoldReward = property.FindPropertyRelative("eliteGoldReward");
+                SerializedProperty eliteExpReward = property.FindPropertyRelative("eliteExpReward");
                 SerializedProperty eliteDropEntries = property.FindPropertyRelative("eliteDropEntries");
+                SerializedProperty chestDropEntries = property.FindPropertyRelative("chestDropEntries");
+                SerializedProperty guardianGoldReward = property.FindPropertyRelative("guardianGoldReward");
+                SerializedProperty guardianExpReward = property.FindPropertyRelative("guardianExpReward");
+                SerializedProperty guardianTalentReward = property.FindPropertyRelative("guardianTalentReward");
                 SerializedProperty guardianDropEntries = property.FindPropertyRelative("guardianDropEntries");
+                SerializedProperty bossGoldReward = property.FindPropertyRelative("bossGoldReward");
+                SerializedProperty bossExpReward = property.FindPropertyRelative("bossExpReward");
                 SerializedProperty bossDropEntries = property.FindPropertyRelative("bossDropEntries");
 
                 if (levelIndex != null && levelIndex.intValue != displayLevelIndex)
@@ -44,15 +56,29 @@ namespace Game.Editor
                 float y = position.y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                 y = DrawReadOnlyLevelIndex(y, position, displayLevelIndex);
                 y = DrawSceneSelector(y, position, sceneName, sceneGuid, displayLevelIndex);
+                y = DrawSectionHeader(y, position, "生成方案", false);
                 y = DrawProperty(y, position, library);
                 y = DrawPlanSelector(y, position, planIndex, library.objectReferenceValue as LevelEnemySpawnPlanSO);
-                y = DrawProperty(y, position, chestMinCount);
-                y = DrawProperty(y, position, chestMaxCount);
-                y = DrawProperty(y, position, shopCount);
-                y = DrawProperty(y, position, cellSize);
+                y = DrawSectionHeader(y, position, "小怪掉落", true);
+                y = DrawProperty(y, position, minionGoldReward);
+                y = DrawProperty(y, position, minionExpReward);
+                y = DrawSectionHeader(y, position, "精英掉落", true);
+                y = DrawProperty(y, position, eliteGoldReward);
+                y = DrawProperty(y, position, eliteExpReward);
                 y = DrawProperty(y, position, eliteDropEntries);
+                y = DrawSectionHeader(y, position, "宝箱掉落", true);
+                y = DrawProperty(y, position, chestDropEntries);
+                y = DrawSectionHeader(y, position, "守卫者掉落", true);
+                y = DrawProperty(y, position, guardianGoldReward);
+                y = DrawProperty(y, position, guardianExpReward);
+                y = DrawProperty(y, position, guardianTalentReward);
                 y = DrawProperty(y, position, guardianDropEntries);
-                DrawProperty(y, position, bossDropEntries);
+                y = DrawSectionHeader(y, position, "Boss掉落", true);
+                y = DrawProperty(y, position, bossGoldReward);
+                y = DrawProperty(y, position, bossExpReward);
+                y = DrawProperty(y, position, bossDropEntries);
+                y = DrawSectionHeader(y, position, "商店商品规则", true);
+                y = DrawProperty(y, position, shopGoodsEntries);
 
                 EditorGUI.indentLevel = oldIndent;
             }
@@ -69,15 +95,29 @@ namespace Game.Editor
             height += EditorGUIUtility.standardVerticalSpacing;
             height += GetChildHeight(property.FindPropertyRelative("levelIndex"));
             height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            height += GetSectionHeaderHeight(false);
             height += GetChildHeight(property.FindPropertyRelative("globalSpawnPlanLibrary"));
             height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-            height += GetChildHeight(property.FindPropertyRelative("chestMinCount"));
-            height += GetChildHeight(property.FindPropertyRelative("chestMaxCount"));
-            height += GetChildHeight(property.FindPropertyRelative("shopCount"));
-            height += GetChildHeight(property.FindPropertyRelative("cellSize"));
+            height += GetSectionHeaderHeight(true);
+            height += GetChildHeight(property.FindPropertyRelative("minionGoldReward"));
+            height += GetChildHeight(property.FindPropertyRelative("minionExpReward"));
+            height += GetSectionHeaderHeight(true);
+            height += GetChildHeight(property.FindPropertyRelative("eliteGoldReward"));
+            height += GetChildHeight(property.FindPropertyRelative("eliteExpReward"));
             height += GetChildHeight(property.FindPropertyRelative("eliteDropEntries"));
+            height += GetSectionHeaderHeight(true);
+            height += GetChildHeight(property.FindPropertyRelative("chestDropEntries"));
+            height += GetSectionHeaderHeight(true);
+            height += GetChildHeight(property.FindPropertyRelative("guardianGoldReward"));
+            height += GetChildHeight(property.FindPropertyRelative("guardianExpReward"));
+            height += GetChildHeight(property.FindPropertyRelative("guardianTalentReward"));
             height += GetChildHeight(property.FindPropertyRelative("guardianDropEntries"));
+            height += GetSectionHeaderHeight(true);
+            height += GetChildHeight(property.FindPropertyRelative("bossGoldReward"));
+            height += GetChildHeight(property.FindPropertyRelative("bossExpReward"));
             height += GetChildHeight(property.FindPropertyRelative("bossDropEntries"));
+            height += GetSectionHeaderHeight(true);
+            height += GetChildHeight(property.FindPropertyRelative("shopGoodsEntries"));
             return height;
         }
 
@@ -195,6 +235,20 @@ namespace Game.Editor
             return y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         }
 
+        private static float DrawSectionHeader(float y, Rect totalRect, string title, bool drawSeparator)
+        {
+            if (drawSeparator)
+            {
+                Rect lineRect = new Rect(totalRect.x, y, totalRect.width, SectionSeparatorThickness);
+                EditorGUI.DrawRect(lineRect, SectionSeparatorColor);
+                y += SectionSeparatorThickness + EditorGUIUtility.standardVerticalSpacing;
+            }
+
+            Rect rect = new Rect(totalRect.x, y, totalRect.width, EditorGUIUtility.singleLineHeight);
+            EditorGUI.LabelField(rect, title, SectionTitleStyle);
+            return y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+        }
+
         private static List<string> BuildPlanLabels(LevelEnemySpawnPlanSO library)
         {
             var labels = new List<string>(library.plans.Count);
@@ -232,6 +286,30 @@ namespace Game.Editor
                 return 0f;
 
             return EditorGUI.GetPropertyHeight(property, true) + EditorGUIUtility.standardVerticalSpacing;
+        }
+
+        private static float GetSectionHeaderHeight(bool drawSeparator)
+        {
+            float height = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            if (drawSeparator)
+                height += SectionSeparatorThickness + EditorGUIUtility.standardVerticalSpacing;
+
+            return height;
+        }
+
+        private static GUIStyle SectionTitleStyle
+        {
+            get
+            {
+                if (_sectionTitleStyle == null)
+                {
+                    _sectionTitleStyle = new GUIStyle(EditorStyles.boldLabel);
+                    _sectionTitleStyle.fontStyle = FontStyle.Bold;
+                    _sectionTitleStyle.normal.textColor = SectionTitleColor;
+                }
+
+                return _sectionTitleStyle;
+            }
         }
     }
 }

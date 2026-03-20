@@ -52,29 +52,33 @@ MonoBehaviour:
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
   locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 9100000, guid: aeaf8bdd52214b746bb280cb2ed488cd,
+    type: 2}
   skillSlots:
   - slotIndex: 0
-    skillId: elite_1_combo
+    skillId: elite_1Skill0
+    displayName: "\u6280\u80FD0"
     cooldown: 0.95
-    castRange: 2.6
+    castRange: 3
     minCastRange: 0
-    idealCastRange: 2.2
+    idealCastRange: 2.5
     skillRole: 2
     riskWeight: 0.28
     punishWeight: 0.35
     repeatPenalty: 0.25
-    canUseUnderThreat: 0
+    canUseUnderThreat: 1
     castDuration: 1
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
-    skillId: elite_1_slam
-    cooldown: 3.2
+    skillId: elite_1Skill1
+    displayName: "\u6280\u80FD1"
+    cooldown: 2
     castRange: 3
     minCastRange: 0
     idealCastRange: 2.7
@@ -82,12 +86,12 @@ MonoBehaviour:
     riskWeight: 0.48
     punishWeight: 0.82
     repeatPenalty: 0.34
-    canUseUnderThreat: 0
-    castDuration: 1.1
+    canUseUnderThreat: 1
+    castDuration: 1
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.3
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0

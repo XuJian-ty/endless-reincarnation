@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levels:
   - level: 1
-    baseHp: 10000
+    baseHp: 100
     baseMp: 100
     expToNext: 120
     baseAttack: 20

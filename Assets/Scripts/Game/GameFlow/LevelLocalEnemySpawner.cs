@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Game.Data;
+using Game.Saving;
 using UnityEngine;
 
 namespace Game.GameFlow
@@ -26,7 +27,10 @@ namespace Game.GameFlow
         private readonly Queue<int> _plannedSpawnCounts = new Queue<int>();
         private int _seed;
         private int _executedTaskCount;
+        private int _taskAttemptCount;
         private float _taskTimer;
+        private bool _restoredFromSnapshot;
+        private bool _restoreFinished;
 
         private void Awake()
         {
@@ -36,16 +40,26 @@ namespace Game.GameFlow
             _variantCatalog = EnemySpawnRuntime.BuildVariantCatalog();
             ResolvePlanIfNeeded();
             PreparePlannedSpawnCounts();
+            ApplySnapshotIfAvailable();
         }
 
         private IEnumerator Start()
         {
+            if (_restoreFinished)
+            {
+                MarkFinished();
+                yield break;
+            }
+
+            if (_restoredFromSnapshot)
+                yield break;
+
             yield return null;
             TryExecuteOneTask();
 
             if (_resolvedPlan == null || _resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnOnce)
             {
-                Destroy(this);
+                MarkFinished();
                 yield break;
             }
 
@@ -60,7 +74,7 @@ namespace Game.GameFlow
             if (_resolvedPlan.taskTotalMode == LocalEnemySpawnTaskTotalMode.FixedCount &&
                 _executedTaskCount >= Mathf.Max(1, _resolvedPlan.totalTaskCount))
             {
-                Destroy(this);
+                MarkFinished();
                 return;
             }
 
@@ -80,8 +94,10 @@ namespace Game.GameFlow
 
             Vector3 center = transform.position;
             EnemySpawnRuntime.TryResolveCenterOnNavMesh(transform.position, out center);
-            int spawnCount = DequeuePlannedSpawnCount();
-            if (EnemySpawnRuntime.TrySpawnTask(_resolvedTask, spawnCount, center, _rng, _variantCatalog))
+            System.Random taskRng = CreateTaskRandom(_taskAttemptCount);
+            _taskAttemptCount++;
+            int spawnCount = DequeuePlannedSpawnCount(taskRng);
+            if (EnemySpawnRuntime.TrySpawnTask(_resolvedTask, spawnCount, center, taskRng, _variantCatalog))
                 _executedTaskCount++;
         }
 
@@ -106,6 +122,53 @@ namespace Game.GameFlow
                 total += _resolvedTask.ResolveSpawnCount(previewRng);
 
             return total;
+        }
+
+        public string GetSnapshotId()
+        {
+            Vector3 position = transform.position;
+            string sceneName = gameObject.scene.IsValid() ? gameObject.scene.name : string.Empty;
+            return $"{sceneName}|{gameObject.name}|{position.x:F3}|{position.y:F3}|{position.z:F3}|{_planIndex}";
+        }
+
+        public bool TryBuildSnapshot(out LocalSpawnerSnapshotSave snapshot)
+        {
+            snapshot = null;
+            if (!ResolvePlanIfNeeded())
+                return false;
+
+            snapshot = new LocalSpawnerSnapshotSave
+            {
+                spawnerId = GetSnapshotId(),
+                isFinished = IsFinished(),
+                executedTaskCount = Mathf.Max(0, _executedTaskCount),
+                attemptCount = Mathf.Max(0, _taskAttemptCount),
+                taskTimer = Mathf.Max(0f, _taskTimer),
+                plannedSpawnCounts = new List<int>(_plannedSpawnCounts),
+            };
+            return true;
+        }
+
+        public void RestoreSnapshot(LocalSpawnerSnapshotSave snapshot)
+        {
+            if (snapshot == null || !string.Equals(snapshot.spawnerId, GetSnapshotId(), StringComparison.Ordinal))
+                return;
+
+            if (!ResolvePlanIfNeeded())
+                return;
+
+            _restoredFromSnapshot = true;
+            _restoreFinished = snapshot.isFinished;
+            _executedTaskCount = Mathf.Max(0, snapshot.executedTaskCount);
+            _taskAttemptCount = Mathf.Max(0, snapshot.attemptCount);
+            _taskTimer = Mathf.Max(0f, snapshot.taskTimer);
+            _plannedSpawnCounts.Clear();
+
+            if (snapshot.plannedSpawnCounts == null)
+                return;
+
+            for (int i = 0; i < snapshot.plannedSpawnCounts.Count; i++)
+                _plannedSpawnCounts.Enqueue(Mathf.Max(0, snapshot.plannedSpawnCounts[i]));
         }
 
         public int GetPendingGuardianCount()
@@ -174,12 +237,68 @@ namespace Game.GameFlow
                 _plannedSpawnCounts.Enqueue(_resolvedTask.ResolveSpawnCount(previewRng));
         }
 
-        private int DequeuePlannedSpawnCount()
+        private int DequeuePlannedSpawnCount(System.Random rng)
         {
             if (_plannedSpawnCounts.Count > 0)
                 return _plannedSpawnCounts.Dequeue();
 
-            return _resolvedTask != null ? _resolvedTask.ResolveSpawnCount(_rng) : 0;
+            return _resolvedTask != null ? _resolvedTask.ResolveSpawnCount(rng) : 0;
+        }
+
+        private void ApplySnapshotIfAvailable()
+        {
+            LevelSnapshot snapshot = GameStateMachine.GetInstance()?.CurrentRun?.levelSnapshot;
+            if (snapshot == null || snapshot.runtimeSnapshotVersion <= 0)
+                return;
+
+            string snapshotId = GetSnapshotId();
+            if (snapshot.localSpawners != null)
+            {
+                for (int i = 0; i < snapshot.localSpawners.Count; i++)
+                {
+                    LocalSpawnerSnapshotSave spawnerSnapshot = snapshot.localSpawners[i];
+                    if (spawnerSnapshot != null && string.Equals(spawnerSnapshot.spawnerId, snapshotId, StringComparison.Ordinal))
+                    {
+                        RestoreSnapshot(spawnerSnapshot);
+                        return;
+                    }
+                }
+            }
+
+            // 兼容旧运行时快照：当敌人已按快照恢复，但旧存档中尚未记录局部生成器状态时，
+            // 禁止场景内局部生成器再次 fresh spawn，避免和快照敌人叠加。
+            _restoredFromSnapshot = true;
+            _restoreFinished = true;
+            _plannedSpawnCounts.Clear();
+        }
+
+        private bool IsFinished()
+        {
+            if (_restoreFinished)
+                return true;
+
+            if (_resolvedPlan == null)
+                return false;
+
+            if (_resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnOnce)
+                return _executedTaskCount > 0;
+
+            if (_resolvedPlan.taskTotalMode == LocalEnemySpawnTaskTotalMode.FixedCount)
+                return _executedTaskCount >= Mathf.Max(1, _resolvedPlan.totalTaskCount);
+
+            return false;
+        }
+
+        private void MarkFinished()
+        {
+            _restoreFinished = true;
+            enabled = false;
+        }
+
+        private System.Random CreateTaskRandom(int attemptCount)
+        {
+            int salt = unchecked((int)0x9E3779B9);
+            return new System.Random(unchecked(_seed ^ (attemptCount * salt)));
         }
     }
 }

@@ -52,10 +52,13 @@ MonoBehaviour:
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
   locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 9100000, guid: 9b812735d79d4e047a6346159f6ec054,
+    type: 2}
   skillSlots:
   - slotIndex: 0
-    skillId: guardian_2_bash
-    cooldown: 3.4
+    skillId: guardian_2Skill0
+    displayName: "\u6280\u80FD0"
+    cooldown: 1.5
     castRange: 3.2
     minCastRange: 0
     idealCastRange: 2.8
@@ -63,20 +66,21 @@ MonoBehaviour:
     riskWeight: 0.42
     punishWeight: 0.4
     repeatPenalty: 0.28
-    canUseUnderThreat: 0
+    canUseUnderThreat: 1
     castDuration: 1
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.3
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
-    skillId: guardian_2_chain_pull
-    cooldown: 4.2
+    skillId: guardian_2Skill1
+    displayName: "\u6280\u80FD1"
+    cooldown: 1.5
     castRange: 5
-    minCastRange: 2
+    minCastRange: 0
     idealCastRange: 4.3
     skillRole: 3
     riskWeight: 0.38
@@ -87,7 +91,7 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0

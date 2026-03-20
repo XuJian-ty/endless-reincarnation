@@ -3,12 +3,20 @@ using Game;
 using Game.Data;
 using Game.Domain;
 using Game.Presentation;
+using Game.Saving;
+using Game.UI;
+using Newtonsoft.Json;
 using ProjectBase;
+using UnityEngine.SceneManagement;
+
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace Game.GameFlow
 {
     /// <summary>
-    /// 地面掉落物运行时对象：显示图标，玩家触碰后进入背包并销毁自身。
+    /// 地面掉落物运行时对象：显示图标，玩家触碰或在附近按 E 后进入背包并销毁自身。
     /// </summary>
     public sealed class DroppedPickupRuntime : MonoBehaviour
     {
@@ -16,20 +24,31 @@ namespace Game.GameFlow
         private const float DefaultHoverAmplitude = 0.08f;
         private const float DefaultHoverFrequency = 2.4f;
         private const float DefaultPickupRadius = 0.7f;
+        private const float DefaultInteractDistance = 1.25f;
         private const float DefaultIconScale = 0.2f;
 
         private static Sprite _fallbackSprite;
+        private static readonly System.Collections.Generic.List<DroppedPickupRuntime> ActivePickups = new System.Collections.Generic.List<DroppedPickupRuntime>();
 
         private SpriteRenderer _iconRenderer;
         private Vector3 _basePosition;
         private float _spawnTime;
         private float _hoverAmplitude = DefaultHoverAmplitude;
         private float _hoverFrequency = DefaultHoverFrequency;
+        private float _interactDistance = DefaultInteractDistance;
         private string _stackItemId;
         private int _stackCount;
         private WeaponInstance _weapon;
         private bool _pickedUp;
         private bool _initialized;
+        private bool _requireFreshInteractPickup;
+        private bool _waitForInteractRelease;
+        private Transform _playerTransform;
+
+#if ENABLE_INPUT_SYSTEM
+        private PlayerInput _playerInput;
+        private InputAction _interactAction;
+#endif
 
         public static DroppedPickupRuntime SpawnStackable(string itemId, int count, Vector3 position, System.Random rng = null)
         {
@@ -54,6 +73,110 @@ namespace Game.GameFlow
             pickup.RefreshVisual();
             pickup._initialized = true;
             return pickup;
+        }
+
+        public void RequireFreshInteractPickup()
+        {
+            _requireFreshInteractPickup = true;
+#if ENABLE_INPUT_SYSTEM
+            _waitForInteractRelease = IsInteractCurrentlyPressed();
+#else
+            _waitForInteractRelease = false;
+#endif
+        }
+
+        public static DroppedPickupRuntime SpawnFromSave(GroundDropSave save)
+        {
+            if (save == null)
+                return null;
+
+            Vector3 position = new Vector3(save.x, save.y, save.z);
+            if (string.Equals(save.itemType, "weapon", System.StringComparison.OrdinalIgnoreCase))
+            {
+                WeaponInstance weapon = null;
+                if (!string.IsNullOrWhiteSpace(save.payload))
+                {
+                    try
+                    {
+                        weapon = JsonConvert.DeserializeObject<WeaponInstance>(save.payload);
+                    }
+                    catch (JsonException)
+                    {
+                        return null;
+                    }
+                }
+
+                if (weapon == null)
+                    return null;
+
+                DroppedPickupRuntime pickup = SpawnWeapon(weapon, position, null);
+                if (pickup != null)
+                {
+                    pickup._basePosition = position;
+                    pickup.transform.position = position;
+                }
+
+                return pickup;
+            }
+
+            ItemStackSave stack = null;
+            if (!string.IsNullOrWhiteSpace(save.payload))
+            {
+                try
+                {
+                    stack = JsonConvert.DeserializeObject<ItemStackSave>(save.payload);
+                }
+                catch (JsonException)
+                {
+                    stack = null;
+                }
+            }
+
+            string itemId = stack != null ? stack.itemId : save.payload;
+            int count = stack != null ? Mathf.Max(1, stack.count) : 1;
+            if (string.IsNullOrWhiteSpace(itemId))
+                return null;
+
+            DroppedPickupRuntime stackPickup = SpawnStackable(itemId, count, position, null);
+            if (stackPickup != null)
+            {
+                stackPickup._basePosition = position;
+                stackPickup.transform.position = position;
+            }
+
+            return stackPickup;
+        }
+
+        public bool TryBuildSave(out GroundDropSave save)
+        {
+            save = null;
+            if (!_initialized || _pickedUp)
+                return false;
+
+            save = new GroundDropSave
+            {
+                x = _basePosition.x,
+                y = _basePosition.y,
+                z = _basePosition.z,
+            };
+
+            if (_weapon != null)
+            {
+                save.itemType = "weapon";
+                save.payload = JsonConvert.SerializeObject(_weapon);
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(_stackItemId) || _stackCount <= 0)
+                return false;
+
+            save.itemType = "stackable";
+            save.payload = JsonConvert.SerializeObject(new ItemStackSave
+            {
+                itemId = _stackItemId,
+                count = _stackCount,
+            });
+            return true;
         }
 
         private static DroppedPickupRuntime CreateRuntimeObject(Vector3 position, System.Random rng)
@@ -87,6 +210,7 @@ namespace Game.GameFlow
 
             _hoverAmplitude = GetHoverAmplitude(visualConfig);
             _hoverFrequency = GetHoverFrequency(visualConfig);
+            _interactDistance = Mathf.Max(GetPickupRadius(visualConfig), DefaultInteractDistance);
         }
 
         private void ResetPosition(Vector3 position, System.Random rng)
@@ -138,6 +262,22 @@ namespace Game.GameFlow
             float hoverOffset = Mathf.Sin((Time.time - _spawnTime) * _hoverFrequency) * _hoverAmplitude;
             transform.position = _basePosition + Vector3.up * hoverOffset;
             FaceCamera();
+#if ENABLE_INPUT_SYSTEM
+            if (_waitForInteractRelease && !IsInteractCurrentlyPressed())
+                _waitForInteractRelease = false;
+#endif
+            TryPickupWithInteract();
+        }
+
+        private void OnEnable()
+        {
+            if (!ActivePickups.Contains(this))
+                ActivePickups.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            ActivePickups.Remove(this);
         }
 
         private void OnTriggerEnter(Collider other)
@@ -152,7 +292,19 @@ namespace Game.GameFlow
 
         private void TryPickup(Collider other)
         {
-            if (_pickedUp || !IsPlayerCollider(other))
+            if (_pickedUp || _requireFreshInteractPickup || !IsPlayerCollider(other))
+                return;
+
+            PlayerController playerController = other.GetComponentInParent<PlayerController>();
+            if (playerController == null)
+                return;
+
+            TryPickup(playerController);
+        }
+
+        private void TryPickup(PlayerController playerController)
+        {
+            if (_pickedUp || playerController == null)
                 return;
 
             var player = GameStateMachine.GetInstance()?.Player;
@@ -181,6 +333,167 @@ namespace Game.GameFlow
             _pickedUp = true;
             EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
             Destroy(gameObject);
+        }
+
+        private void TryPickupWithInteract()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (GameplayUIInputBridge.IsAnyGameplayPanelOpen())
+                return;
+
+            if (GameStateMachine.GetInstance()?.IsGameplayPaused == true)
+                return;
+
+            Transform playerTransform = ResolvePlayerTransform();
+            if (playerTransform == null || !IsWithinInteractRange(playerTransform))
+                return;
+
+            if (!IsNearestInteractablePickup(playerTransform))
+                return;
+
+            if (!WasInteractPressedThisFrame())
+                return;
+
+            if (_waitForInteractRelease)
+                return;
+
+            PlayerController playerController = playerTransform.GetComponent<PlayerController>();
+            if (playerController == null)
+                playerController = playerTransform.GetComponentInParent<PlayerController>();
+            if (playerController == null)
+                return;
+
+            TryPickup(playerController);
+#endif
+        }
+
+        private bool IsWithinInteractRange(Transform playerTransform)
+        {
+            if (playerTransform == null)
+                return false;
+
+            Vector3 offset = playerTransform.position - transform.position;
+            offset.y = 0f;
+            return offset.sqrMagnitude <= _interactDistance * _interactDistance;
+        }
+
+        private bool IsNearestInteractablePickup(Transform playerTransform)
+        {
+            DroppedPickupRuntime nearestPickup = null;
+            float nearestDistanceSqr = float.MaxValue;
+
+            for (int i = ActivePickups.Count - 1; i >= 0; i--)
+            {
+                DroppedPickupRuntime pickup = ActivePickups[i];
+                if (pickup == null)
+                {
+                    ActivePickups.RemoveAt(i);
+                    continue;
+                }
+
+                if (!pickup.CanBeInteractPicked())
+                    continue;
+
+                Vector3 offset = playerTransform.position - pickup.transform.position;
+                offset.y = 0f;
+                float distanceSqr = offset.sqrMagnitude;
+                if (distanceSqr > pickup._interactDistance * pickup._interactDistance)
+                    continue;
+
+                if (nearestPickup == null ||
+                    distanceSqr < nearestDistanceSqr ||
+                    (Mathf.Approximately(distanceSqr, nearestDistanceSqr) && pickup.GetInstanceID() < nearestPickup.GetInstanceID()))
+                {
+                    nearestPickup = pickup;
+                    nearestDistanceSqr = distanceSqr;
+                }
+            }
+
+            return nearestPickup == this;
+        }
+
+        private bool CanBeInteractPicked()
+        {
+            return !_pickedUp && _initialized && isActiveAndEnabled;
+        }
+
+#if ENABLE_INPUT_SYSTEM
+        private bool WasInteractPressedThisFrame()
+        {
+            InputAction interactAction = ResolveInteractAction();
+            return interactAction != null && interactAction.WasPressedThisFrame();
+        }
+
+        private bool IsInteractCurrentlyPressed()
+        {
+            InputAction interactAction = ResolveInteractAction();
+            return interactAction != null && interactAction.IsPressed();
+        }
+
+        private InputAction ResolveInteractAction()
+        {
+            if (_interactAction != null)
+                return _interactAction;
+
+            Transform playerTransform = ResolvePlayerTransform();
+            if (playerTransform == null)
+                return null;
+
+            PlayerInput playerInput = playerTransform.GetComponent<PlayerInput>();
+            if (playerInput == null)
+                playerInput = playerTransform.GetComponentInParent<PlayerInput>();
+            if (playerInput == null)
+                return null;
+
+            if (_playerInput != playerInput)
+            {
+                _playerInput = playerInput;
+                _interactAction = null;
+            }
+
+            _interactAction = _playerInput.actions?.FindAction("Interact");
+            return _interactAction;
+        }
+#endif
+
+        private Transform ResolvePlayerTransform()
+        {
+            if (IsUsablePlayerTransform(_playerTransform))
+                return _playerTransform;
+
+            Transform levelPlayerTransform = GameStateMachine.GetInstance()?.LevelPlayerTransform;
+            if (IsUsablePlayerTransform(levelPlayerTransform))
+            {
+                _playerTransform = levelPlayerTransform;
+                return _playerTransform;
+            }
+
+            PlayerController controller = FindFirstObjectByType<PlayerController>();
+            Transform scenePlayerTransform = controller != null ? controller.transform : null;
+            if (IsUsablePlayerTransform(scenePlayerTransform))
+            {
+                _playerTransform = scenePlayerTransform;
+                return _playerTransform;
+            }
+
+            _playerTransform = null;
+            return null;
+        }
+
+        private bool IsUsablePlayerTransform(Transform playerTransform)
+        {
+            if (playerTransform == null || !playerTransform.gameObject.activeInHierarchy)
+                return false;
+
+            Scene playerScene = playerTransform.gameObject.scene;
+            if (!playerScene.IsValid() || !playerScene.isLoaded)
+                return false;
+
+            Scene currentScene = gameObject.scene;
+            if (currentScene.IsValid() && currentScene.isLoaded && playerScene != currentScene)
+                return false;
+
+            return true;
         }
 
         private static bool IsPlayerCollider(Collider other)

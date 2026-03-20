@@ -23,6 +23,9 @@ namespace Game
         /// <summary>玩家死亡；流程层已通过 PlayerController.OnPlayerDied 订阅，此处供 UI 等复用</summary>
         public const string PlayerDied = "PlayerDied";
 
+        /// <summary>战斗数字显示请求；参数传 CombatNumberRequest。</summary>
+        public const string CombatNumberRequested = "CombatNumberRequested";
+
         // ── 拾取与背包 ───────────────────────────────────────────────────
         /// <summary>拾取物品；参数可传 itemId 或 WeaponInstance 等</summary>
         public const string ItemPickedUp = "ItemPickedUp";

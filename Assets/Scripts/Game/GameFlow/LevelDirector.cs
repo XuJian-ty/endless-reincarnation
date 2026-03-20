@@ -16,11 +16,12 @@ namespace Game.GameFlow
     public class LevelDirector : MonoBehaviour
     {
         private const float GuardianStateCheckInterval = 0.2f;
+        private const string BossArrivalNoticeMessage = "最终Boss即将降临！";
 
         // 配置由 ConfigManager 单例提供，无需挂载
         [Header("Boss 流程")]
         [SerializeField] [Tooltip("守卫者清空后，延迟多少秒生成 Boss。")]
-        private float _bossSpawnDelay = 5f;
+        private float _bossSpawnDelay = 2f;
 
         [Header("生成器")]
         [SerializeField] [Tooltip("关卡怪物生成器。建议在场景中显式挂载，而不是运行时自动创建。")]
@@ -37,6 +38,7 @@ namespace Game.GameFlow
         private bool _bossSpawned;
         private bool _bossDefeated;
         private Coroutine _bossSpawnRoutine;
+        private float _bossSpawnReadyTime = -1f;
         private float _guardianStateCheckTimer;
 
         private void Awake()
@@ -61,6 +63,10 @@ namespace Game.GameFlow
 
             EventCenter.GetInstance().AddEventListener(GameEvents.GuardianDied, OnGuardianDied);
             EventCenter.GetInstance().AddEventListener<string>(GameEvents.BossDefeated, OnBossDefeated);
+
+            ApplySnapshotIfAvailable();
+            if (HasRuntimeSnapshotToRestore())
+                return;
 
             TryScheduleBossSpawnIfReady();
         }
@@ -88,7 +94,10 @@ namespace Game.GameFlow
             }
 
             if (_bossSpawnRoutine != null)
+            {
                 StopCoroutine(_bossSpawnRoutine);
+                _bossSpawnReadyTime = -1f;
+            }
         }
 
         private void OnGuardianDied()
@@ -108,23 +117,75 @@ namespace Game.GameFlow
                 StopCoroutine(_bossSpawnRoutine);
                 _bossSpawnRoutine = null;
             }
+            _bossSpawnReadyTime = -1f;
 
-            _bossProgressService?.OnBossDefeated(bossId);
             ShowBossResultPanel(bossId);
         }
 
-        private void ScheduleBossSpawn()
+        public string GetSnapshotId()
+        {
+            Vector3 position = transform.position;
+            string sceneName = gameObject.scene.IsValid() ? gameObject.scene.name : string.Empty;
+            return $"{sceneName}|{gameObject.name}|{position.x:F3}|{position.y:F3}|{position.z:F3}";
+        }
+
+        public bool TryBuildSnapshot(out LevelDirectorSnapshotSave snapshot)
+        {
+            snapshot = new LevelDirectorSnapshotSave
+            {
+                directorId = GetSnapshotId(),
+                bossSpawned = _bossSpawned,
+                bossDefeated = _bossDefeated,
+                hasPendingBossSpawn = _bossSpawnRoutine != null,
+                bossSpawnRemainingTime = _bossSpawnRoutine != null
+                    ? Mathf.Max(0f, _bossSpawnReadyTime - Time.time)
+                    : 0f,
+            };
+            return true;
+        }
+
+        public void RestoreSnapshot(LevelDirectorSnapshotSave snapshot)
+        {
+            if (snapshot == null || !string.Equals(snapshot.directorId, GetSnapshotId(), System.StringComparison.Ordinal))
+                return;
+
+            _bossSpawned = snapshot.bossSpawned;
+            _bossDefeated = snapshot.bossDefeated;
+
+            if (_bossSpawnRoutine != null)
+            {
+                StopCoroutine(_bossSpawnRoutine);
+                _bossSpawnRoutine = null;
+            }
+
+            _bossSpawnReadyTime = -1f;
+            if (!snapshot.hasPendingBossSpawn || _bossSpawned || _bossDefeated)
+                return;
+
+            ScheduleBossSpawn(snapshot.bossSpawnRemainingTime);
+        }
+
+        private void ScheduleBossSpawn(float delayOverride = -1f)
         {
             if (_bossSpawned || _bossDefeated || _bossSpawnRoutine != null)
                 return;
 
-            _bossSpawnRoutine = StartCoroutine(BossSpawnCountdown());
+            float delay = delayOverride >= 0f ? delayOverride : Mathf.Max(0f, _bossSpawnDelay);
+            _bossSpawnReadyTime = Time.time + delay;
+            ShowBossArrivalNotice(delay);
+            _bossSpawnRoutine = StartCoroutine(BossSpawnCountdown(delay));
         }
 
         private void TryScheduleBossSpawnIfReady()
         {
             if (_bossSpawned || _bossDefeated || _bossSpawnRoutine != null)
                 return;
+
+            if (HasLivingBoss())
+            {
+                _bossSpawned = true;
+                return;
+            }
 
             if (GetLivingGuardianCount() > 0)
                 return;
@@ -178,15 +239,15 @@ namespace Game.GameFlow
             return total;
         }
 
-        private System.Collections.IEnumerator BossSpawnCountdown()
+        private System.Collections.IEnumerator BossSpawnCountdown(float delay)
         {
-            float delay = Mathf.Max(0f, _bossSpawnDelay);
             if (delay > 0f)
                 yield return new WaitForSeconds(delay);
 
             if (_bossDefeated || _bossSpawned)
             {
                 _bossSpawnRoutine = null;
+                _bossSpawnReadyTime = -1f;
                 yield break;
             }
 
@@ -196,6 +257,7 @@ namespace Game.GameFlow
                 Debug.LogWarning("[LevelDirector] Boss 生成失败。");
 
             _bossSpawnRoutine = null;
+            _bossSpawnReadyTime = -1f;
         }
 
         private void ShowBossResultPanel(string bossId)
@@ -216,7 +278,29 @@ namespace Game.GameFlow
                     bossId,
                     hasNextLevel,
                     () => gsm.RestartCurrentLevelAtEntrance(),
-                    hasNextLevel ? () => gsm.TryAdvanceToNextLevel() : () => gsm.SaveAndQuit()));
+                    hasNextLevel
+                        ? () =>
+                        {
+                            _bossProgressService?.OnBossDefeated(bossId);
+                            gsm.TryAdvanceToNextLevel();
+                        }
+                        : () =>
+                        {
+                            _bossProgressService?.OnBossDefeated(bossId);
+                            gsm.SaveAndQuit();
+                        }));
+        }
+
+        private static void ShowBossArrivalNotice(float duration)
+        {
+            UIManager ui = UIManager.GetInstance();
+            if (ui == null)
+                return;
+
+            ui.ShowPanel<BossArrivalNoticePanel>(
+                PanelNames.BossArrivalNotice,
+                PanelLayers.BossArrivalNotice,
+                panel => panel.ShowNotice(BossArrivalNoticeMessage, Mathf.Max(0.1f, duration)));
         }
 
         private bool TrySpawnBoss()
@@ -343,6 +427,21 @@ namespace Game.GameFlow
         {
             int level = ResolveCurrentLevelIndex();
             return ConfigManager.GetInstance()?.GetLevelConfigDatabase()?.GetConfigForLevel(level);
+        }
+
+        private void ApplySnapshotIfAvailable()
+        {
+            LevelSnapshot snapshot = GameStateMachine.GetInstance()?.CurrentRun?.levelSnapshot;
+            if (snapshot == null || snapshot.runtimeSnapshotVersion <= 0 || snapshot.levelDirector == null)
+                return;
+
+            RestoreSnapshot(snapshot.levelDirector);
+        }
+
+        private static bool HasRuntimeSnapshotToRestore()
+        {
+            LevelSnapshot snapshot = GameStateMachine.GetInstance()?.CurrentRun?.levelSnapshot;
+            return snapshot != null && snapshot.runtimeSnapshotVersion > 0;
         }
 
         private int ResolveCurrentLevelIndex()

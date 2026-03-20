@@ -6,6 +6,7 @@ using Game.Domain;
 using Game.Data;
 using Game.AI;
 using Game.GameFlow;
+using Game.Saving;
 using Game;
 using ProjectBase;
 
@@ -35,7 +36,7 @@ namespace Game.Presentation
 
         [Header("节奏控制")]
         [SerializeField, Min(0f)] private float _deathDisableDelay = 1.2f;
-        [SerializeField] private bool _countsAsLevelBoss = true;
+        [SerializeField] private bool _countsAsLevelBoss = false;
 
         private EnemyRuntimeStats _stats;
         private readonly List<RuntimeStatModifier> _runtimeModifiers = new List<RuntimeStatModifier>();
@@ -72,7 +73,6 @@ namespace Game.Presentation
         private bool _loggedMissingArchetypeError;
         private float _currentPoise;
         private bool _poiseInitialized;
-        private static readonly Color HeadHealthBarColor = new Color(0.86f, 0.22f, 0.22f, 0.95f);
 
         public float Defense
         {
@@ -221,7 +221,6 @@ namespace Game.Presentation
         public float AnimatorMoveForward => _animatorMoveSigned;
         public float AnimatorMoveStrafe => _animatorMoveStrafe;
         public float CurrentPoise => _currentPoise;
-        public float HeadHealthBarHeightOffset => Archetype != null ? Mathf.Max(0f, Archetype.headHealthBarHeightOffset) : 0f;
         public float CurrentHpRatio
         {
             get
@@ -236,6 +235,7 @@ namespace Game.Presentation
             RegisterActiveEnemy();
             _rng = new System.Random();
             InitializeRuntimeState();
+            _countsAsLevelBoss = GetComponent<LevelBossVisualMarker>() != null;
             EnsureInitialized();
             EnsureHeadHealthBar();
         }
@@ -243,6 +243,72 @@ namespace Game.Presentation
         private void Start()
         {
             EnsureInitialized();
+        }
+
+        public bool TryBuildSnapshot(out EnemySnapshot snapshot)
+        {
+            snapshot = null;
+            EnsureInitialized();
+            if (_dead || string.IsNullOrWhiteSpace(EnemyId))
+                return false;
+
+            Vector3 position = transform.position;
+            Vector3? targetPosition = CurrentIntent.TargetPosition;
+            snapshot = new EnemySnapshot
+            {
+                id = EnemyId,
+                enemyType = (int)EnemyCategory,
+                x = position.x,
+                y = position.y,
+                z = position.z,
+                yaw = transform.eulerAngles.y,
+                currentHp = Mathf.Max(0f, CurrentHp),
+                currentPoise = Mathf.Max(0f, _currentPoise),
+                hurtRemainingTime = Mathf.Max(0f, _hurtRemainingTime),
+                idleRemainingTime = Mathf.Max(0f, _idleUntilTime - Time.time),
+                decisionLockRemainingTime = Mathf.Max(0f, _decisionLockUntilTime - Time.time),
+                countsAsLevelBoss = IsFinalBoss(),
+                intentType = (int)CurrentIntent.Type,
+                hasTarget = targetPosition.HasValue,
+                lastTargetX = targetPosition.HasValue ? targetPosition.Value.x : 0f,
+                lastTargetZ = targetPosition.HasValue ? targetPosition.Value.z : 0f,
+                skillCooldowns = new List<EnemySkillCooldownSave>(),
+            };
+
+            AppendSkillCooldowns(snapshot.skillCooldowns);
+            return true;
+        }
+
+        public void RestoreFromSnapshot(EnemySnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            EnsureInitialized();
+
+            transform.position = new Vector3(snapshot.x, snapshot.y, snapshot.z);
+            transform.rotation = Quaternion.Euler(0f, snapshot.yaw, 0f);
+            _countsAsLevelBoss = snapshot.countsAsLevelBoss;
+            _dead = false;
+            _deathFinalized = false;
+            _deathCleanupTime = 0f;
+            _stats.currentHp = Mathf.Clamp(snapshot.currentHp, 0f, Mathf.Max(1f, _stats.maxHp));
+            EnsurePoiseInitialized();
+            _currentPoise = Archetype != null
+                ? Mathf.Clamp(snapshot.currentPoise, 0f, Mathf.Max(0f, Archetype.poiseMax))
+                : Mathf.Max(0f, snapshot.currentPoise);
+
+            _hurtRemainingTime = Mathf.Max(0f, snapshot.hurtRemainingTime);
+            _idleUntilTime = Time.time + Mathf.Max(0f, snapshot.idleRemainingTime);
+            _decisionLockUntilTime = Time.time + Mathf.Max(0f, snapshot.decisionLockRemainingTime);
+            _activeSkill = null;
+            _activeSkillTargetPosition = null;
+            _activeSkillSequence = 0;
+            ClearPostCastRecoveryState();
+            RestoreSkillCooldowns(snapshot.skillCooldowns);
+            CurrentIntent = BuildIntentFromSnapshot(snapshot);
+            EnsureHeadHealthBar();
+            UpdateHeadHealthBar();
         }
 
         private void Update()
@@ -688,6 +754,74 @@ namespace Game.Presentation
             }
         }
 
+        private void AppendSkillCooldowns(List<EnemySkillCooldownSave> cooldowns)
+        {
+            if (cooldowns == null || Archetype?.skillSlots == null)
+                return;
+
+            var recordedSlots = new HashSet<int>();
+            for (int i = 0; i < Archetype.skillSlots.Count; i++)
+            {
+                EnemySkillSlotBinding binding = Archetype.skillSlots[i];
+                if (binding == null || !recordedSlots.Add(binding.slotIndex))
+                    continue;
+
+                float remaining = GetSkillCooldownRemaining(binding.slotIndex);
+                if (remaining <= 0f)
+                    continue;
+
+                cooldowns.Add(new EnemySkillCooldownSave
+                {
+                    slot = binding.slotIndex,
+                    remainingTime = remaining,
+                });
+            }
+        }
+
+        private void RestoreSkillCooldowns(List<EnemySkillCooldownSave> cooldowns)
+        {
+            _lastSkillCastTimeBySlot.Clear();
+            if (cooldowns == null)
+                return;
+
+            for (int i = 0; i < cooldowns.Count; i++)
+            {
+                EnemySkillCooldownSave cooldown = cooldowns[i];
+                if (cooldown == null)
+                    continue;
+
+                EnemyResolvedSkill skill = ResolveSkillSlot(cooldown.slot);
+                if (skill == null)
+                    continue;
+
+                float remaining = Mathf.Clamp(cooldown.remainingTime, 0f, skill.Cooldown);
+                if (remaining <= 0f)
+                    continue;
+
+                _lastSkillCastTimeBySlot[cooldown.slot] = Time.time - Mathf.Max(0f, skill.Cooldown - remaining);
+            }
+        }
+
+        private EnemyIntent BuildIntentFromSnapshot(EnemySnapshot snapshot)
+        {
+            EnemyIntentType type = Enum.IsDefined(typeof(EnemyIntentType), snapshot.intentType)
+                ? (EnemyIntentType)snapshot.intentType
+                : EnemyIntentType.None;
+
+            if (type == EnemyIntentType.CastSkill || type == EnemyIntentType.Dead)
+                type = EnemyIntentType.None;
+
+            Vector3? targetPosition = snapshot.hasTarget
+                ? new Vector3(snapshot.lastTargetX, transform.position.y, snapshot.lastTargetZ)
+                : (Vector3?)null;
+
+            return new EnemyIntent
+            {
+                Type = type,
+                TargetPosition = targetPosition,
+            };
+        }
+
         private void Die()
         {
             if (_dead) return;
@@ -959,7 +1093,7 @@ namespace Game.Presentation
             if (_headHealthBar == null)
                 _headHealthBar = gameObject.AddComponent<ActorHeadHealthBar>();
 
-            _headHealthBar.Configure(HeadHealthBarColor);
+            _headHealthBar.Configure();
         }
 
         private void UpdateHeadHealthBar()

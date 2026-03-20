@@ -52,23 +52,26 @@ MonoBehaviour:
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
   locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 9100000, guid: 5fed113eb77e38146922b8692f166023,
+    type: 2}
   skillSlots:
   - slotIndex: 0
-    skillId: melee_minion_chop
+    skillId: melee_minionSkill0
+    displayName: "\u6280\u80FD0"
     cooldown: 0.65
-    castRange: 2.2
+    castRange: 3
     minCastRange: 0
-    idealCastRange: 1.9
+    idealCastRange: 2.5
     skillRole: 2
     riskWeight: 0.22
     punishWeight: 0.3
     repeatPenalty: 0.22
-    canUseUnderThreat: 0
-    castDuration: 0.72
+    canUseUnderThreat: 1
+    castDuration: 0.5
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0

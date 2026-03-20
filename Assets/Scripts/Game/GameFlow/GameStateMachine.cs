@@ -147,9 +147,14 @@ namespace Game.GameFlow
 
         // ── 保存 ──────────────────────────────────────────────────────────
         /// <summary>保存当前进度到当前存档（玩家数据写入 RunData 再存盘）</summary>
-        public void SaveCurrent()
+        public void SaveCurrent(bool captureRuntimeSnapshot = true)
         {
             if (_currentRun == null || _playerModel == null || string.IsNullOrEmpty(_currentSaveId)) return;
+            if (captureRuntimeSnapshot)
+            {
+                LevelBootstrapper bootstrapper = UnityEngine.Object.FindFirstObjectByType<LevelBootstrapper>();
+                bootstrapper?.CaptureRuntimeSnapshot();
+            }
             _playerModel.SaveTo(_currentRun);
             SaveSystem.GetInstance().Save(_currentSaveId,
                 new SaveData { version = SaveSystem.CurrentVersion, playerName = _currentPlayerName ?? "", run = _currentRun });
@@ -187,9 +192,9 @@ namespace Game.GameFlow
         }
 
         /// <summary>编辑器直接运行关卡时，注入一份临时运行上下文，供关卡逻辑与 HUD 正常读取。</summary>
-        public void AdoptRuntimeContext(RunData run, PlayerModel playerModel, string playerName = "玩家")
+        public void AdoptRuntimeContext(RunData run, PlayerModel playerModel, string playerName = "玩家", string saveId = null)
         {
-            _currentSaveId = null;
+            _currentSaveId = string.IsNullOrWhiteSpace(saveId) ? null : saveId.Trim();
             _currentPlayerName = string.IsNullOrWhiteSpace(playerName) ? "玩家" : playerName.Trim();
             _currentRun = run;
             _playerModel = playerModel;
@@ -199,6 +204,31 @@ namespace Game.GameFlow
                 var buffConfig = ConfigManager.GetInstance()?.GetBuffConfig();
                 if (buffConfig != null)
                     _playerModel.ReapplyBuffModifiers(buffConfig.GetModifierForBuff);
+
+                MusicMgr.GetInstance().StopBKMusic();
+                float bgmVol = _currentRun.levelBgmEnabled ? Mathf.Clamp01(_currentRun.levelBgmVolume) : 0f;
+                MusicMgr.GetInstance().ChangeBKValue(bgmVol);
+                float sfxVol = _currentRun.soundEffectsEnabled ? Mathf.Clamp01(_currentRun.soundEffectsVolume) : 0f;
+                MusicMgr.GetInstance().ChangeSoundValue(sfxVol);
+
+                if (_currentRun.checkpoint == null && _currentRun.levelIndex == 1)
+                {
+                    RestorePlayerHealthToFull();
+                    _playerModel.SaveTo(_currentRun);
+                    _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
+                    if (!string.IsNullOrEmpty(_currentSaveId))
+                    {
+                        SaveSystem.GetInstance().Save(_currentSaveId,
+                            new SaveData
+                            {
+                                version = SaveSystem.CurrentVersion,
+                                playerName = _currentPlayerName ?? "",
+                                run = _currentRun
+                            });
+                    }
+                }
+
+                ApplyLevelBgm();
             }
             Time.timeScale = 1f;
             SetState(State.InLevel);
@@ -237,7 +267,7 @@ namespace Game.GameFlow
             var buffCfg = ConfigManager.GetInstance()?.GetBuffConfig();
             if (buffCfg != null)
                 _playerModel.ReapplyBuffModifiers(buffCfg.GetModifierForBuff);
-            SaveCurrent();
+            SaveCurrent(false);
             Debug.Log($"[GameStateMachine] 仙露复活，回滚至 Checkpoint，难度提升至 {_currentRun.difficulty}");
             Time.timeScale = 1f;
             SetState(State.InLevel);
@@ -256,7 +286,6 @@ namespace Game.GameFlow
             if (!HasLoadableNextLevel())
                 _currentRun.isGameCleared = true;
 
-            _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
             SaveCurrent();
         }
 
@@ -370,12 +399,12 @@ namespace Game.GameFlow
             _currentRun.pendingBuffSelection = forceBuffSelection || isAdvancingToDifferentLevel;
             if (_currentRun.pendingBuffSelection)
                 _currentRun.currentLevelBuffId = null;
-            if (isAdvancingToDifferentLevel)
+            if (isAdvancingToDifferentLevel || forceBuffSelection)
                 RestorePlayerHealthToFull();
             _playerModel?.SaveTo(_currentRun);
             _currentRun.levelSnapshot = null;
             _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
-            SaveCurrent();
+            SaveCurrent(false);
 
             Time.timeScale = 1f;
             SetState(State.InLevel);

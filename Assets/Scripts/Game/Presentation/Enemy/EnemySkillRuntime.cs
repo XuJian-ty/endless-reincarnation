@@ -72,7 +72,7 @@ namespace Game.Presentation
 
             string animationTrigger = !string.IsNullOrEmpty(binding.animationTrigger)
                 ? binding.animationTrigger
-                : $"CastSkill{slot}";
+                : $"Skill{slot}";
 
             return new EnemyResolvedSkill(slot, binding, sharedDef, animationTrigger);
         }

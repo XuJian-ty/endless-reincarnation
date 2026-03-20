@@ -38,10 +38,27 @@ namespace Game.Editor
             }
 
             DrawGroupSection("基础动作", PlayerSkillEntryGroup.BaseSkill, DrawBaseSkillFields);
+            if (_pendingExitGui)
+            {
+                GUIUtility.ExitGUI();
+                return;
+            }
+
             EditorGUILayout.Space(6f);
             DrawGroupSection("主动技能", PlayerSkillEntryGroup.ActiveSkill, DrawActiveSkillFields);
+            if (_pendingExitGui)
+            {
+                GUIUtility.ExitGUI();
+                return;
+            }
+
             EditorGUILayout.Space(6f);
             DrawGroupSection("被动技能", PlayerSkillEntryGroup.PassiveSkill, DrawPassiveSkillFields);
+            if (_pendingExitGui)
+            {
+                GUIUtility.ExitGUI();
+                return;
+            }
 
             serializedObject.ApplyModifiedProperties();
 
@@ -73,7 +90,12 @@ namespace Game.Editor
             }
 
             if (!deleted && group != PlayerSkillEntryGroup.BaseSkill && GUILayout.Button($"添加{title}"))
-                AddEntry(group);
+            {
+                if (group == PlayerSkillEntryGroup.ActiveSkill)
+                    AddActiveSkillEntry();
+                else
+                    AddEntry(group);
+            }
 
             EditorGUILayout.EndVertical();
 
@@ -94,8 +116,13 @@ namespace Game.Editor
             bool canDelete = group != PlayerSkillEntryGroup.BaseSkill;
             if (canDelete && GUILayout.Button("删除", GUILayout.Width(56f)))
             {
-                Undo.RecordObject(target, "删除动作或技能配置");
-                DeleteEntry(entryIndex);
+                if (group == PlayerSkillEntryGroup.ActiveSkill)
+                    DeleteActiveSkillEntry(entryProp);
+                else
+                {
+                    Undo.RecordObject(target, "删除动作或技能配置");
+                    DeleteEntry(entryIndex);
+                }
                 EditorGUILayout.EndHorizontal();
                 return true;
             }
@@ -197,7 +224,8 @@ namespace Game.Editor
 
             if (group == PlayerSkillEntryGroup.ActiveSkill)
             {
-                actionIdProp.stringValue = $"Skill{orderIndex}";
+                if (string.IsNullOrWhiteSpace(actionIdProp.stringValue))
+                    actionIdProp.stringValue = $"Skill{orderIndex}";
                 return;
             }
 
@@ -235,12 +263,47 @@ namespace Game.Editor
             ResetEntry(entryProp, group, groupOrderIndex);
         }
 
+        private void AddActiveSkillEntry()
+        {
+            serializedObject.ApplyModifiedProperties();
+
+            if (!ActiveSkillAuthoringUtility.TryAppendActiveSkill(target as SkillConfigDatabaseSO, out _, out string errorMessage))
+            {
+                Debug.LogError($"[SkillConfigDatabaseSOEditor] 添加主动技能失败：{errorMessage}");
+                _pendingExitGui = true;
+                return;
+            }
+
+            serializedObject.Update();
+            EditorUtility.SetDirty(target);
+            AssetDatabase.SaveAssetIfDirty(target);
+            _pendingExitGui = true;
+        }
+
         private void DeleteEntry(int entryIndex)
         {
             int oldSize = _entriesProp.arraySize;
             _entriesProp.DeleteArrayElementAtIndex(entryIndex);
             if (_entriesProp.arraySize == oldSize)
                 _entriesProp.DeleteArrayElementAtIndex(entryIndex);
+        }
+
+        private void DeleteActiveSkillEntry(SerializedProperty entryProp)
+        {
+            string actionId = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.actionId))?.stringValue;
+            serializedObject.ApplyModifiedProperties();
+
+            if (!ActiveSkillAuthoringUtility.TryRemoveActiveSkill(target as SkillConfigDatabaseSO, actionId, out string errorMessage))
+            {
+                Debug.LogError($"[SkillConfigDatabaseSOEditor] 删除主动技能失败：{errorMessage}");
+                _pendingExitGui = true;
+                return;
+            }
+
+            serializedObject.Update();
+            EditorUtility.SetDirty(target);
+            AssetDatabase.SaveAssetIfDirty(target);
+            _pendingExitGui = true;
         }
         private static void ResetEntry(SerializedProperty entryProp, PlayerSkillEntryGroup group, int orderIndex)
         {

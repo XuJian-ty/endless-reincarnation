@@ -52,9 +52,12 @@ MonoBehaviour:
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
   locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 9100000, guid: fff2621856ddf144aa73a5d35c1cd5c2,
+    type: 2}
   skillSlots:
   - slotIndex: 0
-    skillId: elite_2_burst_shot
+    skillId: elite_2Skill0
+    displayName: "\u6280\u80FD0"
     cooldown: 1.6
     castRange: 13
     minCastRange: 0
@@ -63,18 +66,19 @@ MonoBehaviour:
     riskWeight: 0.28
     punishWeight: 0.3
     repeatPenalty: 0.22
-    canUseUnderThreat: 0
+    canUseUnderThreat: 1
     castDuration: 1.2
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
-    skillId: elite_2_hook_pull
-    cooldown: 3.6
+    skillId: elite_2Skill1
+    displayName: "\u6280\u80FD1"
+    cooldown: 2
     castRange: 4
     minCastRange: 1.5
     idealCastRange: 3.4
@@ -87,7 +91,7 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0

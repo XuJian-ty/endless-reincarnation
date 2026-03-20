@@ -24,14 +24,6 @@ MonoBehaviour:
       clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
     - animationId: Attack3
       clip: {fileID: 7400000, guid: 8c61509d4e3f9ab448b5de547fe2f96e, type: 2}
-    - animationId: Skill0
-      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
-    - animationId: Skill1
-      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
-    - animationId: Skill2
-      clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
-    - animationId: Skill3
-      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     - animationId: AirAttack
       clip: {fileID: 7400000, guid: b0ae0baa716e5924b82d3a08aa751647, type: 2}
     - animationId: FallAttackEnd
@@ -52,36 +44,104 @@ MonoBehaviour:
       clip: {fileID: 7400000, guid: 4164e076c17d81a4ea4108422b125f3f, type: 2}
     - animationId: ChargeLoop
       clip: {fileID: 7400000, guid: 6acbbbccbff6bc543bcbbf8e048550a7, type: 2}
+    - animationId: Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - animationId: Skill2
+      clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - animationId: Skill3
+      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
   - groupId: melee_minion
     groupName: "\u8FD1\u6218\u5C0F\u602A"
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
   - groupId: ranged_minion
     groupName: "\u8FDC\u7A0B\u5C0F\u602A"
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
   - groupId: elite_1
     groupName: "\u7CBE\u82F11"
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
   - groupId: elite_2
     groupName: "\u7CBE\u82F12"
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
   - groupId: guardian_1
     groupName: "\u5B88\u536B\u80051"
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
   - groupId: guardian_2
     groupName: "\u5B88\u536B\u80052"
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
   - groupId: boss_1
     groupName: Boss1
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
+    - animationId: Skill2
+      clip: {fileID: 0}
+    - animationId: Skill3
+      clip: {fileID: 0}
   - groupId: boss_2
     groupName: Boss2
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
+    - animationId: Skill2
+      clip: {fileID: 0}
+    - animationId: Skill3
+      clip: {fileID: 0}
   - groupId: boss_3
     groupName: Boss3
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
+    - animationId: Skill2
+      clip: {fileID: 0}
+    - animationId: Skill3
+      clip: {fileID: 0}
   - groupId: boss_4
     groupName: Boss4
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
+    - animationId: Skill2
+      clip: {fileID: 0}
+    - animationId: Skill3
+      clip: {fileID: 0}
   - groupId: boss_5
     groupName: Boss5
-    entries: []
+    entries:
+    - animationId: Skill0
+      clip: {fileID: 0}
+    - animationId: Skill1
+      clip: {fileID: 0}
+    - animationId: Skill2
+      clip: {fileID: 0}
+    - animationId: Skill3
+      clip: {fileID: 0}

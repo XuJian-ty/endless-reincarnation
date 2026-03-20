@@ -114,12 +114,17 @@ namespace Game.Saving
     [Serializable]
     public class LevelSnapshot
     {
+        public int   runtimeSnapshotVersion;
         public int   seed;
         public float playerX, playerY, playerZ;
         public float playerYaw;
         public List<EnemySnapshot>  enemies      = new List<EnemySnapshot>();
         public List<string>         openedChestIds = new List<string>();
         public List<GroundDropSave> groundDrops  = new List<GroundDropSave>();
+        public List<ShopSnapshotSave> shops = new List<ShopSnapshotSave>();
+        public GlobalSpawnerSnapshotSave globalSpawner;
+        public List<LocalSpawnerSnapshotSave> localSpawners = new List<LocalSpawnerSnapshotSave>();
+        public LevelDirectorSnapshotSave levelDirector;
     }
 
     [Serializable]
@@ -128,14 +133,28 @@ namespace Game.Saving
         public string id;
         public int    enemyType; // 0近战 1远程 2精英 3守卫者 4Boss
         public float  x, y, z;
+        public float  yaw;
         public float  currentHp;
+        public float  currentPoise;
+        public float  hurtRemainingTime;
+        public float  idleRemainingTime;
+        public float  decisionLockRemainingTime;
+        public bool   countsAsLevelBoss;
 
-        /// <summary>AI 状态：当前意图类型（0=None,1=Patrol,2=Chase,3=CastSkill,4=Hurt,5=Idle,6=Dead）</summary>
+        /// <summary>AI 状态：当前意图类型，枚举值见 EnemyIntentType。</summary>
         public int intentType;
-        /// <summary>是否正在追击（有目标）</summary>
+        /// <summary>当前意图是否带目标点。</summary>
         public bool hasTarget;
-        /// <summary>丢失目标或存档时记录的最后目标 XZ（Y 可选）</summary>
+        /// <summary>当前意图目标点的 XZ。</summary>
         public float lastTargetX, lastTargetZ;
+        public List<EnemySkillCooldownSave> skillCooldowns = new List<EnemySkillCooldownSave>();
+    }
+
+    [Serializable]
+    public class EnemySkillCooldownSave
+    {
+        public int slot;
+        public float remainingTime;
     }
 
     [Serializable]
@@ -144,5 +163,61 @@ namespace Game.Saving
         public string itemType; // "gold" / "weapon" / "potion" 等
         public string payload;  // JSON 或 id
         public float  x, y, z;
+    }
+
+    [Serializable]
+    public class ShopSnapshotSave
+    {
+        public string shopId;
+        public List<ShopOfferSave> offers = new List<ShopOfferSave>();
+    }
+
+    [Serializable]
+    public class ShopOfferSave
+    {
+        public bool isWeapon;
+        public string stackItemId;
+        public string weaponId;
+        public WeaponRarity weaponRarity;
+        public int remainingCount;
+    }
+
+    [Serializable]
+    public class SpawnTaskRequestSave
+    {
+        public int taskIndex;
+        public int spawnCount;
+        public int remainingRetries;
+        public int taskSeed;
+    }
+
+    [Serializable]
+    public class GlobalSpawnerSnapshotSave
+    {
+        public string spawnerId;
+        public bool isFinished;
+        public float taskSpawnTimer;
+        public List<SpawnTaskRequestSave> pendingTasks = new List<SpawnTaskRequestSave>();
+    }
+
+    [Serializable]
+    public class LocalSpawnerSnapshotSave
+    {
+        public string spawnerId;
+        public bool isFinished;
+        public int executedTaskCount;
+        public int attemptCount;
+        public float taskTimer;
+        public List<int> plannedSpawnCounts = new List<int>();
+    }
+
+    [Serializable]
+    public class LevelDirectorSnapshotSave
+    {
+        public string directorId;
+        public bool bossSpawned;
+        public bool bossDefeated;
+        public bool hasPendingBossSpawn;
+        public float bossSpawnRemainingTime;
     }
 }

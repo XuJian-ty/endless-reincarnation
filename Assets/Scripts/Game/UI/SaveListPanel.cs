@@ -16,7 +16,7 @@ namespace Game.UI
     }
 
     /// <summary>
-    /// 存档选择面板：加载存档时弹出，仅列出已存在的存档，每项显示玩家名字；左键点击加载，右键点击弹出存档菜单（重置/删除）。
+    /// 存档选择面板：加载存档时弹出，仅列出已存在的存档，每项显示玩家名字和关卡；左键点击加载，右键点击弹出存档菜单（重置/删除）。
     /// 右键点到存档行会打开/切换到该存档的菜单；只有右键点到非存档区域时才关闭菜单。左键点菜单外仍会关闭。
     /// 子控件约定：Content（带 VerticalLayoutGroup 的父物体）、Btn_Close；可选 SaveContextMenuPanel（内含 Blocker、MenuBody、Btn_Reset、Btn_Delete），不挂则运行时自动创建。
     /// </summary>
@@ -254,7 +254,7 @@ namespace Game.UI
 
                 var text = row.GetComponentInChildren<Text>();
                 if (text != null)
-                    text.text = $"{entry.playerName}\n关卡 {entry.levelIndex}";
+                    text.text = $"{entry.playerName} 关卡{entry.levelIndex}";
 
                 string id = entry.id;
                 var marker = row.GetComponent<SaveListRowMarker>() ?? row.AddComponent<SaveListRowMarker>();

@@ -78,11 +78,6 @@ namespace Game.Data
         [InspectorLabel("感知视点高度(米)")]
         [Min(0f)] public float perceptionEyeHeight = 1.2f;
 
-        [Header("头顶UI")]
-        [InspectorLabel("头顶血条高度(米)")]
-        [Tooltip("头顶血条根节点相对敌人原点的本地高度。")]
-        [Min(0f)] public float headHealthBarHeightOffset = 2f;
-
         [Header("战斗人格")]
         [InspectorLabel("反应最短延迟(秒)")]
         [Tooltip("敌人在重新思考前至少要等待多久。更小会更灵敏，但也更像读输入。")]
@@ -158,6 +153,11 @@ namespace Game.Data
         [InspectorLabel("Locomotion技能ID")]
         [Tooltip("敌人进入 Locomotion 循环状态时，自动从技能库启动一次该技能时间轴。留空则不触发。")]
         public string locomotionSkillId = "EnemyLocomotion";
+
+        [Header("技能作者化")]
+        [InspectorLabel("专属动画控制器")]
+        [Tooltip("敌人技能一键添加/删除时要同步更新的 AnimatorController。建议每个敌人使用独立控制器。")]
+        public RuntimeAnimatorController dedicatedAnimatorController;
 
         [Header("技能槽位")]
         [InspectorLabel("技能槽列表")]

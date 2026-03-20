@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Game.Data;
 using Game.Presentation;
+using Game.Saving;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -128,11 +129,12 @@ namespace Game.GameFlow
         {
             var catalog = new EnemySpawnVariantCatalog();
             EnemyStatsDatabaseSO statsDb = ConfigManager.GetInstance()?.GetEnemyStatsDatabase();
-            if (statsDb?.entries != null)
+            IReadOnlyList<EnemyStatsEntry> allEntries = statsDb?.GetAllEntries();
+            if (allEntries != null)
             {
-                for (int i = 0; i < statsDb.entries.Count; i++)
+                for (int i = 0; i < allEntries.Count; i++)
                 {
-                    EnemyStatsEntry entry = statsDb.entries[i];
+                    EnemyStatsEntry entry = allEntries[i];
                     if (entry == null || string.IsNullOrWhiteSpace(entry.enemyId))
                         continue;
 
@@ -209,6 +211,28 @@ namespace Game.GameFlow
         public static bool TrySpawnSingleEnemy(string enemyId, EnemyType type, Vector3 position, EnemySpawnVariantCatalog catalog, bool countsAsLevelBoss = false)
         {
             return TrySpawnEnemyAtPosition(enemyId, type, position, catalog, countsAsLevelBoss);
+        }
+
+        public static EnemyController SpawnEnemyFromSnapshot(EnemySnapshot snapshot, EnemySpawnVariantCatalog catalog)
+        {
+            if (snapshot == null || string.IsNullOrWhiteSpace(snapshot.id))
+                return null;
+
+            EnemyType type = Enum.IsDefined(typeof(EnemyType), snapshot.enemyType)
+                ? (EnemyType)snapshot.enemyType
+                : EnemyType.MeleeMinion;
+
+            EnemyController controller = InstantiateEnemy(
+                snapshot.id,
+                type,
+                new Vector3(snapshot.x, snapshot.y, snapshot.z),
+                Quaternion.Euler(0f, snapshot.yaw, 0f),
+                catalog,
+                snapshot.countsAsLevelBoss,
+                false);
+
+            controller?.RestoreFromSnapshot(snapshot);
+            return controller;
         }
 
         public static string ResolveEnemyId(
@@ -325,36 +349,55 @@ namespace Game.GameFlow
 
             GameObject instance = UnityEngine.Object.Instantiate(prefab, position, ResolveStaticSpawnRotation(prefab, position));
             instance.name = prefab.name;
+            if (spawnType == EnemySpawnCategory.Chest && instance.GetComponentInChildren<ChestInteractable>(true) == null)
+                ChestInteractable.EnsureOn(instance);
             ApplySpawnEmergence(instance);
             return true;
         }
 
         private static bool TrySpawnEnemyAtPosition(string enemyId, EnemyType type, Vector3 position, EnemySpawnVariantCatalog catalog, bool countsAsLevelBoss)
         {
+            return InstantiateEnemy(enemyId, type, position, ResolveLookRotation(position), catalog, countsAsLevelBoss, true) != null;
+        }
+
+        private static EnemyController InstantiateEnemy(
+            string enemyId,
+            EnemyType type,
+            Vector3 position,
+            Quaternion rotation,
+            EnemySpawnVariantCatalog catalog,
+            bool countsAsLevelBoss,
+            bool applyEmergence)
+        {
             GameObject prefab = ResolvePrefab(enemyId, type, catalog);
             if (prefab == null)
             {
                 Debug.LogWarning($"[EnemySpawnRuntime] 未找到敌人预制体。enemyId={enemyId}, type={type}");
-                return false;
+                return null;
             }
 
-            GameObject instance = UnityEngine.Object.Instantiate(prefab, position, ResolveLookRotation(position));
+            GameObject instance = UnityEngine.Object.Instantiate(prefab, position, rotation);
             instance.name = prefab.name;
             EnemyController controller = instance.GetComponent<EnemyController>();
             if (controller != null && type == EnemyType.Boss)
-            {
-                controller.SetCountsAsLevelBoss(countsAsLevelBoss);
-                if (countsAsLevelBoss)
-                {
-                    float scaleMultiplier = ConfigManager.GetInstance()?.GetPlayerCloneAndLevelBossVisualConfig()?.levelBoss.scaleMultiplier ?? 3f;
-                    instance.transform.localScale *= scaleMultiplier;
-                    if (controller.GetComponent<LevelBossVisualMarker>() == null)
-                        controller.gameObject.AddComponent<LevelBossVisualMarker>();
-                }
-            }
+                ApplyBossVisuals(instance, controller, countsAsLevelBoss);
 
-            ApplySpawnEmergence(instance);
-            return true;
+            if (applyEmergence)
+                ApplySpawnEmergence(instance);
+
+            return controller;
+        }
+
+        private static void ApplyBossVisuals(GameObject instance, EnemyController controller, bool countsAsLevelBoss)
+        {
+            controller.SetCountsAsLevelBoss(countsAsLevelBoss);
+            if (!countsAsLevelBoss)
+                return;
+
+            float scaleMultiplier = ConfigManager.GetInstance()?.GetPlayerCloneAndLevelBossVisualConfig()?.levelBoss.scaleMultiplier ?? 3f;
+            instance.transform.localScale *= scaleMultiplier;
+            if (controller.GetComponent<LevelBossVisualMarker>() == null)
+                controller.gameObject.AddComponent<LevelBossVisualMarker>();
         }
 
         private static Quaternion ResolveLookRotation(Vector3 position)

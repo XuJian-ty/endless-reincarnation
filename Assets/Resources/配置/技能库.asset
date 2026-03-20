@@ -16,346 +16,6 @@ MonoBehaviour:
   - groupId: player
     groupName: "\u73A9\u5BB6"
     entries:
-    - skillId: Skill0
-      displayName: 
-      ignoreAnimationDamageEvents: 1
-      damageEvents:
-      - eventId: evt_1
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        damageEffects:
-        - damageMagnitude: 2
-          detectionDuration: 1
-          detectionType: 0
-          hitLayerName: Enemy
-          shape: 0
-          centerOffset: {x: 0, y: 0, z: -0.02645874}
-          rotationEuler: {x: -0, y: 0, z: 0}
-          sphereRadius: 3
-          sectorAngle: 360
-          boxSize: {x: 1, y: 1, z: 1}
-          colliderNodeName: 
-          rayOriginOffset: {x: 0, y: 0, z: 0}
-          rayMaxDistance: 50
-          motion:
-            enabled: 1
-            speed: 10
-            direction: {x: 0, y: 0, z: 1}
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          onHitPhysicsEffects:
-          - effectType: 0
-            distance: 2
-            height: 1
-            duration: 1
-          onHitAttributeEffects:
-          - statField: 0
-            targetMode: 0
-            magnitude: 0.2
-            usePercent: 1
-            duration: 0
-          - statField: 12
-            targetMode: 0
-            magnitude: 0.2
-            usePercent: 1
-            duration: 5
-          onHitVfxEffects:
-          - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
-              type: 3}
-            anchor: 0
-            offset: {x: 0, y: 0, z: 0}
-            rotationEuler: {x: -0, y: 0, z: 0}
-            scale: {x: 1, y: 1, z: 1}
-            motion:
-              enabled: 0
-              speed: 0
-              direction: {x: 0, y: 0, z: 1}
-            destroyMode: 1
-            duration: 6
-          onHitSfxEffects:
-          - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
-            anchor: 0
-            offset: {x: 0, y: 0, z: 0}
-            loop: 0
-            destroyMode: 0
-            duration: 0
-      physicsEvents:
-      - eventId: evt_3
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        physicsEffects:
-        - effectType: 7
-          distance: 1
-          height: 1
-          duration: 6
-      attributeEvents:
-      - eventId: evt_4
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        attributeEffects:
-        - statField: 2
-          targetMode: 0
-          magnitude: 0
-          usePercent: 0
-          duration: 7
-      vfxEvents:
-      - eventId: evt_1
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        vfxEffects:
-        - particlePrefab: {fileID: 7953274726775274605, guid: 011e27cfead306647a07e1c09d1cfeb9,
-            type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          scale: {x: 1, y: 1, z: 1}
-          motion:
-            enabled: 1
-            speed: 10
-            direction: {x: 0, y: 0, z: 1}
-          destroyMode: 1
-          duration: 4
-      sfxEvents:
-      - eventId: evt_2
-        startTime: 0
-        triggerMode: 1
-        activeDuration: 0.033333335
-        activeDurationMode: 0
-        repeatInterval: 0.10000001
-        sfxEffects:
-        - audioClip: {fileID: 8300000, guid: 8072efeecc8957949aca9a8ece2971ab, type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          loop: 0
-          destroyMode: 0
-          duration: 0
-    - skillId: Skill1
-      displayName: 
-      ignoreAnimationDamageEvents: 1
-      damageEvents:
-      - eventId: evt_0
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0.13333334
-          detectionType: 0
-          hitLayerName: Enemy
-          shape: 1
-          centerOffset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 3
-          sectorAngle: 180
-          boxSize: {x: 1, y: 1, z: 1}
-          colliderNodeName: 
-          rayOriginOffset: {x: 0, y: 0, z: 0}
-          rayMaxDistance: 50
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          onHitPhysicsEffects: []
-          onHitAttributeEffects:
-          - statField: 0
-            targetMode: 1
-            magnitude: 111
-            usePercent: 0
-            duration: 0
-          onHitVfxEffects: []
-          onHitSfxEffects: []
-      physicsEvents: []
-      attributeEvents: []
-      vfxEvents:
-      - eventId: evt_2
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        vfxEffects:
-        - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
-            type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          scale: {x: 1, y: 1, z: 1}
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          destroyMode: 0
-          duration: 0
-      sfxEvents:
-      - eventId: evt_1
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        sfxEffects:
-        - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          loop: 0
-          destroyMode: 0
-          duration: 0
-    - skillId: Skill2
-      displayName: 
-      ignoreAnimationDamageEvents: 1
-      damageEvents:
-      - eventId: evt_0
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0
-          detectionType: 0
-          hitLayerName: Enemy
-          shape: 1
-          centerOffset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 1.5
-          sectorAngle: 180
-          boxSize: {x: 1, y: 1, z: 1}
-          colliderNodeName: 
-          rayOriginOffset: {x: 0, y: 0, z: 0}
-          rayMaxDistance: 50
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          onHitPhysicsEffects: []
-          onHitAttributeEffects: []
-          onHitVfxEffects: []
-          onHitSfxEffects: []
-      physicsEvents: []
-      attributeEvents: []
-      vfxEvents:
-      - eventId: evt_1
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        vfxEffects:
-        - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
-            type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          scale: {x: 1, y: 1, z: 1}
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          destroyMode: 0
-          duration: 0
-      sfxEvents:
-      - eventId: evt_2
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        sfxEffects:
-        - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          loop: 0
-          destroyMode: 0
-          duration: 0
-    - skillId: Skill3
-      displayName: 
-      ignoreAnimationDamageEvents: 1
-      damageEvents:
-      - eventId: evt_0
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0
-          detectionType: 0
-          hitLayerName: Enemy
-          shape: 1
-          centerOffset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 1.5
-          sectorAngle: 180
-          boxSize: {x: 1, y: 1, z: 1}
-          colliderNodeName: 
-          rayOriginOffset: {x: 0, y: 0, z: 0}
-          rayMaxDistance: 50
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          onHitPhysicsEffects: []
-          onHitAttributeEffects: []
-          onHitVfxEffects: []
-          onHitSfxEffects: []
-      physicsEvents: []
-      attributeEvents: []
-      vfxEvents:
-      - eventId: evt_1
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        vfxEffects:
-        - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
-            type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          scale: {x: 1, y: 1, z: 1}
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          destroyMode: 0
-          duration: 0
-      sfxEvents:
-      - eventId: evt_2
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        sfxEffects:
-        - audioClip: {fileID: 8300000, guid: cd5261ff219a3e44b8550d58337e4cc2, type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          loop: 0
-          destroyMode: 0
-          duration: 0
     - skillId: Attack0
       displayName: 
       ignoreAnimationDamageEvents: 1
@@ -366,9 +26,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 5.0000005
+        - detectionDuration: 5.0000005
           detectionType: 0
           hitLayerName: Enemy
           shape: 0
@@ -384,8 +47,18 @@ MonoBehaviour:
             enabled: 1
             speed: 20
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 1
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects:
           - effectType: 0
             distance: 2
@@ -418,9 +91,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0.5
+        - detectionDuration: 0.5
           detectionType: 0
           hitLayerName: Enemy
           shape: 1
@@ -436,14 +112,81 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 1
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      - eventId: evt_6
+        startTime: 0.33333334
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 0.033333335
+          detectionType: 0
+          hitLayerName: Enemy
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          motion:
+            enabled: 1
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 1
+          - damageMagnitude: 1
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects:
+          - hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          - hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
           onHitSfxEffects: []
       physicsEvents: []
-      attributeEvents: []
+      attributeEvents:
+      - eventId: evt_5
+        startTime: 0.33333334
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        attributeEffects: []
       vfxEvents:
       - eventId: evt_0
         startTime: 0.26666668
@@ -519,9 +262,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 5.0000005
+        - detectionDuration: 5.0000005
           detectionType: 0
           hitLayerName: Enemy
           shape: 0
@@ -537,8 +283,17 @@ MonoBehaviour:
             enabled: 1
             speed: 20
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects:
           - effectType: 0
             distance: 1
@@ -571,9 +326,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0.5
+        - detectionDuration: 0.5
           detectionType: 0
           hitLayerName: Enemy
           shape: 1
@@ -589,8 +347,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -672,9 +439,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 1
+        - detectionDuration: 1
           detectionType: 0
           hitLayerName: Enemy
           shape: 1
@@ -690,8 +460,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -785,9 +564,12 @@ MonoBehaviour:
         activeDuration: 0.3
         activeDurationMode: 0
         repeatInterval: 0.10000001
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0.033333335
+        - detectionDuration: 0.033333335
           detectionType: 0
           hitLayerName: Enemy
           shape: 2
@@ -803,8 +585,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects:
           - effectType: 0
             distance: 0.5
@@ -831,9 +622,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0
-          detectionDuration: 0.033333335
+        - detectionDuration: 0.033333335
           detectionType: 0
           hitLayerName: Enemy
           shape: 2
@@ -849,8 +643,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -945,9 +748,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 2
+        - detectionDuration: 2
           detectionType: 0
           hitLayerName: Enemy
           shape: 0
@@ -963,8 +769,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1038,9 +853,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Enemy
           shape: 1
@@ -1056,8 +874,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1108,9 +935,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Enemy
           shape: 1
@@ -1126,8 +956,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1243,19 +1082,399 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: EnemyLocomotion
+    - skillId: Skill0
       displayName: 
-      ignoreAnimationDamageEvents: 0
-      damageEvents: []
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 1
+          detectionType: 0
+          hitLayerName: Enemy
+          shape: 0
+          centerOffset: {x: 0, y: 0, z: -0.02645874}
+          rotationEuler: {x: -0, y: 0, z: 0}
+          sphereRadius: 3
+          sectorAngle: 360
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          motion:
+            enabled: 1
+            speed: 10
+            direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2
+          nestedSubEffectsOwnedByLists: 0
+          onHitPhysicsEffects:
+          - effectType: 0
+            distance: 2
+            height: 1
+            duration: 1
+          onHitAttributeEffects:
+          - statField: 0
+            targetMode: 0
+            magnitude: 0.2
+            usePercent: 1
+            duration: 0
+          - statField: 12
+            targetMode: 0
+            magnitude: 0.2
+            usePercent: 1
+            duration: 5
+          onHitVfxEffects:
+          - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 1
+            duration: 6
+          onHitSfxEffects:
+          - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+      physicsEvents:
+      - eventId: evt_3
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 7
+          distance: 1
+          height: 1
+          duration: 6
+      attributeEvents:
+      - eventId: evt_4
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        attributeEffects:
+        - statField: 2
+          targetMode: 0
+          magnitude: 0
+          usePercent: 0
+          duration: 7
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 7953274726775274605, guid: 011e27cfead306647a07e1c09d1cfeb9,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 1
+            speed: 10
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 1
+          duration: 4
+      sfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 1
+        activeDuration: 0.033333335
+        activeDurationMode: 0
+        repeatInterval: 0.10000001
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 8072efeecc8957949aca9a8ece2971ab, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
+    - skillId: Skill1
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 0.13333334
+          detectionType: 0
+          hitLayerName: Enemy
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          sphereRadius: 3
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects:
+          - statField: 0
+            targetMode: 1
+            magnitude: 111
+            usePercent: 0
+            duration: 0
+          onHitVfxEffects: []
+          onHitSfxEffects: []
       physicsEvents: []
       attributeEvents: []
-      vfxEvents: []
-      sfxEvents: []
+      vfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+      sfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
+    - skillId: Skill2
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+      sfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
+    - skillId: Skill3
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+      sfxEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: cd5261ff219a3e44b8550d58337e4cc2, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
   - groupId: melee_minion
     groupName: "\u8FD1\u6218\u5C0F\u602A"
     entries:
-    - skillId: melee_minion_chop
-      displayName: 
+    - skillId: melee_minionSkill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: 
@@ -1264,9 +1483,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 0
@@ -1282,8 +1504,18 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 0}
+          onHitDamageEffects:
+          - damageMagnitude: 1
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1295,8 +1527,8 @@ MonoBehaviour:
   - groupId: ranged_minion
     groupName: "\u8FDC\u7A0B\u5C0F\u602A"
     entries:
-    - skillId: ranged_minion_shot
-      displayName: Ranged Minion Shot
+    - skillId: ranged_minionSkill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: shot
@@ -1305,9 +1537,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 2
           hitLayerName: Player
           shape: 1
@@ -1323,8 +1558,18 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 1
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1336,8 +1581,8 @@ MonoBehaviour:
   - groupId: elite_1
     groupName: "\u7CBE\u82F11"
     entries:
-    - skillId: elite_1_combo
-      displayName: Elite 1 Combo
+    - skillId: elite_1Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: hit_a
@@ -1346,9 +1591,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.8925
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 0
@@ -1364,8 +1612,18 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 0.8925
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1376,9 +1634,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1.05
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 0
@@ -1394,8 +1655,18 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 1.05
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1415,8 +1686,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: elite_1_slam
-      displayName: Elite 1 Slam
+    - skillId: elite_1Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: slam
@@ -1425,9 +1696,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1.6875
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 2
@@ -1443,8 +1717,18 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 1.6875
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1467,8 +1751,8 @@ MonoBehaviour:
   - groupId: elite_2
     groupName: "\u7CBE\u82F12"
     entries:
-    - skillId: elite_2_burst_shot
-      displayName: Elite 2 Burst Shot
+    - skillId: elite_2Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: burst
@@ -1477,9 +1761,12 @@ MonoBehaviour:
         activeDuration: 0.36
         activeDurationMode: 0
         repeatInterval: 0.18
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.5525
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 2
           hitLayerName: Player
           shape: 1
@@ -1495,8 +1782,18 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 0.5525
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1505,8 +1802,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: elite_2_hook_pull
-      displayName: Elite 2 Hook Pull
+    - skillId: elite_2Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: hook
@@ -1515,9 +1812,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.8
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 0
@@ -1533,8 +1833,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0.8
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1557,8 +1866,8 @@ MonoBehaviour:
   - groupId: guardian_1
     groupName: "\u5B88\u536B\u80051"
     entries:
-    - skillId: guardian_1_crush
-      displayName: Guardian 1 Crush
+    - skillId: guardian_1Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: crush
@@ -1567,9 +1876,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1.875
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 2
@@ -1585,8 +1897,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1.875
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects:
@@ -1650,8 +1971,8 @@ MonoBehaviour:
           loop: 0
           destroyMode: 0
           duration: 0
-    - skillId: guardian_1_fortify
-      displayName: Guardian 1 Fortify
+    - skillId: guardian_1Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents: []
       physicsEvents: []
@@ -1678,8 +1999,8 @@ MonoBehaviour:
   - groupId: guardian_2
     groupName: "\u5B88\u536B\u80052"
     entries:
-    - skillId: guardian_2_bash
-      displayName: Guardian 2 Bash
+    - skillId: guardian_2Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: impact
@@ -1688,9 +2009,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.03
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 2
@@ -1706,8 +2030,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.03
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1734,8 +2067,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: guardian_2_chain_pull
-      displayName: Guardian 2 Chain Pull
+    - skillId: guardian_2Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: chain
@@ -1744,9 +2077,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.95
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 0
@@ -1762,8 +2098,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0.95
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1786,8 +2131,8 @@ MonoBehaviour:
   - groupId: boss_1
     groupName: Boss1
     entries:
-    - skillId: boss_1_slash
-      displayName: Boss 1 Slash
+    - skillId: boss_1Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: slash
@@ -1796,9 +2141,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.3200002
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 0
@@ -1814,8 +2162,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.3200002
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1853,8 +2210,8 @@ MonoBehaviour:
           destroyMode: 0
           duration: 0
       sfxEvents: []
-    - skillId: boss_1_shot
-      displayName: Boss 1 Shot
+    - skillId: boss_1Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: shot
@@ -1863,9 +2220,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1.5525
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 2
           hitLayerName: Player
           shape: 1
@@ -1881,8 +2241,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1.5525
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1891,8 +2260,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_1_charge
-      displayName: Boss 1 Charge
+    - skillId: boss_1Skill2
+      displayName: "\u6280\u80FD2"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: impact
@@ -1901,9 +2270,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.52
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 2
@@ -1919,8 +2291,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.52
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1951,8 +2332,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_1_roar
-      displayName: Boss 1 Roar
+    - skillId: boss_1Skill3
+      displayName: "\u6280\u80FD3"
       ignoreAnimationDamageEvents: 1
       damageEvents: []
       physicsEvents: []
@@ -1984,8 +2365,8 @@ MonoBehaviour:
   - groupId: boss_2
     groupName: Boss2
     entries:
-    - skillId: boss_2_cross_slash
-      displayName: Boss 2 Cross Slash
+    - skillId: boss_2Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: evt_4
@@ -1994,9 +2375,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Enemy
           shape: 1
@@ -2012,8 +2396,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2022,8 +2415,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_2_volley
-      displayName: Boss 2 Volley
+    - skillId: boss_2Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: volley
@@ -2032,9 +2425,12 @@ MonoBehaviour:
         activeDuration: 0.45
         activeDurationMode: 0
         repeatInterval: 0.15
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.61200005
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 2
           hitLayerName: Player
           shape: 1
@@ -2050,8 +2446,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0.61200005
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2060,8 +2465,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_2_crash
-      displayName: Boss 2 Crash
+    - skillId: boss_2Skill2
+      displayName: "\u6280\u80FD2"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: crash
@@ -2070,9 +2475,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.8
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 2
@@ -2088,8 +2496,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.8
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2120,8 +2537,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_2_rage
-      displayName: Boss 2 Rage
+    - skillId: boss_2Skill3
+      displayName: "\u6280\u80FD3"
       ignoreAnimationDamageEvents: 1
       damageEvents: []
       physicsEvents: []
@@ -2148,8 +2565,8 @@ MonoBehaviour:
   - groupId: boss_3
     groupName: Boss3
     entries:
-    - skillId: boss_3_pull_cleave
-      displayName: Boss 3 Pull Cleave
+    - skillId: boss_3Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: cleave
@@ -2158,9 +2575,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.16
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 0
@@ -2176,8 +2596,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.16
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2208,8 +2637,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_3_barrage
-      displayName: Boss 3 Barrage
+    - skillId: boss_3Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: barrage
@@ -2218,9 +2647,12 @@ MonoBehaviour:
         activeDuration: 0.6
         activeDurationMode: 0
         repeatInterval: 0.15
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.578
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 2
           hitLayerName: Player
           shape: 1
@@ -2236,8 +2668,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0.578
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2246,8 +2687,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_3_lunge
-      displayName: Boss 3 Lunge
+    - skillId: boss_3Skill2
+      displayName: "\u6280\u80FD2"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: impact
@@ -2256,9 +2697,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.45
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 2
@@ -2274,8 +2718,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.45
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2306,8 +2759,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_3_drain
-      displayName: Boss 3 Drain
+    - skillId: boss_3Skill3
+      displayName: "\u6280\u80FD3"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: drain_hit
@@ -2316,9 +2769,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.75
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 1
@@ -2334,8 +2790,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0.75
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2375,8 +2840,8 @@ MonoBehaviour:
   - groupId: boss_4
     groupName: Boss4
     entries:
-    - skillId: boss_4_spin
-      displayName: Boss 4 Spin
+    - skillId: boss_4Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: spin
@@ -2385,9 +2850,12 @@ MonoBehaviour:
         activeDuration: 0.5
         activeDurationMode: 0
         repeatInterval: 0.16
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.56
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 1
@@ -2403,8 +2871,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0.56
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2424,8 +2901,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_4_piercing_shot
-      displayName: Boss 4 Piercing Shot
+    - skillId: boss_4Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: pierce
@@ -2434,9 +2911,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 1.89
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 2
           hitLayerName: Player
           shape: 1
@@ -2452,8 +2932,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1.89
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2473,8 +2962,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_4_pursuit
-      displayName: Boss 4 Pursuit
+    - skillId: boss_4Skill2
+      displayName: "\u6280\u80FD2"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: finish
@@ -2483,9 +2972,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.73
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 2
@@ -2501,8 +2993,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.73
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2533,8 +3034,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_4_battlecry
-      displayName: Boss 4 Battlecry
+    - skillId: boss_4Skill3
+      displayName: "\u6280\u80FD3"
       ignoreAnimationDamageEvents: 1
       damageEvents: []
       physicsEvents: []
@@ -2566,8 +3067,8 @@ MonoBehaviour:
   - groupId: boss_5
     groupName: Boss5
     entries:
-    - skillId: boss_5_cleave
-      displayName: Boss 5 Cleave
+    - skillId: boss_5Skill0
+      displayName: "\u6280\u80FD0"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: cleave
@@ -2576,9 +3077,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.72
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 0
@@ -2594,8 +3098,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.72
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2615,8 +3128,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_5_storm
-      displayName: Boss 5 Storm
+    - skillId: boss_5Skill1
+      displayName: "\u6280\u80FD1"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: storm
@@ -2625,9 +3138,12 @@ MonoBehaviour:
         activeDuration: 0.75
         activeDurationMode: 0
         repeatInterval: 0.15
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.63750005
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 2
           hitLayerName: Player
           shape: 1
@@ -2643,8 +3159,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0.63750005
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2653,8 +3178,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_5_stampede
-      displayName: Boss 5 Stampede
+    - skillId: boss_5Skill2
+      displayName: "\u6280\u80FD2"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: stomp
@@ -2663,9 +3188,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 2.9399998
-          detectionDuration: 0
+        - detectionDuration: 0
           detectionType: 0
           hitLayerName: Player
           shape: 2
@@ -2681,8 +3209,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 2.9399998
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2713,8 +3250,8 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: boss_5_regen_roar
-      displayName: Boss 5 Regen Roar
+    - skillId: boss_5Skill3
+      displayName: "\u6280\u80FD3"
       ignoreAnimationDamageEvents: 1
       damageEvents:
       - eventId: roar_hit
@@ -2723,9 +3260,12 @@ MonoBehaviour:
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - damageMagnitude: 0.85
-          detectionDuration: 0.033333335
+        - detectionDuration: 0.033333335
           detectionType: 0
           hitLayerName: Player
           shape: 1
@@ -2741,8 +3281,17 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
           hitStopDuration: 0
           hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0.85
+          nestedSubEffectsOwnedByLists: 0
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2785,346 +3334,6 @@ MonoBehaviour:
       vfxEvents: []
       sfxEvents: []
   entries:
-  - skillId: Skill0
-    displayName: 
-    ignoreAnimationDamageEvents: 1
-    damageEvents:
-    - eventId: evt_1
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      damageEffects:
-      - damageMagnitude: 2
-        detectionDuration: 1
-        detectionType: 0
-        hitLayerName: Enemy
-        shape: 0
-        centerOffset: {x: 0, y: 0, z: -0.02645874}
-        rotationEuler: {x: -0, y: 0, z: 0}
-        sphereRadius: 3
-        sectorAngle: 360
-        boxSize: {x: 1, y: 1, z: 1}
-        colliderNodeName: 
-        rayOriginOffset: {x: 0, y: 0, z: 0}
-        rayMaxDistance: 50
-        motion:
-          enabled: 1
-          speed: 10
-          direction: {x: 0, y: 0, z: 1}
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        onHitPhysicsEffects:
-        - effectType: 0
-          distance: 2
-          height: 1
-          duration: 1
-        onHitAttributeEffects:
-        - statField: 0
-          targetMode: 0
-          magnitude: 0.2
-          usePercent: 1
-          duration: 0
-        - statField: 12
-          targetMode: 0
-          magnitude: 0.2
-          usePercent: 1
-          duration: 5
-        onHitVfxEffects:
-        - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
-            type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: -0, y: 0, z: 0}
-          scale: {x: 1, y: 1, z: 1}
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          destroyMode: 1
-          duration: 6
-        onHitSfxEffects:
-        - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          loop: 0
-          destroyMode: 0
-          duration: 0
-    physicsEvents:
-    - eventId: evt_3
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      physicsEffects:
-      - effectType: 7
-        distance: 1
-        height: 1
-        duration: 6
-    attributeEvents:
-    - eventId: evt_4
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      attributeEffects:
-      - statField: 2
-        targetMode: 0
-        magnitude: 0
-        usePercent: 0
-        duration: 7
-    vfxEvents:
-    - eventId: evt_1
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      vfxEffects:
-      - particlePrefab: {fileID: 7953274726775274605, guid: 011e27cfead306647a07e1c09d1cfeb9,
-          type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        scale: {x: 1, y: 1, z: 1}
-        motion:
-          enabled: 1
-          speed: 10
-          direction: {x: 0, y: 0, z: 1}
-        destroyMode: 1
-        duration: 4
-    sfxEvents:
-    - eventId: evt_2
-      startTime: 0
-      triggerMode: 1
-      activeDuration: 0.033333335
-      activeDurationMode: 0
-      repeatInterval: 0.10000001
-      sfxEffects:
-      - audioClip: {fileID: 8300000, guid: 8072efeecc8957949aca9a8ece2971ab, type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        loop: 0
-        destroyMode: 0
-        duration: 0
-  - skillId: Skill1
-    displayName: 
-    ignoreAnimationDamageEvents: 1
-    damageEvents:
-    - eventId: evt_0
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0.13333334
-        detectionType: 0
-        hitLayerName: Enemy
-        shape: 1
-        centerOffset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 3
-        sectorAngle: 180
-        boxSize: {x: 1, y: 1, z: 1}
-        colliderNodeName: 
-        rayOriginOffset: {x: 0, y: 0, z: 0}
-        rayMaxDistance: 50
-        motion:
-          enabled: 0
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        onHitPhysicsEffects: []
-        onHitAttributeEffects:
-        - statField: 0
-          targetMode: 1
-          magnitude: 111
-          usePercent: 0
-          duration: 0
-        onHitVfxEffects: []
-        onHitSfxEffects: []
-    physicsEvents: []
-    attributeEvents: []
-    vfxEvents:
-    - eventId: evt_2
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      vfxEffects:
-      - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
-          type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        scale: {x: 1, y: 1, z: 1}
-        motion:
-          enabled: 0
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        destroyMode: 0
-        duration: 0
-    sfxEvents:
-    - eventId: evt_1
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      sfxEffects:
-      - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        loop: 0
-        destroyMode: 0
-        duration: 0
-  - skillId: Skill2
-    displayName: 
-    ignoreAnimationDamageEvents: 1
-    damageEvents:
-    - eventId: evt_0
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0
-        detectionType: 0
-        hitLayerName: Enemy
-        shape: 1
-        centerOffset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 1.5
-        sectorAngle: 180
-        boxSize: {x: 1, y: 1, z: 1}
-        colliderNodeName: 
-        rayOriginOffset: {x: 0, y: 0, z: 0}
-        rayMaxDistance: 50
-        motion:
-          enabled: 0
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        onHitPhysicsEffects: []
-        onHitAttributeEffects: []
-        onHitVfxEffects: []
-        onHitSfxEffects: []
-    physicsEvents: []
-    attributeEvents: []
-    vfxEvents:
-    - eventId: evt_1
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      vfxEffects:
-      - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
-          type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        scale: {x: 1, y: 1, z: 1}
-        motion:
-          enabled: 0
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        destroyMode: 0
-        duration: 0
-    sfxEvents:
-    - eventId: evt_2
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      sfxEffects:
-      - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        loop: 0
-        destroyMode: 0
-        duration: 0
-  - skillId: Skill3
-    displayName: 
-    ignoreAnimationDamageEvents: 1
-    damageEvents:
-    - eventId: evt_0
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0
-        detectionType: 0
-        hitLayerName: Enemy
-        shape: 1
-        centerOffset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 1.5
-        sectorAngle: 180
-        boxSize: {x: 1, y: 1, z: 1}
-        colliderNodeName: 
-        rayOriginOffset: {x: 0, y: 0, z: 0}
-        rayMaxDistance: 50
-        motion:
-          enabled: 0
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        onHitPhysicsEffects: []
-        onHitAttributeEffects: []
-        onHitVfxEffects: []
-        onHitSfxEffects: []
-    physicsEvents: []
-    attributeEvents: []
-    vfxEvents:
-    - eventId: evt_1
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      vfxEffects:
-      - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
-          type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        scale: {x: 1, y: 1, z: 1}
-        motion:
-          enabled: 0
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        destroyMode: 0
-        duration: 0
-    sfxEvents:
-    - eventId: evt_2
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      sfxEffects:
-      - audioClip: {fileID: 8300000, guid: cd5261ff219a3e44b8550d58337e4cc2, type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        loop: 0
-        destroyMode: 0
-        duration: 0
   - skillId: Attack0
     displayName: 
     ignoreAnimationDamageEvents: 1
@@ -3135,9 +3344,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 5.0000005
+      - detectionDuration: 5.0000005
         detectionType: 0
         hitLayerName: Enemy
         shape: 0
@@ -3153,8 +3365,18 @@ MonoBehaviour:
           enabled: 1
           speed: 20
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 1
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects:
         - effectType: 0
           distance: 2
@@ -3187,9 +3409,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0.5
+      - detectionDuration: 0.5
         detectionType: 0
         hitLayerName: Enemy
         shape: 1
@@ -3205,14 +3430,81 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 1
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    - eventId: evt_6
+      startTime: 0.33333334
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 0.033333335
+        detectionType: 0
+        hitLayerName: Enemy
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        motion:
+          enabled: 1
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 1
+        - damageMagnitude: 1
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects:
+        - hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        - hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
         onHitSfxEffects: []
     physicsEvents: []
-    attributeEvents: []
+    attributeEvents:
+    - eventId: evt_5
+      startTime: 0.33333334
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      attributeEffects: []
     vfxEvents:
     - eventId: evt_0
       startTime: 0.26666668
@@ -3288,9 +3580,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 5.0000005
+      - detectionDuration: 5.0000005
         detectionType: 0
         hitLayerName: Enemy
         shape: 0
@@ -3306,8 +3601,17 @@ MonoBehaviour:
           enabled: 1
           speed: 20
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects:
         - effectType: 0
           distance: 1
@@ -3340,9 +3644,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0.5
+      - detectionDuration: 0.5
         detectionType: 0
         hitLayerName: Enemy
         shape: 1
@@ -3358,8 +3665,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -3441,9 +3757,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 1
+      - detectionDuration: 1
         detectionType: 0
         hitLayerName: Enemy
         shape: 1
@@ -3459,8 +3778,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -3554,9 +3882,12 @@ MonoBehaviour:
       activeDuration: 0.3
       activeDurationMode: 0
       repeatInterval: 0.10000001
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0.033333335
+      - detectionDuration: 0.033333335
         detectionType: 0
         hitLayerName: Enemy
         shape: 2
@@ -3572,8 +3903,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects:
         - effectType: 0
           distance: 0.5
@@ -3600,9 +3940,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0
-        detectionDuration: 0.033333335
+      - detectionDuration: 0.033333335
         detectionType: 0
         hitLayerName: Enemy
         shape: 2
@@ -3618,8 +3961,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -3714,9 +4066,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 2
+      - detectionDuration: 2
         detectionType: 0
         hitLayerName: Enemy
         shape: 0
@@ -3732,8 +4087,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -3807,9 +4171,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Enemy
         shape: 1
@@ -3825,8 +4192,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -3877,9 +4253,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Enemy
         shape: 1
@@ -3895,8 +4274,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4012,16 +4400,396 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: EnemyLocomotion
+  - skillId: Skill0
     displayName: 
-    ignoreAnimationDamageEvents: 0
-    damageEvents: []
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 1
+        detectionType: 0
+        hitLayerName: Enemy
+        shape: 0
+        centerOffset: {x: 0, y: 0, z: -0.02645874}
+        rotationEuler: {x: -0, y: 0, z: 0}
+        sphereRadius: 3
+        sectorAngle: 360
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        motion:
+          enabled: 1
+          speed: 10
+          direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2
+        nestedSubEffectsOwnedByLists: 0
+        onHitPhysicsEffects:
+        - effectType: 0
+          distance: 2
+          height: 1
+          duration: 1
+        onHitAttributeEffects:
+        - statField: 0
+          targetMode: 0
+          magnitude: 0.2
+          usePercent: 1
+          duration: 0
+        - statField: 12
+          targetMode: 0
+          magnitude: 0.2
+          usePercent: 1
+          duration: 5
+        onHitVfxEffects:
+        - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+            type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: -0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 1
+          duration: 6
+        onHitSfxEffects:
+        - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
+    physicsEvents:
+    - eventId: evt_3
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 7
+        distance: 1
+        height: 1
+        duration: 6
+    attributeEvents:
+    - eventId: evt_4
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      attributeEffects:
+      - statField: 2
+        targetMode: 0
+        magnitude: 0
+        usePercent: 0
+        duration: 7
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 7953274726775274605, guid: 011e27cfead306647a07e1c09d1cfeb9,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 1
+          speed: 10
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 1
+        duration: 4
+    sfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 1
+      activeDuration: 0.033333335
+      activeDurationMode: 0
+      repeatInterval: 0.10000001
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 8072efeecc8957949aca9a8ece2971ab, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
+  - skillId: Skill1
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 0.13333334
+        detectionType: 0
+        hitLayerName: Enemy
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        sphereRadius: 3
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects:
+        - statField: 0
+          targetMode: 1
+          magnitude: 111
+          usePercent: 0
+          duration: 0
+        onHitVfxEffects: []
+        onHitSfxEffects: []
     physicsEvents: []
     attributeEvents: []
-    vfxEvents: []
-    sfxEvents: []
-  - skillId: melee_minion_chop
+    vfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 0
+        duration: 0
+    sfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
+  - skillId: Skill2
     displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 0
+        duration: 0
+    sfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
+  - skillId: Skill3
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+          type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 0
+        duration: 0
+    sfxEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: cd5261ff219a3e44b8550d58337e4cc2, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
+  - skillId: melee_minionSkill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: 
@@ -4030,9 +4798,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 0
@@ -4048,8 +4819,18 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 0}
+        onHitDamageEffects:
+        - damageMagnitude: 1
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4058,8 +4839,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: ranged_minion_shot
-    displayName: Ranged Minion Shot
+  - skillId: ranged_minionSkill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: shot
@@ -4068,9 +4849,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 2
         hitLayerName: Player
         shape: 1
@@ -4086,8 +4870,18 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 1
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4096,8 +4890,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: elite_1_combo
-    displayName: Elite 1 Combo
+  - skillId: elite_1Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: hit_a
@@ -4106,9 +4900,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.8925
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 0
@@ -4124,8 +4921,18 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 0.8925
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4136,9 +4943,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1.05
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 0
@@ -4154,8 +4964,18 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 1.05
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4175,8 +4995,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: elite_1_slam
-    displayName: Elite 1 Slam
+  - skillId: elite_1Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: slam
@@ -4185,9 +5005,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1.6875
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 2
@@ -4203,8 +5026,18 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 1.6875
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4224,8 +5057,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: elite_2_burst_shot
-    displayName: Elite 2 Burst Shot
+  - skillId: elite_2Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: burst
@@ -4234,9 +5067,12 @@ MonoBehaviour:
       activeDuration: 0.36
       activeDurationMode: 0
       repeatInterval: 0.18
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.5525
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 2
         hitLayerName: Player
         shape: 1
@@ -4252,8 +5088,18 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 0.5525
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4262,8 +5108,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: elite_2_hook_pull
-    displayName: Elite 2 Hook Pull
+  - skillId: elite_2Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: hook
@@ -4272,9 +5118,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.8
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 0
@@ -4290,8 +5139,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0.8
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4311,8 +5169,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: guardian_1_crush
-    displayName: Guardian 1 Crush
+  - skillId: guardian_1Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: crush
@@ -4321,9 +5179,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1.875
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 2
@@ -4339,8 +5200,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1.875
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects:
@@ -4404,8 +5274,8 @@ MonoBehaviour:
         loop: 0
         destroyMode: 0
         duration: 0
-  - skillId: guardian_1_fortify
-    displayName: Guardian 1 Fortify
+  - skillId: guardian_1Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents: []
     physicsEvents: []
@@ -4429,8 +5299,8 @@ MonoBehaviour:
         duration: 4
     vfxEvents: []
     sfxEvents: []
-  - skillId: guardian_2_bash
-    displayName: Guardian 2 Bash
+  - skillId: guardian_2Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: impact
@@ -4439,9 +5309,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.03
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 2
@@ -4457,8 +5330,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.03
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4485,8 +5367,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: guardian_2_chain_pull
-    displayName: Guardian 2 Chain Pull
+  - skillId: guardian_2Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: chain
@@ -4495,9 +5377,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.95
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 0
@@ -4513,8 +5398,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0.95
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4534,8 +5428,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_1_slash
-    displayName: Boss 1 Slash
+  - skillId: boss_1Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: slash
@@ -4544,9 +5438,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.3200002
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 0
@@ -4562,8 +5459,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.3200002
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4601,8 +5507,8 @@ MonoBehaviour:
         destroyMode: 0
         duration: 0
     sfxEvents: []
-  - skillId: boss_1_shot
-    displayName: Boss 1 Shot
+  - skillId: boss_1Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: shot
@@ -4611,9 +5517,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1.5525
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 2
         hitLayerName: Player
         shape: 1
@@ -4629,8 +5538,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1.5525
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4639,8 +5557,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_1_charge
-    displayName: Boss 1 Charge
+  - skillId: boss_1Skill2
+    displayName: "\u6280\u80FD2"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: impact
@@ -4649,9 +5567,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.52
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 2
@@ -4667,8 +5588,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.52
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4699,8 +5629,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_1_roar
-    displayName: Boss 1 Roar
+  - skillId: boss_1Skill3
+    displayName: "\u6280\u80FD3"
     ignoreAnimationDamageEvents: 1
     damageEvents: []
     physicsEvents: []
@@ -4729,8 +5659,8 @@ MonoBehaviour:
         duration: 3.5
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_2_cross_slash
-    displayName: Boss 2 Cross Slash
+  - skillId: boss_2Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: evt_4
@@ -4739,9 +5669,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Enemy
         shape: 1
@@ -4757,8 +5690,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4767,8 +5709,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_2_volley
-    displayName: Boss 2 Volley
+  - skillId: boss_2Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: volley
@@ -4777,9 +5719,12 @@ MonoBehaviour:
       activeDuration: 0.45
       activeDurationMode: 0
       repeatInterval: 0.15
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.61200005
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 2
         hitLayerName: Player
         shape: 1
@@ -4795,8 +5740,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0.61200005
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4805,8 +5759,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_2_crash
-    displayName: Boss 2 Crash
+  - skillId: boss_2Skill2
+    displayName: "\u6280\u80FD2"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: crash
@@ -4815,9 +5769,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.8
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 2
@@ -4833,8 +5790,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.8
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4865,8 +5831,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_2_rage
-    displayName: Boss 2 Rage
+  - skillId: boss_2Skill3
+    displayName: "\u6280\u80FD3"
     ignoreAnimationDamageEvents: 1
     damageEvents: []
     physicsEvents: []
@@ -4890,8 +5856,8 @@ MonoBehaviour:
         duration: 4
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_3_pull_cleave
-    displayName: Boss 3 Pull Cleave
+  - skillId: boss_3Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: cleave
@@ -4900,9 +5866,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.16
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 0
@@ -4918,8 +5887,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.16
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4950,8 +5928,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_3_barrage
-    displayName: Boss 3 Barrage
+  - skillId: boss_3Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: barrage
@@ -4960,9 +5938,12 @@ MonoBehaviour:
       activeDuration: 0.6
       activeDurationMode: 0
       repeatInterval: 0.15
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.578
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 2
         hitLayerName: Player
         shape: 1
@@ -4978,8 +5959,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0.578
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4988,8 +5978,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_3_lunge
-    displayName: Boss 3 Lunge
+  - skillId: boss_3Skill2
+    displayName: "\u6280\u80FD2"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: impact
@@ -4998,9 +5988,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.45
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 2
@@ -5016,8 +6009,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.45
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5048,8 +6050,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_3_drain
-    displayName: Boss 3 Drain
+  - skillId: boss_3Skill3
+    displayName: "\u6280\u80FD3"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: drain_hit
@@ -5058,9 +6060,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.75
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 1
@@ -5076,8 +6081,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0.75
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5114,8 +6128,8 @@ MonoBehaviour:
         duration: 3
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_4_spin
-    displayName: Boss 4 Spin
+  - skillId: boss_4Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: spin
@@ -5124,9 +6138,12 @@ MonoBehaviour:
       activeDuration: 0.5
       activeDurationMode: 0
       repeatInterval: 0.16
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.56
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 1
@@ -5142,8 +6159,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0.56
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5163,8 +6189,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_4_piercing_shot
-    displayName: Boss 4 Piercing Shot
+  - skillId: boss_4Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: pierce
@@ -5173,9 +6199,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 1.89
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 2
         hitLayerName: Player
         shape: 1
@@ -5191,8 +6220,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1.89
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5212,8 +6250,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_4_pursuit
-    displayName: Boss 4 Pursuit
+  - skillId: boss_4Skill2
+    displayName: "\u6280\u80FD2"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: finish
@@ -5222,9 +6260,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.73
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 2
@@ -5240,8 +6281,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.73
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5272,8 +6322,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_4_battlecry
-    displayName: Boss 4 Battlecry
+  - skillId: boss_4Skill3
+    displayName: "\u6280\u80FD3"
     ignoreAnimationDamageEvents: 1
     damageEvents: []
     physicsEvents: []
@@ -5302,8 +6352,8 @@ MonoBehaviour:
         duration: 4
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_5_cleave
-    displayName: Boss 5 Cleave
+  - skillId: boss_5Skill0
+    displayName: "\u6280\u80FD0"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: cleave
@@ -5312,9 +6362,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.72
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 0
@@ -5330,8 +6383,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.72
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5351,8 +6413,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_5_storm
-    displayName: Boss 5 Storm
+  - skillId: boss_5Skill1
+    displayName: "\u6280\u80FD1"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: storm
@@ -5361,9 +6423,12 @@ MonoBehaviour:
       activeDuration: 0.75
       activeDurationMode: 0
       repeatInterval: 0.15
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.63750005
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 2
         hitLayerName: Player
         shape: 1
@@ -5379,8 +6444,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0.63750005
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5389,8 +6463,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_5_stampede
-    displayName: Boss 5 Stampede
+  - skillId: boss_5Skill2
+    displayName: "\u6280\u80FD2"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: stomp
@@ -5399,9 +6473,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 2.9399998
-        detectionDuration: 0
+      - detectionDuration: 0
         detectionType: 0
         hitLayerName: Player
         shape: 2
@@ -5417,8 +6494,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 2.9399998
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5449,8 +6535,8 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: boss_5_regen_roar
-    displayName: Boss 5 Regen Roar
+  - skillId: boss_5Skill3
+    displayName: "\u6280\u80FD3"
     ignoreAnimationDamageEvents: 1
     damageEvents:
     - eventId: roar_hit
@@ -5459,9 +6545,12 @@ MonoBehaviour:
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - damageMagnitude: 0.85
-        detectionDuration: 0.033333335
+      - detectionDuration: 0.033333335
         detectionType: 0
         hitLayerName: Player
         shape: 1
@@ -5477,8 +6566,17 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
         hitStopDuration: 0
         hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0.85
+        nestedSubEffectsOwnedByLists: 0
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []

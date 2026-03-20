@@ -27,6 +27,7 @@ namespace Game.Editor
             }
             else
             {
+                EditorGUILayout.HelpBox("技能分组由玩家/敌人作者化流程同步维护，这里只编辑技能内容，不支持手工新增或删除分组/列表项。", MessageType.Info);
                 DrawGroups(_groupsProperty);
             }
 
@@ -45,7 +46,8 @@ namespace Game.Editor
 
         private static void DrawGroups(SerializedProperty groupsProperty)
         {
-            groupsProperty.arraySize = Mathf.Max(0, EditorGUILayout.IntField("分组数量", groupsProperty.arraySize));
+            using (new EditorGUI.DisabledScope(true))
+                EditorGUILayout.IntField("分组数量", groupsProperty.arraySize);
 
             for (int groupIndex = 0; groupIndex < groupsProperty.arraySize; groupIndex++)
             {
@@ -63,12 +65,20 @@ namespace Game.Editor
 
                 using (new EditorGUILayout.VerticalScope("box"))
                 {
-                    groupProperty.isExpanded = EditorGUILayout.Foldout(groupProperty.isExpanded, groupLabel, true);
+                    string foldoutLabel = entriesProperty != null
+                        ? $"{groupLabel} ({entriesProperty.arraySize})"
+                        : groupLabel;
+                    groupProperty.isExpanded = EditorGUILayout.Foldout(groupProperty.isExpanded, foldoutLabel, true);
                     if (!groupProperty.isExpanded)
                         continue;
 
-                    EditorGUILayout.PropertyField(groupIdProperty);
-                    EditorGUILayout.PropertyField(groupNameProperty);
+                    using (new EditorGUI.DisabledScope(true))
+                    {
+                        EditorGUILayout.PropertyField(groupIdProperty);
+                        EditorGUILayout.PropertyField(groupNameProperty);
+                        if (entriesProperty != null)
+                            EditorGUILayout.IntField("技能数量", entriesProperty.arraySize);
+                    }
                     EditorGUILayout.Space(4f);
 
                     DrawEntries(entriesProperty);
@@ -80,8 +90,6 @@ namespace Game.Editor
         {
             if (entriesProperty == null)
                 return;
-
-            entriesProperty.arraySize = Mathf.Max(0, EditorGUILayout.IntField("技能数量", entriesProperty.arraySize));
 
             for (int entryIndex = 0; entryIndex < entriesProperty.arraySize; entryIndex++)
             {
@@ -100,9 +108,10 @@ namespace Game.Editor
                     if (!entryProperty.isExpanded)
                         continue;
 
-                    EditorGUILayout.PropertyField(skillIdProperty, new GUIContent("技能ID"));
+                    using (new EditorGUI.DisabledScope(true))
+                        EditorGUILayout.PropertyField(skillIdProperty, new GUIContent("技能ID"));
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("ignoreAnimationDamageEvents"));
-                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("damageEvents"), new GUIContent("伤害事件列表"), true);
+                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("damageEvents"), new GUIContent("命中事件列表"), true);
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("physicsEvents"), new GUIContent("物理事件列表"), true);
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("attributeEvents"), new GUIContent("属性事件列表"), true);
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("vfxEvents"), new GUIContent("特效事件列表"), true);

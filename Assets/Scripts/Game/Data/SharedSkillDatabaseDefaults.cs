@@ -470,11 +470,14 @@ namespace Game.Data
         {
             return new SkillDamageEffect
             {
-                damageMagnitude = magnitude,
                 detectionType = DamageDetectionType.RangeOverlap,
                 hitLayerName = hitLayerName,
                 shape = AttackShapeType.Sphere,
                 sphereRadius = sphereRadius,
+                onHitDamageEffects = new List<SkillHitDamageEffect>
+                {
+                    new SkillHitDamageEffect { damageMagnitude = magnitude }
+                },
             };
         }
 
@@ -482,12 +485,15 @@ namespace Game.Data
         {
             return new SkillDamageEffect
             {
-                damageMagnitude = magnitude,
                 detectionType = DamageDetectionType.RangeOverlap,
                 hitLayerName = hitLayerName,
                 shape = AttackShapeType.Sector,
                 sphereRadius = sphereRadius,
                 sectorAngle = sectorAngle,
+                onHitDamageEffects = new List<SkillHitDamageEffect>
+                {
+                    new SkillHitDamageEffect { damageMagnitude = magnitude }
+                },
             };
         }
 
@@ -495,12 +501,15 @@ namespace Game.Data
         {
             return new SkillDamageEffect
             {
-                damageMagnitude = magnitude,
                 detectionType = DamageDetectionType.RangeOverlap,
                 hitLayerName = hitLayerName,
                 shape = AttackShapeType.Box,
                 centerOffset = centerOffset,
                 boxSize = boxSize,
+                onHitDamageEffects = new List<SkillHitDamageEffect>
+                {
+                    new SkillHitDamageEffect { damageMagnitude = magnitude }
+                },
             };
         }
 
@@ -508,11 +517,14 @@ namespace Game.Data
         {
             return new SkillDamageEffect
             {
-                damageMagnitude = magnitude,
                 detectionType = DamageDetectionType.Raycast,
                 hitLayerName = hitLayerName,
                 rayOriginOffset = rayOriginOffset,
                 rayMaxDistance = rayMaxDistance,
+                onHitDamageEffects = new List<SkillHitDamageEffect>
+                {
+                    new SkillHitDamageEffect { damageMagnitude = magnitude }
+                },
             };
         }
 

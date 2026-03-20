@@ -52,9 +52,12 @@ MonoBehaviour:
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
   locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 9100000, guid: 530aec4c066ae9e4b88986e6f120a0d0,
+    type: 2}
   skillSlots:
   - slotIndex: 0
-    skillId: boss_4_spin
+    skillId: boss_4Skill0
+    displayName: "\u6280\u80FD0"
     cooldown: 2
     castRange: 3.5
     minCastRange: 0
@@ -68,12 +71,13 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
-    skillId: boss_4_piercing_shot
+    skillId: boss_4Skill1
+    displayName: "\u6280\u80FD1"
     cooldown: 2.5
     castRange: 15.5
     minCastRange: 0
@@ -87,12 +91,13 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 2
-    skillId: boss_4_pursuit
+    skillId: boss_4Skill2
+    displayName: "\u6280\u80FD2"
     cooldown: 3.5
     castRange: 6.2
     minCastRange: 2.6
@@ -106,12 +111,13 @@ MonoBehaviour:
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.5
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill2
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1
   - slotIndex: 3
-    skillId: boss_4_battlecry
+    skillId: boss_4Skill3
+    displayName: "\u6280\u80FD3"
     cooldown: 4.4
     castRange: 8.8
     minCastRange: 0
@@ -125,7 +131,7 @@ MonoBehaviour:
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.55
     rotateToTargetOnCast: 0
-    animationTrigger: 
+    animationTrigger: Skill3
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1

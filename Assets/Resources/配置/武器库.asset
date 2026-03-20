@@ -15,18 +15,18 @@ MonoBehaviour:
   entries:
   - weaponId: sword
     displayName: "\u5251"
-    icon: {fileID: 21300000, guid: 28b1d8683b546494bac654942b2997e3, type: 3}
+    icon: {fileID: 21300000, guid: e04ee1c07f9b69c409b0da6bfae8dd0c, type: 3}
     type: 0
     common:
       hp:
-        min: 10
+        min: 10000
         max: 30
       mp:
         min: 10
         max: 30
       attack:
-        min: 5
-        max: 15
+        min: 999
+        max: 30
       defense:
         min: 2
         max: 8
@@ -143,7 +143,7 @@ MonoBehaviour:
         max: 1
   - weaponId: gun
     displayName: "\u67AA"
-    icon: {fileID: 21300000, guid: 89c3fd7eaec48184e93f50ca73ae6369, type: 3}
+    icon: {fileID: 21300000, guid: 81fcbee4e7a5a154da69526fdfb7e121, type: 3}
     type: 1
     common:
       hp:

@@ -16,7 +16,7 @@ MonoBehaviour:
   spawnHeightOffset: 0.1
   hoverAmplitude: 0.05
   hoverFrequency: 1
-  pickupRadius: 4
+  pickupRadius: 5
   entries:
   - itemId: potion_hp
     displayName: "\u56DE\u8840\u836F\u5242"

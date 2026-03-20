@@ -28,20 +28,42 @@ namespace Game.Data
         [InspectorLabel("经验")] public int baseExp = 10;
     }
 
+    [Serializable]
+    public class EnemyStatsGroupDefinition
+    {
+        [InspectorLabel("分组ID")] public string groupId = "default";
+        [InspectorLabel("分组名称")] public string groupName = "默认分组";
+        [InspectorLabel("敌人列表")] public List<EnemyStatsEntry> entries = new List<EnemyStatsEntry>();
+    }
+
     /// <summary>
     /// Enemy stats database shared by all enemy variants.
     /// </summary>
     [CreateAssetMenu(menuName = "游戏/配置/敌人属性库", fileName = "敌人属性库")]
     public class EnemyStatsDatabaseSO : ScriptableObject
     {
-        [InspectorLabel("敌人列表")]
+        [InspectorLabel("属性分组")]
+        public List<EnemyStatsGroupDefinition> groups = new List<EnemyStatsGroupDefinition>();
+
+        [HideInInspector]
         public List<EnemyStatsEntry> entries = new List<EnemyStatsEntry>();
+
+        private void OnEnable()
+        {
+            EnsureGroupsAndFlatEntries();
+        }
+
+        private void OnValidate()
+        {
+            EnsureGroupsAndFlatEntries();
+        }
 
         public EnemyStatsEntry GetEntry(EnemyType type)
         {
-            if (entries == null) return null;
+            IReadOnlyList<EnemyStatsEntry> allEntries = GetAllEntries();
+            if (allEntries == null) return null;
 
-            foreach (var entry in entries)
+            foreach (var entry in allEntries)
             {
                 if (entry != null && entry.type == type)
                     return entry;
@@ -52,12 +74,13 @@ namespace Game.Data
 
         public int CountByType(EnemyType type)
         {
-            if (entries == null) return 0;
+            IReadOnlyList<EnemyStatsEntry> allEntries = GetAllEntries();
+            if (allEntries == null) return 0;
 
             int count = 0;
-            for (int i = 0; i < entries.Count; i++)
+            for (int i = 0; i < allEntries.Count; i++)
             {
-                var entry = entries[i];
+                var entry = allEntries[i];
                 if (entry != null && entry.type == type)
                     count++;
             }
@@ -67,11 +90,12 @@ namespace Game.Data
 
         public EnemyStatsEntry GetEntry(string enemyId)
         {
-            if (entries == null || string.IsNullOrEmpty(enemyId)) return null;
+            IReadOnlyList<EnemyStatsEntry> allEntries = GetAllEntries();
+            if (allEntries == null || string.IsNullOrEmpty(enemyId)) return null;
 
             string normalizedId = NormalizeId(enemyId);
 
-            foreach (var entry in entries)
+            foreach (var entry in allEntries)
             {
                 if (entry != null && NormalizeId(entry.enemyId) == normalizedId)
                     return entry;
@@ -88,6 +112,23 @@ namespace Game.Data
         public EnemyRuntimeStats GetScaled(string enemyId, int difficulty, DifficultyScalingSO scaling)
         {
             return BuildScaledStats(GetEntry(enemyId), difficulty, scaling);
+        }
+
+        public IReadOnlyList<EnemyStatsEntry> GetAllEntries()
+        {
+            EnsureGroupsAndFlatEntries();
+            return entries;
+        }
+
+        public IReadOnlyList<EnemyStatsGroupDefinition> GetGroups()
+        {
+            EnsureGroupsAndFlatEntries();
+            return groups;
+        }
+
+        public void SyncFlatEntries()
+        {
+            EnsureGroupsAndFlatEntries();
         }
 
         private static EnemyRuntimeStats BuildScaledStats(EnemyStatsEntry entry, int difficulty, DifficultyScalingSO scaling)
@@ -117,6 +158,60 @@ namespace Game.Data
             return string.IsNullOrWhiteSpace(value)
                 ? string.Empty
                 : value.Trim().ToLowerInvariant();
+        }
+
+        private void EnsureGroupsAndFlatEntries()
+        {
+            groups ??= new List<EnemyStatsGroupDefinition>();
+            entries ??= new List<EnemyStatsEntry>();
+
+            if (groups.Count == 0 && entries.Count > 0)
+                BuildGroupsFromFlatEntries();
+
+            RebuildFlatEntriesFromGroups();
+        }
+
+        private void BuildGroupsFromFlatEntries()
+        {
+            groups.Clear();
+            if (entries == null)
+                return;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                EnemyStatsEntry entry = entries[i];
+                if (entry == null)
+                    continue;
+
+                groups.Add(new EnemyStatsGroupDefinition
+                {
+                    groupId = string.IsNullOrWhiteSpace(entry.enemyId) ? $"group_{i}" : entry.enemyId.Trim(),
+                    groupName = string.IsNullOrWhiteSpace(entry.displayName) ? entry.enemyId : entry.displayName.Trim(),
+                    entries = new List<EnemyStatsEntry> { entry },
+                });
+            }
+        }
+
+        private void RebuildFlatEntriesFromGroups()
+        {
+            entries.Clear();
+            if (groups == null)
+                return;
+
+            for (int groupIndex = 0; groupIndex < groups.Count; groupIndex++)
+            {
+                EnemyStatsGroupDefinition group = groups[groupIndex];
+                if (group == null)
+                    continue;
+
+                group.entries ??= new List<EnemyStatsEntry>();
+                for (int entryIndex = 0; entryIndex < group.entries.Count; entryIndex++)
+                {
+                    EnemyStatsEntry entry = group.entries[entryIndex];
+                    if (entry != null)
+                        entries.Add(entry);
+                }
+            }
         }
     }
 }

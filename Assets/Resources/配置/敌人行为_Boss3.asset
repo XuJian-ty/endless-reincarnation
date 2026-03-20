@@ -52,9 +52,12 @@ MonoBehaviour:
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
   locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 9100000, guid: b39491b096706004b8ad4eec0fcf2f5a,
+    type: 2}
   skillSlots:
   - slotIndex: 0
-    skillId: boss_3_pull_cleave
+    skillId: boss_3Skill0
+    displayName: "\u6280\u80FD0"
     cooldown: 2.4
     castRange: 4
     minCastRange: 0
@@ -68,12 +71,13 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 1
-    skillId: boss_3_barrage
+    skillId: boss_3Skill1
+    displayName: "\u6280\u80FD1"
     cooldown: 2.9
     castRange: 15
     minCastRange: 0
@@ -87,12 +91,13 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
   - slotIndex: 2
-    skillId: boss_3_lunge
+    skillId: boss_3Skill2
+    displayName: "\u6280\u80FD2"
     cooldown: 3.9
     castRange: 5.8
     minCastRange: 2.4
@@ -106,12 +111,13 @@ MonoBehaviour:
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.45
     rotateToTargetOnCast: 1
-    animationTrigger: 
+    animationTrigger: Skill2
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1
   - slotIndex: 3
-    skillId: boss_3_drain
+    skillId: boss_3Skill3
+    displayName: "\u6280\u80FD3"
     cooldown: 5.2
     castRange: 8.5
     minCastRange: 0
@@ -125,7 +131,7 @@ MonoBehaviour:
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.55
     rotateToTargetOnCast: 0
-    animationTrigger: 
+    animationTrigger: Skill3
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1

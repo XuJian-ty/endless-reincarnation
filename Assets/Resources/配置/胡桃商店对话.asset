@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 341ba00f4c1643c994c1f6e4657ff450, type: 3}
+  m_Name: "胡桃商店对话"
+  m_EditorClassIdentifier: 
+  speakerName: "胡桃"
+  rounds:
+  - hutaoLine: "客人，要不要先听我介绍一下？"
+    options:
+    - replyText: "先听听看。"
+      endConversation: 0
+      openShopPanelOnEnd: 0
+    - replyText: "直接说重点吧。"
+      endConversation: 0
+      openShopPanelOnEnd: 0
+  - hutaoLine: "那么，要不要看看今天的货？"
+    options:
+    - replyText: "打开商店。"
+      endConversation: 1
+      openShopPanelOnEnd: 1
+    - replyText: "下次再来。"
+      endConversation: 1
+      openShopPanelOnEnd: 0

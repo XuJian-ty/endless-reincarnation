@@ -45,11 +45,6 @@ namespace Game.Data
         [InspectorLabel("减伤倍率")]
         [Min(0f)] public float damageReduceScale = 1f;
 
-        [Header("头顶UI")]
-        [InspectorLabel("头顶血条高度(米)")]
-        [Tooltip("头顶血条根节点相对分身原点的本地高度。")]
-        [Min(0f)] public float headHealthBarHeightOffset = 1.88f;
-
         [Header("决策")]
         [InspectorLabel("目标刷新间隔(秒)")]
         [Min(0.02f)] public float targetRefreshInterval = 0.12f;
