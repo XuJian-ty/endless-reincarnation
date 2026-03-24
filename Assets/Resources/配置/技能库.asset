@@ -1292,21 +1292,21 @@ MonoBehaviour:
         pauseCameraLookDuringHitStop: 0
         hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - detectionDuration: 0.5
-          detectionType: 2
+        - detectionDuration: 5.0000005
+          detectionType: 0
           hitLayerName: Enemy
-          shape: 1
-          centerOffset: {x: 0, y: 0, z: 0}
+          shape: 2
+          centerOffset: {x: 0, y: 1.18, z: 0.5}
           rotationEuler: {x: 0, y: 0, z: 0}
           sphereRadius: 1
           sectorAngle: 180
-          boxSize: {x: 1, y: 1, z: 1}
+          boxSize: {x: 0.5, y: 0.5, z: 2.25}
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 50
           rayRadius: 0.5
           motion:
-            enabled: 0
+            enabled: 1
             speed: 40
             direction: {x: 0, y: 0, z: 1}
           onHitDamageEffects:
@@ -1381,15 +1381,15 @@ MonoBehaviour:
         - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
             type: 3}
           anchor: 2
-          offset: {x: 0.08377268, y: 1.1965681, z: 0.9816996}
+          offset: {x: 0, y: 1.18, z: 1}
           rotationEuler: {x: -0, y: 0, z: 0}
           scale: {x: 1, y: 1, z: 1}
           motion:
             enabled: 1
-            speed: 20
+            speed: 40
             direction: {x: 0, y: 0, z: 1}
           destroyMode: 1
-          duration: 2.5
+          duration: 5
       sfxEvents:
       - eventId: evt_1
         startTime: 0
@@ -1419,22 +1419,22 @@ MonoBehaviour:
         pauseCameraLookDuringHitStop: 0
         hitStopSettingsOwnedByEvent: 0
         damageEffects:
-        - detectionDuration: 0.033333335
-          detectionType: 2
+        - detectionDuration: 5.0000005
+          detectionType: 0
           hitLayerName: Enemy
-          shape: 1
-          centerOffset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
+          shape: 2
+          centerOffset: {x: 0, y: 1.18, z: 0.5}
+          rotationEuler: {x: -0, y: 0, z: 0}
           sphereRadius: 1.5
           sectorAngle: 180
-          boxSize: {x: 1, y: 1, z: 1}
+          boxSize: {x: 0.5, y: 0.5, z: 2.5}
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 50
           rayRadius: 0.5
           motion:
-            enabled: 0
-            speed: 0
+            enabled: 1
+            speed: 40
             direction: {x: 0, y: 0, z: 1}
           onHitDamageEffects:
           - damageMagnitude: 1
@@ -1508,15 +1508,15 @@ MonoBehaviour:
         - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
             type: 3}
           anchor: 2
-          offset: {x: 0.07617278, y: 1.1724954, z: 0.93304884}
+          offset: {x: 0, y: 1.18, z: 1}
           rotationEuler: {x: 0, y: 0, z: 0}
           scale: {x: 1, y: 1, z: 1}
           motion:
             enabled: 1
-            speed: 20
+            speed: 40
             direction: {x: 0, y: 0, z: 1}
           destroyMode: 1
-          duration: 2.5
+          duration: 5
       sfxEvents:
       - eventId: evt_1
         startTime: 0
@@ -5184,21 +5184,21 @@ MonoBehaviour:
       pauseCameraLookDuringHitStop: 0
       hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - detectionDuration: 0.5
-        detectionType: 2
+      - detectionDuration: 5.0000005
+        detectionType: 0
         hitLayerName: Enemy
-        shape: 1
-        centerOffset: {x: 0, y: 0, z: 0}
+        shape: 2
+        centerOffset: {x: 0, y: 1.18, z: 0.5}
         rotationEuler: {x: 0, y: 0, z: 0}
         sphereRadius: 1
         sectorAngle: 180
-        boxSize: {x: 1, y: 1, z: 1}
+        boxSize: {x: 0.5, y: 0.5, z: 2.25}
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 50
         rayRadius: 0.5
         motion:
-          enabled: 0
+          enabled: 1
           speed: 40
           direction: {x: 0, y: 0, z: 1}
         onHitDamageEffects:
@@ -5273,15 +5273,15 @@ MonoBehaviour:
       - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
           type: 3}
         anchor: 2
-        offset: {x: 0.08377268, y: 1.1965681, z: 0.9816996}
+        offset: {x: 0, y: 1.18, z: 1}
         rotationEuler: {x: -0, y: 0, z: 0}
         scale: {x: 1, y: 1, z: 1}
         motion:
           enabled: 1
-          speed: 20
+          speed: 40
           direction: {x: 0, y: 0, z: 1}
         destroyMode: 1
-        duration: 2.5
+        duration: 5
     sfxEvents:
     - eventId: evt_1
       startTime: 0
@@ -5311,22 +5311,22 @@ MonoBehaviour:
       pauseCameraLookDuringHitStop: 0
       hitStopSettingsOwnedByEvent: 0
       damageEffects:
-      - detectionDuration: 0.033333335
-        detectionType: 2
+      - detectionDuration: 5.0000005
+        detectionType: 0
         hitLayerName: Enemy
-        shape: 1
-        centerOffset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
+        shape: 2
+        centerOffset: {x: 0, y: 1.18, z: 0.5}
+        rotationEuler: {x: -0, y: 0, z: 0}
         sphereRadius: 1.5
         sectorAngle: 180
-        boxSize: {x: 1, y: 1, z: 1}
+        boxSize: {x: 0.5, y: 0.5, z: 2.5}
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 50
         rayRadius: 0.5
         motion:
-          enabled: 0
-          speed: 0
+          enabled: 1
+          speed: 40
           direction: {x: 0, y: 0, z: 1}
         onHitDamageEffects:
         - damageMagnitude: 1
@@ -5400,15 +5400,15 @@ MonoBehaviour:
       - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
           type: 3}
         anchor: 2
-        offset: {x: 0.07617278, y: 1.1724954, z: 0.93304884}
+        offset: {x: 0, y: 1.18, z: 1}
         rotationEuler: {x: 0, y: 0, z: 0}
         scale: {x: 1, y: 1, z: 1}
         motion:
           enabled: 1
-          speed: 20
+          speed: 40
           direction: {x: 0, y: 0, z: 1}
         destroyMode: 1
-        duration: 2.5
+        duration: 5
     sfxEvents:
     - eventId: evt_1
       startTime: 0
