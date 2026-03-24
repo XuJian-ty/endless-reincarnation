@@ -10,8 +10,8 @@ namespace Game.Presentation
 
         protected override void OnEnter()
         {
-            TriggerConfiguredActionByActionId("FallAttackLoop", "FallAttackLoop");
-            StartConfiguredTimelineByActionId("FallAttackLoop");
+            TriggerConfiguredBaseAction("FallAttackLoop", "FallAttackLoop");
+            StartConfiguredBaseActionTimeline("FallAttackLoop");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

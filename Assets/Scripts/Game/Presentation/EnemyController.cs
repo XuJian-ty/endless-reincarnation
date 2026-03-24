@@ -654,6 +654,37 @@ namespace Game.Presentation
             _modifierCacheDirty = true;
         }
 
+        public void ApplyStatModifierUntilStateExit(StatModifier modifier, SkillCueRuntimeScope cueRuntime)
+        {
+            EnsureInitialized();
+            if (modifier == null)
+                return;
+
+            StatModifier clonedModifier = modifier.Clone();
+            _runtimeModifiers.Add(new RuntimeStatModifier
+            {
+                modifier = clonedModifier,
+                endTime = float.PositiveInfinity
+            });
+            _modifierCacheDirty = true;
+            cueRuntime?.RegisterStateExitCallback(() =>
+            {
+                if (this == null)
+                    return;
+
+                for (int i = _runtimeModifiers.Count - 1; i >= 0; i--)
+                {
+                    RuntimeStatModifier runtimeModifier = _runtimeModifiers[i];
+                    if (runtimeModifier == null || runtimeModifier.modifier != clonedModifier)
+                        continue;
+
+                    _runtimeModifiers.RemoveAt(i);
+                    _modifierCacheDirty = true;
+                    break;
+                }
+            });
+        }
+
         public void Heal(float amount)
         {
             EnsureInitialized();

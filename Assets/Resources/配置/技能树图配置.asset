@@ -1,0 +1,117 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3b8fb5af28e4a62a43f66e1778a4f51, type: 3}
+  m_Name: "\u6280\u80FD\u6811\u56FE\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  contentSize: {x: 1920, y: 1080}
+  nodes:
+  - nodeId: Skill0
+    skillId: Skill0
+    position: {x: 114.96935, y: 90.203995}
+    predecessorNodeIds: []
+    edgeRouteOverrides: []
+  - nodeId: Skill1
+    skillId: Skill1
+    position: {x: 480.67035, y: 102.76396}
+    predecessorNodeIds: []
+    edgeRouteOverrides: []
+  - nodeId: Skill2
+    skillId: Skill2
+    position: {x: 800.4877, y: 108.68391}
+    predecessorNodeIds: []
+    edgeRouteOverrides: []
+  - nodeId: Skill3
+    skillId: Skill3
+    position: {x: 1108.8901, y: 108.357}
+    predecessorNodeIds: []
+    edgeRouteOverrides: []
+  - nodeId: passive_1
+    skillId: passive_1
+    position: {x: 110.79696, y: 289.3156}
+    predecessorNodeIds:
+    - Skill0
+    edgeRouteOverrides: []
+  - nodeId: passive_2
+    skillId: passive_2
+    position: {x: 474.31076, y: 284.94995}
+    predecessorNodeIds:
+    - Skill1
+    - Skill0
+    edgeRouteOverrides: []
+  - nodeId: passive_3
+    skillId: passive_3
+    position: {x: 805.94763, y: 313.01883}
+    predecessorNodeIds:
+    - Skill2
+    edgeRouteOverrides: []
+  - nodeId: passive_4
+    skillId: passive_4
+    position: {x: 1114.8793, y: 308.8015}
+    predecessorNodeIds:
+    - Skill3
+    edgeRouteOverrides: []
+  - nodeId: passive_5
+    skillId: passive_5
+    position: {x: 114.99424, y: 498.92484}
+    predecessorNodeIds:
+    - passive_1
+    - passive_2
+    edgeRouteOverrides: []
+  - nodeId: passive_6
+    skillId: passive_6
+    position: {x: 465.89587, y: 507.62808}
+    predecessorNodeIds:
+    - passive_2
+    - passive_3
+    edgeRouteOverrides: []
+  - nodeId: passive_7
+    skillId: passive_7
+    position: {x: 800.5923, y: 516.6172}
+    predecessorNodeIds:
+    - passive_3
+    - passive_4
+    edgeRouteOverrides: []
+  - nodeId: passive_8
+    skillId: passive_8
+    position: {x: 1111, y: 520.5922}
+    predecessorNodeIds:
+    - passive_4
+    - passive_1
+    edgeRouteOverrides: []
+  - nodeId: passive_9
+    skillId: passive_9
+    position: {x: 118.96188, y: 748.81415}
+    predecessorNodeIds:
+    - passive_5
+    - passive_6
+    edgeRouteOverrides: []
+  - nodeId: passive_10
+    skillId: passive_10
+    position: {x: 465.80115, y: 756.07355}
+    predecessorNodeIds:
+    - passive_6
+    - passive_7
+    edgeRouteOverrides: []
+  - nodeId: passive_11
+    skillId: passive_11
+    position: {x: 792.60455, y: 744.1054}
+    predecessorNodeIds:
+    - passive_7
+    - passive_8
+    edgeRouteOverrides: []
+  - nodeId: passive_12
+    skillId: passive_12
+    position: {x: 1108.9714, y: 743.1075}
+    predecessorNodeIds:
+    - passive_8
+    - passive_5
+    edgeRouteOverrides: []

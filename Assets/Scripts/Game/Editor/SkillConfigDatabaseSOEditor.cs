@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Game.Data;
+using Game.Presentation;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,19 +11,23 @@ namespace Game.Editor
     {
         private static readonly string[] BaseActionIds =
         {
-            "Idle", "Move", "Jump", "Dodge", "Fall", "Land",
+            "NormalIdle", "NormalWalk", "NormalRun",
+            "AimIdle", "AimWalk", "AimRun",
+            "Jump", "Dodge", "Fall", "Land",
             "Attack0", "Attack1", "Attack2", "Attack3",
             "AirAttack", "ChargeStart", "ChargeLoop", "ChargeRelease",
             "FallAttackStart", "FallAttackLoop", "FallAttackLand",
-            "HitStun", "PlayerDeath"
+            "HitStun", "PlayerDeath", "Shoot", "ShootCharge", "Aim"
         };
 
         private SerializedProperty _entriesProp;
+        private SerializedProperty _formActionMappingsProp;
         private bool _pendingExitGui;
 
         private void OnEnable()
         {
             _entriesProp = serializedObject.FindProperty(nameof(SkillConfigDatabaseSO.entries));
+            _formActionMappingsProp = serializedObject.FindProperty(nameof(SkillConfigDatabaseSO.formActionMappings));
         }
 
         public override void OnInspectorGUI()
@@ -35,6 +40,15 @@ namespace Game.Editor
                 EditorGUILayout.HelpBox("未找到技能配置列表。", MessageType.Error);
                 serializedObject.ApplyModifiedProperties();
                 return;
+            }
+
+            if (_formActionMappingsProp != null)
+            {
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                EditorGUILayout.LabelField("形态基础动作映射", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(_formActionMappingsProp, true);
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.Space(6f);
             }
 
             DrawGroupSection("基础动作", PlayerSkillEntryGroup.BaseSkill, DrawBaseSkillFields);
@@ -135,7 +149,9 @@ namespace Game.Editor
             DrawReadOnlyProperty(entryProp, nameof(SkillConfigEntry.actionId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.description));
             DrawProperty(entryProp, nameof(SkillConfigEntry.animationTrigger));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.supportedAttackModes));
             DrawActionRuleFields(entryProp);
         }
 
@@ -144,7 +160,10 @@ namespace Game.Editor
             DrawReadOnlyProperty(entryProp, nameof(SkillConfigEntry.actionId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.description));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.skillIcon));
             DrawProperty(entryProp, nameof(SkillConfigEntry.animationTrigger));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.supportedAttackModes));
             DrawProperty(entryProp, nameof(SkillConfigEntry.talentCost));
             DrawProperty(entryProp, nameof(SkillConfigEntry.mpCost));
             DrawProperty(entryProp, nameof(SkillConfigEntry.cooldownSeconds));
@@ -155,6 +174,8 @@ namespace Game.Editor
         {
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.description));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.skillIcon));
             DrawProperty(entryProp, nameof(SkillConfigEntry.talentCost));
             DrawProperty(entryProp, nameof(SkillConfigEntry.passiveStatModifier));
         }
@@ -362,6 +383,10 @@ namespace Game.Editor
             if (cooldown != null)
                 cooldown.floatValue = group == PlayerSkillEntryGroup.ActiveSkill ? 3f : 0f;
 
+            SerializedProperty supportedAttackModes = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.supportedAttackModes));
+            if (supportedAttackModes != null)
+                supportedAttackModes.intValue = (int)PlayerAttackModeMask.All;
+
             SerializedProperty passiveStatModifier = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.passiveStatModifier));
             if (passiveStatModifier != null)
                 ResetStatModifier(passiveStatModifier);
@@ -372,11 +397,13 @@ namespace Game.Editor
                 actionPolicies.ClearArray();
                 if (group == PlayerSkillEntryGroup.ActiveSkill)
                 {
-                    AddActionPolicy(actionPolicies, 9, 0);
-                    AddActionPolicy(actionPolicies, 10, 0);
-                    AddActionPolicy(actionPolicies, 5, 0);
-                    AddActionPolicy(actionPolicies, 4, 2);
-                    AddActionPolicy(actionPolicies, 6, 2);
+                    AddActionPolicy(actionPolicies, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddActionPolicy(actionPolicies, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddActionPolicy(actionPolicies, GameAction.ChargeStart, TransitionPolicy.Interrupt);
+                    AddActionPolicy(actionPolicies, GameAction.ShootCharge, TransitionPolicy.Interrupt);
+                    AddActionPolicy(actionPolicies, GameAction.NormalAttack, TransitionPolicy.Buffer);
+                    AddActionPolicy(actionPolicies, GameAction.Shoot, TransitionPolicy.Buffer);
+                    AddActionPolicy(actionPolicies, GameAction.ChargeRelease, TransitionPolicy.Buffer);
                 }
             }
 
@@ -409,6 +436,11 @@ namespace Game.Editor
             SerializedProperty policy = rule.FindPropertyRelative("policy");
             if (policy != null)
                 policy.enumValueIndex = policyValue;
+        }
+
+        private static void AddActionPolicy(SerializedProperty actionPolicies, GameAction actionValue, TransitionPolicy policyValue)
+        {
+            AddActionPolicy(actionPolicies, (int)actionValue, (int)policyValue);
         }
 
         private static void ResetStatModifier(SerializedProperty prop)

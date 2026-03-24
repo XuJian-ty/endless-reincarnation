@@ -70,6 +70,7 @@ namespace Game.UI
         [SerializeField] private Text previewTooltipText;
         [SerializeField] private GameObject previewContextMenuPanel;
         [SerializeField] private Button btnUnequip;
+        [SerializeField] private Button attackModeButton;
 
         private Transform[] _slotTransforms = new Transform[SlotCount];
         private Image[] _slotBackgrounds = new Image[SlotCount];
@@ -104,6 +105,9 @@ namespace Game.UI
         private Text _previewTooltipRightText;
         private bool _previewPointerHovering;
         private RectTransform _activePreviewTooltipAnchor;
+        private Text _attackModeButtonText;
+        private Text _runtimeHintText;
+        private float _runtimeHintExpireAt;
 
         private const float PreviewDragThresholdPixels = 10f;
         private static readonly Vector2 PopupOffset = new Vector2(12f, -12f);
@@ -112,11 +116,13 @@ namespace Game.UI
         private const float TooltipPadding = 12f;
         private const float TooltipWeaponLeftRightInset = 150f;
         private const float TooltipWeaponRightLeftInset = 156f;
+        private const float RuntimeHintDuration = 1.5f;
 
         protected override void Awake()
         {
             base.Awake();
             RegisterClick("Btn_Close", () => UIManager.GetInstance().HidePanel(PanelNames.Backpack));
+            RegisterClick("Btn_AttackMode", OnAttackModeClicked);
             RegisterClick("Btn_Equip", OnEquipClicked);
             RegisterClick("Btn_Sell", OnSellClicked);
             ResolveReferences();
@@ -201,6 +207,8 @@ namespace Game.UI
             if (previewTooltipText == null && previewTooltipPanel != null) previewTooltipText = previewTooltipPanel.GetComponentInChildren<Text>(true);
             if (previewContextMenuPanel == null) previewContextMenuPanel = FindChildByName("LeftContextMenuPanel")?.gameObject;
             if (btnUnequip == null && previewContextMenuPanel != null) btnUnequip = previewContextMenuPanel.transform.Find("Btn_Unequip")?.GetComponent<Button>();
+            if (attackModeButton == null) attackModeButton = FindChildByName("Btn_AttackMode")?.GetComponent<Button>();
+            if (_attackModeButtonText == null && attackModeButton != null) _attackModeButtonText = attackModeButton.GetComponentInChildren<Text>(true);
 
             if (_tooltipRightText == null && tooltipPanel != null) _tooltipRightText = tooltipPanel.transform.Find("TooltipRightText")?.GetComponent<Text>();
             if (_previewTooltipRightText == null && previewTooltipPanel != null) _previewTooltipRightText = previewTooltipPanel.transform.Find("TooltipRightText")?.GetComponent<Text>();
@@ -558,6 +566,7 @@ namespace Game.UI
                     }
                 }
             }
+            RefreshAttackModeButton();
             if (equippedWeaponIcon != null)
             {
                 var w = _player.Equipment?.EquippedWeapon;
@@ -827,8 +836,12 @@ namespace Game.UI
         private void OnEquipClicked()
         {
             if (_contextSlotIndex < 0 || _player == null) return;
-            if (!_player.EquipWeaponAt(_contextSlotIndex))
+            if (!_player.EquipWeaponAt(_contextSlotIndex, out string errorMessage))
+            {
+                if (!string.IsNullOrWhiteSpace(errorMessage))
+                    ShowRuntimeHint(errorMessage, true);
                 return;
+            }
             EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
             HideContextMenu();
         }
@@ -864,6 +877,32 @@ namespace Game.UI
             HideContextMenu();
         }
 
+        private void OnAttackModeClicked()
+        {
+            if (_player == null)
+                return;
+
+            HideTooltip();
+            HideContextMenu();
+            PlayerController scenePlayer = ResolvePreviewSourcePlayer();
+            if (scenePlayer != null && scenePlayer.PlayerModel == _player)
+            {
+                if (!scenePlayer.ToggleAttackMode(out string errorMessage))
+                {
+                    if (!string.IsNullOrWhiteSpace(errorMessage))
+                        ShowRuntimeHint(errorMessage, true);
+                    return;
+                }
+
+                return;
+            }
+
+            if (!_player.ToggleAttackMode())
+                return;
+
+            EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
+        }
+
         private void Update()
         {
             if (UnityEngine.Input.GetMouseButtonDown(0))
@@ -876,6 +915,9 @@ namespace Game.UI
 
             if (!Application.isPlaying)
                 return;
+
+            if (_runtimeHintText != null && _runtimeHintText.gameObject.activeSelf && Time.unscaledTime >= _runtimeHintExpireAt)
+                _runtimeHintText.gameObject.SetActive(false);
 
             _previewCombat.Tick(Time.unscaledDeltaTime);
             HandlePreviewPointerInput();
@@ -1296,7 +1338,8 @@ namespace Game.UI
 
         private void InitializePreviewAnimator()
         {
-            _previewCombat.Bind(_playerModelPreviewAnimator, _playerModelPreviewTransform);
+            PlayerWeaponVisualUtility.ApplyCurrentLoadout(_playerModelPreviewTransform, _player);
+            _previewCombat.Bind(_playerModelPreviewAnimator, _playerModelPreviewTransform, _player);
         }
 
         private void HandlePreviewPointerInput()
@@ -1418,6 +1461,58 @@ namespace Game.UI
         private WeaponInstance GetPreviewWeapon()
         {
             return _player?.Equipment?.EquippedWeapon;
+        }
+
+        private void RefreshAttackModeButton()
+        {
+            if (_attackModeButtonText == null || _player == null)
+                return;
+
+            _attackModeButtonText.text = PlayerAttackModeUtility.GetDisplayName(_player.CurrentAttackMode);
+        }
+
+        private void ShowRuntimeHint(string message, bool isError)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return;
+
+            EnsureRuntimeHintText();
+            if (_runtimeHintText == null)
+                return;
+
+            _runtimeHintText.text = message;
+            _runtimeHintText.color = isError ? new Color(0.88f, 0.22f, 0.22f, 1f) : new Color(0.2f, 0.7f, 0.32f, 1f);
+            _runtimeHintText.gameObject.SetActive(true);
+            _runtimeHintExpireAt = Time.unscaledTime + RuntimeHintDuration;
+        }
+
+        private void EnsureRuntimeHintText()
+        {
+            if (_runtimeHintText != null)
+                return;
+
+            GameObject hintObject = new GameObject("RuntimeHintText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            hintObject.transform.SetParent(transform, false);
+
+            RectTransform rectTransform = hintObject.GetComponent<RectTransform>();
+            rectTransform.anchorMin = new Vector2(0.5f, 1f);
+            rectTransform.anchorMax = new Vector2(0.5f, 1f);
+            rectTransform.pivot = new Vector2(0.5f, 1f);
+            rectTransform.anchoredPosition = new Vector2(0f, -20f);
+            rectTransform.sizeDelta = new Vector2(420f, 32f);
+
+            _runtimeHintText = hintObject.GetComponent<Text>();
+            Font runtimeHintFont = (_attackModeButtonText != null ? _attackModeButtonText.font : null)
+                ?? (tooltipText != null ? tooltipText.font : null)
+                ?? (previewTooltipText != null ? previewTooltipText.font : null)
+                ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _runtimeHintText.font = runtimeHintFont;
+            _runtimeHintText.fontSize = 18;
+            _runtimeHintText.alignment = TextAnchor.MiddleCenter;
+            _runtimeHintText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            _runtimeHintText.verticalOverflow = VerticalWrapMode.Overflow;
+            _runtimeHintText.raycastTarget = false;
+            _runtimeHintText.gameObject.SetActive(false);
         }
 
         private RectTransform GetPreviewAnchorRect()

@@ -7,7 +7,7 @@ namespace Game.UI
     {
         private static Font _defaultFont;
 
-        private static Font DefaultFont => _defaultFont ??= Resources.GetBuiltinResource<Font>("Arial.ttf");
+        private static Font DefaultFont => _defaultFont ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
         public static void EnsureFullScreenRoot(RectTransform root)
         {

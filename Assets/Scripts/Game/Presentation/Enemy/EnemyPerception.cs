@@ -343,11 +343,13 @@ namespace Game.Presentation
             return action switch
             {
                 GameAction.NormalAttack => 0.7f,
+                GameAction.Shoot => 0.7f,
                 GameAction.Skill => 1f,
                 GameAction.AirAttack => 0.8f,
                 GameAction.FallAttack => 0.95f,
                 GameAction.ChargeRelease => 0.9f,
                 GameAction.ChargeStart => 0.45f,
+                GameAction.ShootCharge => 0.9f,
                 _ => 0f,
             };
         }

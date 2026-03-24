@@ -13,14 +13,17 @@ MonoBehaviour:
   m_Name: "\u73A9\u5BB6\u52A8\u4F5C\u53CA\u6280\u80FD\u914D\u7F6E\u5E93"
   m_EditorClassIdentifier: 
   entries:
-  - actionId: Idle
-    skillId: Idle
-    displayName: "\u5F85\u673A"
+  - actionId: NormalIdle
+    skillId: NormalIdle
+    displayName: "\u6B63\u5E38\u5F85\u673A"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
-    animationTrigger: Locomotion
+    animationTrigger: NormalLocomotion
     cooldownSeconds: 0
     passiveStatModifier:
       hpAdd: 0
@@ -49,14 +52,173 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: Move
-    skillId: Move
-    displayName: "\u79FB\u52A8"
+  - actionId: NormalWalk
+    skillId: NormalWalk
+    displayName: "\u6B63\u5E38\u8D70\u8DEF"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
-    animationTrigger: Locomotion
+    animationTrigger: NormalLocomotion
+    cooldownSeconds: 0
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+    actionPolicies:
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 0
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - actionId: NormalRun
+    skillId: NormalRun
+    displayName: "\u6B63\u5E38\u8DD1\u6B65"
+    description: 
+    skillIcon: {fileID: 0}
+    isPassive: 0
+    entryGroup: 0
+    supportedAttackModes: 3
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: NormalLocomotion
+    cooldownSeconds: 0
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+    actionPolicies:
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 0
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - actionId: AimIdle
+    skillId: AimIdle
+    displayName: "\u5C04\u51FB\u5F85\u673A"
+    description: 
+    skillIcon: {fileID: 0}
+    isPassive: 0
+    entryGroup: 0
+    supportedAttackModes: 2
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: AimLocomotion
+    cooldownSeconds: 0
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+    actionPolicies:
+    - action: 1
+      policy: 0
+    - action: 2
+      policy: 0
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - actionId: AimWalk
+    skillId: AimWalk
+    displayName: "\u5C04\u51FB\u8D70\u8DEF"
+    description: 
+    skillIcon: {fileID: 0}
+    isPassive: 0
+    entryGroup: 0
+    supportedAttackModes: 2
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: AimLocomotion
+    cooldownSeconds: 0
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+    actionPolicies:
+    - action: 3
+      policy: 0
+    - action: 4
+      policy: 0
+    - action: 1
+      policy: 2
+    - action: 2
+      policy: 2
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - actionId: AimRun
+    skillId: AimRun
+    displayName: "\u5C04\u51FB\u8DD1\u6B65"
+    description: 
+    skillIcon: {fileID: 0}
+    isPassive: 0
+    entryGroup: 0
+    supportedAttackModes: 2
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: AimLocomotion
     cooldownSeconds: 0
     passiveStatModifier:
       hpAdd: 0
@@ -88,8 +250,11 @@ MonoBehaviour:
   - actionId: Jump
     skillId: Jump
     displayName: "\u8DF3\u8DC3"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Jump
@@ -136,8 +301,11 @@ MonoBehaviour:
   - actionId: Dodge
     skillId: Dodge
     displayName: "\u95EA\u907F"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Dodge
@@ -178,8 +346,11 @@ MonoBehaviour:
   - actionId: Fall
     skillId: Fall
     displayName: "\u5760\u843D"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Fall
@@ -226,8 +397,11 @@ MonoBehaviour:
   - actionId: Land
     skillId: Land
     displayName: "\u7740\u9646"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Land
@@ -254,8 +428,11 @@ MonoBehaviour:
   - actionId: Attack0
     skillId: Attack0
     displayName: "\u666E\u653B1"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Attack0
@@ -290,8 +467,11 @@ MonoBehaviour:
   - actionId: Attack1
     skillId: Attack1
     displayName: "\u666E\u653B2"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Attack1
@@ -326,8 +506,11 @@ MonoBehaviour:
   - actionId: Attack2
     skillId: Attack2
     displayName: "\u666E\u653B3"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Attack2
@@ -362,8 +545,11 @@ MonoBehaviour:
   - actionId: Attack3
     skillId: Attack3
     displayName: "\u666E\u653B4"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Attack3
@@ -398,8 +584,11 @@ MonoBehaviour:
   - actionId: AirAttack
     skillId: AirAttack
     displayName: "\u7A7A\u4E2D\u666E\u653B"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: AirAttack
@@ -442,8 +631,11 @@ MonoBehaviour:
   - actionId: ChargeStart
     skillId: ChargeStart
     displayName: "\u84C4\u529B\u5F00\u59CB"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: ChargeStart
@@ -480,8 +672,11 @@ MonoBehaviour:
   - actionId: ChargeLoop
     skillId: ChargeLoop
     displayName: "\u84C4\u529B\u5FAA\u73AF"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: ChargeLoop
@@ -517,9 +712,12 @@ MonoBehaviour:
     naturalExitTarget: 0
   - actionId: ChargeRelease
     skillId: ChargeRelease
-    displayName: "\u84C4\u529B\u7ED3\u675F"
+    displayName: "\u84C4\u529B\u91CA\u653E"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: ChargeRelease
@@ -562,8 +760,11 @@ MonoBehaviour:
   - actionId: FallAttackStart
     skillId: FallAttackStart
     displayName: "\u4E0B\u843D\u653B\u51FB\u5F00\u59CB"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: FallAttackStart
@@ -590,8 +791,11 @@ MonoBehaviour:
   - actionId: FallAttackLoop
     skillId: FallAttackLoop
     displayName: "\u4E0B\u843D\u653B\u51FB\u5FAA\u73AF"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: FallAttackLoop
@@ -617,9 +821,12 @@ MonoBehaviour:
     naturalExitTarget: 0
   - actionId: FallAttackLand
     skillId: FallAttackLand
-    displayName: "\u4E0B\u843D\u653B\u51FB\u7ED3\u675F"
+    displayName: "\u4E0B\u843D\u653B\u51FB\u7740\u9646"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: FallAttackLand
@@ -660,8 +867,11 @@ MonoBehaviour:
   - actionId: HitStun
     skillId: HitStun
     displayName: "\u53D7\u51FB"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: HitStun
@@ -688,8 +898,11 @@ MonoBehaviour:
   - actionId: PlayerDeath
     skillId: PlayerDeath
     displayName: "\u6B7B\u4EA1"
+    description: 
+    skillIcon: {fileID: 0}
     isPassive: 0
     entryGroup: 0
+    supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
     animationTrigger: Dead
@@ -713,11 +926,125 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
+  - actionId: Shoot
+    skillId: Shoot
+    displayName: "\u5C04\u51FB"
+    description: 
+    skillIcon: {fileID: 0}
+    isPassive: 0
+    entryGroup: 0
+    supportedAttackModes: 2
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: Shoot
+    cooldownSeconds: 0
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+    actionPolicies:
+    - action: 3
+      policy: 0
+    pendingReleaseRules:
+    - pendingAction: 11
+      normalizedTime: 0.35
+    - pendingAction: 1
+      normalizedTime: 0.45
+    - pendingAction: 2
+      normalizedTime: 0.45
+    overrideNaturalExitNormalizedTime: 1
+    naturalExitNormalizedTime: 0.45
+    naturalExitTarget: 1
+  - actionId: ShootCharge
+    skillId: ShootCharge
+    displayName: "\u6301\u7EED\u5C04\u51FB"
+    description: 
+    skillIcon: {fileID: 0}
+    isPassive: 0
+    entryGroup: 0
+    supportedAttackModes: 2
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: Shoot_Charge
+    cooldownSeconds: 0
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+    actionPolicies:
+    - action: 9
+      policy: 0
+    - action: 10
+      policy: 0
+    - action: 6
+      policy: 2
+    - action: 12
+      policy: 2
+    - action: 11
+      policy: 2
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - actionId: Aim
+    skillId: Aim
+    displayName: "\u7784\u51C6"
+    description: 
+    skillIcon: {fileID: 0}
+    isPassive: 0
+    entryGroup: 0
+    supportedAttackModes: 2
+    talentCost: 0
+    mpCost: 0
+    animationTrigger: Aim
+    cooldownSeconds: 0
+    passiveStatModifier:
+      hpAdd: 0
+      mpAdd: 0
+      attackAdd: 0
+      defenseAdd: 0
+      lifeStealAdd: 0
+      critRateAdd: 0
+      critDmgAdd: 0
+      attackSpeedAdd: 0
+      moveSpeedAdd: 0
+      hpRegenAdd: 0
+      mpRegenAdd: 0
+      damageBonusAdd: 0
+      damageReduceAdd: 0
+    actionPolicies: []
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
   - actionId: Skill0
     skillId: Skill0
     displayName: "\u4E3B\u52A80"
+    description: "\u4E3B\u52A80\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
+    skillIcon: {fileID: 21300000, guid: e04ee1c07f9b69c409b0da6bfae8dd0c, type: 3}
     isPassive: 0
     entryGroup: 1
+    supportedAttackModes: 3
     talentCost: 2
     mpCost: 10
     animationTrigger: Skill0
@@ -754,8 +1081,11 @@ MonoBehaviour:
   - actionId: Skill1
     skillId: Skill1
     displayName: "\u4E3B\u52A81"
+    description: "\u4E3B\u52A81\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
+    skillIcon: {fileID: 21300000, guid: 81fcbee4e7a5a154da69526fdfb7e121, type: 3}
     isPassive: 0
     entryGroup: 1
+    supportedAttackModes: 3
     talentCost: 2
     mpCost: 10
     animationTrigger: Skill1
@@ -792,8 +1122,11 @@ MonoBehaviour:
   - actionId: Skill2
     skillId: Skill2
     displayName: "\u4E3B\u52A82"
+    description: "\u4E3B\u52A82\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
+    skillIcon: {fileID: 21300000, guid: e04ee1c07f9b69c409b0da6bfae8dd0c, type: 3}
     isPassive: 0
     entryGroup: 1
+    supportedAttackModes: 3
     talentCost: 2
     mpCost: 10
     animationTrigger: Skill2
@@ -830,8 +1163,11 @@ MonoBehaviour:
   - actionId: Skill3
     skillId: Skill3
     displayName: "\u4E3B\u52A83"
+    description: "\u4E3B\u52A83\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
+    skillIcon: {fileID: 21300000, guid: 81fcbee4e7a5a154da69526fdfb7e121, type: 3}
     isPassive: 0
     entryGroup: 1
+    supportedAttackModes: 3
     talentCost: 2
     mpCost: 10
     animationTrigger: Skill3
@@ -868,8 +1204,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_1
     displayName: "\u88AB\u52A81"
+    description: "\u88AB\u52A81\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -896,8 +1235,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_2
     displayName: "\u88AB\u52A82"
+    description: "\u88AB\u52A82\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -924,8 +1266,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_3
     displayName: "\u88AB\u52A83"
+    description: "\u88AB\u52A83\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -952,8 +1297,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_4
     displayName: "\u88AB\u52A84"
+    description: "\u88AB\u52A84\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -980,8 +1328,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_5
     displayName: "\u88AB\u52A85"
+    description: "\u88AB\u52A85\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -1008,8 +1359,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_6
     displayName: "\u88AB\u52A86"
+    description: "\u88AB\u52A86\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -1036,8 +1390,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_7
     displayName: "\u88AB\u52A87"
+    description: "\u88AB\u52A87\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -1064,8 +1421,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_8
     displayName: "\u88AB\u52A88"
+    description: "\u88AB\u52A88\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -1092,8 +1452,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_9
     displayName: "\u88AB\u52A89"
+    description: "\u88AB\u52A89\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -1120,8 +1483,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_10
     displayName: "\u88AB\u52A810"
+    description: "\u88AB\u52A810\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -1148,8 +1514,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_11
     displayName: "\u88AB\u52A811"
+    description: "\u88AB\u52A811\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -1176,8 +1545,11 @@ MonoBehaviour:
   - actionId: 
     skillId: passive_12
     displayName: "\u88AB\u52A812"
+    description: "\u88AB\u52A812\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+    skillIcon: {fileID: 0}
     isPassive: 1
     entryGroup: 2
+    supportedAttackModes: 3
     talentCost: 1
     mpCost: 0
     animationTrigger: 
@@ -1201,3 +1573,25 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
+  formActionMappings:
+  - actionSlot: 0
+    meleeActionId: Attack0
+    rangedActionId: Shoot
+  - actionSlot: 1
+    meleeActionId: Attack1
+    rangedActionId: Shoot
+  - actionSlot: 2
+    meleeActionId: Attack2
+    rangedActionId: Shoot
+  - actionSlot: 3
+    meleeActionId: Attack3
+    rangedActionId: Shoot
+  - actionSlot: 4
+    meleeActionId: AirAttack
+    rangedActionId: Shoot
+  - actionSlot: 5
+    meleeActionId: ChargeStart
+    rangedActionId: ShootCharge
+  - actionSlot: 6
+    meleeActionId: ChargeLoop
+    rangedActionId: ShootCharge

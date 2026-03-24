@@ -13,6 +13,7 @@ namespace Game.Domain
     public class PlayerModel
     {
         public const int SlotCount = 50;
+        public const int SkillSlotCount = 10;
 
         private sealed class AppliedBuffModifier
         {
@@ -34,13 +35,17 @@ namespace Game.Domain
         public readonly Stats          Stats     = new Stats();
         public readonly ExpModel       Exp;
         public readonly EquipmentModel Equipment;
+        public event Action LoadoutChanged;
 
         private readonly InventorySlot[] _slots = new InventorySlot[SlotCount];
+        private readonly string[] _equippedSkillActionIds = new string[SkillSlotCount];
         /// <summary>仅存金币与天赋点；药剂、仙露等在 _slots 中</summary>
         private readonly Dictionary<string, int> _currency = new Dictionary<string, int>();
+        private PlayerAttackMode _currentAttackMode = PlayerAttackMode.Melee;
 
         public float CurrentHp { get; set; }
         public float CurrentMp { get; set; }
+        public PlayerAttackMode CurrentAttackMode => _currentAttackMode;
 
         public int Gold
         {
@@ -68,6 +73,7 @@ namespace Game.Domain
             Equipment = new EquipmentModel(Stats);
             for (int i = 0; i < SlotCount; i++)
                 _slots[i] = new InventorySlot();
+            ApplyDefaultSkillSlotActions();
 
             if (_levelGrowth != null)
                 _levelGrowth.GetStatsForLevel(1, Stats);
@@ -118,12 +124,115 @@ namespace Game.Domain
                 return false;
 
             if (entry.IsBaseSkill)
-                return true;
+                return entry.SupportsAttackMode(_currentAttackMode);
 
             if (entry.IsActiveSkill || entry.IsPassiveSkill)
-                return HasUnlockedSkill(entry.skillId);
+                return HasUnlockedSkill(entry.skillId)
+                       && (!entry.IsActiveSkill || entry.SupportsAttackMode(_currentAttackMode));
 
             return HasUnlockedSkill(entry.skillId);
+        }
+
+        public WeaponInstance GetEquippedWeapon(PlayerAttackMode attackMode)
+        {
+            return Equipment != null ? Equipment.GetEquippedWeapon(attackMode) : null;
+        }
+
+        public bool SetAttackMode(PlayerAttackMode attackMode)
+        {
+            if (_currentAttackMode == attackMode)
+                return false;
+
+            _currentAttackMode = attackMode;
+            Equipment?.SetActiveAttackMode(attackMode);
+            NotifyLoadoutChanged();
+            return true;
+        }
+
+        public bool ToggleAttackMode()
+        {
+            return SetAttackMode(PlayerAttackModeUtility.GetOpposite(_currentAttackMode));
+        }
+
+        public bool CanEquipWeaponInCurrentAttackMode(WeaponInstance weapon)
+        {
+            if (weapon == null)
+                return false;
+
+            return PlayerAttackModeUtility.GetAttackModeForWeaponType(weapon.type) == _currentAttackMode;
+        }
+
+        public string ResolveCurrentFormActionId(PlayerFormActionSlot actionSlot, SkillConfigDatabaseSO config, string fallbackActionId = null)
+        {
+            return config != null
+                ? config.ResolveFormActionId(_currentAttackMode, actionSlot, fallbackActionId)
+                : (string.IsNullOrWhiteSpace(fallbackActionId) ? actionSlot.ToString() : fallbackActionId.Trim());
+        }
+
+        public string GetEquippedSkillActionId(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= SkillSlotCount)
+                return string.Empty;
+
+            return _equippedSkillActionIds[slotIndex] ?? string.Empty;
+        }
+
+        public int FindEquippedSkillSlotIndex(string actionId)
+        {
+            if (string.IsNullOrWhiteSpace(actionId))
+                return -1;
+
+            string normalizedActionId = actionId.Trim();
+            for (int i = 0; i < _equippedSkillActionIds.Length; i++)
+            {
+                if (string.Equals(_equippedSkillActionIds[i], normalizedActionId, StringComparison.Ordinal))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public SkillConfigEntry GetEquippedActiveSkillEntry(int slotIndex, SkillConfigDatabaseSO config)
+        {
+            if (config == null)
+                return null;
+
+            string actionId = GetEquippedSkillActionId(slotIndex);
+            if (string.IsNullOrWhiteSpace(actionId))
+                return null;
+
+            return config.GetActiveSkillEntryByActionId(actionId);
+        }
+
+        public bool AssignSkillActionToSlot(int slotIndex, string actionId, SkillConfigDatabaseSO config)
+        {
+            if (slotIndex < 0 || slotIndex >= SkillSlotCount)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(actionId))
+                return ClearSkillSlot(slotIndex);
+
+            string normalizedActionId = actionId.Trim();
+            SkillConfigEntry entry = config != null ? config.GetActiveSkillEntryByActionId(normalizedActionId) : null;
+            if (entry == null || !HasUnlockedSkill(entry.skillId))
+                return false;
+
+            int previousSlotIndex = FindEquippedSkillSlotIndex(normalizedActionId);
+            if (previousSlotIndex >= 0 && previousSlotIndex != slotIndex)
+                _equippedSkillActionIds[previousSlotIndex] = string.Empty;
+
+            _equippedSkillActionIds[slotIndex] = normalizedActionId;
+            return true;
+        }
+
+        public bool ClearSkillSlot(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= SkillSlotCount)
+                return false;
+
+            bool hadValue = !string.IsNullOrWhiteSpace(_equippedSkillActionIds[slotIndex]);
+            _equippedSkillActionIds[slotIndex] = string.Empty;
+            return hadValue;
         }
 
         // ── 统一背包 50 格 ───────────────────────────────────────────────────────────
@@ -215,20 +324,33 @@ namespace Game.Domain
         /// <summary>装备第 index 格的武器；若非武器格或空格则无效果</summary>
         public bool EquipWeaponAt(int index)
         {
+            return EquipWeaponAt(index, out _);
+        }
+
+        public bool EquipWeaponAt(int index, out string errorMessage)
+        {
+            errorMessage = string.Empty;
             if (index < 0 || index >= SlotCount) return false;
             var slot = _slots[index];
             if (slot?.weapon == null) return false;
 
             WeaponInstance selectedWeapon = slot.weapon;
-            WeaponInstance previouslyEquipped = Equipment.EquippedWeapon;
+            if (!CanEquipWeaponInCurrentAttackMode(selectedWeapon))
+            {
+                errorMessage = "请切换到对应形态下装备该武器";
+                return false;
+            }
+
+            WeaponInstance previouslyEquipped = Equipment.GetEquippedWeapon(_currentAttackMode);
 
             if (ReferenceEquals(selectedWeapon, previouslyEquipped))
             {
                 RemoveSlotAt(index);
+                NotifyLoadoutChanged();
                 return true;
             }
 
-            Equipment.Equip(selectedWeapon);
+            Equipment.Equip(_currentAttackMode, selectedWeapon);
 
             if (previouslyEquipped != null)
             {
@@ -241,21 +363,25 @@ namespace Game.Domain
                 RemoveSlotAt(index);
             }
 
+            NotifyLoadoutChanged();
             return true;
         }
 
         /// <summary>卸下当前武器并放回背包；若背包已满则失败</summary>
         public bool UnequipWeapon()
         {
-            WeaponInstance equippedWeapon = Equipment.EquippedWeapon;
+            WeaponInstance equippedWeapon = Equipment.GetEquippedWeapon(_currentAttackMode);
             if (equippedWeapon == null)
                 return false;
 
             if (!CanAddWeapon())
                 return false;
 
-            Equipment.Unequip();
-            return AddWeapon(equippedWeapon);
+            WeaponInstance removedWeapon = Equipment.Unequip(_currentAttackMode);
+            bool added = AddWeapon(removedWeapon);
+            if (added)
+                NotifyLoadoutChanged();
+            return added;
         }
 
         // ── 物品数量：金币/天赋点从 _currency；其余从格子汇总 ─────────────────────────
@@ -418,7 +544,10 @@ namespace Game.Domain
             return true;
         }
 
-        public Stats BuildCloneSharedStatsSnapshot(SkillConfigDatabaseSO config, Func<string, StatModifier> getModifierForBuff)
+        public Stats BuildCloneSharedStatsSnapshot(
+            SkillConfigDatabaseSO config,
+            Func<string, StatModifier> getModifierForBuff,
+            PlayerAttackMode attackMode = PlayerAttackMode.Melee)
         {
             Stats snapshot = new Stats();
             if (_levelGrowth != null)
@@ -426,7 +555,7 @@ namespace Game.Domain
             else
                 ApplyDefaultLevel1Stats(snapshot);
 
-            WeaponInstance equippedWeapon = Equipment.EquippedWeapon;
+            WeaponInstance equippedWeapon = GetEquippedWeapon(attackMode);
             if (equippedWeapon != null)
                 snapshot.AddModifier(equippedWeapon.ToModifier());
 
@@ -503,6 +632,7 @@ namespace Game.Domain
         {
             if (run == null) return;
             for (int i = 0; i < SlotCount; i++) _slots[i].Clear();
+            for (int i = 0; i < SkillSlotCount; i++) _equippedSkillActionIds[i] = string.Empty;
             _currency.Clear();
 
             if (run.player != null)
@@ -536,7 +666,21 @@ namespace Game.Domain
                 loadedSlots = true;
             }
 
-            Equipment.LoadFrom(run.equippedWeapon);
+            WeaponInstance meleeWeapon = run.meleeEquippedWeapon;
+            WeaponInstance rangedWeapon = run.rangedEquippedWeapon;
+            if (meleeWeapon == null && rangedWeapon == null && run.equippedWeapon != null)
+            {
+                PlayerAttackMode legacyAttackMode = PlayerAttackModeUtility.GetAttackModeForWeaponType(run.equippedWeapon.type);
+                if (legacyAttackMode == PlayerAttackMode.Ranged)
+                    rangedWeapon = run.equippedWeapon;
+                else
+                    meleeWeapon = run.equippedWeapon;
+            }
+
+            _currentAttackMode = Enum.IsDefined(typeof(PlayerAttackMode), run.currentAttackMode)
+                ? (PlayerAttackMode)run.currentAttackMode
+                : PlayerAttackMode.Melee;
+            Equipment.LoadFrom(_currentAttackMode, meleeWeapon, rangedWeapon);
 
             if (run.itemCounts != null)
             {
@@ -551,6 +695,7 @@ namespace Game.Domain
 
             BuffIds          = run.buffIds         != null ? new List<string>(run.buffIds)            : new List<string>();
             UnlockedSkillIds = run.unlockedSkillIds != null ? new HashSet<string>(run.unlockedSkillIds) : new HashSet<string>();
+            LoadEquippedSkillActions(run);
             ClearBuffModifiers();
             CurrentHp = Mathf.Clamp(CurrentHp, 0f, Stats.MaxHp);
             CurrentMp = Mathf.Clamp(CurrentMp, 0f, Stats.MaxMp);
@@ -586,8 +731,14 @@ namespace Game.Domain
             if (run.itemCounts.items == null) run.itemCounts.items = new List<ItemStackSave>();
 
             run.equippedWeapon   = Equipment.EquippedWeapon;
+            run.meleeEquippedWeapon = Equipment.GetEquippedWeapon(PlayerAttackMode.Melee);
+            run.rangedEquippedWeapon = Equipment.GetEquippedWeapon(PlayerAttackMode.Ranged);
+            run.currentAttackMode = (int)_currentAttackMode;
             run.buffIds          = new List<string>(BuffIds);
             run.unlockedSkillIds = new List<string>(UnlockedSkillIds);
+            run.equippedSkillActionIds = new List<string>(SkillSlotCount);
+            for (int i = 0; i < SkillSlotCount; i++)
+                run.equippedSkillActionIds.Add(GetEquippedSkillActionId(i));
         }
 
         public void TakeDamage(float damage) => CurrentHp = Mathf.Max(0f, CurrentHp - damage);
@@ -614,6 +765,34 @@ namespace Game.Domain
             stats.baseDamageBonus = 0f;
             stats.baseDamageReduce = 0f;
             stats.InvalidateCache();
+        }
+
+        private void ApplyDefaultSkillSlotActions()
+        {
+            for (int i = 0; i < SkillSlotCount; i++)
+                _equippedSkillActionIds[i] = string.Empty;
+        }
+
+        private void LoadEquippedSkillActions(RunData run)
+        {
+            if (run?.equippedSkillActionIds == null || run.equippedSkillActionIds.Count == 0)
+            {
+                ApplyDefaultSkillSlotActions();
+                return;
+            }
+
+            for (int i = 0; i < SkillSlotCount; i++)
+            {
+                if (i < run.equippedSkillActionIds.Count && !string.IsNullOrWhiteSpace(run.equippedSkillActionIds[i]))
+                    _equippedSkillActionIds[i] = run.equippedSkillActionIds[i].Trim();
+                else
+                    _equippedSkillActionIds[i] = string.Empty;
+            }
+        }
+
+        private void NotifyLoadoutChanged()
+        {
+            LoadoutChanged?.Invoke();
         }
     }
 }

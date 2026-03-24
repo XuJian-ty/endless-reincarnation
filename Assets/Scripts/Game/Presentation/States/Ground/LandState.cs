@@ -11,8 +11,8 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Anim.SetGrounded(true);
-            TriggerConfiguredActionByActionId("Land", "Land");
-            StartConfiguredTimelineByActionId("Land");
+            TriggerConfiguredBaseAction("Land", "Land");
+            StartConfiguredBaseActionTimeline("Land");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

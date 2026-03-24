@@ -1,4 +1,5 @@
 using UnityEngine;
+using Game.Data;
 
 namespace Game.Presentation
 {
@@ -8,13 +9,14 @@ namespace Game.Presentation
     /// </summary>
     public class AirAttackState : PlayerStateBase
     {
+        protected override string ActionId => ResolveConfiguredFormActionId(PlayerFormActionSlot.AirAttack, "AirAttack");
         public override GameAction CurrentActionId => GameAction.AirAttack;
 
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            TriggerConfiguredActionByActionId("AirAttack", "AirAttack");
-            StartConfiguredTimelineByActionId("AirAttack");
+            TriggerConfiguredBaseAction(ActionId, "AirAttack");
+            StartConfiguredBaseActionTimeline(ActionId);
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

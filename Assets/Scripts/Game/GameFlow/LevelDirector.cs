@@ -287,7 +287,6 @@ namespace Game.GameFlow
                         : () =>
                         {
                             _bossProgressService?.OnBossDefeated(bossId);
-                            gsm.SaveAndQuit();
                         }));
         }
 

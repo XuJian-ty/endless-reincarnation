@@ -14,7 +14,7 @@ namespace Game.Saving
     /// </summary>
     public class SaveSystem : BaseManager<SaveSystem>
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
 
         private ISaveStorage _storage;
         private List<SaveEntry> _index = new List<SaveEntry>();
@@ -131,6 +131,27 @@ namespace Game.Saving
                 data.run.buffIds          ??= new List<string>();
                 data.run.unlockedSkillIds ??= new List<string>();
                 data.run.defeatedBossIds  ??= new List<string>();
+            }
+            if (data.version < 2)
+            {
+                if (data.run.meleeEquippedWeapon == null
+                    && data.run.rangedEquippedWeapon == null
+                    && data.run.equippedWeapon != null)
+                {
+                    PlayerAttackMode legacyAttackMode = PlayerAttackModeUtility.GetAttackModeForWeaponType(data.run.equippedWeapon.type);
+                    if (legacyAttackMode == PlayerAttackMode.Ranged)
+                        data.run.rangedEquippedWeapon = data.run.equippedWeapon;
+                    else
+                        data.run.meleeEquippedWeapon = data.run.equippedWeapon;
+                }
+
+                if (!Enum.IsDefined(typeof(PlayerAttackMode), data.run.currentAttackMode))
+                {
+                    if (data.run.rangedEquippedWeapon != null && data.run.meleeEquippedWeapon == null)
+                        data.run.currentAttackMode = (int)PlayerAttackMode.Ranged;
+                    else
+                        data.run.currentAttackMode = (int)PlayerAttackMode.Melee;
+                }
             }
             if (data.run.levelSnapshot != null)
             {
@@ -253,6 +274,9 @@ namespace Game.Saving
                     inventory        = new InventorySaveData(),
                     itemCounts       = new ItemCountSaveData { gold = 500, talentPoints = 0 },
                     equippedWeapon   = null,
+                    meleeEquippedWeapon = null,
+                    rangedEquippedWeapon = null,
+                    currentAttackMode = (int)PlayerAttackMode.Melee,
                     buffIds          = new List<string>(),
                     unlockedSkillIds = new List<string>(),
                     defeatedBossIds  = new List<string>(),
@@ -291,8 +315,9 @@ namespace Game.Saving
             WeaponInstance starterGun = weaponDb.CreateMinimumRoll(WeaponType.RangedGun, WeaponRarity.Common);
 
             run.equippedWeapon = starterSword;
-            if (starterGun != null && run.inventory.slots.Count > 3)
-                run.inventory.slots[3].weapon = starterGun;
+            run.meleeEquippedWeapon = starterSword;
+            run.rangedEquippedWeapon = starterGun;
+            run.currentAttackMode = (int)PlayerAttackMode.Melee;
         }
 
         private static string NormalizePlayerName(string playerName)

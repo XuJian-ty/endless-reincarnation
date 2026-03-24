@@ -9,8 +9,8 @@ namespace Game.Presentation
     /// </summary>
     public abstract class SkillStateBase : PlayerStateBase
     {
-        protected abstract string SkillActionId { get; }
-        protected override string ActionId => SkillActionId;
+        protected abstract int SkillSlotIndex { get; }
+        protected override string ActionId => ResolveSkillActionId();
 
         public override GameAction CurrentActionId => GameAction.Skill;
 
@@ -29,7 +29,7 @@ namespace Game.Presentation
                 return;
             }
             Ctx.PlayerModel.SpendMp(entry.mpCost);
-            Ctx.StateMachine.StartActiveSkillCooldown(entry);
+            Ctx.StateMachine.StartActiveSkillCooldown(SkillSlotIndex, entry);
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
             TriggerConfiguredActionByActionId(ActionId, entry.GetResolvedAnimationTrigger());
 
@@ -56,7 +56,9 @@ namespace Game.Presentation
             GameAction.Dodge         => TransitionPolicy.Interrupt,
             GameAction.Skill         => TransitionPolicy.Interrupt,
             GameAction.ChargeStart   => TransitionPolicy.Interrupt,
+            GameAction.ShootCharge   => TransitionPolicy.Interrupt,
             GameAction.NormalAttack  => TransitionPolicy.Ignore,
+            GameAction.Shoot         => TransitionPolicy.Ignore,
             GameAction.ChargeRelease => TransitionPolicy.Ignore,
             _                        => TransitionPolicy.Buffer,
         };
@@ -71,7 +73,17 @@ namespace Game.Presentation
 
         private SkillConfigEntry ResolveEntry()
         {
-            return ResolvePlayerActionEntry(ActionId);
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            return Ctx?.PlayerModel != null && skillDb != null
+                ? Ctx.PlayerModel.GetEquippedActiveSkillEntry(SkillSlotIndex, skillDb)
+                : null;
+        }
+
+        private string ResolveSkillActionId()
+        {
+            return Ctx?.PlayerModel != null
+                ? Ctx.PlayerModel.GetEquippedSkillActionId(SkillSlotIndex)
+                : string.Empty;
         }
     }
 }

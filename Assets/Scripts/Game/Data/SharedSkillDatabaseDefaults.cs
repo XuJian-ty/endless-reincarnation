@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Presentation;
 
 namespace Game.Data
 {
@@ -12,6 +13,7 @@ namespace Game.Data
             public float startTime = 0f;
             public SkillEventTriggerMode triggerMode = SkillEventTriggerMode.Once;
             public float activeDuration = 0f;
+            public SkillEventActiveDurationMode activeDurationMode = SkillEventActiveDurationMode.FixedTime;
             public float repeatInterval = 0.1f;
             public SkillDamageEffect[] damageEffects;
             public SkillPhysicsEffect[] physicsEffects;
@@ -36,22 +38,37 @@ namespace Game.Data
 
             return new List<SharedSkillDefinition>
             {
+                PlayerSkill("Jump", "跳跃"),
+                PlayerSkill("Dodge", "闪避"),
+                PlayerSkill("Land", "着陆"),
                 PlayerSkill("Skill0", "主动技能0"),
                 PlayerSkill("Skill1", "主动技能1"),
                 PlayerSkill("Skill2", "主动技能2"),
                 PlayerSkill("Skill3", "主动技能3"),
-                PlayerSkill("Locomotion", "机动循环"),
+                PlayerSkill("NormalIdle", "正常待机"),
+                PlayerSkill("NormalWalk", "正常走路"),
+                PlayerSkill("NormalRun", "正常跑步"),
+                PlayerSkill("AimIdle", "射击待机"),
+                PlayerSkill("AimWalk", "射击走路"),
+                PlayerSkill("AimRun", "射击跑步"),
+                PlayerSkill("Aim", "瞄准循环"),
+                PlayerSkill("ChargeStart", "蓄力开始"),
                 PlayerSkill("ChargeLoop", "蓄力循环"),
+                CreatePlayerChargeRelease(),
                 PlayerSkill("Fall", "下落循环"),
+                PlayerSkill("FallAttackStart", "下落攻击开始"),
                 PlayerSkill("FallAttackLoop", "下落攻击循环"),
+                CreatePlayerFallAttackLand(),
+                PlayerSkill("HitStun", "受击"),
+                PlayerSkill("PlayerDeath", "死亡"),
                 PlayerSkill("EnemyLocomotion", "敌人机动循环"),
                 CreatePlayerAttack0(),
                 CreatePlayerAttack1(),
                 CreatePlayerAttack2(),
                 CreatePlayerAttack3(),
+                CreatePlayerShoot(),
                 CreatePlayerAirAttack(),
-                CreatePlayerFallAttack(),
-                CreatePlayerChargeAttack(),
+                CreatePlayerShootCharge(),
                 CreateMeleeMinionChop(),
                 CreateRangedMinionShot(),
                 CreateElite1Combo(),
@@ -198,16 +215,32 @@ namespace Game.Data
             if (string.IsNullOrWhiteSpace(skillId))
                 return "player";
 
-            if (skillId.StartsWith("Skill", StringComparison.Ordinal) ||
+            if (PlayerActionRouting.IsSkillSlotActionName(skillId) ||
+                string.Equals(skillId, "Jump", StringComparison.Ordinal) ||
+                string.Equals(skillId, "Dodge", StringComparison.Ordinal) ||
+                string.Equals(skillId, "Land", StringComparison.Ordinal) ||
                 skillId.StartsWith("Attack", StringComparison.Ordinal) ||
-                string.Equals(skillId, "Locomotion", StringComparison.Ordinal) ||
+                string.Equals(skillId, "Shoot", StringComparison.Ordinal) ||
+                string.Equals(skillId, "ShootCharge", StringComparison.Ordinal) ||
+                string.Equals(skillId, "Shoot_Charge", StringComparison.Ordinal) ||
+                string.Equals(skillId, "Aim", StringComparison.Ordinal) ||
+                string.Equals(skillId, "NormalIdle", StringComparison.Ordinal) ||
+                string.Equals(skillId, "NormalWalk", StringComparison.Ordinal) ||
+                string.Equals(skillId, "NormalRun", StringComparison.Ordinal) ||
+                string.Equals(skillId, "AimIdle", StringComparison.Ordinal) ||
+                string.Equals(skillId, "AimWalk", StringComparison.Ordinal) ||
+                string.Equals(skillId, "AimRun", StringComparison.Ordinal) ||
+                string.Equals(skillId, "ChargeStart", StringComparison.Ordinal) ||
                 string.Equals(skillId, "ChargeLoop", StringComparison.Ordinal) ||
+                string.Equals(skillId, "ChargeRelease", StringComparison.Ordinal) ||
                 string.Equals(skillId, "Fall", StringComparison.Ordinal) ||
+                string.Equals(skillId, "FallAttackStart", StringComparison.Ordinal) ||
                 string.Equals(skillId, "FallAttackLoop", StringComparison.Ordinal) ||
+                string.Equals(skillId, "FallAttackLand", StringComparison.Ordinal) ||
+                string.Equals(skillId, "HitStun", StringComparison.Ordinal) ||
+                string.Equals(skillId, "PlayerDeath", StringComparison.Ordinal) ||
                 string.Equals(skillId, "EnemyLocomotion", StringComparison.Ordinal) ||
-                string.Equals(skillId, "AirAttack", StringComparison.Ordinal) ||
-                string.Equals(skillId, "FallAttack", StringComparison.Ordinal) ||
-                string.Equals(skillId, "ChargeAttack", StringComparison.Ordinal))
+                string.Equals(skillId, "AirAttack", StringComparison.Ordinal))
             {
                 return "player";
             }
@@ -346,6 +379,33 @@ namespace Game.Data
                 startTime = startTime,
                 triggerMode = SkillEventTriggerMode.Repeated,
                 activeDuration = activeDuration,
+                activeDurationMode = SkillEventActiveDurationMode.FixedTime,
+                repeatInterval = repeatInterval,
+                damageEffects = damageEffects,
+                physicsEffects = physicsEffects,
+                attributeEffects = attributeEffects,
+                vfxEffects = vfxEffects,
+                sfxEffects = sfxEffects,
+            };
+        }
+
+        private static DefaultEventSpec RepeatedUntilStateExit(
+            string eventId,
+            float startTime,
+            float repeatInterval,
+            SkillDamageEffect[] damageEffects = null,
+            SkillPhysicsEffect[] physicsEffects = null,
+            SkillAttributeEffect[] attributeEffects = null,
+            SkillVfxEffect[] vfxEffects = null,
+            SkillSfxEffect[] sfxEffects = null)
+        {
+            return new DefaultEventSpec
+            {
+                eventId = eventId,
+                startTime = startTime,
+                triggerMode = SkillEventTriggerMode.Repeated,
+                activeDuration = 0f,
+                activeDurationMode = SkillEventActiveDurationMode.UntilStateExit,
                 repeatInterval = repeatInterval,
                 damageEffects = damageEffects,
                 physicsEffects = physicsEffects,
@@ -374,6 +434,7 @@ namespace Game.Data
                         startTime = spec.startTime,
                         triggerMode = spec.triggerMode,
                         activeDuration = spec.activeDuration,
+                        activeDurationMode = spec.activeDurationMode,
                         repeatInterval = spec.repeatInterval,
                         damageEffects = new List<SkillDamageEffect>(spec.damageEffects),
                     });
@@ -387,6 +448,7 @@ namespace Game.Data
                         startTime = spec.startTime,
                         triggerMode = spec.triggerMode,
                         activeDuration = spec.activeDuration,
+                        activeDurationMode = spec.activeDurationMode,
                         repeatInterval = spec.repeatInterval,
                         physicsEffects = new List<SkillPhysicsEffect>(spec.physicsEffects),
                     });
@@ -400,6 +462,7 @@ namespace Game.Data
                         startTime = spec.startTime,
                         triggerMode = spec.triggerMode,
                         activeDuration = spec.activeDuration,
+                        activeDurationMode = spec.activeDurationMode,
                         repeatInterval = spec.repeatInterval,
                         attributeEffects = new List<SkillAttributeEffect>(spec.attributeEffects),
                     });
@@ -413,6 +476,7 @@ namespace Game.Data
                         startTime = spec.startTime,
                         triggerMode = spec.triggerMode,
                         activeDuration = spec.activeDuration,
+                        activeDurationMode = spec.activeDurationMode,
                         repeatInterval = spec.repeatInterval,
                         vfxEffects = new List<SkillVfxEffect>(spec.vfxEffects),
                     });
@@ -426,6 +490,7 @@ namespace Game.Data
                         startTime = spec.startTime,
                         triggerMode = spec.triggerMode,
                         activeDuration = spec.activeDuration,
+                        activeDurationMode = spec.activeDurationMode,
                         repeatInterval = spec.repeatInterval,
                         sfxEffects = new List<SkillSfxEffect>(spec.sfxEffects),
                     });
@@ -441,9 +506,12 @@ namespace Game.Data
                 "Attack1" => SphereDamage("Enemy", magnitude * 1f, 1.5f),
                 "Attack2" => SphereDamage("Enemy", magnitude * 1f, 1.5f),
                 "Attack3" => SphereDamage("Enemy", magnitude * 1.2f, 1.5f),
+                "Shoot" => RayDamage("Enemy", magnitude * 1f, 20f, new Vector3(0f, 1f, 0f)),
+                "ShootCharge" => RayDamage("Enemy", magnitude * 0.2f, 20f, new Vector3(0f, 1f, 0f)),
+                "Shoot_Charge" => RayDamage("Enemy", magnitude * 0.2f, 20f, new Vector3(0f, 1f, 0f)),
                 "AirAttack" => SphereDamage("Enemy", magnitude * 1f, 1.5f),
-                "FallAttack" => SphereDamage("Enemy", magnitude * 1.5f, 2f),
-                "ChargeAttack" => SectorDamage("Enemy", magnitude * 2f, 2f, 180f),
+                "FallAttackLand" => SphereDamage("Enemy", magnitude * 1.5f, 2f),
+                "ChargeRelease" => SectorDamage("Enemy", magnitude * 2f, 2f, 180f),
                 "EnemyMelee" => SphereDamage("Player", magnitude * 1f, 1.6f),
                 "EnemyRanged" => SphereDamage("Player", magnitude * 1f, 1.6f),
                 "EnemyMeleeLight" => SphereDamage("Player", magnitude * 0.95f, 1.45f),
@@ -650,20 +718,36 @@ namespace Game.Data
                 Event("hit", 0f, damageEffects: new[] { Damage("AirAttack", 1f) }));
         }
 
-        private static SharedSkillDefinition CreatePlayerFallAttack()
+        private static SharedSkillDefinition CreatePlayerShoot()
         {
             return PlayerAttackSkill(
-                "FallAttack",
-                "玩家下落攻击",
-                Event("hit", 0f, damageEffects: new[] { Damage("FallAttack", 1f) }));
+                "Shoot",
+                "玩家射击",
+                Event("shot", 0f, damageEffects: new[] { Damage("Shoot", 1f) }));
         }
 
-        private static SharedSkillDefinition CreatePlayerChargeAttack()
+        private static SharedSkillDefinition CreatePlayerShootCharge()
         {
             return PlayerAttackSkill(
-                "ChargeAttack",
-                "玩家蓄力攻击",
-                Event("hit", 0f, damageEffects: new[] { Damage("ChargeAttack", 1f) }));
+                "ShootCharge",
+                "玩家持续射击",
+                RepeatedUntilStateExit("burst", 0f, 0.1f, damageEffects: new[] { Damage("ShootCharge", 1f) }));
+        }
+
+        private static SharedSkillDefinition CreatePlayerFallAttackLand()
+        {
+            return PlayerAttackSkill(
+                "FallAttackLand",
+                "玩家下落攻击着陆",
+                Event("hit", 0f, damageEffects: new[] { Damage("FallAttackLand", 1f) }));
+        }
+
+        private static SharedSkillDefinition CreatePlayerChargeRelease()
+        {
+            return PlayerAttackSkill(
+                "ChargeRelease",
+                "玩家蓄力释放",
+                Event("hit", 0f, damageEffects: new[] { Damage("ChargeRelease", 1f) }));
         }
 
         private static SharedSkillDefinition CreateMeleeMinionChop()

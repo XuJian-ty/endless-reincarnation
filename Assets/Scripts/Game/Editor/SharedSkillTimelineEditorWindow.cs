@@ -108,6 +108,10 @@ namespace Game.Editor
         private int _scenePreviewCueEventIndex = -1;
         private int _scenePreviewCueListIndex = -1;
         private TimelineTrackType _scenePreviewCueTrackType = TimelineTrackType.Vfx;
+        private bool _scenePreviewCueHasWorldOrigin;
+        private float _scenePreviewCueWorldOriginTriggerTime = -1f;
+        private Vector3 _scenePreviewCueWorldOriginPosition;
+        private Quaternion _scenePreviewCueWorldOriginRotation = Quaternion.identity;
         private PreviewTargetFilter _previewTargetFilter = PreviewTargetFilter.All;
         private GameObject _previewVictimTarget;
         private PreviewTargetFilter _previewVictimFilter = PreviewTargetFilter.Enemy;
@@ -157,10 +161,15 @@ namespace Game.Editor
 
         private enum TimelineTrackType
         {
+            [InspectorName("命中")]
             Damage,
+            [InspectorName("物理")]
             Physics,
+            [InspectorName("属性")]
             Attribute,
+            [InspectorName("特效")]
             Vfx,
+            [InspectorName("音效")]
             Sfx,
         }
 
@@ -194,6 +203,7 @@ namespace Game.Editor
             public Vector3 baseScale;
             public Vector3 originPosition;
             public Quaternion originRotation;
+            public bool hasWorldOrigin;
         }
 
         private sealed class PreviewOverlayLine
@@ -1567,8 +1577,12 @@ namespace Game.Editor
                 return;
             }
 
-            if (effect.duration > 0f && _previewTime > triggerTime + effect.duration + 0.0001f)
-                return;
+            if (effect.UsesDuration)
+            {
+                float effectLifetime = GetPreviewAttributeEffectLifetime(effect, triggerTime);
+                if (effectLifetime > 0f && _previewTime > triggerTime + effectLifetime + 0.0001f)
+                    return;
+            }
 
             value += GetPreviewAttributeDelta(effect, field, referenceValue);
         }
@@ -1930,6 +1944,7 @@ namespace Game.Editor
                 string newColliderNodeName = effect.colliderNodeName ?? string.Empty;
                 Vector3 newRayOriginOffset = effect.rayOriginOffset;
                 float newRayMaxDistance = effect.rayMaxDistance;
+                float newRayRadius = effect.rayRadius;
                 SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
 
                 switch (newDetectionType)
@@ -1955,6 +1970,7 @@ namespace Game.Editor
                         newRayOriginOffset = EditorGUILayout.Vector3Field("射线起点偏移", effect.rayOriginOffset);
                         newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                         newRayMaxDistance = Mathf.Max(0.01f, EditorGUILayout.FloatField("射线最大距离", effect.rayMaxDistance));
+                        newRayRadius = Mathf.Max(0f, EditorGUILayout.FloatField("射线半径", effect.rayRadius));
                         break;
                 }
 
@@ -1975,6 +1991,7 @@ namespace Game.Editor
                     effect.colliderNodeName = newColliderNodeName;
                     effect.rayOriginOffset = newRayOriginOffset;
                     effect.rayMaxDistance = Mathf.Max(0.01f, newRayMaxDistance);
+                    effect.rayRadius = Mathf.Max(0f, newRayRadius);
                     effect.motion = newMotion;
                     MarkDatabaseDirty();
                 }
@@ -1986,7 +2003,7 @@ namespace Game.Editor
                 DrawNestedPhysicsEffectsEditor(effect);
                 DrawNestedAttributeEffectsEditor(effect);
                 DrawNestedVfxEffectsEditor(effect, i);
-                DrawNestedSfxEffectsEditor(effect);
+                DrawNestedSfxEffectsEditor(effect, i);
 
                 EditorGUILayout.EndVertical();
             }
@@ -2064,13 +2081,21 @@ namespace Game.Editor
                     newDistance = Mathf.Max(0f, EditorGUILayout.FloatField("距离", effect.distance));
                 if (UsesPhysicsHeight(newEffectType))
                     newHeight = Mathf.Max(0f, EditorGUILayout.FloatField("高度", effect.height));
-                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
+                SkillEffectDurationMode newDurationMode = SupportsTopLevelUntilStateExit(newEffectType)
+                    ? (SkillEffectDurationMode)EditorGUILayout.EnumPopup("持续方式", effect.durationMode)
+                    : SkillEffectDurationMode.FixedTime;
+                float newDuration = effect.duration;
+                if (!SupportsTopLevelUntilStateExit(newEffectType) || newDurationMode == SkillEffectDurationMode.FixedTime)
+                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
+                else
+                    EditorGUILayout.HelpBox("该效果会持续到当前状态退出。", MessageType.None);
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit Physics Effect");
                     effect.effectType = newEffectType;
                     effect.distance = newDistance;
                     effect.height = newHeight;
+                    effect.durationMode = newDurationMode;
                     effect.duration = newDuration;
                     MarkDatabaseDirty();
                 }
@@ -2122,8 +2147,16 @@ namespace Game.Editor
                 bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
                 float newDuration = effect.duration;
                 bool showDuration = newStatField != SkillStatField.HP && newStatField != SkillStatField.MP;
+                SkillEffectDurationMode newDurationMode = showDuration
+                    ? (SkillEffectDurationMode)EditorGUILayout.EnumPopup("持续方式", effect.durationMode)
+                    : SkillEffectDurationMode.FixedTime;
                 if (showDuration)
-                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
+                {
+                    if (newDurationMode == SkillEffectDurationMode.FixedTime)
+                        newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
+                    else
+                        EditorGUILayout.HelpBox("该 Buff 会持续到当前状态退出。", MessageType.None);
+                }
                 if (EditorGUI.EndChangeCheck())
                 {
                     Undo.RecordObject(_database, "Edit Attribute Effect");
@@ -2131,6 +2164,7 @@ namespace Game.Editor
                     effect.targetMode = newTargetMode;
                     effect.magnitude = newMagnitude;
                     effect.usePercent = newUsePercent;
+                    effect.durationMode = newDurationMode;
                     effect.duration = showDuration ? newDuration : 0f;
                     MarkDatabaseDirty();
                 }
@@ -2218,7 +2252,8 @@ namespace Game.Editor
                 Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", cue.rotationEuler);
                 Vector3 newScale = EditorGUILayout.Vector3Field("缩放", cue.scale);
                 SkillMotionSettings newMotion = CopyMotionSettings(cue.motion);
-                DrawMotionSettingsEditor("移动设置", newMotion);
+                if (ShouldShowCueMotionSettings(newAnchor))
+                    DrawMotionSettingsEditor("移动设置", newMotion);
                 SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", cue.destroyMode);
                 float newDuration = cue.duration;
                 if (newDestroyMode == SkillCueDestroyMode.Timed)
@@ -2234,7 +2269,7 @@ namespace Game.Editor
                         Mathf.Max(0.01f, newScale.x),
                         Mathf.Max(0.01f, newScale.y),
                         Mathf.Max(0.01f, newScale.z));
-                    cue.motion = newMotion;
+                    cue.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
                     cue.destroyMode = newDestroyMode;
                     cue.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
                     MarkDatabaseDirty();
@@ -2290,6 +2325,19 @@ namespace Game.Editor
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField($"音效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                string hiddenKey = GetEditorSfxVisibilityKey(_selectedEventIndex, i);
+                bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
+                bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
+                if (newVisible != visible)
+                {
+                    if (newVisible)
+                        _hiddenPreviewCueKeys.Remove(hiddenKey);
+                    else
+                        _hiddenPreviewCueKeys.Add(hiddenKey);
+
+                    Repaint();
+                    SceneView.RepaintAll();
+                }
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
                     removeIndex = i;
                 GUILayout.EndHorizontal();
@@ -2576,6 +2624,12 @@ namespace Game.Editor
                 || effectType == PhysicsEffectType.Airborne;
         }
 
+        private static bool SupportsTopLevelUntilStateExit(PhysicsEffectType effectType)
+        {
+            return effectType == PhysicsEffectType.SuperArmor
+                || effectType == PhysicsEffectType.Invincible;
+        }
+
         private static SkillMotionSettings CopyMotionSettings(SkillMotionSettings source)
         {
             if (source == null)
@@ -2604,6 +2658,11 @@ namespace Game.Editor
                 motion.direction = EditorGUILayout.Vector3Field("移动方向", motion.direction);
             }
             EditorGUILayout.EndVertical();
+        }
+
+        private static bool ShouldShowCueMotionSettings(CueAnchor anchor)
+        {
+            return anchor == CueAnchor.World;
         }
 
         private void DrawNestedAttributeEffectsEditor(SkillDamageEffect damageEffect)
@@ -2752,7 +2811,8 @@ namespace Game.Editor
                 Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                 Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
                 SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
-                DrawMotionSettingsEditor("移动设置", newMotion);
+                if (ShouldShowCueMotionSettings(newAnchor))
+                    DrawMotionSettingsEditor("移动设置", newMotion);
                 SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
                 float newDuration = effect.duration;
                 if (newDestroyMode == SkillCueDestroyMode.Timed)
@@ -2768,7 +2828,7 @@ namespace Game.Editor
                         Mathf.Max(0.01f, newScale.x),
                         Mathf.Max(0.01f, newScale.y),
                         Mathf.Max(0.01f, newScale.z));
-                    effect.motion = newMotion;
+                    effect.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
                     effect.destroyMode = newDestroyMode;
                     effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
                     MarkDatabaseDirty();
@@ -2787,13 +2847,13 @@ namespace Game.Editor
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawNestedSfxEffectsEditor(SkillDamageEffect damageEffect)
+        private void DrawNestedSfxEffectsEditor(SkillDamageEffect damageEffect, int damageIndex)
         {
             EnsureSfxEffects(damageEffect);
-            DrawNestedSfxEffectsList("命中音效效果", damageEffect.onHitSfxEffects);
+            DrawNestedSfxEffectsList("命中音效效果", damageEffect.onHitSfxEffects, damageIndex);
         }
 
-        private void DrawNestedSfxEffectsList(string title, List<SkillSfxEffect> effects)
+        private void DrawNestedSfxEffectsList(string title, List<SkillSfxEffect> effects, int damageIndex)
         {
             EditorGUILayout.Space(6f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -2814,6 +2874,19 @@ namespace Game.Editor
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField($"命中音效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                string hiddenKey = GetEditorOnHitSfxVisibilityKey(_selectedEventIndex, damageIndex, i);
+                bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
+                bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
+                if (newVisible != visible)
+                {
+                    if (newVisible)
+                        _hiddenPreviewCueKeys.Remove(hiddenKey);
+                    else
+                        _hiddenPreviewCueKeys.Add(hiddenKey);
+
+                    Repaint();
+                    SceneView.RepaintAll();
+                }
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
                     removeIndex = i;
                 GUILayout.EndHorizontal();
@@ -3254,16 +3327,24 @@ namespace Game.Editor
 
         private void StartPreviewPlayback()
         {
+            bool restartFromBeginning = _previewTime <= 0.0001f || _previewTime >= GetPreviewTotalDuration() - 0.01f;
             if (_previewTime >= GetPreviewTotalDuration() - 0.01f)
                 _previewTime = 0f;
 
             StopAllTimelinePreviewAudio();
             DestroyTimelinePreviewVfxInstances();
-            _timelinePreviewHitSfxKeys.Clear();
             StartAnimationMode();
             SampleAnimationAtTime(_previewTime);
-            TriggerTimelinePreviewSfx(_previewTime - 0.0001f, _previewTime);
-            TriggerTimelinePreviewHitSfx();
+            if (restartFromBeginning)
+            {
+                _timelinePreviewHitSfxKeys.Clear();
+                TriggerTimelinePreviewSfx(_previewTime - 0.0001f, _previewTime);
+                TriggerTimelinePreviewHitSfx();
+            }
+            else
+            {
+                RebuildTimelinePreviewHitSfxKeys();
+            }
             _isPlaying = true;
             _prevEditorTime = EditorApplication.timeSinceStartup;
         }
@@ -3405,11 +3486,11 @@ namespace Game.Editor
                     break;
                 case TimelineTrackType.Physics:
                     if (evt is SkillPhysicsEvent physicsEvent)
-                        duration = Mathf.Max(duration, SharedSkillDefinition.GetPhysicsEventTailDuration(physicsEvent));
+                        duration = Mathf.Max(duration, GetPreviewPhysicsEventTailDuration(physicsEvent, lastTriggerTime));
                     break;
                 case TimelineTrackType.Attribute:
                     if (evt is SkillAttributeEvent attributeEvent)
-                        duration = Mathf.Max(duration, SharedSkillDefinition.GetAttributeEventTailDuration(attributeEvent));
+                        duration = Mathf.Max(duration, GetPreviewAttributeEventTailDuration(attributeEvent, lastTriggerTime));
                     break;
                 case TimelineTrackType.Vfx:
                     if (evt is SkillVfxEvent vfxEvent && vfxEvent.vfxEffects != null)
@@ -3438,6 +3519,30 @@ namespace Game.Editor
             return Mathf.Max(0f, duration);
         }
 
+        private float GetPreviewPhysicsEventTailDuration(SkillPhysicsEvent evt, float lastTriggerTime)
+        {
+            if (evt?.physicsEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < evt.physicsEffects.Count; i++)
+                duration = Mathf.Max(duration, GetPreviewPhysicsEffectLifetime(evt.physicsEffects[i], lastTriggerTime));
+
+            return duration;
+        }
+
+        private float GetPreviewAttributeEventTailDuration(SkillAttributeEvent evt, float lastTriggerTime)
+        {
+            if (evt?.attributeEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < evt.attributeEffects.Count; i++)
+                duration = Mathf.Max(duration, GetPreviewAttributeEffectLifetime(evt.attributeEffects[i], lastTriggerTime));
+
+            return duration;
+        }
+
         private static float GetTrackEffectTailDurationForAuthoring(SkillTimedEventBase evt, TimelineTrackType trackType)
         {
             if (evt == null)
@@ -3452,6 +3557,28 @@ namespace Game.Editor
                 TimelineTrackType.Sfx => evt is SkillSfxEvent sfxEvent ? SharedSkillDefinition.GetSfxEventTailDuration(sfxEvent) : 0f,
                 _ => 0f,
             };
+        }
+
+        private float GetPreviewPhysicsEffectLifetime(SkillPhysicsEffect effect, float triggerTime)
+        {
+            if (effect == null)
+                return 0f;
+
+            if (effect.durationMode == SkillEffectDurationMode.UntilStateExit && effect.SupportsUntilStateExitDuration)
+                return Mathf.Max(0f, GetPreviewStateExitTime() - triggerTime);
+
+            return SharedSkillDefinition.GetPhysicsEffectLifetime(effect);
+        }
+
+        private float GetPreviewAttributeEffectLifetime(SkillAttributeEffect effect, float triggerTime)
+        {
+            if (effect == null || !effect.UsesDuration)
+                return 0f;
+
+            if (effect.durationMode == SkillEffectDurationMode.UntilStateExit)
+                return Mathf.Max(0f, GetPreviewStateExitTime() - triggerTime);
+
+            return SharedSkillDefinition.GetAttributeEffectLifetime(effect);
         }
 
         private float GetPreviewDamageEventTailDuration(SkillDamageEvent evt, float lastTriggerTime)
@@ -3592,6 +3719,8 @@ namespace Game.Editor
                     {
                         SkillSfxEffect effect = evt.sfxEffects[effectIndex];
                         if (effect?.audioClip == null)
+                            continue;
+                        if (!IsTopLevelSfxVisible(eventIndex, effectIndex))
                             continue;
 
                         PlayPreviewAudio(effect.audioClip);
@@ -3753,8 +3882,9 @@ namespace Game.Editor
                     playback.effect = effect;
                     playback.triggerTime = triggerTime;
                     playback.explicitTarget = explicitTarget;
-                    playback.originPosition = Vector3.zero;
-                    playback.originRotation = default;
+                    if (effect == null || effect.anchor != CueAnchor.World)
+                        playback.hasWorldOrigin = false;
+                    EnsureTimelinePreviewCueWorldOrigin(playback);
                     UpdateTimelinePreviewVfxTransform(playback);
                     return playback;
                 }
@@ -3781,6 +3911,7 @@ namespace Game.Editor
                 explicitTarget = explicitTarget,
                 baseScale = instance.transform.localScale,
             };
+            EnsureTimelinePreviewCueWorldOrigin(created);
             _timelinePreviewVfxInstances.Add(created);
             UpdateTimelinePreviewVfxTransform(created);
             return created;
@@ -3802,8 +3933,26 @@ namespace Game.Editor
             if (playback?.instance == null || playback.effect == null)
                 return;
 
-            if (!TryEvaluatePreviewCueTransform(playback.effect, playback.explicitTarget, playback.triggerTime, out Vector3 position, out Quaternion rotation))
+            Vector3 position;
+            Quaternion rotation;
+            if (playback.effect.anchor == CueAnchor.World)
+            {
+                EnsureTimelinePreviewCueWorldOrigin(playback);
+                if (!playback.hasWorldOrigin)
+                    return;
+
+                EvaluateWorldCueTransform(
+                    playback.effect,
+                    playback.originPosition,
+                    playback.originRotation,
+                    Mathf.Max(0f, _previewTime - playback.triggerTime),
+                    out position,
+                    out rotation);
+            }
+            else if (!TryEvaluatePreviewCueTransform(playback.effect, playback.explicitTarget, playback.triggerTime, out position, out rotation))
+            {
                 return;
+            }
 
             playback.instance.transform.position = position;
             playback.instance.transform.rotation = rotation;
@@ -3884,10 +4033,46 @@ namespace Game.Editor
                         SkillSfxEffect effect = hit.effect.onHitSfxEffects[effectIndex];
                         if (effect?.audioClip == null)
                             continue;
+                        if (!IsOnHitSfxVisible(hit.eventIndex, hit.effectIndex, effectIndex))
+                            continue;
 
                         string key = $"{hit.eventIndex}:{hit.triggerIndex}:{hit.effectIndex}:{effectIndex}:{target.GetInstanceID()}";
                         if (_timelinePreviewHitSfxKeys.Add(key))
                             PlayPreviewAudio(effect.audioClip);
+                    }
+                }
+            }
+        }
+
+        private void RebuildTimelinePreviewHitSfxKeys()
+        {
+            _timelinePreviewHitSfxKeys.Clear();
+
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return;
+
+            List<PreviewDamageHitResult> damageHits = CollectPreviewDamageHitHistory(skill);
+            for (int i = 0; i < damageHits.Count; i++)
+            {
+                PreviewDamageHitResult hit = damageHits[i];
+                if (hit?.effect?.onHitSfxEffects == null || hit.hitTargets == null || hit.hitTargets.Count == 0)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < hit.hitTargets.Count; targetIndex++)
+                {
+                    Transform target = hit.hitTargets[targetIndex];
+                    if (target == null)
+                        continue;
+
+                    for (int effectIndex = 0; effectIndex < hit.effect.onHitSfxEffects.Count; effectIndex++)
+                    {
+                        SkillSfxEffect effect = hit.effect.onHitSfxEffects[effectIndex];
+                        if (effect?.audioClip == null)
+                            continue;
+
+                        string key = $"{hit.eventIndex}:{hit.triggerIndex}:{hit.effectIndex}:{effectIndex}:{target.GetInstanceID()}";
+                        _timelinePreviewHitSfxKeys.Add(key);
                     }
                 }
             }
@@ -4038,7 +4223,7 @@ namespace Game.Editor
             if (target == null || effect == null)
                 return;
 
-            float progress = GetPreviewPhysicsProgress(triggerTime, effect.duration);
+            float progress = GetPreviewPhysicsProgress(triggerTime, GetPreviewPhysicsEffectLifetime(effect, triggerTime));
             if (progress < 0f)
                 return;
 
@@ -4255,7 +4440,7 @@ namespace Game.Editor
                 || effect.effectType == PhysicsEffectType.SuperArmor
                 || effect.effectType == PhysicsEffectType.Invincible)
             {
-                DrawSceneTextLabel(origin + Vector3.up * handleSize * 0.18f, $"{label} {effect.duration:0.##}s");
+                DrawSceneTextLabel(origin + Vector3.up * handleSize * 0.18f, $"{label} {GetPhysicsEffectDurationText(effect)}");
                 Handles.color = oldColor;
                 return;
             }
@@ -4921,8 +5106,9 @@ namespace Game.Editor
                         ? $"{effect.magnitude * 100f:+0.##;-0.##;0}%"
                         : $"{effect.magnitude:+0.##;-0.##;0}";
                     string text = $"{GetStatFieldDisplayName(effect.statField)} {valueText}";
-                    if (effect.duration > 0f && effect.statField != SkillStatField.HP && effect.statField != SkillStatField.MP)
-                        text += $" {effect.duration:0.##}s";
+                    string durationSuffix = GetAttributeEffectDurationSuffix(effect);
+                    if (!string.IsNullOrEmpty(durationSuffix))
+                        text += durationSuffix;
                     names.Add(text);
                 }
             }
@@ -4956,9 +5142,7 @@ namespace Game.Editor
                 return string.Empty;
 
             string fieldName = GetStatFieldDisplayName(effect.statField);
-            string durationSuffix = effect.duration > 0f && effect.statField != SkillStatField.HP && effect.statField != SkillStatField.MP
-                ? $" {effect.duration:0.##}s"
-                : string.Empty;
+            string durationSuffix = GetAttributeEffectDurationSuffix(effect);
 
             if (TryGetPreviewStatValue(target, effect.statField, out float currentValue, out float referenceValue))
             {
@@ -5098,6 +5282,28 @@ namespace Game.Editor
                 PhysicsEffectType.Invincible => "无敌",
                 _ => effectType.ToString(),
             };
+        }
+
+        private static string GetPhysicsEffectDurationText(SkillPhysicsEffect effect)
+        {
+            if (effect == null)
+                return string.Empty;
+
+            if (effect.durationMode == SkillEffectDurationMode.UntilStateExit && effect.SupportsUntilStateExitDuration)
+                return "状态退出";
+
+            return $"{effect.duration:0.##}s";
+        }
+
+        private static string GetAttributeEffectDurationSuffix(SkillAttributeEffect effect)
+        {
+            if (effect == null || !effect.UsesDuration)
+                return string.Empty;
+
+            if (effect.durationMode == SkillEffectDurationMode.UntilStateExit)
+                return " 状态退出";
+
+            return effect.duration > 0f ? $" {effect.duration:0.##}s" : string.Empty;
         }
 
         private static string GetStatFieldDisplayName(SkillStatField statField)
@@ -6287,7 +6493,10 @@ namespace Game.Editor
                     {
                         SkillPhysicsEffect effect = physicsEvent.physicsEffects[i];
                         if (effect != null)
+                        {
+                            effect.durationMode = SkillEffectDurationMode.FixedTime;
                             effect.duration = clampedDuration;
+                        }
                     }
                     break;
 
@@ -6307,7 +6516,10 @@ namespace Game.Editor
                     {
                         SkillAttributeEffect effect = attributeEvent.attributeEffects[i];
                         if (effect != null && effect.statField != SkillStatField.HP && effect.statField != SkillStatField.MP)
+                        {
+                            effect.durationMode = SkillEffectDurationMode.FixedTime;
                             effect.duration = clampedDuration;
+                        }
                     }
                     break;
 
@@ -6679,6 +6891,8 @@ namespace Game.Editor
                     {
                         if (effect.rayMaxDistance <= 0f)
                             warnings.Add($"命中效果 {i + 1} 的射线最大距离必须大于 0。");
+                        if (effect.rayRadius < 0f)
+                            warnings.Add($"命中效果 {i + 1} 的射线半径不能小于 0。");
                     }
 
                     SkillHitStopEffect hitStopEffect = effect.GetEffectiveHitStopEffect();
@@ -6712,8 +6926,10 @@ namespace Game.Editor
                     if (effect.IsOnHitOnly)
                         warnings.Add($"物理效果 {i + 1} 使用了仅限命中物理的 {effect.effectType}。");
 
-                    if (effect.duration <= 0f)
+                    if (effect.durationMode == SkillEffectDurationMode.FixedTime && effect.duration <= 0f)
                         warnings.Add($"物理效果 {i + 1} 的持续时长必须大于 0。");
+                    else if (!effect.SupportsUntilStateExitDuration && effect.durationMode == SkillEffectDurationMode.UntilStateExit)
+                        warnings.Add($"物理效果 {i + 1} 的 {effect.effectType} 不支持持续到状态退出。");
                 }
             }
 
@@ -6727,6 +6943,12 @@ namespace Game.Editor
 
                     if (effect.targetMode != SkillTargetMode.Self)
                         warnings.Add($"属性效果 {i + 1} 作为顶层属性事件时，作用目标应为自身。");
+
+                    if ((effect.statField == SkillStatField.HP || effect.statField == SkillStatField.MP)
+                        && effect.durationMode == SkillEffectDurationMode.UntilStateExit)
+                    {
+                        warnings.Add($"属性效果 {i + 1} 的 {effect.statField} 不支持持续到状态退出，当前设置会被忽略。");
+                    }
 
                     if ((effect.statField == SkillStatField.HP || effect.statField == SkillStatField.MP) && effect.duration > 0f)
                         warnings.Add($"属性效果 {i + 1} 的 {effect.statField} 不使用持续时长，当前持续时长会被忽略。");
@@ -7050,24 +7272,26 @@ namespace Game.Editor
             if (cue == null || _previewTarget == null)
                 return;
 
-            Transform anchor = ResolveCueAnchorTransform(cue.anchor, cue, explicitTarget);
+            Transform anchor = ResolveCueEditBasisTransform(cue.anchor, explicitTarget);
             if (anchor == null)
                 anchor = _previewTarget.transform;
 
-            Quaternion anchorRotation = anchor.rotation;
-            Vector3 worldPosition = anchor.TransformPoint(cue.offset);
+            if (!TryEvaluatePreviewCueTransform(cue, explicitTarget, triggerTime, out Vector3 worldPosition, out Quaternion worldRotation))
+                return;
+
             Vector3 motionOffset = Vector3.zero;
-            if (cue.motion != null && cue.motion.IsActive)
+            if (CueUsesWorldMotion(cue))
             {
                 float elapsed = Mathf.Max(0f, _previewTime - triggerTime);
+                Quaternion motionBasisRotation = cue.anchor == CueAnchor.World && _scenePreviewCueHasWorldOrigin
+                    ? _scenePreviewCueWorldOriginRotation
+                    : anchor.rotation;
                 Vector3 direction = cue.motion.direction.sqrMagnitude > 0.0001f
                     ? cue.motion.direction.normalized
                     : Vector3.forward;
-                motionOffset = anchorRotation * direction * (cue.motion.speed * elapsed);
-                worldPosition += motionOffset;
+                motionOffset = motionBasisRotation * direction * (cue.motion.speed * elapsed);
             }
 
-            Quaternion worldRotation = anchorRotation * Quaternion.Euler(cue.rotationEuler);
             Vector3 scale = cue.scale;
             float handleSize = HandleUtility.GetHandleSize(worldPosition);
 
@@ -7081,9 +7305,15 @@ namespace Game.Editor
             Vector3 newScale = Handles.ScaleHandle(scale, newWorldPosition, newWorldRotation, handleSize * 0.75f);
             if (EditorGUI.EndChangeCheck())
             {
+                Quaternion basisRotation = cue.anchor == CueAnchor.World && _scenePreviewCueHasWorldOrigin
+                    ? _scenePreviewCueWorldOriginRotation
+                    : anchor.rotation;
+                Vector3 basisPosition = cue.anchor == CueAnchor.World && _scenePreviewCueHasWorldOrigin
+                    ? _scenePreviewCueWorldOriginPosition - basisRotation * cue.offset
+                    : anchor.position;
                 Undo.RecordObject(_database, "Edit VFX Scene Handle");
-                cue.offset = anchor.InverseTransformPoint(newWorldPosition - motionOffset);
-                cue.rotationEuler = (Quaternion.Inverse(anchorRotation) * newWorldRotation).eulerAngles;
+                cue.offset = Quaternion.Inverse(basisRotation) * ((newWorldPosition - motionOffset) - basisPosition);
+                cue.rotationEuler = (Quaternion.Inverse(basisRotation) * newWorldRotation).eulerAngles;
                 cue.scale = ClampVector3(newScale, 0.01f);
                 MarkDatabaseDirty();
                 SceneView.RepaintAll();
@@ -7266,13 +7496,36 @@ namespace Game.Editor
             }
 
             Vector3 end = origin + direction * Mathf.Max(0.01f, effect.rayMaxDistance);
+            float rayRadius = Mathf.Max(0f, effect.rayRadius);
             Handles.DrawLine(origin, end);
+            if (rayRadius > 0.0001f)
+            {
+                Handles.DrawWireDisc(origin, direction, rayRadius);
+                Handles.DrawWireDisc(end, direction, rayRadius);
+
+                Quaternion ringRotation = Quaternion.LookRotation(direction);
+                Vector3 side = ringRotation * Vector3.right * rayRadius;
+                Vector3 up = ringRotation * Vector3.up * rayRadius;
+                Handles.DrawLine(origin + side, end + side);
+                Handles.DrawLine(origin - side, end - side);
+                Handles.DrawLine(origin + up, end + up);
+                Handles.DrawLine(origin - up, end - up);
+            }
             EditorGUI.BeginChangeCheck();
             Vector3 newEnd = Handles.Slider(end, direction, handleSize * 0.1f, Handles.ConeHandleCap, 0f);
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(_database, "Edit Damage Scene Handle");
                 effect.rayMaxDistance = Mathf.Max(0.01f, Vector3.Dot(newEnd - origin, direction));
+                changed = true;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            float newRadius = Handles.RadiusHandle(rotation, origin, Mathf.Max(0.01f, rayRadius <= 0f ? 0.2f : rayRadius));
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Damage Scene Handle");
+                effect.rayRadius = Mathf.Max(0f, newRadius);
                 changed = true;
             }
 
@@ -7445,6 +7698,8 @@ namespace Game.Editor
             _scenePreviewCueTrackType = cueTrackType;
             _scenePreviewCueEventIndex = cueEventIndex;
             _scenePreviewCueListIndex = cueListIndex;
+            _scenePreviewCueHasWorldOrigin = false;
+            _scenePreviewCueWorldOriginTriggerTime = -1f;
         }
 
         private void UpdateScenePreviewCueTransform(SkillVfxEffect cue)
@@ -7455,11 +7710,31 @@ namespace Game.Editor
             if (!TryGetCurrentSceneCuePlaybackContext(out float triggerTime, out Transform explicitTarget))
             {
                 _scenePreviewCueInstance.SetActive(false);
+                _scenePreviewCueHasWorldOrigin = false;
+                _scenePreviewCueWorldOriginTriggerTime = -1f;
                 return;
             }
 
-            if (!TryEvaluatePreviewCueTransform(cue, explicitTarget, triggerTime, out Vector3 position, out Quaternion rotation))
+            Vector3 position;
+            Quaternion rotation;
+            if (cue.anchor == CueAnchor.World)
+            {
+                EnsureScenePreviewCueWorldOrigin(cue, triggerTime);
+                if (!_scenePreviewCueHasWorldOrigin)
+                    return;
+
+                EvaluateWorldCueTransform(
+                    cue,
+                    _scenePreviewCueWorldOriginPosition,
+                    _scenePreviewCueWorldOriginRotation,
+                    Mathf.Max(0f, _previewTime - triggerTime),
+                    out position,
+                    out rotation);
+            }
+            else if (!TryEvaluatePreviewCueTransform(cue, explicitTarget, triggerTime, out position, out rotation))
+            {
                 return;
+            }
 
             _scenePreviewCueInstance.transform.position = position;
             _scenePreviewCueInstance.transform.rotation = rotation;
@@ -7493,6 +7768,16 @@ namespace Game.Editor
             return $"hitcue:{eventIndex}:{damageEffectIndex}:{onHitEffectIndex}";
         }
 
+        private string GetEditorSfxVisibilityKey(int eventIndex, int effectIndex)
+        {
+            return $"sfx:{eventIndex}:{effectIndex}";
+        }
+
+        private string GetEditorOnHitSfxVisibilityKey(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
+        {
+            return $"hitsfx:{eventIndex}:{damageEffectIndex}:{onHitEffectIndex}";
+        }
+
         private bool IsTopLevelCueVisible(int eventIndex, int effectIndex)
         {
             return !_hiddenPreviewCueKeys.Contains(GetEditorCueVisibilityKey(eventIndex, effectIndex));
@@ -7501,6 +7786,16 @@ namespace Game.Editor
         private bool IsOnHitCueVisible(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
         {
             return !_hiddenPreviewCueKeys.Contains(GetEditorOnHitCueVisibilityKey(eventIndex, damageEffectIndex, onHitEffectIndex));
+        }
+
+        private bool IsTopLevelSfxVisible(int eventIndex, int effectIndex)
+        {
+            return !_hiddenPreviewCueKeys.Contains(GetEditorSfxVisibilityKey(eventIndex, effectIndex));
+        }
+
+        private bool IsOnHitSfxVisible(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
+        {
+            return !_hiddenPreviewCueKeys.Contains(GetEditorOnHitSfxVisibilityKey(eventIndex, damageEffectIndex, onHitEffectIndex));
         }
 
         private bool TryGetCurrentSceneCuePlaybackContext(out float triggerTime, out Transform explicitTarget)
@@ -7645,25 +7940,99 @@ namespace Game.Editor
             if (cue == null || _previewTarget == null)
                 return false;
 
+            if (cue.anchor == CueAnchor.World)
+            {
+                EnsureScenePreviewCueWorldOrigin(cue, triggerTime);
+                if (!_scenePreviewCueHasWorldOrigin)
+                    return false;
+
+                EvaluateWorldCueTransform(
+                    cue,
+                    _scenePreviewCueWorldOriginPosition,
+                    _scenePreviewCueWorldOriginRotation,
+                    Mathf.Max(0f, _previewTime - triggerTime),
+                    out position,
+                    out rotation);
+                return true;
+            }
+
             Transform anchor = ResolveCueAnchorTransform(cue.anchor, cue, explicitTarget);
             if (anchor == null)
                 anchor = _previewTarget.transform;
             if (anchor == null)
                 return false;
 
-            Quaternion anchorRotation = anchor.rotation;
             position = anchor.TransformPoint(cue.offset);
-            if (cue.motion != null && cue.motion.IsActive)
+            rotation = anchor.rotation * Quaternion.Euler(cue.rotationEuler);
+            return true;
+        }
+
+        private void EnsureTimelinePreviewCueWorldOrigin(TimelinePreviewVfxInstance playback)
+        {
+            if (playback == null || playback.effect == null || playback.effect.anchor != CueAnchor.World || playback.hasWorldOrigin)
+                return;
+
+            if (!TryCapturePreviewCueWorldOrigin(playback.effect, out playback.originPosition, out playback.originRotation))
+                return;
+
+            playback.hasWorldOrigin = true;
+        }
+
+        private void EnsureScenePreviewCueWorldOrigin(SkillVfxEffect cue, float triggerTime)
+        {
+            if (cue == null || cue.anchor != CueAnchor.World)
             {
-                float elapsed = Mathf.Max(0f, _previewTime - triggerTime);
-                Vector3 direction = cue.motion.direction.sqrMagnitude > 0.0001f
-                    ? cue.motion.direction.normalized
-                    : Vector3.forward;
-                position += anchorRotation * direction * (cue.motion.speed * elapsed);
+                _scenePreviewCueHasWorldOrigin = false;
+                _scenePreviewCueWorldOriginTriggerTime = -1f;
+                return;
             }
 
-            rotation = anchorRotation * Quaternion.Euler(cue.rotationEuler);
+            if (_scenePreviewCueHasWorldOrigin && Mathf.Abs(_scenePreviewCueWorldOriginTriggerTime - triggerTime) <= 0.0001f)
+                return;
+
+            if (!TryCapturePreviewCueWorldOrigin(cue, out _scenePreviewCueWorldOriginPosition, out _scenePreviewCueWorldOriginRotation))
+                return;
+
+            _scenePreviewCueHasWorldOrigin = true;
+            _scenePreviewCueWorldOriginTriggerTime = triggerTime;
+        }
+
+        private bool TryCapturePreviewCueWorldOrigin(SkillVfxEffect cue, out Vector3 originPosition, out Quaternion originRotation)
+        {
+            originPosition = Vector3.zero;
+            originRotation = Quaternion.identity;
+            if (cue == null || _previewTarget == null)
+                return false;
+
+            Transform basis = _previewTarget.transform;
+            if (basis == null)
+                return false;
+
+            originPosition = basis.TransformPoint(cue.offset);
+            originRotation = basis.rotation;
             return true;
+        }
+
+        private static void EvaluateWorldCueTransform(SkillVfxEffect cue, Vector3 originPosition, Quaternion originRotation, float elapsed, out Vector3 position, out Quaternion rotation)
+        {
+            position = originPosition;
+            rotation = originRotation * Quaternion.Euler(cue.rotationEuler);
+
+            if (!CueUsesWorldMotion(cue))
+                return;
+
+            Vector3 direction = cue.motion.direction.sqrMagnitude > 0.0001f
+                ? cue.motion.direction.normalized
+                : Vector3.forward;
+            position += originRotation * direction * (cue.motion.speed * Mathf.Max(0f, elapsed));
+        }
+
+        private static bool CueUsesWorldMotion(SkillVfxEffect cue)
+        {
+            return cue != null
+                && cue.anchor == CueAnchor.World
+                && cue.motion != null
+                && cue.motion.IsActive;
         }
 
         private void DrawSceneCueBounds(SkillVfxEffect cue, Vector3 worldPosition, Quaternion worldRotation)
@@ -7760,6 +8129,10 @@ namespace Game.Editor
             _scenePreviewCueTrackType = TimelineTrackType.Vfx;
             _scenePreviewCueEventIndex = -1;
             _scenePreviewCueListIndex = -1;
+            _scenePreviewCueHasWorldOrigin = false;
+            _scenePreviewCueWorldOriginTriggerTime = -1f;
+            _scenePreviewCueWorldOriginPosition = Vector3.zero;
+            _scenePreviewCueWorldOriginRotation = Quaternion.identity;
         }
 
         private static void DrawWireSphere(Vector3 center, float radius, Transform preview)
@@ -7816,6 +8189,13 @@ namespace Game.Editor
         private Transform ResolveSceneCueAnchor(CueAnchor anchor, SkillVfxEffect cue = null)
         {
             return ResolveCueAnchorTransform(anchor, cue, null);
+        }
+
+        private Transform ResolveCueEditBasisTransform(CueAnchor anchor, Transform explicitTarget)
+        {
+            return anchor == CueAnchor.Target
+                ? ResolveCueAnchorTransform(anchor, null, explicitTarget)
+                : _previewTarget != null ? _previewTarget.transform : null;
         }
 
         private CueAnchor DrawCueAnchorPopup(string label, CueAnchor current, CueAnchor[] values, string[] labels)

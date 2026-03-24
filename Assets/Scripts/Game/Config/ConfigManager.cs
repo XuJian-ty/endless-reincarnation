@@ -25,6 +25,7 @@ namespace Game
         private ShopPriceConfigSO _shopPriceConfig;
         private PotionConfigSO _potionConfig;
         private SkillConfigDatabaseSO _skillConfigDatabase;
+        private SkillTreeGraphConfigSO _skillTreeGraphConfig;
         private CharacterAnimationLibrarySO _characterAnimationLibrary;
         private ItemDisplayDatabaseSO _itemDisplayDatabase;
         private SlotBackgroundConfigSO _slotBackgroundConfig;
@@ -147,6 +148,13 @@ namespace Game
             if (_skillConfigDatabase == null)
                 _skillConfigDatabase = Resources.Load<SkillConfigDatabaseSO>(ConfigPathPrefix + "玩家动作及技能配置库");
             return _skillConfigDatabase;
+        }
+
+        public SkillTreeGraphConfigSO GetSkillTreeGraphConfig()
+        {
+            if (_skillTreeGraphConfig == null)
+                _skillTreeGraphConfig = Resources.Load<SkillTreeGraphConfigSO>(ConfigPathPrefix + "技能树图配置");
+            return _skillTreeGraphConfig;
         }
 
         public CharacterAnimationLibrarySO GetCharacterAnimationLibrary()

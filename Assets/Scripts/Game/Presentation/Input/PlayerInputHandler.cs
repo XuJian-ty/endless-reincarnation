@@ -111,7 +111,7 @@ namespace Game.Presentation
 
             foreach (InputAction action in gameplayMap.actions)
             {
-                if (!TryParseSkillActionName(action?.name, out int slotIndex))
+                if (!PlayerActionRouting.TryParseSkillSlotIndex(action?.name, out int slotIndex))
                     continue;
 
                 SkillInputBinding binding = new SkillInputBinding
@@ -240,15 +240,7 @@ namespace Game.Presentation
 
         private static bool TryParseSkillActionName(string actionName, out int slotIndex)
         {
-            slotIndex = -1;
-            if (string.IsNullOrWhiteSpace(actionName) ||
-                !actionName.StartsWith("Skill", StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            string suffix = actionName.Substring("Skill".Length);
-            return int.TryParse(suffix, out slotIndex) && slotIndex >= 0;
+            return PlayerActionRouting.TryParseSkillSlotIndex(actionName, out slotIndex);
         }
 #endif
     }

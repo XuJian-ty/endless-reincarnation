@@ -16,18 +16,12 @@ namespace Game.UI
         private const float PreviewComboWindowSeconds = 0.3f;
         private const float PreviewAttackFallbackDuration = 1.2f;
         private static readonly int PreviewSpeedHash = Animator.StringToHash("Speed");
-        private static readonly int PreviewLocomotionHash = Animator.StringToHash("Locomotion");
-        private static readonly int[] PreviewAttackHashes =
-        {
-            Animator.StringToHash("Attack0"),
-            Animator.StringToHash("Attack1"),
-            Animator.StringToHash("Attack2"),
-            Animator.StringToHash("Attack3"),
-        };
+        private static readonly int PreviewNormalLocomotionHash = Animator.StringToHash("NormalLocomotion");
 
         private readonly PreviewCueTimelineRunner _previewCueTimeline = new PreviewCueTimelineRunner();
         private Animator _animator;
         private Transform _previewRoot;
+        private Game.Domain.PlayerModel _playerModel;
         private int _currentAttackIndex = -1;
         private bool _attackBuffered;
         private int _comboWindowNextIndex = -1;
@@ -35,13 +29,15 @@ namespace Game.UI
         private float _attackFallbackExpireAt;
         private bool _attackEnteredOneShotState;
         private float _currentAttackStateAge;
+        private string _lastAttackTriggerName;
 
-        public void Bind(Animator animator, Transform previewRoot)
+        public void Bind(Animator animator, Transform previewRoot, Game.Domain.PlayerModel playerModel)
         {
             Unbind();
 
             _animator = animator;
             _previewRoot = previewRoot;
+            _playerModel = playerModel;
             if (_animator == null)
                 return;
 
@@ -56,6 +52,7 @@ namespace Game.UI
             _previewCueTimeline.Stop();
             _animator = null;
             _previewRoot = null;
+            _playerModel = null;
             _currentAttackIndex = -1;
             _attackBuffered = false;
             _comboWindowNextIndex = -1;
@@ -63,6 +60,7 @@ namespace Game.UI
             _attackFallbackExpireAt = 0f;
             _attackEnteredOneShotState = false;
             _currentAttackStateAge = 0f;
+            _lastAttackTriggerName = string.Empty;
         }
 
         public void Tick(float deltaTime)
@@ -194,22 +192,53 @@ namespace Game.UI
                 return;
 
             _animator.SetFloat(PreviewSpeedHash, 0f);
-            for (int i = 0; i < PreviewAttackHashes.Length; i++)
-                _animator.ResetTrigger(PreviewAttackHashes[i]);
-            _animator.ResetTrigger(PreviewLocomotionHash);
-            _animator.SetTrigger(PreviewLocomotionHash);
+            if (!string.IsNullOrWhiteSpace(_lastAttackTriggerName))
+                _animator.ResetTrigger(_lastAttackTriggerName);
+            ResetLocomotionTrigger();
+            if (HasParameter("NormalLocomotion"))
+                _animator.SetTrigger(PreviewNormalLocomotionHash);
         }
 
         private void TriggerAttack(int comboIndex)
         {
-            if (_animator == null || comboIndex < 0 || comboIndex >= PreviewAttackHashes.Length)
+            if (_animator == null || comboIndex < 0 || comboIndex > 3)
+                return;
+
+            string triggerName = ResolveAttackTriggerName(comboIndex);
+            if (string.IsNullOrWhiteSpace(triggerName))
                 return;
 
             _animator.SetFloat(PreviewSpeedHash, 0f);
-            _animator.ResetTrigger(PreviewLocomotionHash);
-            for (int i = 0; i < PreviewAttackHashes.Length; i++)
-                _animator.ResetTrigger(PreviewAttackHashes[i]);
-            _animator.SetTrigger(PreviewAttackHashes[comboIndex]);
+            ResetLocomotionTrigger();
+            if (!string.IsNullOrWhiteSpace(_lastAttackTriggerName))
+                _animator.ResetTrigger(_lastAttackTriggerName);
+            _animator.SetTrigger(triggerName);
+            _lastAttackTriggerName = triggerName;
+        }
+
+        private void ResetLocomotionTrigger()
+        {
+            if (_animator == null)
+                return;
+
+            if (HasParameter("NormalLocomotion"))
+                _animator.ResetTrigger(PreviewNormalLocomotionHash);
+        }
+
+        private bool HasParameter(string parameterName)
+        {
+            if (_animator == null || string.IsNullOrWhiteSpace(parameterName))
+                return false;
+
+            AnimatorControllerParameter[] parameters = _animator.parameters;
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                AnimatorControllerParameter parameter = parameters[i];
+                if (parameter != null && parameter.name == parameterName)
+                    return true;
+            }
+
+            return false;
         }
 
         private void BeginAttackCue(int comboIndex)
@@ -217,7 +246,10 @@ namespace Game.UI
             if (_previewRoot == null)
                 return;
 
-            string skillId = $"Attack{comboIndex}";
+            SkillConfigEntry entry = ResolveAttackEntry(comboIndex);
+            string skillId = entry != null && !string.IsNullOrWhiteSpace(entry.skillId)
+                ? entry.skillId.Trim()
+                : ResolveAttackActionId(comboIndex);
             SharedSkillDefinition definition = GetSharedSkillDefinition(skillId);
             _previewCueTimeline.Begin(definition, _previewRoot);
         }
@@ -235,12 +267,7 @@ namespace Game.UI
 
         private float GetAttackPendingThreshold(int comboIndex)
         {
-            string actionId = $"Attack{comboIndex}";
-            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
-            if (skillDb == null)
-                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家动作及技能配置库");
-
-            SkillConfigEntry entry = skillDb != null ? skillDb.GetEntryByActionId(actionId) : null;
+            SkillConfigEntry entry = ResolveAttackEntry(comboIndex);
             if (entry != null && entry.TryGetPendingReleaseThreshold(GameAction.NormalAttack, out float configured))
                 return configured;
 
@@ -249,16 +276,46 @@ namespace Game.UI
 
         private float GetNaturalExitThreshold(int comboIndex)
         {
-            string actionId = $"Attack{comboIndex}";
-            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
-            if (skillDb == null)
-                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家动作及技能配置库");
-
-            SkillConfigEntry entry = skillDb != null ? skillDb.GetEntryByActionId(actionId) : null;
+            SkillConfigEntry entry = ResolveAttackEntry(comboIndex);
             if (entry != null && entry.overrideNaturalExitNormalizedTime)
                 return entry.naturalExitNormalizedTime;
 
             return 0.9f;
+        }
+
+        private SkillConfigEntry ResolveAttackEntry(int comboIndex)
+        {
+            SkillConfigDatabaseSO skillDb = GetSkillConfigDatabase();
+            string actionId = ResolveAttackActionId(comboIndex);
+            return skillDb != null && !string.IsNullOrWhiteSpace(actionId)
+                ? skillDb.GetEntryByActionId(actionId)
+                : null;
+        }
+
+        private string ResolveAttackActionId(int comboIndex)
+        {
+            string fallbackActionId = $"Attack{comboIndex}";
+            SkillConfigDatabaseSO skillDb = GetSkillConfigDatabase();
+            return _playerModel != null && skillDb != null
+                ? _playerModel.ResolveCurrentFormActionId((PlayerFormActionSlot)comboIndex, skillDb, fallbackActionId)
+                : fallbackActionId;
+        }
+
+        private string ResolveAttackTriggerName(int comboIndex)
+        {
+            SkillConfigEntry entry = ResolveAttackEntry(comboIndex);
+            if (entry != null)
+                return entry.GetResolvedAnimationTrigger();
+
+            return ResolveAttackActionId(comboIndex);
+        }
+
+        private static SkillConfigDatabaseSO GetSkillConfigDatabase()
+        {
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (skillDb == null)
+                skillDb = Resources.Load<SkillConfigDatabaseSO>("配置/玩家动作及技能配置库");
+            return skillDb;
         }
 
         private int GetBufferedFollowUpAttackIndex()
@@ -582,10 +639,11 @@ namespace Game.UI
                     return;
 
                 Vector3 worldVelocity = caster.TransformDirection(motion.direction.normalized) * motion.speed;
+                Quaternion lockedRotation = instance.transform.rotation;
                 SkillCueMover mover = instance.GetComponent<SkillCueMover>();
                 if (mover == null)
                     mover = instance.AddComponent<SkillCueMover>();
-                mover.Initialize(worldVelocity, false, true);
+                mover.Initialize(worldVelocity, false, true, true, lockedRotation);
             }
 
             private static EventState[] BuildStates<T>(List<T> events) where T : SkillTimedEventBase

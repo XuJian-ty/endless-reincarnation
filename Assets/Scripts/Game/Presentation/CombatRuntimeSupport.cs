@@ -111,6 +111,7 @@ namespace Game.Presentation
         }
 
         private readonly List<RuntimeModifier> _modifiers = new List<RuntimeModifier>();
+        private readonly List<StatModifier> _stateScopedModifiers = new List<StatModifier>();
         private PlayerController _playerController;
 
         private void Awake()
@@ -140,6 +141,9 @@ namespace Game.Presentation
             for (int i = 0; i < _modifiers.Count; i++)
                 _playerController.PlayerModel.Stats.RemoveModifier(_modifiers[i].modifier);
             _modifiers.Clear();
+            for (int i = 0; i < _stateScopedModifiers.Count; i++)
+                _playerController.PlayerModel.Stats.RemoveModifier(_stateScopedModifiers[i]);
+            _stateScopedModifiers.Clear();
         }
 
         public void ApplyModifier(StatModifier modifier, float duration)
@@ -153,6 +157,24 @@ namespace Game.Presentation
             {
                 modifier = clone,
                 endTime = Time.time + Mathf.Max(0.01f, duration)
+            });
+        }
+
+        public void ApplyModifierUntilStateExit(StatModifier modifier, SkillCueRuntimeScope cueRuntime)
+        {
+            if (_playerController?.PlayerModel == null || modifier == null)
+                return;
+
+            StatModifier clone = modifier.Clone();
+            _playerController.PlayerModel.Stats.AddModifier(clone);
+            _stateScopedModifiers.Add(clone);
+            cueRuntime?.RegisterStateExitCallback(() =>
+            {
+                if (this == null || _playerController?.PlayerModel == null)
+                    return;
+
+                if (_stateScopedModifiers.Remove(clone))
+                    _playerController.PlayerModel.Stats.RemoveModifier(clone);
             });
         }
     }

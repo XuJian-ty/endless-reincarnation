@@ -16,6 +16,31 @@ namespace Game.Data
         PassiveSkill,
     }
 
+    [Serializable]
+    public class PlayerFormActionMappingEntry
+    {
+        [InspectorLabel("动作槽位")]
+        public PlayerFormActionSlot actionSlot = PlayerFormActionSlot.Attack0;
+
+        [InspectorLabel("近战动作ID")]
+        public string meleeActionId = "";
+
+        [InspectorLabel("远程动作ID")]
+        public string rangedActionId = "";
+
+        public string ResolveActionId(PlayerAttackMode attackMode)
+        {
+            return attackMode == PlayerAttackMode.Ranged
+                ? ResolveValue(rangedActionId)
+                : ResolveValue(meleeActionId);
+        }
+
+        private static string ResolveValue(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+        }
+    }
+
     /// <summary>
     /// 玩家单条动作/技能配置。
     ///
@@ -44,6 +69,15 @@ namespace Game.Data
         [Tooltip("技能树 UI 中展示的名称，不影响逻辑。")]
         public string displayName = "";
 
+        [InspectorLabel("技能介绍")]
+        [Tooltip("技能树详情区中展示的说明文本。")]
+        [TextArea(2, 5)]
+        public string description = "";
+
+        [InspectorLabel("技能图标")]
+        [Tooltip("技能树 UI 中展示的技能图标，不影响运行时逻辑。")]
+        public Sprite skillIcon;
+
         [InspectorLabel("被动技能")]
         [Tooltip("勾选 = 被动技能（仅增强属性，不消耗 MP，无动画）\n不勾选 = 主动技能（需填写下方主动技能参数）")]
         public bool isPassive = true;
@@ -51,6 +85,10 @@ namespace Game.Data
         [InspectorLabel("技能分组")]
         [Tooltip("基础技能=走路跑步跳跃闪避普攻等基础动作；主动技能=技能树主动技能；被动技能=技能树被动技能。")]
         public PlayerSkillEntryGroup entryGroup = PlayerSkillEntryGroup.PassiveSkill;
+
+        [InspectorLabel("支持形态")]
+        [Tooltip("仅主动技能使用。用于限制该技能可在哪些形态下释放。")]
+        public PlayerAttackModeMask supportedAttackModes = PlayerAttackModeMask.All;
 
         [InspectorLabel("天赋点消耗")]
         [Tooltip("在技能树中解锁此技能需要消耗的天赋点数。")]
@@ -124,6 +162,15 @@ namespace Game.Data
 
         public bool IsBaseSkill => !IsPassiveSkill && !IsActiveSkill;
 
+        public bool SupportsAttackMode(PlayerAttackMode attackMode)
+        {
+            if (supportedAttackModes == PlayerAttackModeMask.None)
+                return true;
+
+            PlayerAttackModeMask currentMask = PlayerAttackModeUtility.ToMask(attackMode);
+            return (supportedAttackModes & currentMask) != 0;
+        }
+
         public bool TryGetPolicy(GameAction action, out TransitionPolicy policy)
         {
             if (actionPolicies != null)
@@ -174,6 +221,10 @@ namespace Game.Data
         [Tooltip("顺序对应动作/技能的配置列表。基础动作和主动技能通过动作ID映射；被动技能只用于技能树和属性增强。")]
         public List<SkillConfigEntry> entries = new List<SkillConfigEntry>();
 
+        [InspectorLabel("形态基础动作映射")]
+        [Tooltip("同一语义动作在不同形态下解析到的具体 actionId。留空则回退到动作槽位默认名。")]
+        public List<PlayerFormActionMappingEntry> formActionMappings = new List<PlayerFormActionMappingEntry>();
+
         public SkillConfigEntry GetEntry(string skillId)
         {
             if (entries == null || string.IsNullOrEmpty(skillId)) return null;
@@ -218,13 +269,72 @@ namespace Game.Data
         public SkillConfigEntry GetActiveEntryBySlot(int slotIndex)
         {
             if (slotIndex < 0) return null;
-            return GetEntryByActionId($"Skill{slotIndex}");
+            return GetEntryByActionId(PlayerActionRouting.BuildSkillSlotActionName(slotIndex));
         }
 
         public SkillConfigEntry GetBaseEntry(string actionId)
         {
             var entry = GetEntryByActionId(actionId);
             return entry != null && entry.IsBaseSkill ? entry : null;
+        }
+
+        public SkillConfigEntry GetBaseEntryByActionId(string baseActionId)
+        {
+            return GetBaseEntry(baseActionId);
+        }
+
+        public SkillConfigEntry GetActiveSkillEntryByActionId(string skillActionId)
+        {
+            SkillConfigEntry entry = GetEntryByActionId(skillActionId);
+            return entry != null && entry.IsActiveSkill ? entry : null;
+        }
+
+        public string ResolveFormActionId(PlayerAttackMode attackMode, PlayerFormActionSlot actionSlot, string fallbackActionId = null)
+        {
+            if (formActionMappings != null)
+            {
+                for (int i = 0; i < formActionMappings.Count; i++)
+                {
+                    PlayerFormActionMappingEntry mapping = formActionMappings[i];
+                    if (mapping == null || mapping.actionSlot != actionSlot)
+                        continue;
+
+                    string resolvedActionId = mapping.ResolveActionId(attackMode);
+                    if (!string.IsNullOrWhiteSpace(resolvedActionId))
+                        return resolvedActionId;
+                }
+            }
+
+            return !string.IsNullOrWhiteSpace(fallbackActionId)
+                ? fallbackActionId.Trim()
+                : actionSlot.ToString();
+        }
+
+        public bool TryGetFormActionSlot(string actionId, out PlayerFormActionSlot actionSlot)
+        {
+            actionSlot = default;
+            if (string.IsNullOrWhiteSpace(actionId))
+                return false;
+
+            string normalizedActionId = actionId.Trim();
+            if (formActionMappings != null)
+            {
+                for (int i = 0; i < formActionMappings.Count; i++)
+                {
+                    PlayerFormActionMappingEntry mapping = formActionMappings[i];
+                    if (mapping == null)
+                        continue;
+
+                    if (string.Equals(mapping.ResolveActionId(PlayerAttackMode.Melee), normalizedActionId, StringComparison.Ordinal)
+                        || string.Equals(mapping.ResolveActionId(PlayerAttackMode.Ranged), normalizedActionId, StringComparison.Ordinal))
+                    {
+                        actionSlot = mapping.actionSlot;
+                        return true;
+                    }
+                }
+            }
+
+            return Enum.TryParse(normalizedActionId, out actionSlot);
         }
     }
 }

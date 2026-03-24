@@ -9,8 +9,8 @@ namespace Game.Presentation
         protected override void OnEnter()
         {
             Ctx.Mover.Jump(Ctx.JumpHeight);
-            TriggerConfiguredActionByActionId("Jump", "Jump");
-            StartConfiguredTimelineByActionId("Jump");
+            TriggerConfiguredBaseAction("Jump", "Jump");
+            StartConfiguredBaseActionTimeline("Jump");
             Ctx.Anim.SetGrounded(false);
         }
 

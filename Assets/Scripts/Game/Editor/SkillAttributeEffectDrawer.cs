@@ -35,10 +35,23 @@ namespace Game.Editor
                 y = DrawProperty(y, position, property.FindPropertyRelative("usePercent"));
 
                 bool showDuration = ShouldShowDuration(statField);
+                bool isOnHit = IsOnHitContext(property);
                 if (showDuration)
-                    DrawProperty(y, position, property.FindPropertyRelative("duration"));
+                {
+                    var durationMode = property.FindPropertyRelative("durationMode");
+                    if (!isOnHit)
+                        y = DrawProperty(y, position, durationMode);
+                    else if (durationMode != null && durationMode.enumValueIndex != (int)SkillEffectDurationMode.FixedTime)
+                        durationMode.enumValueIndex = (int)SkillEffectDurationMode.FixedTime;
+
+                    if (durationMode == null || durationMode.enumValueIndex == (int)SkillEffectDurationMode.FixedTime)
+                        DrawProperty(y, position, property.FindPropertyRelative("duration"));
+                }
                 else
                 {
+                    var durationMode = property.FindPropertyRelative("durationMode");
+                    if (durationMode != null && durationMode.enumValueIndex != (int)SkillEffectDurationMode.FixedTime)
+                        durationMode.enumValueIndex = (int)SkillEffectDurationMode.FixedTime;
                     var duration = property.FindPropertyRelative("duration");
                     if (duration != null && duration.floatValue != 0f)
                         duration.floatValue = 0f;
@@ -65,7 +78,18 @@ namespace Game.Editor
             height += GetChildHeight(property.FindPropertyRelative("usePercent"));
 
             if (ShouldShowDuration(statField))
-                height += GetChildHeight(property.FindPropertyRelative("duration"));
+            {
+                if (!IsOnHitContext(property))
+                    height += GetChildHeight(property.FindPropertyRelative("durationMode"));
+
+                SerializedProperty durationMode = property.FindPropertyRelative("durationMode");
+                if (IsOnHitContext(property)
+                    || durationMode == null
+                    || durationMode.enumValueIndex == (int)SkillEffectDurationMode.FixedTime)
+                {
+                    height += GetChildHeight(property.FindPropertyRelative("duration"));
+                }
+            }
 
             return height;
         }

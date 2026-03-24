@@ -40,8 +40,14 @@ namespace Game.Presentation
         /// <summary>将 MoveInput（相机空间 XY）转换为世界空间水平移动方向</summary>
         Vector3 GetMoveDirection(Vector2 input);
 
+        /// <summary>当前帧原始移动输入（重绑定后的 Move 方向）。</summary>
+        Vector2 CurrentMoveInput { get; }
+
         /// <summary>玩家是否已进入死亡流程。</summary>
         bool IsDead { get; }
+
+        /// <summary>当前是否处于枪形态瞄准模式。</summary>
+        bool IsAimModeActive { get; }
 
         /// <summary>死亡动画播放完成后，由死亡状态回调流程层。</summary>
         void CompleteDeathSequence();
