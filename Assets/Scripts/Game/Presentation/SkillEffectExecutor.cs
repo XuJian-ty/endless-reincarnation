@@ -881,6 +881,7 @@ namespace Game.Presentation
             instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
             ConfigureVfxMotion(instance, effect.motion, useWorldMotion);
             ApplyCueMotion(instance, effect.motion, caster, useWorldMotion);
+            EnsureCuePauseProxy(instance);
             return instance;
         }
 
@@ -907,6 +908,7 @@ namespace Game.Presentation
             }
 
             audioSource.Play();
+            EnsureCuePauseProxy(go);
             RegisterAudioLifetime(go, audioSource, effect, cueRuntime);
         }
 
@@ -975,6 +977,14 @@ namespace Game.Presentation
             if (mover == null)
                 mover = instance.AddComponent<SkillCueMover>();
             mover.Initialize(velocity, useLocalSpace, false, true, lockedRotation);
+        }
+
+        private static void EnsureCuePauseProxy(GameObject instance)
+        {
+            if (instance == null || instance.GetComponent<SkillCuePauseProxy>() != null)
+                return;
+
+            instance.AddComponent<SkillCuePauseProxy>();
         }
 
         private static void ConfigureVfxMotion(GameObject instance, SkillMotionSettings motion, bool useWorldMotion)

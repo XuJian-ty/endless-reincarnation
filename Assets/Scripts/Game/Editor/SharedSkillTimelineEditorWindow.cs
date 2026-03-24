@@ -7371,8 +7371,7 @@ namespace Game.Editor
                     origin += motionOffset;
                 }
             }
-            Quaternion previewRotation = preview.rotation;
-            Quaternion rotation = previewRotation * Quaternion.Euler(effect.rotationEuler);
+            Quaternion rotation = Quaternion.Euler(effect.rotationEuler);
             float handleSize = HandleUtility.GetHandleSize(origin);
             bool changed = false;
 
@@ -7390,7 +7389,7 @@ namespace Game.Editor
                 Undo.RecordObject(_database, "Edit Damage Scene Handle");
                 effect.centerOffset = preview.InverseTransformPoint(newOrigin - motionOffset);
                 if (effect.shape == AttackShapeType.Sector || effect.shape == AttackShapeType.Box)
-                    effect.rotationEuler = (Quaternion.Inverse(previewRotation) * newRotation).eulerAngles;
+                    effect.rotationEuler = newRotation.eulerAngles;
                 origin = newOrigin;
                 rotation = newRotation;
                 changed = true;
@@ -7471,8 +7470,7 @@ namespace Game.Editor
                     origin += motionOffset;
                 }
             }
-            Quaternion previewRotation = preview.rotation;
-            Quaternion rotation = previewRotation * Quaternion.Euler(effect.rotationEuler);
+            Quaternion rotation = Quaternion.Euler(effect.rotationEuler);
             Vector3 direction = (rotation * Vector3.forward).normalized;
             float handleSize = HandleUtility.GetHandleSize(origin);
             bool changed = false;
@@ -7488,7 +7486,7 @@ namespace Game.Editor
             {
                 Undo.RecordObject(_database, "Edit Damage Scene Handle");
                 effect.rayOriginOffset = preview.InverseTransformPoint(newOrigin - motionOffset);
-                effect.rotationEuler = (Quaternion.Inverse(previewRotation) * newRotation).eulerAngles;
+                effect.rotationEuler = newRotation.eulerAngles;
                 origin = newOrigin;
                 rotation = newRotation;
                 direction = (rotation * Vector3.forward).normalized;
