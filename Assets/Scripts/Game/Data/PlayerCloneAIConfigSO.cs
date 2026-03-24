@@ -114,6 +114,18 @@ namespace Game.Data
         [InspectorLabel("闪避威胁距离(米)")]
         [Min(0.5f)] public float dodgeThreatDistance = 4.2f;
 
+        [InspectorLabel("远程进入距离(米)")]
+        [Min(0.5f)] public float rangedEnterDistance = 4.8f;
+
+        [InspectorLabel("远程退出距离(米)")]
+        [Min(0.5f)] public float rangedExitDistance = 2.8f;
+
+        [InspectorLabel("理想远程距离(米)")]
+        [Min(0.5f)] public float preferredRangedDistance = 6.5f;
+
+        [InspectorLabel("远程攻击距离(米)")]
+        [Min(0.5f)] public float rangedAttackCastRange = 9f;
+
         [Header("动作节奏")]
         [InspectorLabel("闪避冷却(秒)")]
         [Min(0f)] public float dodgeCooldownSeconds = 1.2f;
@@ -133,6 +145,12 @@ namespace Game.Data
         [InspectorLabel("蓄力保持最长时长(秒)")]
         [Min(0f)] public float chargeHoldMaxSeconds = 0.4f;
 
+        [InspectorLabel("形态切换冷却(秒)")]
+        [Min(0f)] public float attackModeSwitchCooldownSeconds = 0.45f;
+
+        [InspectorLabel("单形态最长连续作战时长(秒)")]
+        [Min(1f)] public float attackModeMaxContinuousSeconds = 10f;
+
         [Header("倾向")]
         [InspectorLabel("进攻倾向")]
         [Range(0f, 1f)] public float aggression = 0.82f;
@@ -145,6 +163,9 @@ namespace Game.Data
 
         [InspectorLabel("蓄力倾向")]
         [Range(0f, 1f)] public float chargeBias = 0.68f;
+
+        [InspectorLabel("远程倾向")]
+        [Range(0f, 1f)] public float rangedBias = 0.22f;
 
         [InspectorLabel("连段倾向")]
         [Range(0f, 1f)] public float comboBias = 0.72f;

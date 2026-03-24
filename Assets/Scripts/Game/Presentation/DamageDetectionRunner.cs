@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using Game.Data;
 
@@ -27,7 +28,7 @@ namespace Game.Presentation
             if (attacker == null || outBuffer == null || outBuffer.Length == 0 || effect == null)
                 return false;
 
-            int layerMask = LayerMask.GetMask(effect.hitLayerName);
+            int layerMask = ResolveLayerMask(effect.hitLayerName);
             if (layerMask == 0)
                 return true;
 
@@ -58,12 +59,12 @@ namespace Game.Presentation
             switch (effect.shape)
             {
                 case AttackShapeType.Sphere:
-                    count = Physics.OverlapSphereNonAlloc(origin, effect.sphereRadius * rangeScale, outBuffer, layerMask);
+                    count = Physics.OverlapSphereNonAlloc(origin, effect.sphereRadius * rangeScale, outBuffer, layerMask, QueryTriggerInteraction.Collide);
                     return count;
 
                 case AttackShapeType.Sector:
                     float radius = Mathf.Max(effect.sphereRadius * rangeScale, 0.01f);
-                    count = Physics.OverlapSphereNonAlloc(origin, radius, outBuffer, layerMask);
+                    count = Physics.OverlapSphereNonAlloc(origin, radius, outBuffer, layerMask, QueryTriggerInteraction.Collide);
                     if (count <= 0) return 0;
                     float halfAngle = effect.sectorAngle * 0.5f;
                     Quaternion inverseRotation = Quaternion.Inverse(detectionRotation);
@@ -88,7 +89,7 @@ namespace Game.Presentation
 
                 case AttackShapeType.Box:
                     Vector3 halfExtents = effect.boxSize * rangeScale * 0.5f;
-                    count = Physics.OverlapBoxNonAlloc(origin, halfExtents, outBuffer, detectionRotation, layerMask);
+                    count = Physics.OverlapBoxNonAlloc(origin, halfExtents, outBuffer, detectionRotation, layerMask, QueryTriggerInteraction.Collide);
                     return count;
 
                 default:
@@ -102,9 +103,13 @@ namespace Game.Presentation
             Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
             Vector3 origin = basePosition + baseRotation * (effect.rayOriginOffset + motionOffset);
             Vector3 direction = detectionRotation * Vector3.forward;
-            float distance = Mathf.Max(0f, effect.rayMaxDistance * PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker));
+            float rangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker);
+            float distance = Mathf.Max(0f, effect.rayMaxDistance * rangeScale);
+            float radius = Mathf.Max(0f, effect.rayRadius * rangeScale);
 
-            int numHits = Physics.RaycastNonAlloc(origin, direction, RaycastHitBuffer, distance, layerMask);
+            int numHits = radius > 0.0001f
+                ? Physics.SphereCastNonAlloc(origin, radius, direction, RaycastHitBuffer, distance, layerMask, QueryTriggerInteraction.Collide)
+                : Physics.RaycastNonAlloc(origin, direction, RaycastHitBuffer, distance, layerMask, QueryTriggerInteraction.Collide);
             if (numHits <= 0) return 0;
 
             RaycastColliderList.Clear();
@@ -157,7 +162,7 @@ namespace Game.Presentation
             if (sourceCollider == null)
                 return null;
 
-            int layerMask = LayerMask.GetMask(effect.hitLayerName);
+            int layerMask = ResolveLayerMask(effect.hitLayerName);
             if (layerMask == 0)
                 return null;
 
@@ -199,6 +204,36 @@ namespace Game.Presentation
             }
 
             return null;
+        }
+
+        private static int ResolveLayerMask(string hitLayerName)
+        {
+            if (string.IsNullOrWhiteSpace(hitLayerName))
+                return 0;
+
+            string normalized = hitLayerName.Trim();
+            int directMask = LayerMask.GetMask(normalized);
+            if (directMask != 0)
+                return directMask;
+
+            int directLayer = LayerMask.NameToLayer(normalized);
+            if (directLayer >= 0)
+                return 1 << directLayer;
+
+            string[] tokens = normalized.Split(new[] { ',', ';', '|' }, StringSplitOptions.RemoveEmptyEntries);
+            int combinedMask = 0;
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                string token = tokens[i].Trim();
+                if (string.IsNullOrWhiteSpace(token))
+                    continue;
+
+                int layer = LayerMask.NameToLayer(token);
+                if (layer >= 0)
+                    combinedMask |= 1 << layer;
+            }
+
+            return combinedMask;
         }
     }
 }

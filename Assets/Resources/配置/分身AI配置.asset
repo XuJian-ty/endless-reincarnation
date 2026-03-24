@@ -47,16 +47,23 @@ MonoBehaviour:
   skillCastRange: 5
   chargeEnterRange: 4.8
   dodgeThreatDistance: 4.2
+  rangedEnterDistance: 4.8
+  rangedExitDistance: 2.8
+  preferredRangedDistance: 6.5
+  rangedAttackCastRange: 9
   dodgeCooldownSeconds: 1.2
   dodgeDistance: 3.5
   dodgeDuration: 0.22
   chargeCooldownSeconds: 3
   chargeHoldMinSeconds: 0.18
   chargeHoldMaxSeconds: 0.4
+  attackModeSwitchCooldownSeconds: 0.45
+  attackModeMaxContinuousSeconds: 10
   aggression: 1
   dodgeBias: 0.5
   skillBias: 1
   chargeBias: 0.2
+  rangedBias: 0.22
   comboBias: 1
   orbitBias: 0.85
   dodgeDecisionPenalty: 0.18

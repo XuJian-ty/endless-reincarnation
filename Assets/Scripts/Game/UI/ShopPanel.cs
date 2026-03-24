@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Game;
+using Game.Data;
 using Game.GameFlow;
 using ProjectBase;
 using UnityEngine;
@@ -21,6 +23,7 @@ namespace Game.UI
         {
             public GameObject root;
             public Button button;
+            public Image background;
             public Image icon;
             public Text nameText;
             public Text priceText;
@@ -35,6 +38,7 @@ namespace Game.UI
         [SerializeField] private List<ShopSlotBinding> _slotBindings = new List<ShopSlotBinding>();
 
         private HutaoShopInteractable _shopSource;
+        private SlotBackgroundConfigSO _slotBackgroundConfig;
         private bool _loggedMissingBindings;
 
         protected override void Awake()
@@ -87,6 +91,7 @@ namespace Game.UI
                 _goodsRoot = FindChildByName("GoodsRoot");
             if (_slotPrefab == null)
                 _slotPrefab = Resources.Load<GameObject>(ShopSlotResourcePath);
+            _slotBackgroundConfig ??= ConfigManager.GetInstance()?.GetSlotBackgroundConfig();
         }
 
         private void EnsureSlotBindings(int requiredCount)
@@ -169,6 +174,7 @@ namespace Game.UI
                     continue;
 
                 HutaoShopInteractable.ShopOfferViewData offer = _shopSource.GetShopOfferViewData(i);
+                ApplySlotBackground(slot, offer.rarity);
                 if (slot.icon != null)
                     slot.icon.sprite = offer.icon;
                 if (slot.nameText != null)
@@ -225,12 +231,29 @@ namespace Game.UI
                 button = FindNestedChildByName(slotRoot, "Btn_Buy")?.GetComponent<Button>() ??
                          slotRoot.GetComponent<Button>() ??
                          slotRoot.GetComponentInChildren<Button>(true),
+                background = FindNestedChildByName(slotRoot, "Backgroud")?.GetComponent<Image>() ??
+                             FindNestedChildByName(slotRoot, "Background")?.GetComponent<Image>() ??
+                             slotRoot.GetComponent<Image>(),
                 icon = FindNestedChildByName(slotRoot, "Icon")?.GetComponent<Image>(),
                 nameText = FindNestedChildByName(slotRoot, "NameText")?.GetComponent<Text>(),
                 priceText = FindNestedChildByName(slotRoot, "PriceText")?.GetComponent<Text>(),
                 countText = FindNestedChildByName(slotRoot, "CountText")?.GetComponent<Text>(),
                 soldOutMark = FindNestedChildByName(slotRoot, "SoldOut")?.gameObject,
             };
+        }
+
+        private void ApplySlotBackground(ShopSlotBinding slot, WeaponRarity? rarity)
+        {
+            if (slot?.background == null)
+                return;
+
+            Sprite backgroundSprite = _slotBackgroundConfig != null ? _slotBackgroundConfig.GetShopSprite(rarity) : null;
+            if (backgroundSprite == null)
+                return;
+
+            slot.background.sprite = backgroundSprite;
+            slot.background.enabled = true;
+            slot.background.color = Color.white;
         }
 
         private void RefreshGoldText()

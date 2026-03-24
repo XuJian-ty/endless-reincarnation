@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Data;
 using Game.Domain;
+using UnityObject = UnityEngine.Object;
+using UnityRandom = UnityEngine.Random;
 
 namespace Game.Presentation
 {
@@ -22,6 +25,7 @@ namespace Game.Presentation
     public sealed class SkillCueRuntimeScope
     {
         private readonly List<GameObject> _stateExitInstances = new List<GameObject>();
+        private readonly List<Action> _stateExitCallbacks = new List<Action>();
 
         public void RegisterStateExitInstance(GameObject instance)
         {
@@ -29,13 +33,27 @@ namespace Game.Presentation
                 _stateExitInstances.Add(instance);
         }
 
+        public void RegisterStateExitCallback(Action callback)
+        {
+            if (callback != null)
+                _stateExitCallbacks.Add(callback);
+        }
+
         public void Stop()
         {
+            for (int i = _stateExitCallbacks.Count - 1; i >= 0; i--)
+            {
+                Action callback = _stateExitCallbacks[i];
+                callback?.Invoke();
+            }
+
+            _stateExitCallbacks.Clear();
+
             for (int i = _stateExitInstances.Count - 1; i >= 0; i--)
             {
                 GameObject instance = _stateExitInstances[i];
                 if (instance != null)
-                    Object.Destroy(instance);
+                    UnityObject.Destroy(instance);
             }
 
             _stateExitInstances.Clear();
@@ -193,7 +211,7 @@ namespace Game.Presentation
                 return;
 
             for (int i = 0; i < evt.physicsEffects.Count; i++)
-                ApplyIndependentPhysicsEffect(evt.physicsEffects[i], ctx);
+                ApplyIndependentPhysicsEffect(evt.physicsEffects[i], ctx, cueRuntime);
         }
 
         public static void ExecuteAttributeEvent(SkillAttributeEvent evt, ISkillExecutionContext ctx)
@@ -205,7 +223,7 @@ namespace Game.Presentation
                 return;
 
             for (int i = 0; i < evt.attributeEffects.Count; i++)
-                ApplyIndependentAttributeEffect(evt.attributeEffects[i], ctx);
+                ApplyIndependentAttributeEffect(evt.attributeEffects[i], ctx, cueRuntime);
         }
 
         public static void ExecuteVfxEvent(SkillVfxEvent evt, ISkillExecutionContext ctx)
@@ -306,7 +324,7 @@ namespace Game.Presentation
                 attackerStats,
                 damageMultiplier,
                 enemy.Defense,
-                () => Random.value,
+                () => UnityRandom.value,
                 enemy.DamageReduce,
                 out float finalDamage,
                 out isCrit,
@@ -336,7 +354,7 @@ namespace Game.Presentation
             {
                 var go = new GameObject("[SkillHitStopRunner]");
                 go.hideFlags = HideFlags.HideAndDontSave;
-                Object.DontDestroyOnLoad(go);
+                UnityObject.DontDestroyOnLoad(go);
                 _hitStopRunner = go.AddComponent<HitStopRunner>();
             }
 
@@ -380,7 +398,7 @@ namespace Game.Presentation
             }
         }
 
-        private static void ApplyIndependentPhysicsEffect(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
+        private static void ApplyIndependentPhysicsEffect(SkillPhysicsEffect effect, ISkillExecutionContext ctx, SkillCueRuntimeScope cueRuntime)
         {
             if (effect == null || ctx?.CasterTransform == null)
                 return;
@@ -399,24 +417,24 @@ namespace Game.Presentation
 
             if (effect.effectType == PhysicsEffectType.SuperArmor)
             {
-                ApplySelfSuperArmor(effect, ctx);
+                ApplySelfSuperArmor(effect, ctx, cueRuntime);
                 return;
             }
 
             if (effect.effectType == PhysicsEffectType.Invincible)
             {
-                ApplySelfInvincibility(effect, ctx);
+                ApplySelfInvincibility(effect, ctx, cueRuntime);
                 return;
             }
 
         }
 
-        private static void ApplyIndependentAttributeEffect(SkillAttributeEffect effect, ISkillExecutionContext ctx)
+        private static void ApplyIndependentAttributeEffect(SkillAttributeEffect effect, ISkillExecutionContext ctx, SkillCueRuntimeScope cueRuntime)
         {
             if (effect == null || ctx?.CasterTransform == null)
                 return;
 
-            ApplyAttributeToTarget(ctx.CasterTransform, effect);
+            ApplyAttributeToTarget(ctx.CasterTransform, effect, cueRuntime);
         }
 
         private static void ApplyPhysicsEffect(
@@ -468,12 +486,41 @@ namespace Game.Presentation
             motion.ApplyDisplacement(Vector3.up * effect.height, duration);
         }
 
-        private static void ApplySelfSuperArmor(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
+        private static void ApplySelfSuperArmor(SkillPhysicsEffect effect, ISkillExecutionContext ctx, SkillCueRuntimeScope cueRuntime)
         {
-            if (effect.duration <= 0f || ctx.CasterTransform == null)
+            if (ctx.CasterTransform == null)
                 return;
 
             PlayerController player = ctx.CasterTransform.GetComponent<PlayerController>();
+            if (effect.durationMode == SkillEffectDurationMode.UntilStateExit && effect.SupportsUntilStateExitDuration && cueRuntime != null)
+            {
+                if (player != null)
+                {
+                    player.AddStateScopedSuperArmor();
+                    cueRuntime.RegisterStateExitCallback(() =>
+                    {
+                        if (player != null)
+                            player.RemoveStateScopedSuperArmor();
+                    });
+                    return;
+                }
+
+                PlayerCloneActor stateScopedClone = ctx.CasterTransform.GetComponent<PlayerCloneActor>();
+                if (stateScopedClone != null)
+                {
+                    stateScopedClone.AddStateScopedSuperArmor();
+                    cueRuntime.RegisterStateExitCallback(() =>
+                    {
+                        if (stateScopedClone != null)
+                            stateScopedClone.RemoveStateScopedSuperArmor();
+                    });
+                }
+                return;
+            }
+
+            if (effect.duration <= 0f)
+                return;
+
             if (player != null)
             {
                 player.ApplyTemporarySuperArmor(effect.duration);
@@ -484,12 +531,41 @@ namespace Game.Presentation
             clone?.ApplyTemporarySuperArmor(effect.duration);
         }
 
-        private static void ApplySelfInvincibility(SkillPhysicsEffect effect, ISkillExecutionContext ctx)
+        private static void ApplySelfInvincibility(SkillPhysicsEffect effect, ISkillExecutionContext ctx, SkillCueRuntimeScope cueRuntime)
         {
-            if (effect.duration <= 0f || ctx.CasterTransform == null)
+            if (ctx.CasterTransform == null)
                 return;
 
             PlayerController player = ctx.CasterTransform.GetComponent<PlayerController>();
+            if (effect.durationMode == SkillEffectDurationMode.UntilStateExit && effect.SupportsUntilStateExitDuration && cueRuntime != null)
+            {
+                if (player != null)
+                {
+                    player.AddStateScopedInvincibility();
+                    cueRuntime.RegisterStateExitCallback(() =>
+                    {
+                        if (player != null)
+                            player.RemoveStateScopedInvincibility();
+                    });
+                    return;
+                }
+
+                PlayerCloneActor stateScopedClone = ctx.CasterTransform.GetComponent<PlayerCloneActor>();
+                if (stateScopedClone != null)
+                {
+                    stateScopedClone.AddStateScopedInvincibility();
+                    cueRuntime.RegisterStateExitCallback(() =>
+                    {
+                        if (stateScopedClone != null)
+                            stateScopedClone.RemoveStateScopedInvincibility();
+                    });
+                }
+                return;
+            }
+
+            if (effect.duration <= 0f)
+                return;
+
             if (player != null)
             {
                 player.ApplyTemporaryInvincibility(effect.duration);
@@ -555,10 +631,10 @@ namespace Game.Presentation
 
             var targets = ResolveTargets(effect.targetMode, ctx, detectedTargets);
             for (int i = 0; i < targets.Count; i++)
-                ApplyAttributeToTarget(targets[i], effect);
+                ApplyAttributeToTarget(targets[i], effect, null);
         }
 
-        private static void ApplyAttributeToTarget(Transform target, SkillAttributeEffect effect)
+        private static void ApplyAttributeToTarget(Transform target, SkillAttributeEffect effect, SkillCueRuntimeScope cueRuntime)
         {
             if (target == null)
                 return;
@@ -566,28 +642,30 @@ namespace Game.Presentation
             var clone = target.GetComponentInParent<PlayerCloneActor>();
             if (clone != null)
             {
-                ApplyStatFieldToClone(clone, effect.statField, effect.magnitude, effect.duration, effect.usePercent);
+                ApplyStatFieldToClone(clone, effect.statField, effect.magnitude, effect.durationMode, effect.duration, effect.usePercent, cueRuntime);
                 return;
             }
 
             var player = target.GetComponentInParent<PlayerController>();
             if (player != null)
             {
-                ApplyStatFieldToPlayer(player, effect.statField, effect.magnitude, effect.duration, effect.usePercent);
+                ApplyStatFieldToPlayer(player, effect.statField, effect.magnitude, effect.durationMode, effect.duration, effect.usePercent, cueRuntime);
                 return;
             }
 
             var enemy = target.GetComponentInParent<EnemyController>();
             if (enemy != null)
-                ApplyStatFieldToEnemy(enemy, effect.statField, effect.magnitude, effect.duration, effect.usePercent);
+                ApplyStatFieldToEnemy(enemy, effect.statField, effect.magnitude, effect.durationMode, effect.duration, effect.usePercent, cueRuntime);
         }
 
         private static void ApplyStatFieldToPlayer(
             PlayerController player,
             SkillStatField field,
             float magnitude,
+            SkillEffectDurationMode durationMode,
             float duration,
-            bool usePercent)
+            bool usePercent,
+            SkillCueRuntimeScope cueRuntime)
         {
             var model = player.PlayerModel;
             if (model == null)
@@ -613,10 +691,15 @@ namespace Game.Presentation
             if (modifier == null)
                 return;
 
-            if (duration > 0f)
+            var runtime = player.GetComponent<PlayerRuntimeStatModifierController>()
+                          ?? player.gameObject.AddComponent<PlayerRuntimeStatModifierController>();
+
+            if (durationMode == SkillEffectDurationMode.UntilStateExit && cueRuntime != null)
             {
-                var runtime = player.GetComponent<PlayerRuntimeStatModifierController>()
-                              ?? player.gameObject.AddComponent<PlayerRuntimeStatModifierController>();
+                runtime.ApplyModifierUntilStateExit(modifier, cueRuntime);
+            }
+            else if (duration > 0f)
+            {
                 runtime.ApplyModifier(modifier, duration);
             }
             else
@@ -629,8 +712,10 @@ namespace Game.Presentation
             PlayerCloneActor clone,
             SkillStatField field,
             float magnitude,
+            SkillEffectDurationMode durationMode,
             float duration,
-            bool usePercent)
+            bool usePercent,
+            SkillCueRuntimeScope cueRuntime)
         {
             if (clone == null)
                 return;
@@ -655,15 +740,20 @@ namespace Game.Presentation
             if (modifier == null)
                 return;
 
-            clone.ApplyStatModifier(modifier, duration);
+            if (durationMode == SkillEffectDurationMode.UntilStateExit && cueRuntime != null)
+                clone.ApplyStatModifierUntilStateExit(modifier, cueRuntime);
+            else
+                clone.ApplyStatModifier(modifier, duration);
         }
 
         private static void ApplyStatFieldToEnemy(
             EnemyController enemy,
             SkillStatField field,
             float magnitude,
+            SkillEffectDurationMode durationMode,
             float duration,
-            bool usePercent)
+            bool usePercent,
+            SkillCueRuntimeScope cueRuntime)
         {
             if (field == SkillStatField.HP)
             {
@@ -677,7 +767,9 @@ namespace Game.Presentation
             if (modifier == null)
                 return;
 
-            if (duration > 0f)
+            if (durationMode == SkillEffectDurationMode.UntilStateExit && cueRuntime != null)
+                enemy.ApplyStatModifierUntilStateExit(modifier, cueRuntime);
+            else if (duration > 0f)
                 enemy.ApplyTimedStatModifier(modifier, duration);
             else
                 enemy.ApplyTimedStatModifier(modifier, float.MaxValue);
@@ -770,26 +862,25 @@ namespace Game.Presentation
                 return null;
 
             float rangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(caster);
-            bool detachFromAnchor = effect.motion != null && effect.motion.IsActive;
+            bool useWorldMotion = ShouldUseWorldCueMotion(effect);
+            bool followAnchor = effect.anchor != CueAnchor.World && anchor != null;
             GameObject instance;
-            if (anchor != null && !detachFromAnchor)
+            if (followAnchor)
             {
-                instance = Object.Instantiate(effect.particlePrefab, anchor);
+                instance = UnityObject.Instantiate(effect.particlePrefab, anchor);
                 instance.transform.localPosition = effect.offset;
                 instance.transform.localRotation = Quaternion.Euler(effect.rotationEuler);
             }
             else
             {
-                Vector3 position = anchor != null ? anchor.TransformPoint(effect.offset) : caster.position + effect.offset;
-                Quaternion rotation = anchor != null
-                    ? anchor.rotation * Quaternion.Euler(effect.rotationEuler)
-                    : caster.rotation * Quaternion.Euler(effect.rotationEuler);
-                instance = Object.Instantiate(effect.particlePrefab, position, rotation);
+                Vector3 position = ResolveCueSpawnPosition(effect, caster, anchor);
+                Quaternion rotation = ResolveCueSpawnRotation(effect, caster, anchor);
+                instance = UnityObject.Instantiate(effect.particlePrefab, position, rotation);
             }
 
             instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
-            ConfigureVfxMotion(instance, effect.motion);
-            ApplyCueMotion(instance, effect.motion, caster, anchor);
+            ConfigureVfxMotion(instance, effect.motion, useWorldMotion);
+            ApplyCueMotion(instance, effect.motion, caster, useWorldMotion);
             return instance;
         }
 
@@ -828,7 +919,7 @@ namespace Game.Presentation
             {
                 case SkillCueDestroyMode.Timed:
                     if (duration > 0f)
-                        Object.Destroy(instance, duration);
+                        UnityObject.Destroy(instance, duration);
                     break;
                 case SkillCueDestroyMode.OnStateExit:
                     cueRuntime?.RegisterStateExitInstance(instance);
@@ -857,7 +948,7 @@ namespace Game.Presentation
                 case SkillCueDestroyMode.Timed:
                     if (effect.duration > 0f)
                     {
-                        Object.Destroy(instance, effect.duration);
+                        UnityObject.Destroy(instance, effect.duration);
                         return;
                     }
                     break;
@@ -865,29 +956,30 @@ namespace Game.Presentation
 
             float clipDuration = effect.audioClip != null ? effect.audioClip.length : 0f;
             if (clipDuration > 0f && !effect.loop)
-                Object.Destroy(instance, clipDuration);
+                UnityObject.Destroy(instance, clipDuration);
             else if (!effect.loop)
-                Object.Destroy(instance, 0.1f);
+                UnityObject.Destroy(instance, 0.1f);
         }
 
-        private static void ApplyCueMotion(GameObject instance, SkillMotionSettings motion, Transform caster, Transform anchor)
+        private static void ApplyCueMotion(GameObject instance, SkillMotionSettings motion, Transform caster, bool useWorldMotion)
         {
-            if (instance == null || caster == null || motion == null || !motion.IsActive)
+            if (instance == null || caster == null || motion == null || !useWorldMotion || !motion.IsActive)
                 return;
 
             Vector3 worldVelocity = caster.TransformDirection(motion.direction.normalized) * motion.speed;
             bool useLocalSpace = false;
             Vector3 velocity = worldVelocity;
+            Quaternion lockedRotation = instance.transform.rotation;
 
             SkillCueMover mover = instance.GetComponent<SkillCueMover>();
             if (mover == null)
                 mover = instance.AddComponent<SkillCueMover>();
-            mover.Initialize(velocity, useLocalSpace, false);
+            mover.Initialize(velocity, useLocalSpace, false, true, lockedRotation);
         }
 
-        private static void ConfigureVfxMotion(GameObject instance, SkillMotionSettings motion)
+        private static void ConfigureVfxMotion(GameObject instance, SkillMotionSettings motion, bool useWorldMotion)
         {
-            if (instance == null || motion == null || !motion.IsActive)
+            if (instance == null || motion == null || !useWorldMotion || !motion.IsActive)
                 return;
 
             ParticleSystem[] particleSystems = instance.GetComponentsInChildren<ParticleSystem>(true);
@@ -901,6 +993,30 @@ namespace Game.Presentation
                 if (main.simulationSpace == ParticleSystemSimulationSpace.World)
                     main.simulationSpace = ParticleSystemSimulationSpace.Local;
             }
+        }
+
+        private static bool ShouldUseWorldCueMotion(SkillVfxEffect effect)
+        {
+            return effect != null
+                   && effect.anchor == CueAnchor.World
+                   && effect.motion != null
+                   && effect.motion.IsActive;
+        }
+
+        private static Vector3 ResolveCueSpawnPosition(SkillVfxEffect effect, Transform caster, Transform anchor)
+        {
+            Transform basis = anchor != null ? anchor : caster;
+            if (basis != null)
+                return basis.TransformPoint(effect.offset);
+
+            return effect.offset;
+        }
+
+        private static Quaternion ResolveCueSpawnRotation(SkillVfxEffect effect, Transform caster, Transform anchor)
+        {
+            Transform basis = anchor != null ? anchor : caster;
+            Quaternion basisRotation = basis != null ? basis.rotation : Quaternion.identity;
+            return basisRotation * Quaternion.Euler(effect.rotationEuler);
         }
 
         private static List<Transform> ResolveTargets(

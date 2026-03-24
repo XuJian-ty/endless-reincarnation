@@ -57,6 +57,7 @@ namespace Game.Editor
                 SerializedProperty effectType = property.FindPropertyRelative("effectType");
                 SerializedProperty distance = property.FindPropertyRelative("distance");
                 SerializedProperty heightValue = property.FindPropertyRelative("height");
+                SerializedProperty durationMode = property.FindPropertyRelative("durationMode");
                 SerializedProperty duration = property.FindPropertyRelative("duration");
                 bool isOnHit = IsOnHitContext(property);
                 PhysicsEffectType[] allowedTypes = isOnHit ? OnHitTypes : TopLevelTypes;
@@ -72,7 +73,18 @@ namespace Game.Editor
                 if (UsesHeight(effectTypeValue))
                     y = DrawProperty(y, position, heightValue);
 
-                DrawProperty(y, position, duration);
+                bool showDurationMode = !isOnHit && SupportsTopLevelUntilStateExit(effectTypeValue);
+                if (showDurationMode)
+                    y = DrawProperty(y, position, durationMode);
+                else if (durationMode != null && durationMode.enumValueIndex != (int)SkillEffectDurationMode.FixedTime)
+                    durationMode.enumValueIndex = (int)SkillEffectDurationMode.FixedTime;
+
+                if (!showDurationMode
+                    || durationMode == null
+                    || durationMode.enumValueIndex == (int)SkillEffectDurationMode.FixedTime)
+                {
+                    DrawProperty(y, position, duration);
+                }
 
                 EditorGUI.indentLevel = oldIndent;
             }
@@ -102,7 +114,17 @@ namespace Game.Editor
             if (UsesHeight(effectTypeValue))
                 height += GetChildHeight(property.FindPropertyRelative("height"));
 
-            height += GetChildHeight(property.FindPropertyRelative("duration"));
+            bool showDurationMode = !isOnHit && SupportsTopLevelUntilStateExit(effectTypeValue);
+            if (showDurationMode)
+                height += GetChildHeight(property.FindPropertyRelative("durationMode"));
+
+            SerializedProperty durationMode = property.FindPropertyRelative("durationMode");
+            if (!showDurationMode
+                || durationMode == null
+                || durationMode.enumValueIndex == (int)SkillEffectDurationMode.FixedTime)
+            {
+                height += GetChildHeight(property.FindPropertyRelative("duration"));
+            }
             return height;
         }
 
@@ -182,6 +204,12 @@ namespace Game.Editor
         {
             return effectType == PhysicsEffectType.Launch
                 || effectType == PhysicsEffectType.Airborne;
+        }
+
+        private static bool SupportsTopLevelUntilStateExit(PhysicsEffectType effectType)
+        {
+            return effectType == PhysicsEffectType.SuperArmor
+                || effectType == PhysicsEffectType.Invincible;
         }
     }
 }

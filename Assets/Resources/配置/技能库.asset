@@ -16,6 +16,130 @@ MonoBehaviour:
   - groupId: player
     groupName: "\u73A9\u5BB6"
     entries:
+    - skillId: NormalIdle
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: NormalWalk
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 9ab3daf624296df48bf846f1a11121be, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 1
+          destroyMode: 2
+          duration: 0
+    - skillId: NormalRun
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: cdd473cc55a29d84db0be6c33d3af55c, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 1
+          destroyMode: 2
+          duration: 0
+    - skillId: AimIdle
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: AimWalk
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 9ab3daf624296df48bf846f1a11121be, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 1
+          destroyMode: 2
+          duration: 0
+    - skillId: AimRun
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents:
+      - eventId: evt_0
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: cdd473cc55a29d84db0be6c33d3af55c, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 1
+          destroyMode: 2
+          duration: 0
+    - skillId: Jump
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: Dodge
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: Land
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
     - skillId: Attack0
       displayName: 
       ignoreAnimationDamageEvents: 1
@@ -43,6 +167,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 1
             speed: 20
@@ -63,6 +188,7 @@ MonoBehaviour:
           - effectType: 0
             distance: 2
             height: 1
+            durationMode: 0
             duration: 0.2
           onHitAttributeEffects: []
           onHitVfxEffects:
@@ -108,6 +234,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
@@ -128,65 +255,20 @@ MonoBehaviour:
           onHitAttributeEffects: []
           onHitVfxEffects: []
           onHitSfxEffects: []
-      - eventId: evt_6
-        startTime: 0.33333334
+      physicsEvents:
+      - eventId: evt_8
+        startTime: 0
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        pauseCameraLookDuringHitStop: 0
-        hitStopSettingsOwnedByEvent: 0
-        damageEffects:
-        - detectionDuration: 0.033333335
-          detectionType: 0
-          hitLayerName: Enemy
-          shape: 1
-          centerOffset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 1.5
-          sectorAngle: 180
-          boxSize: {x: 1, y: 1, z: 1}
-          colliderNodeName: 
-          rayOriginOffset: {x: 0, y: 0, z: 0}
-          rayMaxDistance: 50
-          motion:
-            enabled: 1
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects:
-          - damageMagnitude: 1
-          - damageMagnitude: 1
-          onHitStopEffect:
-            hitStopDuration: 0
-            hitStopTimeScale: 0
-            pauseCameraLookDuringHitStop: 0
-          legacyOnHitStopEffects:
-          - hitStopDuration: 0
-            hitStopTimeScale: 0
-            pauseCameraLookDuringHitStop: 0
-          - hitStopDuration: 0
-            hitStopTimeScale: 0
-            pauseCameraLookDuringHitStop: 0
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0
-          nestedSubEffectsOwnedByLists: 1
-          onHitPhysicsEffects: []
-          onHitAttributeEffects: []
-          onHitVfxEffects: []
-          onHitSfxEffects: []
-      physicsEvents: []
-      attributeEvents:
-      - eventId: evt_5
-        startTime: 0.33333334
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        attributeEffects: []
+        physicsEffects:
+        - effectType: 6
+          distance: 1
+          height: 1
+          durationMode: 0
+          duration: 8.766667
+      attributeEvents: []
       vfxEvents:
       - eventId: evt_0
         startTime: 0.26666668
@@ -240,13 +322,26 @@ MonoBehaviour:
           duration: 5
       sfxEvents:
       - eventId: evt_2
-        startTime: 0.033333335
+        startTime: 0
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
         sfxEffects:
         - audioClip: {fileID: 8300000, guid: 5cd28d5e48263824589bb092c7c55f44, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
+      - eventId: evt_7
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 8800b5aa2cc5e734a8cfc37e10242347, type: 3}
           anchor: 0
           offset: {x: 0, y: 0, z: 0}
           loop: 0
@@ -279,11 +374,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 1
             speed: 20
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -292,12 +389,13 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects:
           - effectType: 0
             distance: 1
             height: 1
+            durationMode: 0
             duration: 0.2
           onHitAttributeEffects: []
           onHitVfxEffects:
@@ -343,11 +441,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -356,13 +456,25 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
           onHitSfxEffects: []
-      physicsEvents: []
+      physicsEvents:
+      - eventId: evt_6
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 6
+          distance: 1
+          height: 1
+          durationMode: 0
+          duration: 9.6
       attributeEvents: []
       vfxEvents:
       - eventId: evt_1
@@ -429,6 +541,25 @@ MonoBehaviour:
           loop: 0
           destroyMode: 0
           duration: 0
+        - audioClip: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
+      - eventId: evt_5
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 7f4af05b3e1dfa74abd1cec7afecb315, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
     - skillId: Attack2
       displayName: 
       ignoreAnimationDamageEvents: 1
@@ -456,11 +587,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -469,8 +602,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -481,7 +614,19 @@ MonoBehaviour:
             loop: 0
             destroyMode: 0
             duration: 0
-      physicsEvents: []
+      physicsEvents:
+      - eventId: evt_5
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 6
+          distance: 1
+          height: 1
+          durationMode: 0
+          duration: 6.5000005
       attributeEvents: []
       vfxEvents:
       - eventId: evt_3
@@ -554,6 +699,19 @@ MonoBehaviour:
           loop: 0
           destroyMode: 0
           duration: 0
+      - eventId: evt_4
+        startTime: 0.26666668
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: c18a802584087d24c8300622c4502854, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
     - skillId: Attack3
       displayName: 
       ignoreAnimationDamageEvents: 1
@@ -581,11 +739,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -594,12 +754,13 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects:
           - effectType: 0
             distance: 0.5
             height: 1
+            durationMode: 0
             duration: 0.1
           onHitAttributeEffects: []
           onHitVfxEffects:
@@ -639,11 +800,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -653,7 +816,7 @@ MonoBehaviour:
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
           damageMagnitude: 0
-          nestedSubEffectsOwnedByLists: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -664,7 +827,19 @@ MonoBehaviour:
             loop: 0
             destroyMode: 0
             duration: 0
-      physicsEvents: []
+      physicsEvents:
+      - eventId: evt_6
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 6
+          distance: 1
+          height: 1
+          durationMode: 0
+          duration: 7.0000005
       attributeEvents: []
       vfxEvents:
       - eventId: evt_1
@@ -732,12 +907,18 @@ MonoBehaviour:
           destroyMode: 0
           duration: 0
       - eventId: evt_5
-        startTime: 1.3000001
+        startTime: 0.73333335
         triggerMode: 0
         activeDuration: 0
         activeDurationMode: 0
         repeatInterval: 0.1
-        sfxEffects: []
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 95f025b649e1a7c4a89421b882d5a6dd, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
     - skillId: AirAttack
       displayName: 
       ignoreAnimationDamageEvents: 1
@@ -765,6 +946,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
@@ -795,6 +977,7 @@ MonoBehaviour:
         - effectType: 3
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.2
       attributeEvents:
       - eventId: evt_2
@@ -808,6 +991,7 @@ MonoBehaviour:
           targetMode: 0
           magnitude: 50
           usePercent: 0
+          durationMode: 0
           duration: 10
       vfxEvents:
       - eventId: evt_0
@@ -843,64 +1027,29 @@ MonoBehaviour:
           loop: 0
           destroyMode: 0
           duration: 0
-    - skillId: FallAttack
+    - skillId: ChargeStart
       displayName: 
-      ignoreAnimationDamageEvents: 1
-      damageEvents:
-      - eventId: evt_2
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        pauseCameraLookDuringHitStop: 0
-        hitStopSettingsOwnedByEvent: 0
-        damageEffects:
-        - detectionDuration: 0
-          detectionType: 0
-          hitLayerName: Enemy
-          shape: 1
-          centerOffset: {x: 0, y: 0, z: 0}
-          rotationEuler: {x: 0, y: 0, z: 0}
-          sphereRadius: 1.5
-          sectorAngle: 180
-          boxSize: {x: 1, y: 1, z: 1}
-          colliderNodeName: 
-          rayOriginOffset: {x: 0, y: 0, z: 0}
-          rayMaxDistance: 50
-          motion:
-            enabled: 0
-            speed: 0
-            direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
-          onHitStopEffect:
-            hitStopDuration: 0
-            hitStopTimeScale: 0
-            pauseCameraLookDuringHitStop: 0
-          legacyOnHitStopEffects: []
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
-          onHitPhysicsEffects: []
-          onHitAttributeEffects: []
-          onHitVfxEffects: []
-          onHitSfxEffects: []
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: ChargeLoop
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
       physicsEvents: []
       attributeEvents: []
       vfxEvents:
       - eventId: evt_0
         startTime: 0
-        triggerMode: 0
+        triggerMode: 1
         activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
+        activeDurationMode: 1
+        repeatInterval: 0.10000001
         vfxEffects:
-        - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
-            type: 3}
+        - particlePrefab: {fileID: 0}
           anchor: 0
           offset: {x: 0, y: 0, z: 0}
           rotationEuler: {x: 0, y: 0, z: 0}
@@ -911,21 +1060,8 @@ MonoBehaviour:
             direction: {x: 0, y: 0, z: 1}
           destroyMode: 0
           duration: 0
-      sfxEvents:
-      - eventId: evt_1
-        startTime: 0
-        triggerMode: 0
-        activeDuration: 0
-        activeDurationMode: 0
-        repeatInterval: 0.1
-        sfxEffects:
-        - audioClip: {fileID: 8300000, guid: 00393121fe79c974e92d6337f4eccdef, type: 3}
-          anchor: 0
-          offset: {x: 0, y: 0, z: 0}
-          loop: 0
-          destroyMode: 0
-          duration: 0
-    - skillId: ChargeAttack
+      sfxEvents: []
+    - skillId: ChargeRelease
       displayName: 
       ignoreAnimationDamageEvents: 1
       damageEvents:
@@ -952,11 +1088,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -965,8 +1103,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1032,7 +1170,7 @@ MonoBehaviour:
         activeDurationMode: 0
         repeatInterval: 0.1
         sfxEffects: []
-    - skillId: Locomotion
+    - skillId: FallAttackStart
       displayName: 
       ignoreAnimationDamageEvents: 0
       damageEvents: []
@@ -1040,21 +1178,73 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: ChargeLoop
+    - skillId: FallAttackLoop
       displayName: 
       ignoreAnimationDamageEvents: 0
       damageEvents: []
       physicsEvents: []
       attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: FallAttackLand
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 0
+          detectionType: 0
+          hitLayerName: Enemy
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 0, z: 0}
+          rayMaxDistance: 50
+          rayRadius: 0
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects: []
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 1
+          nestedSubEffectsOwnedByLists: 0
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects: []
+          onHitSfxEffects: []
+      physicsEvents: []
+      attributeEvents: []
       vfxEvents:
       - eventId: evt_0
         startTime: 0
-        triggerMode: 1
+        triggerMode: 0
         activeDuration: 0
-        activeDurationMode: 1
-        repeatInterval: 0.10000001
+        activeDurationMode: 0
+        repeatInterval: 0.1
         vfxEffects:
-        - particlePrefab: {fileID: 0}
+        - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
+            type: 3}
           anchor: 0
           offset: {x: 0, y: 0, z: 0}
           rotationEuler: {x: 0, y: 0, z: 0}
@@ -1065,7 +1255,20 @@ MonoBehaviour:
             direction: {x: 0, y: 0, z: 1}
           destroyMode: 0
           duration: 0
-      sfxEvents: []
+      sfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: 00393121fe79c974e92d6337f4eccdef, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
     - skillId: Fall
       displayName: 
       ignoreAnimationDamageEvents: 0
@@ -1074,7 +1277,277 @@ MonoBehaviour:
       attributeEvents: []
       vfxEvents: []
       sfxEvents: []
-    - skillId: FallAttackLoop
+    - skillId: Shoot
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: shot
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 0.5
+          detectionType: 2
+          hitLayerName: Enemy
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          sphereRadius: 1
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 50
+          rayRadius: 0.5
+          motion:
+            enabled: 0
+            speed: 40
+            direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 3
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects:
+          - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+              type: 3}
+            anchor: 1
+            offset: {x: 0, y: 0.8980476, z: 0}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 6
+          distance: 1
+          height: 1
+          durationMode: 1
+          duration: 0.2
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_3
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+            type: 3}
+          anchor: 0
+          offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
+          rotationEuler: {x: -0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+      - eventId: evt_4
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+            type: 3}
+          anchor: 2
+          offset: {x: 0.08377268, y: 1.1965681, z: 0.9816996}
+          rotationEuler: {x: -0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 1
+            speed: 20
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 1
+          duration: 2.5
+      sfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: e2894f01e84c45146ba859b81b2d6cbd, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
+    - skillId: ShootCharge
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: burst
+        startTime: 0
+        triggerMode: 1
+        activeDuration: 0
+        activeDurationMode: 1
+        repeatInterval: 0.20000002
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 0.033333335
+          detectionType: 2
+          hitLayerName: Enemy
+          shape: 1
+          centerOffset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          sphereRadius: 1.5
+          sectorAngle: 180
+          boxSize: {x: 1, y: 1, z: 1}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 50
+          rayRadius: 0.5
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          onHitDamageEffects:
+          - damageMagnitude: 1
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
+          onHitPhysicsEffects: []
+          onHitAttributeEffects: []
+          onHitVfxEffects:
+          - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+              type: 3}
+            anchor: 1
+            offset: {x: -0.01321435, y: 0.92083675, z: -0.002316475}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 6
+          distance: 1
+          height: 1
+          durationMode: 1
+          duration: 0.2
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_3
+        startTime: 0
+        triggerMode: 1
+        activeDuration: 0
+        activeDurationMode: 1
+        repeatInterval: 0.20000002
+        vfxEffects:
+        - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+            type: 3}
+          anchor: 0
+          offset: {x: 0.17940223, y: 1.2355455, z: 0.8696799}
+          rotationEuler: {x: -0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+      - eventId: evt_4
+        startTime: 0
+        triggerMode: 1
+        activeDuration: 0
+        activeDurationMode: 1
+        repeatInterval: 0.20000002
+        vfxEffects:
+        - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+            type: 3}
+          anchor: 2
+          offset: {x: 0.07617278, y: 1.1724954, z: 0.93304884}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 1
+            speed: 20
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 1
+          duration: 2.5
+      sfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: be3ab8c2ce7c7ef49b5645fc9059bdfb, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 1
+          destroyMode: 2
+          duration: 0
+    - skillId: Aim
+      displayName: 
+      ignoreAnimationDamageEvents: 1
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: HitStun
+      displayName: 
+      ignoreAnimationDamageEvents: 0
+      damageEvents: []
+      physicsEvents: []
+      attributeEvents: []
+      vfxEvents: []
+      sfxEvents: []
+    - skillId: PlayerDeath
       displayName: 
       ignoreAnimationDamageEvents: 0
       damageEvents: []
@@ -1109,11 +1582,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 1
             speed: 10
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -1122,23 +1597,26 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects:
           - effectType: 0
             distance: 2
             height: 1
+            durationMode: 0
             duration: 1
           onHitAttributeEffects:
           - statField: 0
             targetMode: 0
             magnitude: 0.2
             usePercent: 1
+            durationMode: 0
             duration: 0
           - statField: 12
             targetMode: 0
             magnitude: 0.2
             usePercent: 1
+            durationMode: 0
             duration: 5
           onHitVfxEffects:
           - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
@@ -1171,6 +1649,7 @@ MonoBehaviour:
         - effectType: 7
           distance: 1
           height: 1
+          durationMode: 0
           duration: 6
       attributeEvents:
       - eventId: evt_4
@@ -1184,6 +1663,7 @@ MonoBehaviour:
           targetMode: 0
           magnitude: 0
           usePercent: 0
+          durationMode: 0
           duration: 7
       vfxEvents:
       - eventId: evt_1
@@ -1246,11 +1726,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -1259,14 +1741,15 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects:
           - statField: 0
             targetMode: 1
             magnitude: 111
             usePercent: 0
+            durationMode: 0
             duration: 0
           onHitVfxEffects: []
           onHitSfxEffects: []
@@ -1333,11 +1816,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -1346,8 +1831,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1415,11 +1900,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -1428,8 +1915,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1500,6 +1987,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 0
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
@@ -1554,6 +2042,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 14
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
@@ -1608,6 +2097,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
@@ -1651,6 +2141,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
@@ -1682,6 +2173,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.1
       attributeEvents: []
       vfxEvents: []
@@ -1713,6 +2205,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
@@ -1744,6 +2237,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.14
       attributeEvents: []
       vfxEvents: []
@@ -1778,6 +2272,7 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 16
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
@@ -1829,11 +2324,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0.8
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -1842,8 +2339,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0.8
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -1859,6 +2356,7 @@ MonoBehaviour:
         - effectType: 1
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.18
       attributeEvents: []
       vfxEvents: []
@@ -1893,11 +2391,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1.875
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -1906,8 +2406,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1.875
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects:
@@ -1935,6 +2435,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.18
       attributeEvents: []
       vfxEvents:
@@ -1988,11 +2489,13 @@ MonoBehaviour:
           targetMode: 0
           magnitude: 4
           usePercent: 0
+          durationMode: 0
           duration: 4
         - statField: 3
           targetMode: 0
           magnitude: 8
           usePercent: 0
+          durationMode: 0
           duration: 4
       vfxEvents: []
       sfxEvents: []
@@ -2026,11 +2529,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.03
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2039,8 +2544,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.03
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2056,6 +2561,7 @@ MonoBehaviour:
         - effectType: 3
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.18
       - eventId: impact
         startTime: 0.26666668
@@ -2094,11 +2600,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0.95
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2107,8 +2615,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0.95
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2124,6 +2632,7 @@ MonoBehaviour:
         - effectType: 1
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.2
       attributeEvents: []
       vfxEvents: []
@@ -2158,11 +2667,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.3200002
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2171,8 +2682,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.3200002
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2188,6 +2699,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.1
       attributeEvents: []
       vfxEvents:
@@ -2237,11 +2749,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 20
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1.5525
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2250,8 +2764,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1.5525
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2287,11 +2801,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.52
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2300,8 +2816,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.52
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2317,6 +2833,7 @@ MonoBehaviour:
         - effectType: 3
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.2
       - eventId: impact
         startTime: 0.3
@@ -2328,6 +2845,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.16
       attributeEvents: []
       vfxEvents: []
@@ -2349,16 +2867,19 @@ MonoBehaviour:
           targetMode: 0
           magnitude: 6
           usePercent: 0
+          durationMode: 0
           duration: 3.5
         - statField: 3
           targetMode: 0
           magnitude: 4
           usePercent: 0
+          durationMode: 0
           duration: 3.5
         - statField: 4
           targetMode: 0
           magnitude: 0.2
           usePercent: 0
+          durationMode: 0
           duration: 3.5
       vfxEvents: []
       sfxEvents: []
@@ -2392,11 +2913,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2405,8 +2928,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2442,11 +2965,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 16
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0.61200005
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2455,8 +2980,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0.61200005
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2492,11 +3017,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.8
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2505,8 +3032,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.8
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2522,6 +3049,7 @@ MonoBehaviour:
         - effectType: 3
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.2
       - eventId: crash
         startTime: 0.32
@@ -2533,6 +3061,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.18
       attributeEvents: []
       vfxEvents: []
@@ -2554,11 +3083,13 @@ MonoBehaviour:
           targetMode: 0
           magnitude: 8
           usePercent: 0
+          durationMode: 0
           duration: 4
         - statField: 4
           targetMode: 0
           magnitude: 0.35
           usePercent: 0
+          durationMode: 0
           duration: 4
       vfxEvents: []
       sfxEvents: []
@@ -2592,11 +3123,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.16
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2605,8 +3138,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.16
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2622,6 +3155,7 @@ MonoBehaviour:
         - effectType: 1
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.18
       - eventId: cleave
         startTime: 0.46
@@ -2633,6 +3167,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.1
       attributeEvents: []
       vfxEvents: []
@@ -2664,11 +3199,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 16
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0.578
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2677,8 +3214,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0.578
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2714,11 +3251,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.45
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2727,8 +3266,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.45
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2744,6 +3283,7 @@ MonoBehaviour:
         - effectType: 3
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.22
       - eventId: impact
         startTime: 0.3
@@ -2755,6 +3295,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.16
       attributeEvents: []
       vfxEvents: []
@@ -2786,11 +3327,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0.75
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2799,8 +3342,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0.75
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2816,6 +3359,7 @@ MonoBehaviour:
         - effectType: 1
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.12
       attributeEvents:
       - eventId: heal
@@ -2829,11 +3373,13 @@ MonoBehaviour:
           targetMode: 0
           magnitude: 0.08
           usePercent: 1
+          durationMode: 0
           duration: 0
         - statField: 3
           targetMode: 0
           magnitude: 5
           usePercent: 0
+          durationMode: 0
           duration: 3
       vfxEvents: []
       sfxEvents: []
@@ -2867,11 +3413,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0.56
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2880,8 +3428,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0.56
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2897,6 +3445,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.08
       attributeEvents: []
       vfxEvents: []
@@ -2928,11 +3477,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 20
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 1.89
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -2941,8 +3492,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 1.89
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -2958,6 +3509,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.12
       attributeEvents: []
       vfxEvents: []
@@ -2989,11 +3541,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.73
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -3002,8 +3556,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.73
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -3019,6 +3573,7 @@ MonoBehaviour:
         - effectType: 3
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.22
       - eventId: finish
         startTime: 0.26
@@ -3030,6 +3585,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.18
       attributeEvents: []
       vfxEvents: []
@@ -3051,16 +3607,19 @@ MonoBehaviour:
           targetMode: 0
           magnitude: 6
           usePercent: 0
+          durationMode: 0
           duration: 4
         - statField: 4
           targetMode: 0
           magnitude: 0.45
           usePercent: 0
+          durationMode: 0
           duration: 4
         - statField: 5
           targetMode: 0
           magnitude: 1.2
           usePercent: 0
+          durationMode: 0
           duration: 4
       vfxEvents: []
       sfxEvents: []
@@ -3094,11 +3653,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.72
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -3107,8 +3668,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.72
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -3124,6 +3685,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.12
       attributeEvents: []
       vfxEvents: []
@@ -3155,11 +3717,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 1, z: 0}
           rayMaxDistance: 16
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0.63750005
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -3168,8 +3732,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0.63750005
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -3205,11 +3769,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 2.9399998
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -3218,8 +3784,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 2.9399998
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -3235,6 +3801,7 @@ MonoBehaviour:
         - effectType: 3
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.24
       - eventId: stomp
         startTime: 0.3
@@ -3246,6 +3813,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.2
       attributeEvents: []
       vfxEvents: []
@@ -3277,11 +3845,13 @@ MonoBehaviour:
           colliderNodeName: 
           rayOriginOffset: {x: 0, y: 0, z: 0}
           rayMaxDistance: 50
+          rayRadius: 0
           motion:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
-          onHitDamageEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 0.85
           onHitStopEffect:
             hitStopDuration: 0
             hitStopTimeScale: 0
@@ -3290,8 +3860,8 @@ MonoBehaviour:
           hitStopDuration: 0
           hitStopTimeScale: 0
           pauseCameraLookDuringHitStop: 0
-          damageMagnitude: 0.85
-          nestedSubEffectsOwnedByLists: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
           onHitPhysicsEffects: []
           onHitAttributeEffects: []
           onHitVfxEffects: []
@@ -3307,6 +3877,7 @@ MonoBehaviour:
         - effectType: 1
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.1
       attributeEvents:
       - eventId: regen
@@ -3320,20 +3891,147 @@ MonoBehaviour:
           targetMode: 0
           magnitude: 0.12
           usePercent: 1
+          durationMode: 0
           duration: 0
         - statField: 2
           targetMode: 0
           magnitude: 5
           usePercent: 0
+          durationMode: 0
           duration: 4.5
         - statField: 3
           targetMode: 0
           magnitude: 6
           usePercent: 0
+          durationMode: 0
           duration: 4.5
       vfxEvents: []
       sfxEvents: []
   entries:
+  - skillId: NormalIdle
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: NormalWalk
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 9ab3daf624296df48bf846f1a11121be, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 1
+        destroyMode: 2
+        duration: 0
+  - skillId: NormalRun
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: cdd473cc55a29d84db0be6c33d3af55c, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 1
+        destroyMode: 2
+        duration: 0
+  - skillId: AimIdle
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: AimWalk
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 9ab3daf624296df48bf846f1a11121be, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 1
+        destroyMode: 2
+        duration: 0
+  - skillId: AimRun
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents:
+    - eventId: evt_0
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: cdd473cc55a29d84db0be6c33d3af55c, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 1
+        destroyMode: 2
+        duration: 0
+  - skillId: Jump
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: Dodge
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: Land
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
   - skillId: Attack0
     displayName: 
     ignoreAnimationDamageEvents: 1
@@ -3361,6 +4059,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 1
           speed: 20
@@ -3381,6 +4080,7 @@ MonoBehaviour:
         - effectType: 0
           distance: 2
           height: 1
+          durationMode: 0
           duration: 0.2
         onHitAttributeEffects: []
         onHitVfxEffects:
@@ -3426,6 +4126,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
@@ -3446,65 +4147,20 @@ MonoBehaviour:
         onHitAttributeEffects: []
         onHitVfxEffects: []
         onHitSfxEffects: []
-    - eventId: evt_6
-      startTime: 0.33333334
+    physicsEvents:
+    - eventId: evt_8
+      startTime: 0
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
-      hitStopDuration: 0
-      hitStopTimeScale: 0
-      pauseCameraLookDuringHitStop: 0
-      hitStopSettingsOwnedByEvent: 0
-      damageEffects:
-      - detectionDuration: 0.033333335
-        detectionType: 0
-        hitLayerName: Enemy
-        shape: 1
-        centerOffset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 1.5
-        sectorAngle: 180
-        boxSize: {x: 1, y: 1, z: 1}
-        colliderNodeName: 
-        rayOriginOffset: {x: 0, y: 0, z: 0}
-        rayMaxDistance: 50
-        motion:
-          enabled: 1
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects:
-        - damageMagnitude: 1
-        - damageMagnitude: 1
-        onHitStopEffect:
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          pauseCameraLookDuringHitStop: 0
-        legacyOnHitStopEffects:
-        - hitStopDuration: 0
-          hitStopTimeScale: 0
-          pauseCameraLookDuringHitStop: 0
-        - hitStopDuration: 0
-          hitStopTimeScale: 0
-          pauseCameraLookDuringHitStop: 0
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0
-        nestedSubEffectsOwnedByLists: 1
-        onHitPhysicsEffects: []
-        onHitAttributeEffects: []
-        onHitVfxEffects: []
-        onHitSfxEffects: []
-    physicsEvents: []
-    attributeEvents:
-    - eventId: evt_5
-      startTime: 0.33333334
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      attributeEffects: []
+      physicsEffects:
+      - effectType: 6
+        distance: 1
+        height: 1
+        durationMode: 0
+        duration: 8.766667
+    attributeEvents: []
     vfxEvents:
     - eventId: evt_0
       startTime: 0.26666668
@@ -3558,13 +4214,26 @@ MonoBehaviour:
         duration: 5
     sfxEvents:
     - eventId: evt_2
-      startTime: 0.033333335
+      startTime: 0
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
       sfxEffects:
       - audioClip: {fileID: 8300000, guid: 5cd28d5e48263824589bb092c7c55f44, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
+    - eventId: evt_7
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 8800b5aa2cc5e734a8cfc37e10242347, type: 3}
         anchor: 0
         offset: {x: 0, y: 0, z: 0}
         loop: 0
@@ -3597,11 +4266,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 1
           speed: 20
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -3610,12 +4281,13 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects:
         - effectType: 0
           distance: 1
           height: 1
+          durationMode: 0
           duration: 0.2
         onHitAttributeEffects: []
         onHitVfxEffects:
@@ -3661,11 +4333,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -3674,13 +4348,25 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
         onHitSfxEffects: []
-    physicsEvents: []
+    physicsEvents:
+    - eventId: evt_6
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 6
+        distance: 1
+        height: 1
+        durationMode: 0
+        duration: 9.6
     attributeEvents: []
     vfxEvents:
     - eventId: evt_1
@@ -3747,6 +4433,25 @@ MonoBehaviour:
         loop: 0
         destroyMode: 0
         duration: 0
+      - audioClip: {fileID: 0}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
+    - eventId: evt_5
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 7f4af05b3e1dfa74abd1cec7afecb315, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
   - skillId: Attack2
     displayName: 
     ignoreAnimationDamageEvents: 1
@@ -3774,11 +4479,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -3787,8 +4494,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -3799,7 +4506,19 @@ MonoBehaviour:
           loop: 0
           destroyMode: 0
           duration: 0
-    physicsEvents: []
+    physicsEvents:
+    - eventId: evt_5
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 6
+        distance: 1
+        height: 1
+        durationMode: 0
+        duration: 6.5000005
     attributeEvents: []
     vfxEvents:
     - eventId: evt_3
@@ -3872,6 +4591,19 @@ MonoBehaviour:
         loop: 0
         destroyMode: 0
         duration: 0
+    - eventId: evt_4
+      startTime: 0.26666668
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: c18a802584087d24c8300622c4502854, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
   - skillId: Attack3
     displayName: 
     ignoreAnimationDamageEvents: 1
@@ -3899,11 +4631,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -3912,12 +4646,13 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects:
         - effectType: 0
           distance: 0.5
           height: 1
+          durationMode: 0
           duration: 0.1
         onHitAttributeEffects: []
         onHitVfxEffects:
@@ -3957,11 +4692,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -3971,7 +4708,7 @@ MonoBehaviour:
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
         damageMagnitude: 0
-        nestedSubEffectsOwnedByLists: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -3982,7 +4719,19 @@ MonoBehaviour:
           loop: 0
           destroyMode: 0
           duration: 0
-    physicsEvents: []
+    physicsEvents:
+    - eventId: evt_6
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 6
+        distance: 1
+        height: 1
+        durationMode: 0
+        duration: 7.0000005
     attributeEvents: []
     vfxEvents:
     - eventId: evt_1
@@ -4050,12 +4799,18 @@ MonoBehaviour:
         destroyMode: 0
         duration: 0
     - eventId: evt_5
-      startTime: 1.3000001
+      startTime: 0.73333335
       triggerMode: 0
       activeDuration: 0
       activeDurationMode: 0
       repeatInterval: 0.1
-      sfxEffects: []
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 95f025b649e1a7c4a89421b882d5a6dd, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
   - skillId: AirAttack
     displayName: 
     ignoreAnimationDamageEvents: 1
@@ -4083,6 +4838,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
@@ -4113,6 +4869,7 @@ MonoBehaviour:
       - effectType: 3
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.2
     attributeEvents:
     - eventId: evt_2
@@ -4126,6 +4883,7 @@ MonoBehaviour:
         targetMode: 0
         magnitude: 50
         usePercent: 0
+        durationMode: 0
         duration: 10
     vfxEvents:
     - eventId: evt_0
@@ -4161,64 +4919,29 @@ MonoBehaviour:
         loop: 0
         destroyMode: 0
         duration: 0
-  - skillId: FallAttack
+  - skillId: ChargeStart
     displayName: 
-    ignoreAnimationDamageEvents: 1
-    damageEvents:
-    - eventId: evt_2
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      hitStopDuration: 0
-      hitStopTimeScale: 0
-      pauseCameraLookDuringHitStop: 0
-      hitStopSettingsOwnedByEvent: 0
-      damageEffects:
-      - detectionDuration: 0
-        detectionType: 0
-        hitLayerName: Enemy
-        shape: 1
-        centerOffset: {x: 0, y: 0, z: 0}
-        rotationEuler: {x: 0, y: 0, z: 0}
-        sphereRadius: 1.5
-        sectorAngle: 180
-        boxSize: {x: 1, y: 1, z: 1}
-        colliderNodeName: 
-        rayOriginOffset: {x: 0, y: 0, z: 0}
-        rayMaxDistance: 50
-        motion:
-          enabled: 0
-          speed: 0
-          direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
-        onHitStopEffect:
-          hitStopDuration: 0
-          hitStopTimeScale: 0
-          pauseCameraLookDuringHitStop: 0
-        legacyOnHitStopEffects: []
-        hitStopDuration: 0
-        hitStopTimeScale: 0
-        pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
-        onHitPhysicsEffects: []
-        onHitAttributeEffects: []
-        onHitVfxEffects: []
-        onHitSfxEffects: []
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: ChargeLoop
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
     physicsEvents: []
     attributeEvents: []
     vfxEvents:
     - eventId: evt_0
       startTime: 0
-      triggerMode: 0
+      triggerMode: 1
       activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
+      activeDurationMode: 1
+      repeatInterval: 0.10000001
       vfxEffects:
-      - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
-          type: 3}
+      - particlePrefab: {fileID: 0}
         anchor: 0
         offset: {x: 0, y: 0, z: 0}
         rotationEuler: {x: 0, y: 0, z: 0}
@@ -4229,21 +4952,8 @@ MonoBehaviour:
           direction: {x: 0, y: 0, z: 1}
         destroyMode: 0
         duration: 0
-    sfxEvents:
-    - eventId: evt_1
-      startTime: 0
-      triggerMode: 0
-      activeDuration: 0
-      activeDurationMode: 0
-      repeatInterval: 0.1
-      sfxEffects:
-      - audioClip: {fileID: 8300000, guid: 00393121fe79c974e92d6337f4eccdef, type: 3}
-        anchor: 0
-        offset: {x: 0, y: 0, z: 0}
-        loop: 0
-        destroyMode: 0
-        duration: 0
-  - skillId: ChargeAttack
+    sfxEvents: []
+  - skillId: ChargeRelease
     displayName: 
     ignoreAnimationDamageEvents: 1
     damageEvents:
@@ -4270,11 +4980,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -4283,8 +4995,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4350,7 +5062,7 @@ MonoBehaviour:
       activeDurationMode: 0
       repeatInterval: 0.1
       sfxEffects: []
-  - skillId: Locomotion
+  - skillId: FallAttackStart
     displayName: 
     ignoreAnimationDamageEvents: 0
     damageEvents: []
@@ -4358,21 +5070,73 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: ChargeLoop
+  - skillId: FallAttackLoop
     displayName: 
     ignoreAnimationDamageEvents: 0
     damageEvents: []
     physicsEvents: []
     attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: FallAttackLand
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 0
+        detectionType: 0
+        hitLayerName: Enemy
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 0, z: 0}
+        rayMaxDistance: 50
+        rayRadius: 0
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects: []
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 1
+        nestedSubEffectsOwnedByLists: 0
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects: []
+        onHitSfxEffects: []
+    physicsEvents: []
+    attributeEvents: []
     vfxEvents:
     - eventId: evt_0
       startTime: 0
-      triggerMode: 1
+      triggerMode: 0
       activeDuration: 0
-      activeDurationMode: 1
-      repeatInterval: 0.10000001
+      activeDurationMode: 0
+      repeatInterval: 0.1
       vfxEffects:
-      - particlePrefab: {fileID: 0}
+      - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
+          type: 3}
         anchor: 0
         offset: {x: 0, y: 0, z: 0}
         rotationEuler: {x: 0, y: 0, z: 0}
@@ -4383,7 +5147,20 @@ MonoBehaviour:
           direction: {x: 0, y: 0, z: 1}
         destroyMode: 0
         duration: 0
-    sfxEvents: []
+    sfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: 00393121fe79c974e92d6337f4eccdef, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
   - skillId: Fall
     displayName: 
     ignoreAnimationDamageEvents: 0
@@ -4392,7 +5169,277 @@ MonoBehaviour:
     attributeEvents: []
     vfxEvents: []
     sfxEvents: []
-  - skillId: FallAttackLoop
+  - skillId: Shoot
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: shot
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 0.5
+        detectionType: 2
+        hitLayerName: Enemy
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        sphereRadius: 1
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 50
+        rayRadius: 0.5
+        motion:
+          enabled: 0
+          speed: 40
+          direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 3
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects:
+        - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+            type: 3}
+          anchor: 1
+          offset: {x: 0, y: 0.8980476, z: 0}
+          rotationEuler: {x: -0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 6
+        distance: 1
+        height: 1
+        durationMode: 1
+        duration: 0.2
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_3
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+          type: 3}
+        anchor: 0
+        offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
+        rotationEuler: {x: -0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 0
+        duration: 0
+    - eventId: evt_4
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+          type: 3}
+        anchor: 2
+        offset: {x: 0.08377268, y: 1.1965681, z: 0.9816996}
+        rotationEuler: {x: -0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 1
+          speed: 20
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 1
+        duration: 2.5
+    sfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: e2894f01e84c45146ba859b81b2d6cbd, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
+  - skillId: ShootCharge
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: burst
+      startTime: 0
+      triggerMode: 1
+      activeDuration: 0
+      activeDurationMode: 1
+      repeatInterval: 0.20000002
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 0.033333335
+        detectionType: 2
+        hitLayerName: Enemy
+        shape: 1
+        centerOffset: {x: 0, y: 0, z: 0}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        sphereRadius: 1.5
+        sectorAngle: 180
+        boxSize: {x: 1, y: 1, z: 1}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 50
+        rayRadius: 0.5
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        onHitDamageEffects:
+        - damageMagnitude: 1
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
+        onHitPhysicsEffects: []
+        onHitAttributeEffects: []
+        onHitVfxEffects:
+        - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+            type: 3}
+          anchor: 1
+          offset: {x: -0.01321435, y: 0.92083675, z: -0.002316475}
+          rotationEuler: {x: -0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 6
+        distance: 1
+        height: 1
+        durationMode: 1
+        duration: 0.2
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_3
+      startTime: 0
+      triggerMode: 1
+      activeDuration: 0
+      activeDurationMode: 1
+      repeatInterval: 0.20000002
+      vfxEffects:
+      - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+          type: 3}
+        anchor: 0
+        offset: {x: 0.17940223, y: 1.2355455, z: 0.8696799}
+        rotationEuler: {x: -0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 0
+        duration: 0
+    - eventId: evt_4
+      startTime: 0
+      triggerMode: 1
+      activeDuration: 0
+      activeDurationMode: 1
+      repeatInterval: 0.20000002
+      vfxEffects:
+      - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+          type: 3}
+        anchor: 2
+        offset: {x: 0.07617278, y: 1.1724954, z: 0.93304884}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 1
+          speed: 20
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 1
+        duration: 2.5
+    sfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: be3ab8c2ce7c7ef49b5645fc9059bdfb, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 1
+        destroyMode: 2
+        duration: 0
+  - skillId: Aim
+    displayName: 
+    ignoreAnimationDamageEvents: 1
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: HitStun
+    displayName: 
+    ignoreAnimationDamageEvents: 0
+    damageEvents: []
+    physicsEvents: []
+    attributeEvents: []
+    vfxEvents: []
+    sfxEvents: []
+  - skillId: PlayerDeath
     displayName: 
     ignoreAnimationDamageEvents: 0
     damageEvents: []
@@ -4427,11 +5474,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 1
           speed: 10
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -4440,23 +5489,26 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects:
         - effectType: 0
           distance: 2
           height: 1
+          durationMode: 0
           duration: 1
         onHitAttributeEffects:
         - statField: 0
           targetMode: 0
           magnitude: 0.2
           usePercent: 1
+          durationMode: 0
           duration: 0
         - statField: 12
           targetMode: 0
           magnitude: 0.2
           usePercent: 1
+          durationMode: 0
           duration: 5
         onHitVfxEffects:
         - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
@@ -4489,6 +5541,7 @@ MonoBehaviour:
       - effectType: 7
         distance: 1
         height: 1
+        durationMode: 0
         duration: 6
     attributeEvents:
     - eventId: evt_4
@@ -4502,6 +5555,7 @@ MonoBehaviour:
         targetMode: 0
         magnitude: 0
         usePercent: 0
+        durationMode: 0
         duration: 7
     vfxEvents:
     - eventId: evt_1
@@ -4564,11 +5618,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -4577,14 +5633,15 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects:
         - statField: 0
           targetMode: 1
           magnitude: 111
           usePercent: 0
+          durationMode: 0
           duration: 0
         onHitVfxEffects: []
         onHitSfxEffects: []
@@ -4651,11 +5708,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -4664,8 +5723,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4733,11 +5792,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -4746,8 +5807,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -4815,6 +5876,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 0
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
@@ -4866,6 +5928,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 14
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
@@ -4917,6 +5980,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
@@ -4960,6 +6024,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
@@ -4991,6 +6056,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.1
     attributeEvents: []
     vfxEvents: []
@@ -5022,6 +6088,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
@@ -5053,6 +6120,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.14
     attributeEvents: []
     vfxEvents: []
@@ -5084,6 +6152,7 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 16
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
@@ -5135,11 +6204,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0.8
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5148,8 +6219,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0.8
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5165,6 +6236,7 @@ MonoBehaviour:
       - effectType: 1
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.18
     attributeEvents: []
     vfxEvents: []
@@ -5196,11 +6268,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1.875
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5209,8 +6283,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1.875
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects:
@@ -5238,6 +6312,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.18
     attributeEvents: []
     vfxEvents:
@@ -5291,11 +6366,13 @@ MonoBehaviour:
         targetMode: 0
         magnitude: 4
         usePercent: 0
+        durationMode: 0
         duration: 4
       - statField: 3
         targetMode: 0
         magnitude: 8
         usePercent: 0
+        durationMode: 0
         duration: 4
     vfxEvents: []
     sfxEvents: []
@@ -5326,11 +6403,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.03
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5339,8 +6418,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.03
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5356,6 +6435,7 @@ MonoBehaviour:
       - effectType: 3
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.18
     - eventId: impact
       startTime: 0.26666668
@@ -5394,11 +6474,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0.95
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5407,8 +6489,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0.95
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5424,6 +6506,7 @@ MonoBehaviour:
       - effectType: 1
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.2
     attributeEvents: []
     vfxEvents: []
@@ -5455,11 +6538,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.3200002
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5468,8 +6553,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.3200002
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5485,6 +6570,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.1
     attributeEvents: []
     vfxEvents:
@@ -5534,11 +6620,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 20
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1.5525
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5547,8 +6635,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1.5525
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5584,11 +6672,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.52
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5597,8 +6687,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.52
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5614,6 +6704,7 @@ MonoBehaviour:
       - effectType: 3
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.2
     - eventId: impact
       startTime: 0.3
@@ -5625,6 +6716,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.16
     attributeEvents: []
     vfxEvents: []
@@ -5646,16 +6738,19 @@ MonoBehaviour:
         targetMode: 0
         magnitude: 6
         usePercent: 0
+        durationMode: 0
         duration: 3.5
       - statField: 3
         targetMode: 0
         magnitude: 4
         usePercent: 0
+        durationMode: 0
         duration: 3.5
       - statField: 4
         targetMode: 0
         magnitude: 0.2
         usePercent: 0
+        durationMode: 0
         duration: 3.5
     vfxEvents: []
     sfxEvents: []
@@ -5686,11 +6781,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5699,8 +6796,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5736,11 +6833,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 16
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0.61200005
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5749,8 +6848,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0.61200005
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5786,11 +6885,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.8
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5799,8 +6900,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.8
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5816,6 +6917,7 @@ MonoBehaviour:
       - effectType: 3
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.2
     - eventId: crash
       startTime: 0.32
@@ -5827,6 +6929,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.18
     attributeEvents: []
     vfxEvents: []
@@ -5848,11 +6951,13 @@ MonoBehaviour:
         targetMode: 0
         magnitude: 8
         usePercent: 0
+        durationMode: 0
         duration: 4
       - statField: 4
         targetMode: 0
         magnitude: 0.35
         usePercent: 0
+        durationMode: 0
         duration: 4
     vfxEvents: []
     sfxEvents: []
@@ -5883,11 +6988,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.16
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5896,8 +7003,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.16
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -5913,6 +7020,7 @@ MonoBehaviour:
       - effectType: 1
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.18
     - eventId: cleave
       startTime: 0.46
@@ -5924,6 +7032,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.1
     attributeEvents: []
     vfxEvents: []
@@ -5955,11 +7064,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 16
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0.578
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -5968,8 +7079,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0.578
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6005,11 +7116,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.45
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6018,8 +7131,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.45
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6035,6 +7148,7 @@ MonoBehaviour:
       - effectType: 3
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.22
     - eventId: impact
       startTime: 0.3
@@ -6046,6 +7160,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.16
     attributeEvents: []
     vfxEvents: []
@@ -6077,11 +7192,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0.75
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6090,8 +7207,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0.75
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6107,6 +7224,7 @@ MonoBehaviour:
       - effectType: 1
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.12
     attributeEvents:
     - eventId: heal
@@ -6120,11 +7238,13 @@ MonoBehaviour:
         targetMode: 0
         magnitude: 0.08
         usePercent: 1
+        durationMode: 0
         duration: 0
       - statField: 3
         targetMode: 0
         magnitude: 5
         usePercent: 0
+        durationMode: 0
         duration: 3
     vfxEvents: []
     sfxEvents: []
@@ -6155,11 +7275,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0.56
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6168,8 +7290,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0.56
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6185,6 +7307,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.08
     attributeEvents: []
     vfxEvents: []
@@ -6216,11 +7339,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 20
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 1.89
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6229,8 +7354,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 1.89
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6246,6 +7371,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.12
     attributeEvents: []
     vfxEvents: []
@@ -6277,11 +7403,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.73
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6290,8 +7418,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.73
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6307,6 +7435,7 @@ MonoBehaviour:
       - effectType: 3
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.22
     - eventId: finish
       startTime: 0.26
@@ -6318,6 +7447,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.18
     attributeEvents: []
     vfxEvents: []
@@ -6339,16 +7469,19 @@ MonoBehaviour:
         targetMode: 0
         magnitude: 6
         usePercent: 0
+        durationMode: 0
         duration: 4
       - statField: 4
         targetMode: 0
         magnitude: 0.45
         usePercent: 0
+        durationMode: 0
         duration: 4
       - statField: 5
         targetMode: 0
         magnitude: 1.2
         usePercent: 0
+        durationMode: 0
         duration: 4
     vfxEvents: []
     sfxEvents: []
@@ -6379,11 +7512,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.72
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6392,8 +7527,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.72
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6409,6 +7544,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.12
     attributeEvents: []
     vfxEvents: []
@@ -6440,11 +7576,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 1, z: 0}
         rayMaxDistance: 16
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0.63750005
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6453,8 +7591,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0.63750005
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6490,11 +7628,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 2.9399998
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6503,8 +7643,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 2.9399998
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6520,6 +7660,7 @@ MonoBehaviour:
       - effectType: 3
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.24
     - eventId: stomp
       startTime: 0.3
@@ -6531,6 +7672,7 @@ MonoBehaviour:
       - effectType: 0
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.2
     attributeEvents: []
     vfxEvents: []
@@ -6562,11 +7704,13 @@ MonoBehaviour:
         colliderNodeName: 
         rayOriginOffset: {x: 0, y: 0, z: 0}
         rayMaxDistance: 50
+        rayRadius: 0
         motion:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
-        onHitDamageEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 0.85
         onHitStopEffect:
           hitStopDuration: 0
           hitStopTimeScale: 0
@@ -6575,8 +7719,8 @@ MonoBehaviour:
         hitStopDuration: 0
         hitStopTimeScale: 0
         pauseCameraLookDuringHitStop: 0
-        damageMagnitude: 0.85
-        nestedSubEffectsOwnedByLists: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
         onHitPhysicsEffects: []
         onHitAttributeEffects: []
         onHitVfxEffects: []
@@ -6592,6 +7736,7 @@ MonoBehaviour:
       - effectType: 1
         distance: 1
         height: 1
+        durationMode: 0
         duration: 0.1
     attributeEvents:
     - eventId: regen
@@ -6605,16 +7750,19 @@ MonoBehaviour:
         targetMode: 0
         magnitude: 0.12
         usePercent: 1
+        durationMode: 0
         duration: 0
       - statField: 2
         targetMode: 0
         magnitude: 5
         usePercent: 0
+        durationMode: 0
         duration: 4.5
       - statField: 3
         targetMode: 0
         magnitude: 6
         usePercent: 0
+        durationMode: 0
         duration: 4.5
     vfxEvents: []
     sfxEvents: []

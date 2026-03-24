@@ -1,22 +1,35 @@
+using UnityEngine;
+using Game.Data;
+
 namespace Game.Presentation
 {
     /// <summary>
-    /// 蓄力循环状态：蓄力开始动画播完后进入，持续循环直到释放或取消。
+    /// 近战蓄力循环状态：蓄力开始动画播完后进入，持续循环直到释放或取消。
     /// 代码驱动进入（由 ChargeStartState.OnTick 检测动画接近结束后切过来）。
     /// </summary>
     public class ChargeLoopState : PlayerStateBase
     {
+        protected override string ActionId => ResolveConfiguredFormActionId(PlayerFormActionSlot.ChargeLoop, "ChargeLoop");
         public override GameAction CurrentActionId => GameAction.ChargeStart;
 
         protected override void OnEnter()
         {
-            TriggerConfiguredActionByActionId("ChargeLoop", "ChargeLoop");
-            StartConfiguredTimelineByActionId("ChargeLoop");
+            TriggerConfiguredBaseAction(ActionId, "ChargeLoop");
+            StartConfiguredBaseActionTimeline(ActionId);
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
-            if (!input.IsLmbHeld) { if (IsGrounded) GoTo<IdleState>(); else GoTo<FallState>(); }
+            if (!input.IsLmbHeld)
+            {
+                if (!IsGrounded)
+                {
+                    GoTo<FallState>();
+                    return;
+                }
+
+                GoTo<IdleState>();
+            }
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action) => action switch
@@ -26,6 +39,8 @@ namespace Game.Presentation
             GameAction.ChargeRelease => TransitionPolicy.Interrupt,
             GameAction.ChargeStart   => TransitionPolicy.Ignore,
             GameAction.NormalAttack  => TransitionPolicy.Ignore,
+            GameAction.ShootCharge   => TransitionPolicy.Ignore,
+            GameAction.Shoot         => TransitionPolicy.Ignore,
             _                        => TransitionPolicy.Buffer,
         };
     }

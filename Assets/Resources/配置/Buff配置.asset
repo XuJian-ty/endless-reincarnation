@@ -237,7 +237,7 @@ MonoBehaviour:
     displayName: "\u653B\u51FB\u91CD\u5F71"
     description: "\u73A9\u5BB6\u653B\u51FB\u4F1A\u5EF6\u8FDF\u518D\u6B21\u89E6\u53D1\u4E00\u4EFD\u540C\u6E90\u7684\u4F24\u5BB3\u3001\u7279\u6548\u4E0E\u97F3\u6548\u4E8B\u4EF6"
     type: 3
-    afterimageDelaySeconds: 0.2
+    afterimageDelaySeconds: 0.15
     afterimageDamageMultiplier: 0.5
     damageReduceAdd: 0.3
     damageRangeScale: 2

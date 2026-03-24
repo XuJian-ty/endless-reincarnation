@@ -12,6 +12,10 @@ namespace Game.Presentation
     {
         // ── Animator Parameter Hashes（在静态字段预计算，零 GC）──────────
         private static readonly int SpeedHash        = Animator.StringToHash("Speed");
+        private static readonly int MoveXHash        = Animator.StringToHash("MoveX");
+        private static readonly int MoveYHash        = Animator.StringToHash("MoveY");
+        private static readonly int DodgeDirectionHash = Animator.StringToHash("DodgeDirection");
+        private static readonly int UpperBodyPlaybackSpeedHash = Animator.StringToHash("UpperBodyPlaybackSpeed");
         private static readonly int IsGroundedHash   = Animator.StringToHash("IsGrounded");
         private static readonly int JumpTrigger      = Animator.StringToHash("Jump");
         private static readonly int DodgeTrigger     = Animator.StringToHash("Dodge");
@@ -22,7 +26,8 @@ namespace Game.Presentation
         private static readonly int FallAttackHash   = Animator.StringToHash("FallAttackStart");
         private static readonly int FallAttLoopHash  = Animator.StringToHash("FallAttackLoop");
         private static readonly int FallAttLandHash  = Animator.StringToHash("FallAttackLand");
-        private static readonly int LocomotionHash   = Animator.StringToHash("Locomotion");
+        private static readonly int NormalLocomotionHash = Animator.StringToHash("NormalLocomotion");
+        private static readonly int AimLocomotionHash    = Animator.StringToHash("AimLocomotion");
         private static readonly int LandTrigger      = Animator.StringToHash("Land");
         private static readonly int HitStunTrigger   = Animator.StringToHash("HitStun");
         private static readonly int FallTrigger      = Animator.StringToHash("Fall");
@@ -34,13 +39,47 @@ namespace Game.Presentation
         private void Awake() => _animator = GetComponent<Animator>();
 
         // ── 参数设置与查询 ───────────────────────────────────────────────
-        public void SetLocomotionSpeed(float speed)  => _animator.SetFloat(SpeedHash, speed);
+        public void SetLocomotionSpeed(float speed)
+        {
+            if (_animator == null)
+                return;
+
+            _animator.SetFloat(SpeedHash, speed);
+        }
+
+        public void SetLocomotionBlend(Vector2 blend)
+        {
+            if (_animator == null)
+                return;
+
+            if (HasParameter("MoveX"))
+                _animator.SetFloat(MoveXHash, blend.x);
+            if (HasParameter("MoveY"))
+                _animator.SetFloat(MoveYHash, blend.y);
+        }
+
+        public void SetDodgeDirection(int dodgeDirection)
+        {
+            if (_animator == null || !HasParameter("DodgeDirection"))
+                return;
+
+            _animator.SetInteger(DodgeDirectionHash, Mathf.Clamp(dodgeDirection, 0, 3));
+        }
+
         public float GetLocomotionSpeed()            => _animator.GetFloat(SpeedHash);
         public void SetGrounded(bool grounded)       => _animator.SetBool(IsGroundedHash, grounded);
         public void SetPlaybackSpeed(float speed)
         {
             if (_animator != null)
                 _animator.speed = Mathf.Max(0.1f, speed);
+        }
+
+        public void SetUpperBodyPlaybackSpeed(float speed)
+        {
+            if (_animator == null || !HasParameter("UpperBodyPlaybackSpeed"))
+                return;
+
+            _animator.SetFloat(UpperBodyPlaybackSpeedHash, Mathf.Max(0.1f, speed));
         }
 
         // ── 触发方法 ──────────────────────────────────────────────────────
@@ -59,7 +98,25 @@ namespace Game.Presentation
             TriggerAction(AttackTriggerNames[comboIndex]);
         }
 
-        public void TriggerLocomotion()      => SetExclusiveTrigger(LocomotionHash, clearLocomotion: false);
+        public void TriggerLocomotion()      => TriggerNormalLocomotion();
+        public void TriggerNormalLocomotion()
+        {
+            if (_animator == null)
+                return;
+
+            ResetLocomotionTriggers();
+            SetNamedTriggerIfExists("NormalLocomotion", NormalLocomotionHash);
+        }
+
+        public void TriggerAimLocomotion()
+        {
+            if (_animator == null)
+                return;
+
+            ResetLocomotionTriggers();
+            SetNamedTriggerIfExists("AimLocomotion", AimLocomotionHash);
+        }
+
         public void TriggerChargeStart()     => SetExclusiveTrigger(ChargeStartHash);
         public void TriggerChargeLoop()      => SetExclusiveTrigger(ChargeLoopHash);
         public void TriggerChargeRelease()   => SetExclusiveTrigger(ChargeRelHash);
@@ -73,7 +130,7 @@ namespace Game.Presentation
             if (skillIndex < 0)
                 return;
 
-            TriggerAction($"Skill{skillIndex}");
+            TriggerAction(PlayerActionRouting.BuildSkillSlotActionName(skillIndex));
         }
 
         public bool TriggerAction(string triggerName)
@@ -85,8 +142,8 @@ namespace Game.Presentation
             string normalized = triggerName.Trim();
             if (_parameterNames.Contains(normalized))
             {
-                if (!string.Equals(normalized, "Locomotion"))
-                    _animator.ResetTrigger(LocomotionHash);
+                if (ShouldClearLocomotionTrigger(normalized))
+                    ResetLocomotionTriggers();
                 _animator.ResetTrigger(normalized);
                 _animator.SetTrigger(normalized);
                 return true;
@@ -129,16 +186,56 @@ namespace Game.Presentation
                 _parameterNames.Add(parameter.name);
         }
 
+        private bool HasParameter(string parameterName)
+        {
+            if (string.IsNullOrWhiteSpace(parameterName))
+                return false;
+
+            CacheParametersIfNeeded();
+            return _parameterNames.Contains(parameterName.Trim());
+        }
+
         private void SetExclusiveTrigger(int triggerHash, bool clearLocomotion = true)
         {
             if (_animator == null)
                 return;
 
             if (clearLocomotion)
-                _animator.ResetTrigger(LocomotionHash);
+                ResetLocomotionTriggers();
 
             _animator.ResetTrigger(triggerHash);
             _animator.SetTrigger(triggerHash);
+        }
+
+        private void ResetLocomotionTriggers()
+        {
+            if (_animator == null)
+                return;
+
+            if (HasParameter("NormalLocomotion"))
+                _animator.ResetTrigger(NormalLocomotionHash);
+            if (HasParameter("AimLocomotion"))
+                _animator.ResetTrigger(AimLocomotionHash);
+        }
+
+        private bool SetNamedTriggerIfExists(string parameterName, int parameterHash)
+        {
+            if (!HasParameter(parameterName))
+                return false;
+
+            _animator.ResetTrigger(parameterHash);
+            _animator.SetTrigger(parameterHash);
+            return true;
+        }
+
+        private static bool ShouldClearLocomotionTrigger(string triggerName)
+        {
+            return !string.Equals(triggerName, "NormalLocomotion")
+                   && !string.Equals(triggerName, "AimLocomotion")
+                   && !string.Equals(triggerName, "Aim")
+                   && !string.Equals(triggerName, "Shoot")
+                   && !string.Equals(triggerName, "ShootCharge")
+                   && !string.Equals(triggerName, "Shoot_Charge");
         }
     }
 }

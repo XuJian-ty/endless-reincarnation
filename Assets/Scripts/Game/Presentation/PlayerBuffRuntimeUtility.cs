@@ -28,6 +28,19 @@ namespace Game.Presentation
             "FallAttackLand"
         };
 
+        private static readonly HashSet<string> AfterimageAffectedActions = new HashSet<string>
+        {
+            "Attack0",
+            "Attack1",
+            "Attack2",
+            "Attack3",
+            "ChargeRelease",
+            "FallAttackLand",
+            "Shoot",
+            "ShootCharge",
+            "Shoot_Charge"
+        };
+
         public static PlayerController ResolveOwningPlayer(Transform caster)
         {
             if (caster == null)
@@ -106,6 +119,8 @@ namespace Game.Presentation
             int afterimageStackCount = player.PlayerModel.GetBuffStackCount(BuffIds.Afterimage);
             if (afterimageStackCount <= 0)
                 return source;
+            if (!IsAfterimageAffectedAction(actionId))
+                return source;
 
             BuffConfigSO buffConfig = ConfigManager.GetInstance()?.GetBuffConfig();
             float delay = buffConfig != null
@@ -122,12 +137,10 @@ namespace Game.Presentation
                 return source;
 
             ApplyAttackSpeed(ResolveCombatStats(caster), cloned, actionId);
-            AppendAfterimageEvents(cloned.damageEvents, afterimageStackCount, delay, damageMultiplier);
-            AppendAfterimageEvents(cloned.vfxEvents, afterimageStackCount, delay);
-            AppendAfterimageEvents(cloned.sfxEvents, afterimageStackCount, delay);
+            AppendAfterimageEvents(cloned.damageEvents, 1, delay, damageMultiplier);
+            AppendAfterimageEvents(cloned.vfxEvents, 1, delay);
             SortTimedEvents(cloned.damageEvents);
             SortTimedEvents(cloned.vfxEvents);
-            SortTimedEvents(cloned.sfxEvents);
             return cloned;
         }
 
@@ -136,14 +149,35 @@ namespace Game.Presentation
             return GetActionPlaybackSpeed(player?.Stats, actionId);
         }
 
+        public static float GetActionAnimatorPlaybackSpeed(PlayerModel player, string actionId)
+        {
+            return GetActionAnimatorPlaybackSpeed(player?.Stats, actionId);
+        }
+
         public static float GetActionPlaybackSpeed(Stats stats, string actionId)
         {
             if (stats == null || string.IsNullOrWhiteSpace(actionId))
                 return 1f;
 
-            return AttackSpeedAffectedActions.Contains(actionId.Trim())
+            return IsAttackSpeedAffectedAction(actionId.Trim())
                 ? Mathf.Max(0.1f, stats.AttackSpeed)
                 : 1f;
+        }
+
+        public static float GetActionAnimatorPlaybackSpeed(Stats stats, string actionId)
+        {
+            if (stats == null || string.IsNullOrWhiteSpace(actionId))
+                return 1f;
+
+            string normalizedActionId = actionId.Trim();
+            if (string.Equals(normalizedActionId, "Shoot")
+                || string.Equals(normalizedActionId, "ShootCharge")
+                || string.Equals(normalizedActionId, "Shoot_Charge"))
+            {
+                return 1f;
+            }
+
+            return GetActionPlaybackSpeed(stats, normalizedActionId);
         }
 
         private static void ApplyAttackSpeed(Stats stats, SharedSkillDefinition definition, string actionId)
@@ -159,6 +193,45 @@ namespace Game.Presentation
             ScaleTimedEvents(definition.damageEvents, timeScale);
             ScaleTimedEvents(definition.vfxEvents, timeScale);
             ScaleTimedEvents(definition.sfxEvents, timeScale);
+        }
+
+        private static bool IsAttackSpeedAffectedAction(string actionId)
+        {
+            if (string.IsNullOrWhiteSpace(actionId))
+                return false;
+
+            string normalizedActionId = actionId.Trim();
+            if (AttackSpeedAffectedActions.Contains(normalizedActionId))
+                return true;
+
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (skillDb == null || !skillDb.TryGetFormActionSlot(normalizedActionId, out PlayerFormActionSlot actionSlot))
+                return false;
+
+            return actionSlot == PlayerFormActionSlot.Attack0
+                   || actionSlot == PlayerFormActionSlot.Attack1
+                   || actionSlot == PlayerFormActionSlot.Attack2
+                   || actionSlot == PlayerFormActionSlot.Attack3
+                   || actionSlot == PlayerFormActionSlot.AirAttack
+                   || actionSlot == PlayerFormActionSlot.ChargeStart
+                   || actionSlot == PlayerFormActionSlot.ChargeLoop
+                   || actionSlot == PlayerFormActionSlot.ChargeRelease;
+        }
+
+        private static bool IsAfterimageAffectedAction(string actionId)
+        {
+            if (string.IsNullOrWhiteSpace(actionId))
+                return false;
+
+            string normalizedActionId = actionId.Trim();
+            if (AfterimageAffectedActions.Contains(normalizedActionId))
+                return true;
+            if (PlayerActionRouting.IsSkillSlotActionName(normalizedActionId))
+                return true;
+
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            SkillConfigEntry entry = skillDb != null ? skillDb.GetEntryByActionId(normalizedActionId) : null;
+            return entry != null && entry.IsActiveSkill;
         }
 
         private static void AppendAfterimageEvents(List<SkillDamageEvent> events, int stackCount, float delay, float damageMultiplier)

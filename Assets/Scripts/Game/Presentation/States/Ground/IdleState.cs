@@ -5,7 +5,7 @@ namespace Game.Presentation
     /// <summary>
     /// 待机状态。玩家站立不动时的默认状态。
     ///
-    /// Walk / Run / Jump / NormalAttack 必须设为 Interrupt，
+    /// Walk / Run / Jump / NormalAttack / Shoot / ShootCharge 必须设为 Interrupt，
     /// 因为 IdleState 没有自然结束点（不调用 CompleteWithPending），
     /// 若设为 Buffer 则这些动作永远无法执行。
     /// </summary>
@@ -19,19 +19,23 @@ namespace Game.Presentation
             _continuousAirTime = 0f;
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
             Ctx.Anim.SetLocomotionSpeed(0f);
+            Ctx.Anim.SetLocomotionBlend(Vector2.zero);
             Ctx.Anim.SetGrounded(true);
-            TriggerConfiguredActionByActionId("Idle", "Locomotion");
-            StartConfiguredTimelineByActionId("Idle");
+            Ctx.Anim.TriggerNormalLocomotion();
+            StartConfiguredBaseActionTimeline("NormalIdle");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
+            if (Ctx.IsAimModeActive && Ctx.PlayerModel?.CurrentAttackMode == Game.Data.PlayerAttackMode.Ranged)
+            {
+                GoTo<AimState>();
+                return;
+            }
+
             if (IsGrounded)
             {
                 _continuousAirTime = 0f;
-                var cameraForward = Ctx.GetMoveDirection(Vector2.up);
-                if (cameraForward.sqrMagnitude > 0.001f)
-                    Ctx.Mover.RotateToward(cameraForward, Ctx.RotateSpeed);
                 return;
             }
             _continuousAirTime += dt;
@@ -53,6 +57,8 @@ namespace Game.Presentation
             GameAction.Run          => TransitionPolicy.Interrupt,
             GameAction.Jump         => TransitionPolicy.Interrupt,
             GameAction.NormalAttack => TransitionPolicy.Interrupt,
+            GameAction.Shoot        => TransitionPolicy.Interrupt,
+            GameAction.ShootCharge  => TransitionPolicy.Interrupt,
             _                       => base.GetPolicyFor(action),
         };
     }

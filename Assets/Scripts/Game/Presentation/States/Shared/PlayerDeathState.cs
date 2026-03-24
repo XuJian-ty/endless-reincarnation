@@ -23,8 +23,8 @@ namespace Game.Presentation
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
             Ctx.Mover.SetVerticalVelocity(0f);
             Ctx.Anim.SetLocomotionSpeed(0f);
-            TriggerConfiguredActionByActionId(ActionId, "Dead");
-            StartConfiguredTimelineByActionId(ActionId);
+            TriggerConfiguredBaseAction(ActionId, "Dead");
+            StartConfiguredBaseActionTimeline(ActionId);
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

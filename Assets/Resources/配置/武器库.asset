@@ -147,13 +147,13 @@ MonoBehaviour:
     type: 1
     common:
       hp:
-        min: 10
+        min: 10000
         max: 30
       mp:
         min: 10
         max: 30
       attack:
-        min: 5
+        min: 400
         max: 15
       defense:
         min: 2

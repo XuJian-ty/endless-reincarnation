@@ -1,5 +1,6 @@
 using UnityEngine;
 using Game.Data;
+using System;
 
 namespace Game.Presentation
 {
@@ -14,8 +15,8 @@ namespace Game.Presentation
     ///   - Flyweight：每种状态仅实例化一次，被复用，OnEnter/OnExit 替代构造/析构
     ///
     /// 默认策略（适用于有自然结束点的动作状态，如攻击、技能、蓄力）：
-    ///   Dodge / Skill / ChargeStart → Interrupt
-    ///   NormalAttack / Jump / Walk / Run → Buffer
+    ///   Dodge / Skill / ChargeStart / ShootCharge → Interrupt
+    ///   NormalAttack / Shoot / Jump / Walk / Run → Buffer
     ///   其余 → Ignore
     ///
     /// ⚠ 没有自然结束点的状态（不调用 CompleteWithPending）必须覆写 Walk / Run / Jump
@@ -28,6 +29,9 @@ namespace Game.Presentation
 
         private float _stateAge;
         private SkillTimelineRunner _timelineRunner;
+        private SkillTimelineRunner _auxiliaryTimelineRunner;
+        private string _timelineActionId;
+        private string _auxiliaryTimelineActionId;
 
         /// <summary>当前状态已持续运行的时间（秒）。子类可用于时序/首帧保护。</summary>
         protected float StateAge => _stateAge;
@@ -43,6 +47,7 @@ namespace Game.Presentation
 
         internal void Exit()
         {
+            StopAuxiliaryTimelineSkill();
             StopTimelineSkill();
             ResetActionPlaybackSpeed();
             OnExit();
@@ -52,7 +57,7 @@ namespace Game.Presentation
         internal void Tick(float dt, in PlayerInputData input)
         {
             _stateAge += dt;
-            TickTimeline(dt);
+            TickTimelines(dt);
             OnTick(dt, in input);
         }
 
@@ -71,7 +76,9 @@ namespace Game.Presentation
                 GameAction.Dodge        => TransitionPolicy.Interrupt,
                 GameAction.Skill        => TransitionPolicy.Interrupt,
                 GameAction.ChargeStart  => TransitionPolicy.Interrupt,
+                GameAction.ShootCharge  => TransitionPolicy.Interrupt,
                 GameAction.NormalAttack => TransitionPolicy.Buffer,
+                GameAction.Shoot        => TransitionPolicy.Buffer,
                 GameAction.Jump         => TransitionPolicy.Buffer,
                 GameAction.Walk         => TransitionPolicy.Buffer,
                 GameAction.Run          => TransitionPolicy.Buffer,
@@ -125,9 +132,37 @@ namespace Game.Presentation
             return skillDb != null ? skillDb.GetEntryByActionId(resolvedActionId) : null;
         }
 
+        protected SkillConfigEntry ResolveBaseActionEntry(string baseActionId = null)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
+            if (string.IsNullOrWhiteSpace(resolvedActionId))
+                return null;
+
+            var skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            return skillDb != null ? skillDb.GetBaseEntryByActionId(resolvedActionId) : null;
+        }
+
+        protected string ResolveConfiguredFormActionId(PlayerFormActionSlot actionSlot, string fallbackActionId)
+        {
+            string normalizedFallbackActionId = string.IsNullOrWhiteSpace(fallbackActionId)
+                ? actionSlot.ToString()
+                : fallbackActionId.Trim();
+
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (Ctx?.PlayerModel == null || skillDb == null)
+                return normalizedFallbackActionId;
+
+            return Ctx.PlayerModel.ResolveCurrentFormActionId(actionSlot, skillDb, normalizedFallbackActionId);
+        }
+
         protected SkillConfigEntry ResolveCurrentActionEntry()
         {
             return ResolvePlayerActionEntry(ActionId);
+        }
+
+        protected SkillConfigEntry ResolveCurrentBaseActionEntry()
+        {
+            return ResolveBaseActionEntry(ActionId);
         }
 
         protected bool IsPlayerSkillAvailable(string skillId)
@@ -157,29 +192,19 @@ namespace Game.Presentation
             return Ctx.Anim.TriggerAction(triggerName);
         }
 
+        protected bool TriggerConfiguredBaseAction(string baseActionId = null, string fallbackTrigger = null)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
+            SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
+            string triggerName = entry != null ? entry.GetResolvedAnimationTrigger() : fallbackTrigger;
+            if (string.IsNullOrWhiteSpace(triggerName))
+                triggerName = resolvedActionId;
+            return Ctx.Anim.TriggerAction(triggerName);
+        }
+
         protected void StartTimelineSkill(string skillId, float overrideDuration = -1f)
         {
-            StopTimelineSkill();
-
-            if (string.IsNullOrWhiteSpace(skillId))
-                return;
-
-            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
-            if (sharedDb == null)
-                return;
-
-            var def = sharedDb.GetEntry(skillId);
-            if (def == null)
-                return;
-
-            var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
-            if (player == null)
-                return;
-
-            def = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(player.transform, def, ActionId);
-            var ctx = new PlayerSkillExecutionContext(player);
-            _timelineRunner = new SkillTimelineRunner();
-            _timelineRunner.Begin(def, ctx, overrideDuration);
+            StartTimelineSkill(skillId, overrideDuration, ActionId);
         }
 
         protected void StartConfiguredTimelineByActionId(string actionId = null, float overrideDuration = -1f)
@@ -192,51 +217,43 @@ namespace Game.Presentation
             StartTimelineSkill(skillId, overrideDuration, string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim());
         }
 
+        protected void StartConfiguredBaseActionTimeline(string baseActionId = null, float overrideDuration = -1f)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
+            StartConfiguredBaseActionTimelineInternal(resolvedActionId, overrideDuration, true);
+        }
+
+        protected void UpdateConfiguredBaseActionTimeline(string baseActionId = null, float overrideDuration = -1f)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
+            StartConfiguredBaseActionTimelineInternal(resolvedActionId, overrideDuration, false);
+        }
+
+        protected void UpdateConfiguredAuxiliaryBaseActionTimeline(string baseActionId, float overrideDuration = -1f)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? string.Empty : baseActionId.Trim();
+            if (string.IsNullOrWhiteSpace(resolvedActionId))
+            {
+                StopAuxiliaryTimelineSkill();
+                return;
+            }
+
+            StartConfiguredAuxiliaryBaseActionTimelineInternal(resolvedActionId, overrideDuration, false);
+        }
+
         protected void StartTimelineSkill(string skillId, float overrideDuration, string actionId)
         {
-            StopTimelineSkill();
-
-            if (string.IsNullOrWhiteSpace(skillId))
-                return;
-
-            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
-            if (sharedDb == null)
-                return;
-
-            var def = sharedDb.GetEntry(skillId);
-            if (def == null)
-                return;
-
-            var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
-            if (player == null)
-                return;
-
-            def = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(player.transform, def, actionId);
-            var ctx = new PlayerSkillExecutionContext(player);
-            _timelineRunner = new SkillTimelineRunner();
-            _timelineRunner.Begin(def, ctx, overrideDuration);
+            StartTimelineSkill(ref _timelineRunner, ref _timelineActionId, skillId, overrideDuration, actionId);
         }
 
         protected void StopTimelineSkill()
         {
-            if (_timelineRunner == null)
-                return;
+            StopTimelineSkill(ref _timelineRunner, ref _timelineActionId);
+        }
 
-            _timelineRunner.StopStateScopedCues();
-            if (_timelineRunner.HasPendingWork)
-            {
-                var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
-                if (player != null)
-                    player.ContinueDetachedTimelineRunner(_timelineRunner);
-                else
-                    _timelineRunner.Stop();
-            }
-            else
-            {
-                _timelineRunner.Stop();
-            }
-
-            _timelineRunner = null;
+        protected void StopAuxiliaryTimelineSkill()
+        {
+            StopTimelineSkill(ref _auxiliaryTimelineRunner, ref _auxiliaryTimelineActionId);
         }
 
         protected TransitionPolicy ResolveConfiguredPolicy(GameAction action, TransitionPolicy fallback)
@@ -295,9 +312,94 @@ namespace Game.Presentation
             }
         }
 
-        private void TickTimeline(float dt)
+        private void StartConfiguredBaseActionTimelineInternal(string resolvedActionId, float overrideDuration, bool forceRestart)
+        {
+            SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
+            string skillId = entry != null ? entry.skillId : string.Empty;
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            if (!forceRestart
+                && _timelineRunner != null
+                && !string.IsNullOrWhiteSpace(_timelineActionId)
+                && string.Equals(_timelineActionId, resolvedActionId, StringComparison.Ordinal))
+                return;
+
+            StartTimelineSkill(skillId, overrideDuration, resolvedActionId);
+        }
+
+        private void StartConfiguredAuxiliaryBaseActionTimelineInternal(string resolvedActionId, float overrideDuration, bool forceRestart)
+        {
+            SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
+            string skillId = entry != null ? entry.skillId : string.Empty;
+            if (string.IsNullOrWhiteSpace(skillId))
+            {
+                StopAuxiliaryTimelineSkill();
+                return;
+            }
+
+            if (!forceRestart
+                && _auxiliaryTimelineRunner != null
+                && !string.IsNullOrWhiteSpace(_auxiliaryTimelineActionId)
+                && string.Equals(_auxiliaryTimelineActionId, resolvedActionId, StringComparison.Ordinal))
+                return;
+
+            StartTimelineSkill(ref _auxiliaryTimelineRunner, ref _auxiliaryTimelineActionId, skillId, overrideDuration, resolvedActionId);
+        }
+
+        private void StartTimelineSkill(ref SkillTimelineRunner runner, ref string runningActionId, string skillId, float overrideDuration, string actionId)
+        {
+            StopTimelineSkill(ref runner, ref runningActionId);
+
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
+            if (sharedDb == null)
+                return;
+
+            var def = sharedDb.GetEntry(skillId);
+            if (def == null)
+                return;
+
+            var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
+            if (player == null)
+                return;
+
+            def = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(player.transform, def, actionId);
+            var ctx = new PlayerSkillExecutionContext(player);
+            runner = new SkillTimelineRunner();
+            runner.Begin(def, ctx, overrideDuration);
+            runningActionId = actionId;
+        }
+
+        private void StopTimelineSkill(ref SkillTimelineRunner runner, ref string runningActionId)
+        {
+            if (runner == null)
+                return;
+
+            runner.StopStateScopedCues();
+            if (runner.HasPendingWork)
+            {
+                var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
+                if (player != null)
+                    player.ContinueDetachedTimelineRunner(runner);
+                else
+                    runner.Stop();
+            }
+            else
+            {
+                runner.Stop();
+            }
+
+            runner = null;
+            runningActionId = null;
+        }
+
+        private void TickTimelines(float dt)
         {
             _timelineRunner?.Tick(dt);
+            _auxiliaryTimelineRunner?.Tick(dt);
         }
 
         private static string TrimStateSuffix(string value)
@@ -316,12 +418,35 @@ namespace Game.Presentation
             if (Ctx?.PlayerModel == null || Ctx?.Anim == null)
                 return;
 
-            Ctx.Anim.SetPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionPlaybackSpeed(Ctx.PlayerModel, ActionId));
+            if (IsUpperBodyAttackAction(ActionId))
+            {
+                Ctx.Anim.SetPlaybackSpeed(1f);
+                Ctx.Anim.SetUpperBodyPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionPlaybackSpeed(Ctx.PlayerModel, ActionId));
+                return;
+            }
+
+            Ctx.Anim.SetUpperBodyPlaybackSpeed(1f);
+            Ctx.Anim.SetPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionAnimatorPlaybackSpeed(Ctx.PlayerModel, ActionId));
         }
 
         private void ResetActionPlaybackSpeed()
         {
-            Ctx?.Anim?.SetPlaybackSpeed(1f);
+            if (Ctx?.Anim == null)
+                return;
+
+            Ctx.Anim.SetPlaybackSpeed(1f);
+            Ctx.Anim.SetUpperBodyPlaybackSpeed(1f);
+        }
+
+        private static bool IsUpperBodyAttackAction(string actionId)
+        {
+            if (string.IsNullOrWhiteSpace(actionId))
+                return false;
+
+            string normalizedActionId = actionId.Trim();
+            return string.Equals(normalizedActionId, "Shoot")
+                   || string.Equals(normalizedActionId, "ShootCharge")
+                   || string.Equals(normalizedActionId, "Shoot_Charge");
         }
     }
 }

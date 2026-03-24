@@ -851,8 +851,12 @@ namespace Game.Editor
             var db = ScriptableObject.CreateInstance<SkillConfigDatabaseSO>();
             db.entries = new List<SkillConfigEntry>
             {
-                CreateBaseActionEntry("Idle", "待机", "Locomotion"),
-                CreateBaseActionEntry("Move", "移动", "Locomotion"),
+                CreateBaseActionEntry("NormalIdle", "正常待机", "NormalLocomotion"),
+                CreateBaseActionEntry("NormalWalk", "正常走路", "NormalLocomotion"),
+                CreateBaseActionEntry("NormalRun", "正常跑步", "NormalLocomotion"),
+                CreateBaseActionEntry("AimIdle", "射击待机", "AimLocomotion", supportedAttackModes: PlayerAttackModeMask.Ranged),
+                CreateBaseActionEntry("AimWalk", "射击走路", "AimLocomotion", supportedAttackModes: PlayerAttackModeMask.Ranged),
+                CreateBaseActionEntry("AimRun", "射击跑步", "AimLocomotion", supportedAttackModes: PlayerAttackModeMask.Ranged),
                 CreateBaseActionEntry("Jump", "跳跃"),
                 CreateBaseActionEntry("Dodge", "闪避"),
                 CreateBaseActionEntry("Fall", "坠落"),
@@ -864,12 +868,26 @@ namespace Game.Editor
                 CreateBaseActionEntry("AirAttack", "空中普攻"),
                 CreateBaseActionEntry("ChargeStart", "蓄力开始"),
                 CreateBaseActionEntry("ChargeLoop", "蓄力循环"),
-                CreateBaseActionEntry("ChargeRelease", "蓄力结束"),
+                CreateBaseActionEntry("ChargeRelease", "蓄力释放"),
                 CreateBaseActionEntry("FallAttackStart", "下落攻击开始"),
                 CreateBaseActionEntry("FallAttackLoop", "下落攻击循环"),
-                CreateBaseActionEntry("FallAttackLand", "下落攻击结束"),
+                CreateBaseActionEntry("FallAttackLand", "下落攻击着陆"),
                 CreateBaseActionEntry("HitStun", "受击"),
                 CreateBaseActionEntry("PlayerDeath", "死亡", "Dead"),
+                CreateBaseActionEntry("Shoot", "射击", supportedAttackModes: PlayerAttackModeMask.Ranged),
+                CreateBaseActionEntry("ShootCharge", "持续射击", "Shoot_Charge", supportedAttackModes: PlayerAttackModeMask.Ranged),
+                CreateBaseActionEntry("Aim", "瞄准", supportedAttackModes: PlayerAttackModeMask.Ranged),
+            };
+
+            db.formActionMappings = new List<PlayerFormActionMappingEntry>
+            {
+                CreateFormActionMapping(PlayerFormActionSlot.Attack0, "Attack0", "Shoot"),
+                CreateFormActionMapping(PlayerFormActionSlot.Attack1, "Attack1", "Shoot"),
+                CreateFormActionMapping(PlayerFormActionSlot.Attack2, "Attack2", "Shoot"),
+                CreateFormActionMapping(PlayerFormActionSlot.Attack3, "Attack3", "Shoot"),
+                CreateFormActionMapping(PlayerFormActionSlot.AirAttack, "AirAttack", "Shoot"),
+                CreateFormActionMapping(PlayerFormActionSlot.ChargeStart, "ChargeStart", "ShootCharge"),
+                CreateFormActionMapping(PlayerFormActionSlot.ChargeLoop, "ChargeLoop", "ShootCharge"),
             };
 
             for (int i = 0; i < 4; i++)
@@ -881,6 +899,7 @@ namespace Game.Editor
                 {
                     skillId = $"passive_{i}",
                     displayName = $"被动{i}",
+                    description = $"被动{i}，解锁后会立即生效。",
                     isPassive = true,
                     entryGroup = PlayerSkillEntryGroup.PassiveSkill,
                     talentCost = 1,
@@ -916,6 +935,8 @@ namespace Game.Editor
 
             if (existing.entries == null)
                 existing.entries = new List<SkillConfigEntry>();
+            if (existing.formActionMappings == null)
+                existing.formActionMappings = new List<PlayerFormActionMappingEntry>();
 
             for (int i = 0; i < defaults.entries.Count; i++)
             {
@@ -932,6 +953,8 @@ namespace Game.Editor
 
                 MergeSkillConfigEntry(existingEntry, defaultEntry);
             }
+
+            MergeFormActionMappings(existing.formActionMappings, defaults.formActionMappings);
         }
 
         private static SkillConfigEntry FindSkillConfigEntry(List<SkillConfigEntry> entries, SkillConfigEntry target)
@@ -968,6 +991,8 @@ namespace Game.Editor
                 existing.skillId = defaults.skillId;
             if (string.IsNullOrWhiteSpace(existing.displayName))
                 existing.displayName = defaults.displayName;
+            if (string.IsNullOrWhiteSpace(existing.description))
+                existing.description = defaults.description;
             if (string.IsNullOrWhiteSpace(existing.animationTrigger))
                 existing.animationTrigger = defaults.animationTrigger;
 
@@ -988,6 +1013,10 @@ namespace Game.Editor
             if (existing.pendingReleaseRules == null || existing.pendingReleaseRules.Count == 0)
                 existing.pendingReleaseRules = ClonePendingReleaseRules(defaults.pendingReleaseRules);
 
+            if (existing.supportedAttackModes == PlayerAttackModeMask.None
+                && defaults.supportedAttackModes != PlayerAttackModeMask.None)
+                existing.supportedAttackModes = defaults.supportedAttackModes;
+
             if (!existing.overrideNaturalExitNormalizedTime && defaults.overrideNaturalExitNormalizedTime)
             {
                 existing.overrideNaturalExitNormalizedTime = true;
@@ -1006,8 +1035,10 @@ namespace Game.Editor
                 actionId = source.actionId,
                 skillId = source.skillId,
                 displayName = source.displayName,
+                description = source.description,
                 isPassive = source.isPassive,
                 entryGroup = source.entryGroup,
+                supportedAttackModes = source.supportedAttackModes,
                 talentCost = source.talentCost,
                 mpCost = source.mpCost,
                 animationTrigger = source.animationTrigger,
@@ -1018,6 +1049,59 @@ namespace Game.Editor
                 overrideNaturalExitNormalizedTime = source.overrideNaturalExitNormalizedTime,
                 naturalExitNormalizedTime = source.naturalExitNormalizedTime,
                 naturalExitTarget = source.naturalExitTarget,
+            };
+        }
+
+        private static void MergeFormActionMappings(List<PlayerFormActionMappingEntry> existing, List<PlayerFormActionMappingEntry> defaults)
+        {
+            if (existing == null || defaults == null)
+                return;
+
+            for (int i = 0; i < defaults.Count; i++)
+            {
+                PlayerFormActionMappingEntry defaultMapping = defaults[i];
+                if (defaultMapping == null)
+                    continue;
+
+                PlayerFormActionMappingEntry existingMapping = FindFormActionMapping(existing, defaultMapping.actionSlot);
+                if (existingMapping == null)
+                {
+                    existing.Add(CloneFormActionMapping(defaultMapping));
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(existingMapping.meleeActionId))
+                    existingMapping.meleeActionId = defaultMapping.meleeActionId;
+                if (string.IsNullOrWhiteSpace(existingMapping.rangedActionId))
+                    existingMapping.rangedActionId = defaultMapping.rangedActionId;
+            }
+        }
+
+        private static PlayerFormActionMappingEntry FindFormActionMapping(List<PlayerFormActionMappingEntry> mappings, PlayerFormActionSlot actionSlot)
+        {
+            if (mappings == null)
+                return null;
+
+            for (int i = 0; i < mappings.Count; i++)
+            {
+                PlayerFormActionMappingEntry mapping = mappings[i];
+                if (mapping != null && mapping.actionSlot == actionSlot)
+                    return mapping;
+            }
+
+            return null;
+        }
+
+        private static PlayerFormActionMappingEntry CloneFormActionMapping(PlayerFormActionMappingEntry source)
+        {
+            if (source == null)
+                return null;
+
+            return new PlayerFormActionMappingEntry
+            {
+                actionSlot = source.actionSlot,
+                meleeActionId = source.meleeActionId,
+                rangedActionId = source.rangedActionId,
             };
         }
 
@@ -1065,15 +1149,21 @@ namespace Game.Editor
             return result;
         }
 
-        private static SkillConfigEntry CreateBaseActionEntry(string actionId, string displayName, string animationTrigger = null)
+        private static SkillConfigEntry CreateBaseActionEntry(
+            string actionId,
+            string displayName,
+            string animationTrigger = null,
+            PlayerAttackModeMask supportedAttackModes = PlayerAttackModeMask.All)
         {
             SkillConfigEntry entry = new SkillConfigEntry
             {
                 actionId = actionId,
                 skillId = actionId,
                 displayName = displayName,
+                description = $"{displayName}，用于玩家基础动作表现。",
                 isPassive = false,
                 entryGroup = PlayerSkillEntryGroup.BaseSkill,
+                supportedAttackModes = supportedAttackModes,
                 talentCost = 0,
                 mpCost = 0,
                 cooldownSeconds = 0f,
@@ -1091,6 +1181,7 @@ namespace Game.Editor
                 actionId = actionId,
                 skillId = actionId,
                 displayName = displayName,
+                description = $"{displayName}，解锁后可拖拽到下方技能槽位中释放。",
                 isPassive = false,
                 entryGroup = PlayerSkillEntryGroup.ActiveSkill,
                 talentCost = 2,
@@ -1110,15 +1201,23 @@ namespace Game.Editor
 
             switch (entry.actionId)
             {
-                case "Idle":
+                case "NormalIdle":
+                case "AimIdle":
                     AddPolicy(entry, GameAction.Walk, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Run, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Interrupt);
                     break;
-                case "Move":
+                case "NormalWalk":
+                case "NormalRun":
+                case "AimWalk":
+                case "AimRun":
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Walk, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.Run, TransitionPolicy.Ignore);
                     break;
@@ -1132,6 +1231,8 @@ namespace Game.Editor
                     AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.Walk, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.Run, TransitionPolicy.Ignore);
                     break;
@@ -1162,6 +1263,15 @@ namespace Game.Editor
                     entry.naturalExitNormalizedTime = 0.90f;
                     entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
                     break;
+                case "Shoot":
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
+                    AddPending(entry, GameAction.Shoot, 0.70f);
+                    AddPending(entry, GameAction.Walk, 0.80f);
+                    AddPending(entry, GameAction.Run, 0.80f);
+                    entry.overrideNaturalExitNormalizedTime = true;
+                    entry.naturalExitNormalizedTime = 0.90f;
+                    entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
+                    break;
                 case "AirAttack":
                     AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
@@ -1180,6 +1290,8 @@ namespace Game.Editor
                     AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Ignore);
                     entry.overrideNaturalExitNormalizedTime = true;
                     entry.naturalExitNormalizedTime = 0.90f;
                     entry.naturalExitTarget = PlayerStateNaturalExitTarget.ChargeLoopState;
@@ -1190,13 +1302,24 @@ namespace Game.Editor
                     AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Ignore);
+                    break;
+                case "ShootCharge":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Ignore);
                     break;
                 case "ChargeRelease":
                     AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Walk, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Run, TransitionPolicy.Buffer);
@@ -1227,7 +1350,9 @@ namespace Game.Editor
                         AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
                         AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
                         AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Interrupt);
+                        AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Interrupt);
                         AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                        AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Ignore);
                         AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
                         entry.overrideNaturalExitNormalizedTime = true;
                         entry.naturalExitNormalizedTime = 0.90f;
@@ -1381,6 +1506,27 @@ namespace Game.Editor
                 CreateAnimationEntry("AirAttack"),
                 CreateAnimationEntry("FallAttack"),
                 CreateAnimationEntry("ChargeRelease"),
+                CreateAnimationEntry("Aim", "Assets/外部导入/人物动画/射击相关/AimAndShoot_Charge.anim"),
+                CreateAnimationEntry("Shoot", "Assets/外部导入/人物动画/射击相关/ShootOnce.anim"),
+                CreateAnimationEntry("ShootCharge", "Assets/外部导入/人物动画/射击相关/AimAndShoot_Charge.anim"),
+                CreateAnimationEntry("Rifle_WalkFwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_WalkFwdLoop.anim"),
+                CreateAnimationEntry("Rifle_WalkBwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_WalkBwdLoop.anim"),
+                CreateAnimationEntry("Rifle_StrafeWalkLeftLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeWalkLeftLoop.anim"),
+                CreateAnimationEntry("Rifle_StrafeWalkRightLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeWalkRightLoop.anim"),
+                CreateAnimationEntry("Rifle_RunFwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_RunFwdLoop.anim"),
+                CreateAnimationEntry("Rifle_RunBwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_RunBwdLoop.anim"),
+                CreateAnimationEntry("Rifle_StrafeRunLeftLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeRunLeftLoop.anim"),
+                CreateAnimationEntry("Rifle_StrafeRunRightLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeRunRightLoop.anim"),
+            };
+        }
+
+        private static PlayerFormActionMappingEntry CreateFormActionMapping(PlayerFormActionSlot actionSlot, string meleeActionId, string rangedActionId)
+        {
+            return new PlayerFormActionMappingEntry
+            {
+                actionSlot = actionSlot,
+                meleeActionId = meleeActionId,
+                rangedActionId = rangedActionId,
             };
         }
 
@@ -1390,6 +1536,17 @@ namespace Game.Editor
             {
                 animationId = animationId,
                 clip = null,
+            };
+        }
+
+        private static CharacterAnimationEntry CreateAnimationEntry(string animationId, string clipAssetPath)
+        {
+            return new CharacterAnimationEntry
+            {
+                animationId = animationId,
+                clip = string.IsNullOrWhiteSpace(clipAssetPath)
+                    ? null
+                    : AssetDatabase.LoadAssetAtPath<AnimationClip>(clipAssetPath),
             };
         }
 

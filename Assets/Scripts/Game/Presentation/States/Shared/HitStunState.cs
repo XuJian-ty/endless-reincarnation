@@ -22,8 +22,8 @@ namespace Game.Presentation
             _timer = Duration;
             Ctx.StateMachine.ClearPending();
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            TriggerConfiguredActionByActionId("HitStun", "HitStun");
-            StartConfiguredTimelineByActionId("HitStun");
+            TriggerConfiguredBaseAction("HitStun", "HitStun");
+            StartConfiguredBaseActionTimeline("HitStun");
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)

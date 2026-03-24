@@ -75,13 +75,25 @@ namespace Game.Presentation
             if (action.Action is not (GameAction.NormalAttack or GameAction.Walk or GameAction.Run))
                 ClearComboWindow();
 
+            bool isRangedAttackMode = IsRangedAttackMode();
+
             switch (action.Action)
             {
                 case GameAction.Dodge:         ChangeState<DodgeState>();           break;
                 case GameAction.Skill:         ExecuteSkill(action.SkillIndex);     break;
-                case GameAction.ChargeStart:   ChangeState<ChargeStartState>();     break;
-                case GameAction.ChargeRelease: ChangeState<ChargeReleaseState>();   break;
+                case GameAction.ChargeStart:
+                    if (isRangedAttackMode)
+                        ChangeState<ShootChargeState>();
+                    else
+                        ChangeState<ChargeStartState>();
+                    break;
+                case GameAction.ShootCharge:   ChangeState<ShootChargeState>();     break;
+                case GameAction.ChargeRelease:
+                    if (!isRangedAttackMode)
+                        ChangeState<ChargeReleaseState>();
+                    break;
                 case GameAction.NormalAttack:  ExecuteNormalAttack();               break;
+                case GameAction.Shoot:         ChangeState<ShootState>();           break;
                 case GameAction.AirAttack:     ChangeState<AirAttackState>();       break;
                 case GameAction.FallAttack:    ChangeState<FallAttackStartState>(); break;
                 case GameAction.Jump:          ChangeState<JumpState>();            break;
@@ -102,13 +114,9 @@ namespace Game.Presentation
 
         public void ClearPending() => _pending = PendingActionData.Empty;
 
-        public void StartActiveSkillCooldown(SkillConfigEntry entry)
+        public void StartActiveSkillCooldown(int slotIndex, SkillConfigEntry entry)
         {
-            if (entry == null || !entry.IsActiveSkill)
-                return;
-
-            int slotIndex = ResolveActiveSkillSlotIndex(entry);
-            if (slotIndex < 0)
+            if (slotIndex < 0 || entry == null || !entry.IsActiveSkill)
                 return;
 
             float cooldown = Mathf.Max(0f, entry.cooldownSeconds);
@@ -123,19 +131,6 @@ namespace Game.Presentation
             return _activeSkillCooldowns.TryGetValue(slotIndex, out float remaining)
                 ? Mathf.Max(0f, remaining)
                 : 0f;
-        }
-
-        private static int ResolveActiveSkillSlotIndex(SkillConfigEntry entry)
-        {
-            if (entry == null)
-                return -1;
-
-            string actionId = entry.GetResolvedActionId();
-            if (string.IsNullOrWhiteSpace(actionId) || !actionId.StartsWith("Skill", System.StringComparison.Ordinal))
-                return -1;
-
-            string suffix = actionId.Substring("Skill".Length);
-            return int.TryParse(suffix, out int slotIndex) ? slotIndex : -1;
         }
 
         // ── 连击窗口 ────────────────────────────────────────────────────
@@ -154,6 +149,13 @@ namespace Game.Presentation
 
         private void ExecuteNormalAttack()
         {
+            if (IsRangedAttackMode())
+            {
+                ClearComboWindow();
+                ChangeState<ShootState>();
+                return;
+            }
+
             int idx = _comboNextIndex;
             ClearComboWindow();
             switch (idx)
@@ -199,6 +201,8 @@ namespace Game.Presentation
         private void CollectCandidateActions(in PlayerInputData input)
         {
             _candidates.Clear();
+            bool inAir = IsAirState(CurrentState);
+            bool isRangedAttackMode = IsRangedAttackMode();
 
             if (input.DodgePressed)         _candidates.Add(new PendingActionData(GameAction.Dodge));
             for (int pressedOrder = 0; pressedOrder < input.PressedSkillCount; pressedOrder++)
@@ -208,14 +212,16 @@ namespace Game.Presentation
 
                 _candidates.Add(new PendingActionData(GameAction.Skill, skillIndex));
             }
-            if (input.ChargeReleasePressed) _candidates.Add(new PendingActionData(GameAction.ChargeRelease));
+            if (input.ChargeReleasePressed && !isRangedAttackMode)
+                _candidates.Add(new PendingActionData(GameAction.ChargeRelease));
             if (input.AltAttackPressed)     _candidates.Add(new PendingActionData(GameAction.FallAttack));
-            if (input.ChargeStartPressed)   _candidates.Add(new PendingActionData(GameAction.ChargeStart));
+            if (input.ChargeStartPressed && !inAir)
+                _candidates.Add(new PendingActionData(isRangedAttackMode ? GameAction.ShootCharge : GameAction.ChargeStart));
 
             if (input.AttackTapPressed)
             {
-                bool inAir = IsAirState(CurrentState);
-                _candidates.Add(new PendingActionData(inAir ? GameAction.AirAttack : GameAction.NormalAttack));
+                _candidates.Add(new PendingActionData(
+                    inAir ? GameAction.AirAttack : isRangedAttackMode ? GameAction.Shoot : GameAction.NormalAttack));
             }
 
             if (input.JumpPressed) _candidates.Add(new PendingActionData(GameAction.Jump));
@@ -232,6 +238,11 @@ namespace Game.Presentation
             or FallAttackStartState
             or FallAttackLoopState;
 
+        private bool IsRangedAttackMode()
+        {
+            return _ctx?.PlayerModel?.CurrentAttackMode == PlayerAttackMode.Ranged;
+        }
+
         private void ExecuteSkill(int skillIndex)
         {
             if (!CanTriggerActiveSkill(skillIndex))
@@ -247,9 +258,9 @@ namespace Game.Presentation
 
             SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
             if (skillDb == null)
-                return true;
+                return false;
 
-            SkillConfigEntry entry = skillDb.GetActiveEntryBySlot(slotIndex);
+            SkillConfigEntry entry = _ctx.PlayerModel.GetEquippedActiveSkillEntry(slotIndex, skillDb);
             return entry != null
                    && _ctx.PlayerModel.IsSkillAvailable(entry)
                    && GetActiveSkillCooldownRemaining(slotIndex) <= 0f;

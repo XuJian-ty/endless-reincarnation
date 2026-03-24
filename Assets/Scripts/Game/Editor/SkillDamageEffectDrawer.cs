@@ -34,6 +34,7 @@ namespace Game.Editor
                 var colliderNodeName = property.FindPropertyRelative("colliderNodeName");
                 var rayOriginOffset = property.FindPropertyRelative("rayOriginOffset");
                 var rayMaxDistance = property.FindPropertyRelative("rayMaxDistance");
+                var rayRadius = property.FindPropertyRelative("rayRadius");
                 var motion = property.FindPropertyRelative("motion");
                 var onHitDamageEffects = property.FindPropertyRelative("onHitDamageEffects");
                 var onHitStopEffect = property.FindPropertyRelative("onHitStopEffect");
@@ -80,6 +81,7 @@ namespace Game.Editor
                     y = DrawProperty(y, position, rayOriginOffset);
                     y = DrawProperty(y, position, rotationEuler);
                     y = DrawProperty(y, position, rayMaxDistance);
+                    y = DrawProperty(y, position, rayRadius);
                 }
 
                 y = DrawProperty(y, position, motion);
@@ -142,6 +144,7 @@ namespace Game.Editor
                 height += GetChildHeight(property.FindPropertyRelative("rayOriginOffset"));
                 height += GetChildHeight(property.FindPropertyRelative("rotationEuler"));
                 height += GetChildHeight(property.FindPropertyRelative("rayMaxDistance"));
+                height += GetChildHeight(property.FindPropertyRelative("rayRadius"));
             }
 
             height += GetChildHeight(property.FindPropertyRelative("motion"));

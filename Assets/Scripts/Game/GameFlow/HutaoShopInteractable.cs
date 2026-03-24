@@ -24,14 +24,16 @@ namespace Game.GameFlow
         {
             public readonly string displayName;
             public readonly Sprite icon;
+            public readonly WeaponRarity? rarity;
             public readonly int price;
             public readonly int remainingCount;
             public readonly bool soldOut;
 
-            public ShopOfferViewData(string displayName, Sprite icon, int price, int remainingCount)
+            public ShopOfferViewData(string displayName, Sprite icon, WeaponRarity? rarity, int price, int remainingCount)
             {
                 this.displayName = displayName ?? string.Empty;
                 this.icon = icon;
+                this.rarity = rarity;
                 this.price = Mathf.Max(0, price);
                 this.remainingCount = Mathf.Max(0, remainingCount);
                 soldOut = this.remainingCount <= 0;
@@ -286,7 +288,16 @@ namespace Game.GameFlow
                 return default;
 
             ShopOfferRuntime offer = _shopOffers[index];
-            return new ShopOfferViewData(offer.displayName, offer.icon, offer.price, offer.remainingCount);
+            WeaponRarity? rarity = null;
+            if (offer != null)
+            {
+                if (offer.isWeapon)
+                    rarity = offer.weaponRarity;
+                else if (!string.IsNullOrWhiteSpace(offer.stackItemId))
+                    rarity = _itemDisplayDb?.GetEntry(offer.stackItemId)?.rarity;
+            }
+
+            return new ShopOfferViewData(offer.displayName, offer.icon, rarity, offer.price, offer.remainingCount);
         }
 
         public bool TryBuyShopOffer(int index)

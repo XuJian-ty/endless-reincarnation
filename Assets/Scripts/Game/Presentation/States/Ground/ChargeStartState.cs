@@ -1,4 +1,5 @@
 using UnityEngine;
+using Game.Data;
 
 namespace Game.Presentation
 {
@@ -9,13 +10,14 @@ namespace Game.Presentation
     /// </summary>
     public class ChargeStartState : PlayerStateBase
     {
+        protected override string ActionId => ResolveConfiguredFormActionId(PlayerFormActionSlot.ChargeStart, "ChargeStart");
         public override GameAction CurrentActionId => GameAction.ChargeStart;
 
         protected override void OnEnter()
         {
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            TriggerConfiguredActionByActionId("ChargeStart", "ChargeStart");
-            StartConfiguredTimelineByActionId("ChargeStart");
+            TriggerConfiguredBaseAction(ActionId, "ChargeStart");
+            StartConfiguredBaseActionTimeline(ActionId);
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
@@ -31,6 +33,8 @@ namespace Game.Presentation
             GameAction.ChargeRelease => TransitionPolicy.Interrupt,
             GameAction.ChargeStart   => TransitionPolicy.Ignore,
             GameAction.NormalAttack  => TransitionPolicy.Ignore,
+            GameAction.ShootCharge   => TransitionPolicy.Ignore,
+            GameAction.Shoot         => TransitionPolicy.Ignore,
             _                        => TransitionPolicy.Buffer,
         };
     }

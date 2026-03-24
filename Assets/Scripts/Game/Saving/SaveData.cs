@@ -41,8 +41,13 @@ namespace Game.Saving
         public InventorySaveData inventory = new InventorySaveData();
         public ItemCountSaveData itemCounts;
         public WeaponInstance    equippedWeapon;
+        public WeaponInstance    meleeEquippedWeapon;
+        public WeaponInstance    rangedEquippedWeapon;
+        public int              currentAttackMode;
         public List<string> buffIds          = new List<string>();
         public List<string> unlockedSkillIds = new List<string>();
+        /// <summary>技能树槽位到主动技能 actionId 的映射。索引即槽位索引，空字符串表示该槽位未装备技能。</summary>
+        public List<string> equippedSkillActionIds = new List<string>();
         public List<string> defeatedBossIds  = new List<string>();
         public bool         isGameCleared;
 

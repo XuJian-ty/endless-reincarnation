@@ -13,15 +13,6 @@ namespace Game.Presentation
     public sealed class PlayerCloneActor : MonoBehaviour, ICombatHardControlReceiver
     {
         private static readonly List<PlayerCloneActor> ActiveCloneActors = new List<PlayerCloneActor>();
-        private enum CloneDecisionType
-        {
-            None,
-            Dodge,
-            Skill,
-            Charge,
-            Attack,
-        }
-
         private enum CloneBufferedAction
         {
             None,
@@ -85,6 +76,7 @@ namespace Game.Presentation
         private readonly List<RuntimeModifier> _runtimeModifiers = new List<RuntimeModifier>();
         private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
         private readonly CloneCombatMemory _combatMemory = new CloneCombatMemory();
+        private readonly PlayerCloneBrain _brain = new PlayerCloneBrain();
         private NavMeshPath _navMeshPath;
         private readonly Stats _combatStats = new Stats();
         private Stats _ownerSharedStats;
@@ -94,6 +86,8 @@ namespace Game.Presentation
         private Animator _animator;
         private PlayerAnimatorController _animatorController;
         private SkillTimelineRunner _timelineRunner;
+        private SkillTimelineRunner _locomotionTimelineRunner;
+        private SkillTimelineRunner _rangedPostureTimelineRunner;
         private PlayerCloneAIConfigSO _aiConfig;
         private NavMeshAgent _navMeshAgent;
         private Light _cloneGlowLight;
@@ -110,6 +104,8 @@ namespace Game.Presentation
         private float _hardControlTimer;
         private float _temporarySuperArmorTimer;
         private float _temporaryInvincibleTimer;
+        private int _stateScopedSuperArmorCount;
+        private int _stateScopedInvincibleCount;
         private float _hpRegenTickAccumulator;
         private float _mpRegenTickAccumulator;
         private float _currentHp;
@@ -118,6 +114,8 @@ namespace Game.Presentation
         private int _comboNextIndex = -1;
         private int _ownerSharedBuildSignature = int.MinValue;
         private string _activeActionId;
+        private string _activeLocomotionActionId;
+        private string _activeRangedPostureActionId;
         private Vector3 _dodgeVelocity;
         private Vector3 _followPatrolTarget;
         private Vector3 _combatAnchorTarget;
@@ -133,6 +131,11 @@ namespace Game.Presentation
         private int _bufferedAttackComboIndex = -1;
         private float _activeActionElapsed;
         private float _comboWindowTimer;
+        private float _attackModeSwitchCooldownTimer;
+        private float _currentAttackModeElapsed;
+        private int _lastAttackModeDecisionSecond = -1;
+        private PlayerAttackMode _currentAttackMode = PlayerAttackMode.Melee;
+        private PlayerAttackMode _plannedAttackMode = PlayerAttackMode.Melee;
 
         public static IReadOnlyList<PlayerCloneActor> ActiveClones => ActiveCloneActors;
         public PlayerController Owner => _owner;
@@ -171,12 +174,20 @@ namespace Game.Presentation
             _hardControlTimer = 0f;
             _temporarySuperArmorTimer = 0f;
             _temporaryInvincibleTimer = 0f;
+            _stateScopedSuperArmorCount = 0;
+            _stateScopedInvincibleCount = 0;
             _hpRegenTickAccumulator = 0f;
             _mpRegenTickAccumulator = 0f;
             _actionLockTimer = 0f;
             _comboStage = 0;
             _comboNextIndex = -1;
+            _locomotionTimelineRunner?.Stop();
+            _locomotionTimelineRunner = null;
+            _rangedPostureTimelineRunner?.Stop();
+            _rangedPostureTimelineRunner = null;
             _activeActionId = string.Empty;
+            _activeLocomotionActionId = string.Empty;
+            _activeRangedPostureActionId = string.Empty;
             _dodgeVelocity = Vector3.zero;
             _ownerSharedStats = null;
             _ownerSharedBuildSignature = int.MinValue;
@@ -194,6 +205,11 @@ namespace Game.Presentation
             _bufferedAttackComboIndex = -1;
             _activeActionElapsed = 0f;
             _comboWindowTimer = 0f;
+            _attackModeSwitchCooldownTimer = 0f;
+            _currentAttackModeElapsed = 0f;
+            _currentAttackMode = PlayerAttackMode.Melee;
+            _lastAttackModeDecisionSecond = -1;
+            _plannedAttackMode = PlayerAttackMode.Melee;
             _combatMemory.Clear();
             AssignCombatLayer();
             ConfigureNavigationSupport();
@@ -247,10 +263,15 @@ namespace Game.Presentation
             TickLocalCooldowns(dt);
             TickTemporaryCombatFlags(dt);
             TickDetachedTimelineRunners(dt);
+            TickRangedPostureTimeline(dt);
+            TickLocomotionTimeline(dt);
             if (_actionLockTimer > 0f)
                 _actionLockTimer = Mathf.Max(0f, _actionLockTimer - dt);
 
             UpdateTarget(dt);
+            TickAttackModeState();
+            PlayerCloneCombatPlan combatPlan = BuildCombatPlan();
+            TickAttackModeElapsed(dt, combatPlan);
 
             TickTimeline(dt);
             if (TickDodgeMotion(dt))
@@ -258,25 +279,21 @@ namespace Game.Presentation
 
             if (_timelineRunner != null && !_timelineRunner.IsComplete)
             {
-                MaintainActionFacing(dt);
-                return;
-            }
-
-            if (_target == null)
-            {
-                if (ShouldInvestigateRecentTarget())
+                if (IsRangedMobileAction(_activeActionId))
                 {
-                    TickInvestigate(dt);
-                    return;
+                    TickMovementForPlan(dt, combatPlan.TacticalMode, combatPlan.DesiredAttackMode);
+                    ApplyActionPlaybackSpeed(_activeActionId);
                 }
-
-                TickFollow(dt);
+                else
+                {
+                    MaintainActionFacing(dt);
+                }
                 return;
             }
 
-            if (ShouldRegroupToOwner())
+            if (_target == null || ShouldRegroupToOwner())
             {
-                TickFollow(dt);
+                TickMovementForPlan(dt, combatPlan.TacticalMode, combatPlan.DesiredAttackMode);
                 return;
             }
 
@@ -289,15 +306,15 @@ namespace Game.Presentation
 
             if (_actionLockTimer > 0f || _decisionTimer > 0f)
             {
-                TickCombatMove(dt);
+                TickMovementForPlan(dt, combatPlan.TacticalMode, combatPlan.DesiredAttackMode);
                 return;
             }
 
             ResetDecisionTimer();
-            if (EvaluateAndExecuteCombatDecision())
+            if (EvaluateAndExecuteCombatPlan(combatPlan))
                 return;
 
-            TickCombatMove(dt);
+            TickMovementForPlan(dt, combatPlan.TacticalMode, combatPlan.DesiredAttackMode);
         }
 
         private void TickFollow(float dt)
@@ -336,9 +353,9 @@ namespace Game.Presentation
 
             if (_animatorController != null)
             {
-                _animatorController.SetPlaybackSpeed(1f);
+                ResetActionPlaybackSpeed();
                 _animatorController.SetGrounded(true);
-                _animatorController.SetLocomotionSpeed(shouldMove ? WalkLocomotionSpeed : 0f);
+                ApplyCombatLocomotionAnimation(shouldMove ? delta.normalized : Vector3.zero, false);
             }
         }
 
@@ -371,13 +388,29 @@ namespace Game.Presentation
 
             if (_animatorController != null)
             {
-                _animatorController.SetPlaybackSpeed(1f);
+                ResetActionPlaybackSpeed();
                 _animatorController.SetGrounded(true);
-                _animatorController.SetLocomotionSpeed(shouldMove ? WalkLocomotionSpeed : 0f);
+                ApplyCombatLocomotionAnimation(shouldMove ? delta.normalized : Vector3.zero, false);
             }
         }
 
-        private void TickCombatMove(float dt)
+        private void TickMovementForPlan(float dt, PlayerCloneTacticalMode tacticalMode, PlayerAttackMode desiredAttackMode)
+        {
+            switch (tacticalMode)
+            {
+                case PlayerCloneTacticalMode.FollowOwner:
+                    TickFollow(dt);
+                    break;
+                case PlayerCloneTacticalMode.Investigate:
+                    TickInvestigate(dt);
+                    break;
+                default:
+                    TickCombatMove(dt, tacticalMode, desiredAttackMode);
+                    break;
+            }
+        }
+
+        private void TickCombatMove(float dt, PlayerCloneTacticalMode tacticalMode, PlayerAttackMode desiredAttackMode)
         {
             ExitFollowLocomotion();
             if (_target == null || !_target.IsAlive || _owner == null)
@@ -392,14 +425,20 @@ namespace Game.Presentation
             toTarget.y = 0f;
             float distanceToTarget = ResolvePlanarSurfaceDistance(transform.position, _target);
 
-            Vector3 desiredPoint = ResolveStableCombatAnchor(targetPosition, distanceToTarget, dt);
+            bool usingPlannedRangedAttackMode =
+                desiredAttackMode == PlayerAttackMode.Ranged
+                && HasWeaponForAttackMode(PlayerAttackMode.Ranged);
+            Vector3 desiredPoint = ResolveStableCombatAnchor(targetPosition, distanceToTarget, dt, tacticalMode, usingPlannedRangedAttackMode);
             Vector3 moveTarget = ResolveSteeringTarget(desiredPoint, true);
             Vector3 moveDelta = moveTarget - transform.position;
             moveDelta.y = 0f;
 
+            bool usingRangedAttackMode = usingPlannedRangedAttackMode;
             float orbitArrivalDistance = _aiConfig != null ? Mathf.Max(0.05f, _aiConfig.orbitArrivalDistance) : OrbitArrivalDistance;
             bool shouldMove = moveDelta.sqrMagnitude > orbitArrivalDistance * orbitArrivalDistance;
-            float preferredAttackDistance = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredMeleeDistance) : PreferredAttackDistance;
+            float preferredAttackDistance = usingRangedAttackMode
+                ? (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredRangedDistance) : 6.5f)
+                : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredMeleeDistance) : PreferredAttackDistance);
             float attackDistanceTolerance = _aiConfig != null ? Mathf.Max(0.05f, _aiConfig.meleeDistanceTolerance) : AttackDistanceTolerance;
             float chaseDistanceThreshold = _aiConfig != null ? Mathf.Max(0.1f, _aiConfig.chaseDistanceThreshold) : 1.6f;
             bool isChasing = distanceToTarget > preferredAttackDistance + attackDistanceTolerance + chaseDistanceThreshold;
@@ -412,7 +451,7 @@ namespace Game.Presentation
             SyncNavigationSupport();
 
             Vector3 facing = toTarget.sqrMagnitude > 0.0001f ? toTarget.normalized : _owner.transform.forward;
-            if (shouldMove && moveDelta.sqrMagnitude > 0.0001f)
+            if (!usingRangedAttackMode && shouldMove && moveDelta.sqrMagnitude > 0.0001f)
             {
                 Vector3 moveFacing = moveDelta.normalized;
                 float alignment = toTarget.sqrMagnitude > 0.0001f ? Vector3.Dot(moveFacing, toTarget.normalized) : 1f;
@@ -425,10 +464,63 @@ namespace Game.Presentation
 
             if (_animatorController != null)
             {
-                _animatorController.SetPlaybackSpeed(1f);
+                ResetActionPlaybackSpeed();
                 _animatorController.SetGrounded(true);
-                _animatorController.SetLocomotionSpeed(!shouldMove ? 0f : (useRun ? RunLocomotionSpeed : WalkLocomotionSpeed));
+                ApplyCombatLocomotionAnimation(shouldMove ? moveDelta.normalized : Vector3.zero, useRun);
             }
+        }
+
+        private void ApplyCombatLocomotionAnimation(Vector3 moveDirection, bool isRunning)
+        {
+            if (_animatorController == null)
+                return;
+
+            bool hasMovement = moveDirection.sqrMagnitude > 0.0001f;
+            float blendScale = hasMovement ? (isRunning ? RunLocomotionSpeed : WalkLocomotionSpeed) : 0f;
+            _animatorController.SetLocomotionSpeed(blendScale);
+            if (!hasMovement)
+            {
+                _animatorController.SetLocomotionBlend(Vector2.zero);
+            }
+            else
+            {
+                Vector3 localDirection = transform.InverseTransformDirection(moveDirection.normalized);
+                _animatorController.SetLocomotionBlend(new Vector2(localDirection.x * blendScale, localDirection.z * blendScale));
+            }
+
+            UpdateLocomotionTimeline(hasMovement, isRunning);
+        }
+
+        private void ApplyActionPlaybackSpeed(string actionId)
+        {
+            if (_animatorController == null)
+                return;
+
+            if (IsUpperBodyAttackAction(actionId))
+            {
+                _animatorController.SetPlaybackSpeed(1f);
+                _animatorController.SetUpperBodyPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionPlaybackSpeed(_combatStats, actionId));
+                return;
+            }
+
+            _animatorController.SetUpperBodyPlaybackSpeed(1f);
+            _animatorController.SetPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionAnimatorPlaybackSpeed(_combatStats, actionId));
+        }
+
+        private void ResetActionPlaybackSpeed()
+        {
+            if (_animatorController == null)
+                return;
+
+            _animatorController.SetPlaybackSpeed(1f);
+            _animatorController.SetUpperBodyPlaybackSpeed(1f);
+        }
+
+        private static bool IsUpperBodyAttackAction(string actionId)
+        {
+            return string.Equals(actionId, "Shoot", System.StringComparison.Ordinal)
+                   || string.Equals(actionId, "ShootCharge", System.StringComparison.Ordinal)
+                   || string.Equals(actionId, "Shoot_Charge", System.StringComparison.Ordinal);
         }
 
         private void TickTimeline(float dt)
@@ -437,13 +529,30 @@ namespace Game.Presentation
                 return;
 
             _timelineRunner.Tick(dt);
-            if (!_timelineRunner.IsComplete)
-            {
-                TryResolveActionTimelineExit();
+            if (TryResolveActionTimelineExit())
                 return;
-            }
 
-            CompleteCurrentAction(detachTimeline: false);
+            if (!_timelineRunner.IsComplete)
+                return;
+
+            if (ShouldForceCompleteOnTimelineEnd(_activeActionId))
+                CompleteCurrentAction(ShouldDetachTimelineOnCompletion(_activeActionId));
+        }
+
+        private void TickLocomotionTimeline(float dt)
+        {
+            if (_locomotionTimelineRunner == null)
+                return;
+
+            _locomotionTimelineRunner.Tick(dt);
+        }
+
+        private void TickRangedPostureTimeline(float dt)
+        {
+            if (_rangedPostureTimelineRunner == null)
+                return;
+
+            _rangedPostureTimelineRunner.Tick(dt);
         }
 
         private bool TryResolveActionTimelineExit()
@@ -460,6 +569,12 @@ namespace Game.Presentation
 
             if (string.Equals(_activeActionId, "Dodge", System.StringComparison.Ordinal))
                 return TryResolveDodgeTimelineExit(entry);
+
+            if (IsRangedSustainAction(_activeActionId))
+                return TryResolveRangedSustainActionExit();
+
+            if (string.Equals(_activeActionId, "ChargeStart", System.StringComparison.Ordinal))
+                return TryResolveChargeStartExit(entry);
 
             if (ShouldKeepTimelineBoundToAction(_activeActionId))
                 return false;
@@ -530,6 +645,16 @@ namespace Game.Presentation
             return true;
         }
 
+        private bool TryResolveChargeStartExit(SkillConfigEntry entry)
+        {
+            float threshold = ResolveNaturalExitThreshold(entry, 0.9f);
+            if (!IsCurrentActionPastThreshold(threshold))
+                return false;
+
+            CompleteCurrentAction(detachTimeline: false);
+            return true;
+        }
+
         private void CompleteCurrentAction(bool detachTimeline)
         {
             if (detachTimeline)
@@ -537,20 +662,20 @@ namespace Game.Presentation
             else
                 _timelineRunner = null;
 
-            _animatorController?.SetPlaybackSpeed(1f);
-            _animatorController?.TriggerLocomotion();
+            ResetActionPlaybackSpeed();
             if (!detachTimeline && TryContinueActionSequence())
                 return;
 
             if (TryConsumeBufferedAction())
                 return;
 
-            EnterCombatLocomotion();
+            _activeActionId = string.Empty;
+            _activeActionElapsed = 0f;
             _actionLockTimer = 0f;
             _decisionTimer = 0f;
-            _activeActionId = string.Empty;
             ClearBufferedAction();
-            _activeActionElapsed = 0f;
+            TriggerCurrentModeLocomotion();
+            EnterCombatLocomotion();
         }
 
         private void DetachCurrentTimelineRunner()
@@ -638,14 +763,20 @@ namespace Game.Presentation
             if (_activeActionElapsed < MinActionExitValidationDelay)
                 return false;
 
-            if (_animator.IsInTransition(0))
+            int layerIndex = ResolveActionTimingLayerIndex(_activeActionId);
+            if (_animator.IsInTransition(layerIndex))
                 return false;
 
-            AnimatorStateInfo currentInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo currentInfo = _animator.GetCurrentAnimatorStateInfo(layerIndex);
             if (currentInfo.loop)
                 return false;
 
             return currentInfo.normalizedTime >= threshold;
+        }
+
+        private static int ResolveActionTimingLayerIndex(string actionId)
+        {
+            return string.Equals(actionId, "Shoot", System.StringComparison.Ordinal) ? 1 : 0;
         }
 
         private static bool IsAttackComboAction(string actionId)
@@ -656,9 +787,54 @@ namespace Game.Presentation
 
         private static bool ShouldKeepTimelineBoundToAction(string actionId)
         {
-            return string.Equals(actionId, "ChargeStart", System.StringComparison.Ordinal)
-                   || string.Equals(actionId, "ChargeLoop", System.StringComparison.Ordinal)
-                   || string.Equals(actionId, "ChargeRelease", System.StringComparison.Ordinal);
+            return string.Equals(actionId, "ChargeLoop", System.StringComparison.Ordinal)
+                   || string.Equals(actionId, "ShootCharge", System.StringComparison.Ordinal)
+                   || string.Equals(actionId, "Shoot_Charge", System.StringComparison.Ordinal);
+        }
+
+        private static bool IsRangedSustainAction(string actionId)
+        {
+            return string.Equals(actionId, "ShootCharge", System.StringComparison.Ordinal)
+                   || string.Equals(actionId, "Shoot_Charge", System.StringComparison.Ordinal);
+        }
+
+        private static bool IsRangedMobileAction(string actionId)
+        {
+            return string.Equals(actionId, "Shoot", System.StringComparison.Ordinal)
+                   || IsRangedSustainAction(actionId);
+        }
+
+        private static bool ShouldDetachTimelineOnCompletion(string actionId)
+        {
+            return IsRangedSustainAction(actionId);
+        }
+
+        private static bool ShouldForceCompleteOnTimelineEnd(string actionId)
+        {
+            return string.Equals(actionId, "ChargeLoop", System.StringComparison.Ordinal)
+                   || IsRangedSustainAction(actionId);
+        }
+
+        private bool TryResolveRangedSustainActionExit()
+        {
+            if (_target == null || !_target.IsAlive || !IsUsingRangedAttackMode())
+            {
+                CompleteCurrentAction(detachTimeline: true);
+                return true;
+            }
+
+            float distanceToTarget = ResolvePlanarSurfaceDistance(transform.position, _target);
+            float rangedAttackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedAttackCastRange) : 9f;
+            float rangedExitDistance = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedExitDistance) : 2.8f;
+            if (distanceToTarget > rangedAttackCastRange + 0.4f
+                || distanceToTarget <= rangedExitDistance
+                || IsTargetThreatening(distanceToTarget))
+            {
+                CompleteCurrentAction(detachTimeline: true);
+                return true;
+            }
+
+            return false;
         }
 
         private CloneBufferedAction EvaluateAttackBufferedAction(int nextStage)
@@ -763,7 +939,9 @@ namespace Game.Presentation
                 return;
 
             EnemyController previousTarget = _target;
-            _target = FindBestTarget();
+            _target = IsMeleeComboLocked() && !invalidTarget
+                ? previousTarget
+                : FindBestTarget();
             if (_target != null)
             {
                 _combatMemory.RecordTarget(_target, ResolveTargetCenterPosition(_target), Time.time);
@@ -777,9 +955,254 @@ namespace Game.Presentation
             if (_target != previousTarget)
             {
                 ClearCombatAnchorTarget();
-                ClearComboWindow();
+                if (!IsMeleeComboLocked())
+                    ClearComboWindow();
             }
             _targetRefreshTimer = _aiConfig != null ? Mathf.Max(0.02f, _aiConfig.targetRefreshInterval) : TargetRefreshInterval;
+        }
+
+        private void TickAttackModeState()
+        {
+            if (_owner?.PlayerModel == null)
+                return;
+
+            if (!HasWeaponForAttackMode(_currentAttackMode))
+            {
+                PlayerAttackMode fallbackMode = HasWeaponForAttackMode(PlayerAttackMode.Melee)
+                    ? PlayerAttackMode.Melee
+                    : PlayerAttackMode.Ranged;
+                TrySetAttackMode(fallbackMode, true);
+                return;
+            }
+
+        }
+
+        private bool TrySetAttackMode(PlayerAttackMode attackMode, bool force)
+        {
+            if (!HasWeaponForAttackMode(attackMode))
+                attackMode = HasWeaponForAttackMode(PlayerAttackMode.Melee)
+                    ? PlayerAttackMode.Melee
+                    : PlayerAttackMode.Ranged;
+
+            if (_currentAttackMode == attackMode)
+                return false;
+
+            if (!force)
+            {
+                if (_attackModeSwitchCooldownTimer > 0f)
+                    return false;
+                if (!CanSwitchAttackModeNow())
+                    return false;
+            }
+
+            _currentAttackMode = attackMode;
+            _currentAttackModeElapsed = 0f;
+            _lastAttackModeDecisionSecond = -1;
+            _plannedAttackMode = attackMode;
+            _attackModeSwitchCooldownTimer = _aiConfig != null ? Mathf.Max(0f, _aiConfig.attackModeSwitchCooldownSeconds) : 0.45f;
+
+            ClearComboWindow();
+            _comboStage = 0;
+            _comboNextIndex = -1;
+            ClearCombatAnchorTarget();
+            RefreshDerivedStats();
+            RefreshAttackModePresentation();
+            return true;
+        }
+
+        private bool CanSwitchAttackModeNow()
+        {
+            return string.IsNullOrWhiteSpace(_activeActionId)
+                   && _timelineRunner == null
+                   && _actionLockTimer <= 0f
+                   && _dodgeMotionTimer <= 0f
+                   && _hardControlTimer <= 0f;
+        }
+
+        private bool HasWeaponForAttackMode(PlayerAttackMode attackMode)
+        {
+            return _owner?.PlayerModel?.GetEquippedWeapon(attackMode) != null;
+        }
+
+        private bool IsUsingRangedAttackMode()
+        {
+            return _currentAttackMode == PlayerAttackMode.Ranged
+                   && HasWeaponForAttackMode(PlayerAttackMode.Ranged);
+        }
+
+        private void RefreshAttackModePresentation()
+        {
+            RefreshCloneWeaponVisuals();
+            if (_animatorController == null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(_activeActionId))
+            {
+                StopLocomotionTimeline();
+                StopRangedPosture();
+                ApplyActionPlaybackSpeed(_activeActionId);
+                return;
+            }
+
+            ResetActionPlaybackSpeed();
+            TriggerCurrentModeLocomotion();
+        }
+
+        private void RefreshCloneWeaponVisuals()
+        {
+            if (_owner?.PlayerModel == null)
+                return;
+
+            PlayerWeaponVisualUtility.ApplyWeaponVisibility(
+                transform,
+                _currentAttackMode,
+                HasWeaponForAttackMode(PlayerAttackMode.Melee),
+                HasWeaponForAttackMode(PlayerAttackMode.Ranged));
+        }
+
+        private void TriggerCurrentModeLocomotion()
+        {
+            if (_animatorController == null)
+                return;
+
+            if (IsUsingRangedAttackMode())
+            {
+                _animatorController.TriggerAimLocomotion();
+            }
+            else
+            {
+                StopRangedPosture();
+                _animatorController.TriggerLocomotion();
+            }
+        }
+
+        private void EnsureRangedPosture()
+        {
+            if (_animatorController == null || !IsUsingRangedAttackMode() || !string.IsNullOrWhiteSpace(_activeActionId))
+                return;
+
+            const string postureActionId = "Aim";
+            if (string.Equals(_activeRangedPostureActionId, postureActionId, System.StringComparison.Ordinal))
+                return;
+
+            SkillConfigEntry entry = ResolveActionConfigEntry(postureActionId);
+            if (entry == null)
+                return;
+
+            string triggerName = entry.GetResolvedAnimationTrigger();
+            if (string.IsNullOrWhiteSpace(triggerName))
+                triggerName = postureActionId;
+
+            _animatorController.TriggerAction(triggerName);
+            _activeRangedPostureActionId = postureActionId;
+
+            _rangedPostureTimelineRunner?.Stop();
+            _rangedPostureTimelineRunner = null;
+
+            SharedSkillDefinition definition = ConfigManager.GetInstance()?.GetSkillDatabase()?.GetEntry(entry.skillId);
+            if (definition == null)
+                return;
+
+            SharedSkillDefinition runtimeDefinition = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(transform, definition, postureActionId);
+            _rangedPostureTimelineRunner = new SkillTimelineRunner();
+            _rangedPostureTimelineRunner.Begin(runtimeDefinition, new CloneSkillExecutionContext(this));
+        }
+
+        private void StopRangedPosture()
+        {
+            if (_rangedPostureTimelineRunner != null)
+            {
+                _rangedPostureTimelineRunner.StopStateScopedCues();
+                _rangedPostureTimelineRunner.Stop();
+                _rangedPostureTimelineRunner = null;
+            }
+
+            _activeRangedPostureActionId = string.Empty;
+        }
+
+        private void UpdateLocomotionTimeline(bool hasMovement, bool isRunning)
+        {
+            if (_owner == null || !IsAlive)
+            {
+                StopLocomotionTimeline();
+                return;
+            }
+
+            if (_timelineRunner != null
+                && !_timelineRunner.IsComplete
+                && !IsRangedMobileAction(_activeActionId))
+            {
+                StopLocomotionTimeline();
+                StopRangedPosture();
+                return;
+            }
+
+            if (IsUsingRangedAttackMode())
+            {
+                if (hasMovement)
+                    StopRangedPosture();
+                else
+                    EnsureRangedPosture();
+            }
+            else
+            {
+                StopRangedPosture();
+            }
+
+            string actionId = ResolveLocomotionActionId(hasMovement, isRunning);
+            if (string.IsNullOrWhiteSpace(actionId))
+            {
+                StopLocomotionTimeline();
+                return;
+            }
+
+            if (_locomotionTimelineRunner != null
+                && string.Equals(_activeLocomotionActionId, actionId, System.StringComparison.Ordinal))
+                return;
+
+            SkillConfigEntry entry = ResolveActionConfigEntry(actionId);
+            string skillId = entry != null ? entry.skillId : string.Empty;
+            if (string.IsNullOrWhiteSpace(skillId))
+            {
+                StopLocomotionTimeline();
+                return;
+            }
+
+            SharedSkillDefinition definition = ConfigManager.GetInstance()?.GetSkillDatabase()?.GetEntry(skillId);
+            if (definition == null)
+            {
+                StopLocomotionTimeline();
+                return;
+            }
+
+            StopLocomotionTimeline();
+            TriggerCurrentModeLocomotion();
+            SharedSkillDefinition runtimeDefinition = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(transform, definition, actionId);
+            _locomotionTimelineRunner = new SkillTimelineRunner();
+            _locomotionTimelineRunner.Begin(runtimeDefinition, new CloneSkillExecutionContext(this));
+            _activeLocomotionActionId = actionId;
+        }
+
+        private string ResolveLocomotionActionId(bool hasMovement, bool isRunning)
+        {
+            if (IsUsingRangedAttackMode())
+                return hasMovement ? (isRunning ? "AimRun" : "AimWalk") : "AimIdle";
+
+            return hasMovement ? (isRunning ? "NormalRun" : "NormalWalk") : "NormalIdle";
+        }
+
+        private void StopLocomotionTimeline()
+        {
+            if (_locomotionTimelineRunner == null)
+            {
+                _activeLocomotionActionId = string.Empty;
+                return;
+            }
+
+            _locomotionTimelineRunner.StopStateScopedCues();
+            _locomotionTimelineRunner.Stop();
+            _locomotionTimelineRunner = null;
+            _activeLocomotionActionId = string.Empty;
         }
 
         private EnemyController FindBestTarget()
@@ -849,10 +1272,21 @@ namespace Game.Presentation
             if (_target == null || !_target.IsAlive)
                 return false;
 
+            bool comboFollowUp = !IsUsingRangedAttackMode() && (requestedComboIndex > 0 || HasComboWindow());
             float distanceToTarget = ResolvePlanarSurfaceDistance(transform.position, _target);
-            float attackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange;
+            float attackCastRange = IsUsingRangedAttackMode()
+                ? (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedAttackCastRange) : 9f)
+                : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange);
+            if (comboFollowUp && !IsUsingRangedAttackMode())
+                attackCastRange += 0.9f;
             if (distanceToTarget > attackCastRange)
                 return false;
+
+            if (IsUsingRangedAttackMode())
+            {
+                ClearComboWindow();
+                return BeginConfiguredAction("Shoot");
+            }
 
             int comboIndex = Mathf.Clamp(requestedComboIndex, 0, 3);
             string actionId = $"Attack{comboIndex}";
@@ -865,42 +1299,6 @@ namespace Game.Presentation
             return true;
         }
 
-        private bool TryCastSharedCooldownSkill()
-        {
-            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
-            if (skillDb?.entries == null || _owner?.PlayerModel == null || _target == null || !_target.IsAlive)
-                return false;
-
-            List<SkillConfigEntry> candidates = new List<SkillConfigEntry>();
-            for (int i = 0; i < skillDb.entries.Count; i++)
-            {
-                SkillConfigEntry entry = skillDb.entries[i];
-                if (entry == null || !entry.IsActiveSkill)
-                    continue;
-                if (!_owner.PlayerModel.IsSkillAvailable(entry))
-                    continue;
-                if (!CanCastActiveSkill(entry))
-                    continue;
-                candidates.Add(entry);
-            }
-
-            if (candidates.Count <= 0)
-                return false;
-
-            float skillCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.skillCastRange) : SkillCastRange;
-            float distanceToTarget = ResolvePlanarSurfaceDistance(transform.position, _target);
-            if (distanceToTarget > skillCastRange)
-                return false;
-
-            SkillConfigEntry selected = SelectBestActiveSkill(candidates, distanceToTarget);
-            if (selected == null)
-                return false;
-
-            if (!TryCommitActiveSkill(selected))
-                return false;
-            return BeginConfiguredAction(selected.GetResolvedActionId());
-        }
-
         private bool BeginConfiguredAction(string actionId, float overrideDuration = -1f)
         {
             SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
@@ -911,10 +1309,14 @@ namespace Game.Presentation
             if (!IsAttackComboAction(actionId))
                 ClearComboWindow();
 
+            StopRangedPosture();
+            if (!IsRangedMobileAction(actionId))
+                StopLocomotionTimeline();
             ExitFollowLocomotion();
             ExitCombatLocomotion();
+            SnapFacingForAction(actionId);
             string triggerName = entry.GetResolvedAnimationTrigger();
-            _animatorController?.SetPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionPlaybackSpeed(_combatStats, actionId));
+            ApplyActionPlaybackSpeed(actionId);
             _animatorController?.TriggerAction(triggerName);
             _activeActionId = actionId ?? string.Empty;
             _activeActionElapsed = 0f;
@@ -926,6 +1328,37 @@ namespace Game.Presentation
                 _actionLockTimer = Mathf.Max(0.12f, overrideDuration > 0f ? overrideDuration : 0.25f);
 
             return true;
+        }
+
+        private void SnapFacingForAction(string actionId)
+        {
+            if (string.IsNullOrWhiteSpace(actionId))
+                return;
+
+            if (IsRangedMobileAction(actionId))
+            {
+                Vector3 faceDirection = ResolveTargetFacingDirection();
+                if (faceDirection.sqrMagnitude > 0.0001f)
+                    transform.rotation = Quaternion.LookRotation(faceDirection.normalized);
+                return;
+            }
+
+            if (IsAttackComboAction(actionId) || string.Equals(actionId, "ChargeStart", System.StringComparison.Ordinal))
+            {
+                Vector3 faceDirection = ResolveTargetFacingDirection();
+                if (faceDirection.sqrMagnitude > 0.0001f)
+                    transform.rotation = Quaternion.LookRotation(faceDirection.normalized);
+            }
+        }
+
+        private Vector3 ResolveTargetFacingDirection()
+        {
+            if (_target == null || !_target.IsAlive)
+                return Vector3.zero;
+
+            Vector3 toTarget = ResolveTargetCenterPosition(_target) - transform.position;
+            toTarget.y = 0f;
+            return toTarget.sqrMagnitude > 0.0001f ? toTarget.normalized : Vector3.zero;
         }
 
         private void BeginTimeline(SharedSkillDefinition definition, string actionId, float overrideDuration = -1f)
@@ -946,12 +1379,19 @@ namespace Game.Presentation
             _timelineRunner.Begin(runtimeDefinition, new CloneSkillExecutionContext(this), overrideDuration);
         }
 
-        private Vector3 ResolveCombatAnchor(Vector3 targetPosition, float distanceToTarget)
+        private Vector3 ResolveCombatAnchor(Vector3 targetPosition, float distanceToTarget, PlayerCloneTacticalMode tacticalMode, bool usingRangedAttackMode)
         {
-            float preferredAttackDistance = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredMeleeDistance) : PreferredAttackDistance;
+            float preferredAttackDistance = usingRangedAttackMode
+                ? (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredRangedDistance) : 6.5f)
+                : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredMeleeDistance) : PreferredAttackDistance);
+            float attackCastRange = usingRangedAttackMode
+                ? (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedAttackCastRange) : 9f)
+                : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange);
             float attackDistanceTolerance = _aiConfig != null ? Mathf.Max(0.05f, _aiConfig.meleeDistanceTolerance) : AttackDistanceTolerance;
             float tooCloseDistance = _aiConfig != null ? Mathf.Max(0.3f, _aiConfig.tooCloseDistance) : TooCloseDistance;
-            float orbitOffsetDistance = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.orbitDistance) : OrbitOffsetDistance;
+            float orbitOffsetDistance = usingRangedAttackMode
+                ? preferredAttackDistance
+                : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.orbitDistance) : OrbitOffsetDistance);
             float orbitAngle = _aiConfig != null ? _aiConfig.orbitAngle : 42f;
             float targetRadius = ResolveTargetPlanarRadius(_target);
 
@@ -965,10 +1405,21 @@ namespace Game.Presentation
             Vector3 awayFromTarget = -facingToTarget;
             Vector3 sideStep = Quaternion.Euler(0f, 90f * _orbitSign, 0f) * awayFromTarget;
             bool targetThreatening = IsTargetThreatening(distanceToTarget);
-            if (targetThreatening)
+            bool forceRangedRetreat = tacticalMode == PlayerCloneTacticalMode.RangedRetreat;
+            bool useDirectLargeTargetMeleeEngage = !usingRangedAttackMode && ShouldUseDirectLargeTargetMeleeEngage(_target);
+            if (targetThreatening && !useDirectLargeTargetMeleeEngage)
             {
-                float retreatDistance = targetRadius + Mathf.Max(preferredAttackDistance + 1.05f, tooCloseDistance + 1f);
+                float retreatDistance = targetRadius + Mathf.Max(preferredAttackDistance + (usingRangedAttackMode ? 1.5f : 1.05f), tooCloseDistance + 1f);
                 Vector3 retreatDirection = (sideStep * 0.62f + awayFromTarget * 0.38f).normalized;
+                if (retreatDirection.sqrMagnitude <= 0.0001f)
+                    retreatDirection = awayFromTarget;
+                return targetPosition + retreatDirection * retreatDistance;
+            }
+
+            if (forceRangedRetreat)
+            {
+                float retreatDistance = targetRadius + Mathf.Max(preferredAttackDistance + 1.2f, tooCloseDistance + 1.2f);
+                Vector3 retreatDirection = (sideStep * 0.45f + awayFromTarget * 0.55f).normalized;
                 if (retreatDirection.sqrMagnitude <= 0.0001f)
                     retreatDirection = awayFromTarget;
                 return targetPosition + retreatDirection * retreatDistance;
@@ -977,11 +1428,26 @@ namespace Game.Presentation
             if (distanceToTarget < tooCloseDistance)
                 return targetPosition - facingToTarget * (targetRadius + tooCloseDistance + 0.4f);
 
-            if (_target != null && (_target.IsHurt || _target.IsInPostCastRecovery))
+            if (!usingRangedAttackMode && _target != null && (_target.IsHurt || _target.IsInPostCastRecovery))
                 preferredAttackDistance = Mathf.Max(1.6f, preferredAttackDistance - 0.45f);
 
-            if (distanceToTarget > preferredAttackDistance + attackDistanceTolerance)
-                return targetPosition - facingToTarget * (targetRadius + preferredAttackDistance);
+            float desiredEngageDistance = usingRangedAttackMode
+                ? preferredAttackDistance
+                : Mathf.Min(preferredAttackDistance, Mathf.Max(0.9f, attackCastRange - 0.1f));
+            if (useDirectLargeTargetMeleeEngage)
+            {
+                float directEngageDistance = Mathf.Clamp(attackCastRange * 0.55f, 0.9f, 1.6f);
+                if (_target != null && (_target.IsHurt || _target.IsInPostCastRecovery))
+                    directEngageDistance = Mathf.Max(0.75f, directEngageDistance - 0.2f);
+
+                if (distanceToTarget > directEngageDistance + attackDistanceTolerance)
+                    return targetPosition - facingToTarget * (targetRadius + directEngageDistance);
+
+                return targetPosition - facingToTarget * (targetRadius + Mathf.Max(0.45f, directEngageDistance - 0.15f));
+            }
+
+            if (distanceToTarget > desiredEngageDistance + attackDistanceTolerance)
+                return targetPosition - facingToTarget * (targetRadius + desiredEngageDistance);
 
             Vector3 toOwner = _owner.transform.position - targetPosition;
             toOwner.y = 0f;
@@ -994,104 +1460,97 @@ namespace Game.Presentation
             return targetPosition + orbitDir.normalized * (targetRadius + orbitOffsetDistance);
         }
 
-        private bool EvaluateAndExecuteCombatDecision()
+        private bool EvaluateAndExecuteCombatPlan(PlayerCloneCombatPlan combatPlan)
         {
             if (_target == null || !_target.IsAlive)
                 return false;
 
-            float distanceToTarget = ResolvePlanarSurfaceDistance(transform.position, _target);
-            SkillConfigEntry bestSkillEntry = ResolveBestActiveSkill(distanceToTarget, out float skillScore);
-            float dodgeScore = EvaluateDodgeScore(distanceToTarget);
-            float chargeScore = EvaluateChargeScore(distanceToTarget);
-            float attackScore = EvaluateAttackScore(distanceToTarget);
-            ApplyDecisionMemoryPenalty(CloneCombatDecisionKind.Dodge, ref dodgeScore);
-            ApplyDecisionMemoryPenalty(CloneCombatDecisionKind.Skill, ref skillScore);
-            ApplyDecisionMemoryPenalty(CloneCombatDecisionKind.Charge, ref chargeScore);
-            ApplyDecisionMemoryPenalty(CloneCombatDecisionKind.Attack, ref attackScore);
-
-            CloneDecisionType decision = CloneDecisionType.None;
-            float bestScore = 0f;
-
-            ConsiderDecision(CloneDecisionType.Dodge, dodgeScore, ref decision, ref bestScore);
-            ConsiderDecision(CloneDecisionType.Skill, skillScore, ref decision, ref bestScore);
-            ConsiderDecision(CloneDecisionType.Charge, chargeScore, ref decision, ref bestScore);
-            ConsiderDecision(CloneDecisionType.Attack, attackScore, ref decision, ref bestScore);
-
-            bool success = decision switch
+            if (combatPlan.AttackModeDirective == PlayerCloneAttackModeDirective.Switch
+                && combatPlan.DesiredAttackMode != _currentAttackMode
+                && TrySetAttackMode(combatPlan.DesiredAttackMode, false))
             {
-                CloneDecisionType.Dodge => TryStartDodge(),
-                CloneDecisionType.Skill => bestSkillEntry != null && ExecuteActiveSkill(bestSkillEntry),
-                CloneDecisionType.Charge => TryStartChargeAttack(),
-                CloneDecisionType.Attack => TryCastAttack(),
+                return true;
+            }
+
+            GameAction action = combatPlan.RequestedAction;
+            CloneCombatDecisionKind recordedDecision = CloneCombatDecisionKind.None;
+
+            bool success = action switch
+            {
+                GameAction.Dodge => TryStartDodge(),
+                GameAction.Skill => TryExecutePlannedSkill(combatPlan.SkillSlotIndex),
+                GameAction.ChargeStart => TryStartChargeAttack(),
+                GameAction.NormalAttack => TryCastAttack(),
                 _ => false,
             };
 
             if (success)
-                _combatMemory.RecordDecision(ResolveDecisionKind(decision), Time.time);
+                recordedDecision = ResolveDecisionKind(action);
+
+            if (!success
+                && action is GameAction.Skill or GameAction.ChargeStart or GameAction.None)
+            {
+                success = TryCastAttack();
+                if (success)
+                    recordedDecision = CloneCombatDecisionKind.Attack;
+            }
+
+            if (success && recordedDecision != CloneCombatDecisionKind.None)
+                _combatMemory.RecordDecision(recordedDecision, Time.time);
 
             return success;
         }
 
-        private SkillConfigEntry SelectBestActiveSkill(List<SkillConfigEntry> candidates, float distanceToTarget)
+        private SkillConfigEntry ResolveBestActiveSkill(float distanceToTarget, out int slotIndex, out float score)
         {
-            SkillConfigEntry best = null;
-            float bestScore = float.MinValue;
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                SkillConfigEntry candidate = candidates[i];
-                if (candidate == null)
-                    continue;
-
-                float score = 1f + candidate.cooldownSeconds * 0.12f;
-                if (_target != null && (_target.IsHurt || _target.IsInPostCastRecovery))
-                    score += 0.55f;
-                if (distanceToTarget > ((_aiConfig != null ? _aiConfig.attackCastRange : AttackCastRange) + 0.25f))
-                    score += 0.3f;
-                score += Random.Range(0f, 0.18f);
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    best = candidate;
-                }
-            }
-
-            return best;
-        }
-
-        private SkillConfigEntry ResolveBestActiveSkill(float distanceToTarget, out float score)
-        {
+            slotIndex = -1;
             score = 0f;
             SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
             if (skillDb?.entries == null || _owner?.PlayerModel == null || _target == null || !_target.IsAlive)
+                return null;
+
+            if (IsMeleeComboLocked())
                 return null;
 
             float skillCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.skillCastRange) : SkillCastRange;
             if (distanceToTarget > skillCastRange)
                 return null;
 
+            float meleeAttackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange;
+            if (!IsUsingRangedAttackMode()
+                && distanceToTarget > meleeAttackCastRange + 0.35f
+                && !_target.IsHurt
+                && !_target.IsInPostCastRecovery)
+            {
+                return null;
+            }
+
+            List<SkillConfigEntry> candidates = new List<SkillConfigEntry>();
+            List<int> candidateSlots = new List<int>();
+            CollectEquippedActiveSkillCandidates(skillDb, candidates, candidateSlots);
+            if (candidates.Count <= 0)
+                return null;
+
             SkillConfigEntry best = null;
             float bestScore = float.MinValue;
-            for (int i = 0; i < skillDb.entries.Count; i++)
+            for (int i = 0; i < candidates.Count; i++)
             {
-                SkillConfigEntry entry = skillDb.entries[i];
-                if (entry == null || !entry.IsActiveSkill)
-                    continue;
-                if (!_owner.PlayerModel.IsSkillAvailable(entry))
-                    continue;
-                if (!CanCastActiveSkill(entry))
+                SkillConfigEntry entry = candidates[i];
+                int candidateSlotIndex = i < candidateSlots.Count ? candidateSlots[i] : -1;
+                if (entry == null || !CanCastActiveSkill(entry, candidateSlotIndex))
                     continue;
 
-                float nextScore = 0.45f + entry.cooldownSeconds * 0.08f;
-                nextScore += (_aiConfig != null ? _aiConfig.skillBias : 0.78f) * 0.65f;
+                float nextScore = 0.16f + (_aiConfig != null ? _aiConfig.skillBias : 0.78f) * 0.2f;
                 if (_target.IsHurt || _target.IsInPostCastRecovery)
-                    nextScore += 0.55f;
-                if (distanceToTarget > ((_aiConfig != null ? _aiConfig.preferredMeleeDistance : PreferredAttackDistance) + 0.5f))
-                    nextScore += 0.2f;
+                    nextScore += 0.32f;
+                if (distanceToTarget > ((_aiConfig != null ? _aiConfig.preferredMeleeDistance : PreferredAttackDistance) + 0.9f))
+                    nextScore += 0.14f;
                 nextScore += Random.Range(0f, 0.15f);
                 if (nextScore > bestScore)
                 {
                     bestScore = nextScore;
                     best = entry;
+                    slotIndex = candidateSlotIndex;
                 }
             }
 
@@ -1103,6 +1562,9 @@ namespace Game.Presentation
         private float EvaluateDodgeScore(float distanceToTarget)
         {
             if (_target == null || !_target.IsAlive || _dodgeCooldownTimer > 0f)
+                return 0f;
+
+            if (IsMeleeComboLocked())
                 return 0f;
 
             float threatDistance = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.dodgeThreatDistance) : 4.2f;
@@ -1133,82 +1595,188 @@ namespace Game.Presentation
             if (_target == null || !_target.IsAlive || _chargeCooldownTimer > 0f)
                 return 0f;
 
-            if (IsTargetThreatening(distanceToTarget))
+            if (IsMeleeComboLocked())
                 return 0f;
+
+            bool comboLocked = IsMeleeComboLocked();
+            bool ignoreThreatForLargeTargetMelee = !IsUsingRangedAttackMode() && ShouldUseDirectLargeTargetMeleeEngage(_target);
+            if (!comboLocked && IsTargetThreatening(distanceToTarget) && !ignoreThreatForLargeTargetMelee)
+                return 0f;
+
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (skillDb == null)
+                return 0f;
+
+            if (IsUsingRangedAttackMode())
+            {
+                float rangedAttackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedAttackCastRange) : 9f;
+                if (distanceToTarget > rangedAttackCastRange || skillDb.GetEntryByActionId("ShootCharge") == null)
+                    return 0f;
+
+                float rangedScore = 0.08f + (_aiConfig != null ? _aiConfig.rangedBias : 0.22f) * 0.18f;
+                if (distanceToTarget >= (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedEnterDistance) : 4.8f))
+                    rangedScore += 0.08f;
+                if (_target.IsHurt || _target.IsInPostCastRecovery)
+                    rangedScore += 0.1f;
+                return rangedScore;
+            }
 
             float chargeEnterRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.chargeEnterRange) : 4.8f;
             if (distanceToTarget > chargeEnterRange)
                 return 0f;
-
-            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
-            if (skillDb == null || skillDb.GetEntryByActionId("ChargeStart") == null || skillDb.GetEntryByActionId("ChargeRelease") == null)
+            float meleeAttackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange;
+            if (distanceToTarget > meleeAttackCastRange + 0.35f)
+                return 0f;
+            if (skillDb.GetEntryByActionId("ChargeStart") == null || skillDb.GetEntryByActionId("ChargeRelease") == null)
+                return 0f;
+            if (!_target.IsHurt && !_target.IsInPostCastRecovery)
                 return 0f;
 
-            float score = 0.3f + (_aiConfig != null ? _aiConfig.chargeBias : 0.68f) * 0.8f;
-            if (_target.IsHurt || _target.IsInPostCastRecovery)
-                score += 0.45f;
+            float score = 0.18f + (_aiConfig != null ? _aiConfig.chargeBias : 0.68f) * 0.22f;
+            score += 0.22f;
             if (distanceToTarget > ((_aiConfig != null ? _aiConfig.preferredMeleeDistance : PreferredAttackDistance) + 0.45f))
-                score += 0.12f;
+                score += 0.06f;
             return score;
         }
 
         private float EvaluateAttackScore(float distanceToTarget)
         {
-            float attackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange;
+            bool comboLocked = IsMeleeComboLocked();
+            float attackCastRange = IsUsingRangedAttackMode()
+                ? (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedAttackCastRange) : 9f)
+                : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange);
+            if (comboLocked && !IsUsingRangedAttackMode())
+                attackCastRange += 0.9f;
             if (_target == null || !_target.IsAlive || distanceToTarget > attackCastRange)
                 return 0f;
 
-            if (IsTargetThreatening(distanceToTarget))
+            bool ignoreThreatForLargeTargetMelee = !IsUsingRangedAttackMode() && ShouldUseDirectLargeTargetMeleeEngage(_target);
+            if (!comboLocked && IsTargetThreatening(distanceToTarget) && !ignoreThreatForLargeTargetMelee)
                 return 0f;
 
-            float score = 0.5f + (_aiConfig != null ? _aiConfig.aggression : 0.82f) * 0.7f;
+            float score = IsUsingRangedAttackMode()
+                ? 0.72f + (_aiConfig != null ? _aiConfig.rangedBias : 0.22f) * 0.22f
+                : 1.08f + (_aiConfig != null ? _aiConfig.aggression : 0.82f) * 0.42f;
+            if (comboLocked)
+                score += 1.2f;
             if (_target.IsHurt || _target.IsInPostCastRecovery)
-                score += 0.22f;
+                score += 0.18f;
             return score;
         }
 
-        private static void ConsiderDecision(CloneDecisionType candidate, float candidateScore, ref CloneDecisionType current, ref float bestScore)
+        private static CloneCombatDecisionKind ResolveDecisionKind(GameAction action)
         {
-            if (candidateScore <= bestScore)
-                return;
-
-            current = candidate;
-            bestScore = candidateScore;
-        }
-
-        private void ApplyDecisionMemoryPenalty(CloneCombatDecisionKind decisionKind, ref float score)
-        {
-            if (score <= 0f)
-                return;
-
-            float basePenalty = decisionKind switch
+            return action switch
             {
-                CloneCombatDecisionKind.Dodge => _aiConfig != null ? Mathf.Max(0f, _aiConfig.dodgeDecisionPenalty) : 0.18f,
-                CloneCombatDecisionKind.Skill => _aiConfig != null ? Mathf.Max(0f, _aiConfig.skillDecisionPenalty) : 0.12f,
-                CloneCombatDecisionKind.Charge => _aiConfig != null ? Mathf.Max(0f, _aiConfig.chargeDecisionPenalty) : 0.15f,
-                CloneCombatDecisionKind.Attack => HasComboWindow() ? 0f : (_aiConfig != null ? Mathf.Max(0f, _aiConfig.attackDecisionPenalty) : 0.06f),
-                _ => 0f,
-            };
-
-            if (basePenalty <= 0f)
-                return;
-
-            score = Mathf.Max(0f, score - _combatMemory.GetRepeatPenalty(decisionKind, basePenalty));
-        }
-
-        private static CloneCombatDecisionKind ResolveDecisionKind(CloneDecisionType decision)
-        {
-            return decision switch
-            {
-                CloneDecisionType.Dodge => CloneCombatDecisionKind.Dodge,
-                CloneDecisionType.Skill => CloneCombatDecisionKind.Skill,
-                CloneDecisionType.Charge => CloneCombatDecisionKind.Charge,
-                CloneDecisionType.Attack => CloneCombatDecisionKind.Attack,
+                GameAction.Dodge => CloneCombatDecisionKind.Dodge,
+                GameAction.Skill => CloneCombatDecisionKind.Skill,
+                GameAction.ChargeStart => CloneCombatDecisionKind.Charge,
+                GameAction.NormalAttack => CloneCombatDecisionKind.Attack,
                 _ => CloneCombatDecisionKind.None,
             };
         }
 
-        private bool ExecuteActiveSkill(SkillConfigEntry entry)
+        private PlayerCloneCombatPlan BuildCombatPlan()
+        {
+            float distanceToTarget = _target != null && _target.IsAlive
+                ? ResolvePlanarSurfaceDistance(transform.position, _target)
+                : float.MaxValue;
+
+            PlayerCloneBrainContext brainContext = BuildBrainContext(distanceToTarget);
+            float dodgeScore = EvaluateDodgeScore(distanceToTarget);
+            float skillScore = ResolveBestActiveSkill(distanceToTarget, out int skillSlotIndex, out float resolvedSkillScore) != null
+                ? resolvedSkillScore
+                : 0f;
+            float chargeScore = EvaluateChargeScore(distanceToTarget);
+            float attackScore = EvaluateAttackScore(distanceToTarget);
+            PlayerAttackMode desiredAttackMode = ResolvePlannedAttackMode(brainContext, out float attackModeScore);
+            PlayerCloneTacticalMode tacticalMode = _brain.ResolveTacticalMode(brainContext, desiredAttackMode);
+            PlayerCloneAttackModeDirective attackModeDirective =
+                desiredAttackMode != _currentAttackMode
+                && attackModeScore > 0f
+                    ? PlayerCloneAttackModeDirective.Switch
+                    : PlayerCloneAttackModeDirective.None;
+            GameAction requestedAction = _brain.SelectCombatAction(
+                brainContext,
+                dodgeScore,
+                skillScore,
+                chargeScore,
+                attackScore);
+            return new PlayerCloneCombatPlan(tacticalMode, requestedAction, desiredAttackMode, attackModeDirective, skillSlotIndex);
+        }
+
+        private PlayerAttackMode ResolvePlannedAttackMode(in PlayerCloneBrainContext brainContext, out float score)
+        {
+            score = 0f;
+
+            if (!brainContext.HasRangedWeapon)
+            {
+                _plannedAttackMode = PlayerAttackMode.Melee;
+                _lastAttackModeDecisionSecond = -1;
+                return PlayerAttackMode.Melee;
+            }
+
+            if (!brainContext.HasMeleeWeapon)
+            {
+                _plannedAttackMode = PlayerAttackMode.Ranged;
+                _lastAttackModeDecisionSecond = -1;
+                return PlayerAttackMode.Ranged;
+            }
+
+            if (!brainContext.HasTarget)
+            {
+                _plannedAttackMode = _currentAttackMode;
+                return _currentAttackMode;
+            }
+
+            if (IsMeleeComboLocked())
+            {
+                _plannedAttackMode = _currentAttackMode;
+                return _currentAttackMode;
+            }
+
+            if (_plannedAttackMode != _currentAttackMode && HasWeaponForAttackMode(_plannedAttackMode))
+            {
+                score = 2.4f;
+                return _plannedAttackMode;
+            }
+
+            int maxContinuousWholeSeconds = _aiConfig != null
+                ? Mathf.Max(1, Mathf.RoundToInt(_aiConfig.attackModeMaxContinuousSeconds))
+                : 10;
+            int elapsedWholeSeconds = Mathf.Max(0, Mathf.FloorToInt(_currentAttackModeElapsed));
+            int sampledWholeSeconds = Mathf.Min(elapsedWholeSeconds, maxContinuousWholeSeconds);
+            if (sampledWholeSeconds <= _lastAttackModeDecisionSecond)
+                return _plannedAttackMode;
+
+            PlayerAttackMode desiredAttackMode = _brain.ResolveAttackModeDecision(brainContext, out score);
+            _plannedAttackMode = desiredAttackMode;
+            _lastAttackModeDecisionSecond = sampledWholeSeconds;
+
+            return desiredAttackMode;
+        }
+
+        private PlayerCloneBrainContext BuildBrainContext(float distanceToTarget)
+        {
+            return new PlayerCloneBrainContext(
+                _aiConfig,
+                _combatMemory,
+                _currentAttackMode,
+                distanceToTarget,
+                _currentAttackModeElapsed,
+                _target != null && _target.IsAlive,
+                HasWeaponForAttackMode(PlayerAttackMode.Melee),
+                HasWeaponForAttackMode(PlayerAttackMode.Ranged),
+                _target != null && _target.IsCastingSkill,
+                _target != null && _target.IsHurt,
+                _target != null && _target.IsInPostCastRecovery,
+                IsTargetThreatening(distanceToTarget),
+                HasComboWindow(),
+                ShouldRegroupToOwner(),
+                ShouldInvestigateRecentTarget());
+        }
+
+        private bool ExecuteActiveSkill(SkillConfigEntry entry, int slotIndex)
         {
             if (entry == null)
                 return false;
@@ -1217,15 +1785,47 @@ namespace Game.Presentation
             if (IsTargetThreatening(distanceToTarget))
                 return false;
 
-            if (!TryCommitActiveSkill(entry))
+            if (!TryCommitActiveSkill(entry, slotIndex))
                 return false;
             return BeginConfiguredAction(entry.GetResolvedActionId());
+        }
+
+        private bool TryExecutePlannedSkill(int slotIndex)
+        {
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (skillDb == null || slotIndex < 0)
+                return false;
+
+            return TryGetEquippedActiveSkillEntry(skillDb, slotIndex, out SkillConfigEntry entry)
+                   && ExecuteActiveSkill(entry, slotIndex);
         }
 
         private bool TryStartChargeAttack()
         {
             SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
-            if (skillDb == null || skillDb.GetEntryByActionId("ChargeStart") == null || skillDb.GetEntryByActionId("ChargeRelease") == null)
+            if (skillDb == null)
+                return false;
+
+            if (IsUsingRangedAttackMode())
+            {
+                if (skillDb.GetEntryByActionId("ShootCharge") == null)
+                    return false;
+
+                float distanceToTarget = _target != null
+                    ? ResolvePlanarSurfaceDistance(transform.position, _target)
+                    : float.MaxValue;
+                float preferredRangedDistance = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredRangedDistance) : 6.5f;
+                if (distanceToTarget < preferredRangedDistance - 0.9f || IsTargetThreatening(distanceToTarget))
+                    return false;
+
+                _chargeCooldownTimer = _aiConfig != null ? Mathf.Max(0f, _aiConfig.chargeCooldownSeconds) : 3f;
+                ClearComboWindow();
+                float burstMin = _aiConfig != null ? Mathf.Max(0.45f, _aiConfig.chargeHoldMinSeconds * 2f) : 0.45f;
+                float burstMax = _aiConfig != null ? Mathf.Max(burstMin, _aiConfig.chargeHoldMaxSeconds * 3f) : 1.2f;
+                return BeginConfiguredAction("ShootCharge", Random.Range(burstMin, burstMax));
+            }
+
+            if (skillDb.GetEntryByActionId("ChargeStart") == null || skillDb.GetEntryByActionId("ChargeRelease") == null)
                 return false;
 
             _chargeCooldownTimer = _aiConfig != null ? Mathf.Max(0f, _aiConfig.chargeCooldownSeconds) : 3f;
@@ -1275,6 +1875,25 @@ namespace Game.Presentation
                 _dodgeCooldownTimer = Mathf.Max(0f, _dodgeCooldownTimer - dt);
             if (_chargeCooldownTimer > 0f)
                 _chargeCooldownTimer = Mathf.Max(0f, _chargeCooldownTimer - dt);
+            if (_attackModeSwitchCooldownTimer > 0f)
+                _attackModeSwitchCooldownTimer = Mathf.Max(0f, _attackModeSwitchCooldownTimer - dt);
+        }
+
+        private void TickAttackModeElapsed(float dt, PlayerCloneCombatPlan combatPlan)
+        {
+            if (dt <= 0f || _target == null || !_target.IsAlive || ShouldRegroupToOwner())
+                return;
+
+            bool hasActiveCombatAction = !string.IsNullOrWhiteSpace(_activeActionId);
+            bool hasCombatIntent =
+                combatPlan.RequestedAction != GameAction.None
+                || combatPlan.AttackModeDirective == PlayerCloneAttackModeDirective.Switch
+                || HasComboWindow()
+                || _actionLockTimer > 0f;
+            if (!hasActiveCombatAction && !hasCombatIntent)
+                return;
+
+            _currentAttackModeElapsed += dt;
         }
 
         private bool TickDodgeMotion(float dt)
@@ -1338,10 +1957,7 @@ namespace Game.Presentation
 
             float attackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange;
             float distanceToTarget = ResolvePlanarSurfaceDistance(transform.position, _target);
-            if (distanceToTarget > attackCastRange + 0.45f)
-                return false;
-
-            if (IsTargetThreatening(distanceToTarget))
+            if (distanceToTarget > attackCastRange + 0.9f)
                 return false;
 
             if (_target.IsHurt || _target.IsInPostCastRecovery)
@@ -1350,9 +1966,7 @@ namespace Game.Presentation
             if (nextStage <= 2)
                 return true;
 
-            float continueChance = 0.6f + (_aiConfig != null ? _aiConfig.comboBias : 0.72f) * 0.25f;
-            continueChance += (_aiConfig != null ? _aiConfig.aggression : 0.82f) * 0.1f;
-            return Random.value <= Mathf.Clamp01(continueChance);
+            return true;
         }
 
         private static int ParseAttackComboIndex(string actionId)
@@ -1385,6 +1999,12 @@ namespace Game.Presentation
         private bool HasComboWindow()
         {
             return _comboNextIndex > 0 && _comboWindowTimer > 0f;
+        }
+
+        private bool IsMeleeComboLocked()
+        {
+            return !IsUsingRangedAttackMode()
+                   && (HasComboWindow() || IsAttackComboAction(_activeActionId));
         }
 
         private int ResolveBufferedAttackComboIndex(int requestedComboIndex)
@@ -1439,7 +2059,10 @@ namespace Game.Presentation
                 "ChargeStart" => GameAction.ChargeStart,
                 "ChargeLoop" => GameAction.ChargeStart,
                 "ChargeRelease" => GameAction.ChargeRelease,
-                _ when _activeActionId.StartsWith("Skill", System.StringComparison.Ordinal) => GameAction.Skill,
+                "Shoot" => GameAction.Shoot,
+                "ShootCharge" => GameAction.ShootCharge,
+                "Shoot_Charge" => GameAction.ShootCharge,
+                _ when PlayerActionRouting.IsSkillSlotActionName(_activeActionId) => GameAction.Skill,
                 _ => GameAction.None,
             };
         }
@@ -1464,9 +2087,10 @@ namespace Game.Presentation
             if (string.IsNullOrWhiteSpace(_activeActionId))
                 return -1f;
 
-            if (_animator != null && !_animator.IsInTransition(0))
+            int layerIndex = ResolveActionTimingLayerIndex(_activeActionId);
+            if (_animator != null && !_animator.IsInTransition(layerIndex))
             {
-                AnimatorStateInfo info = _animator.GetCurrentAnimatorStateInfo(0);
+                AnimatorStateInfo info = _animator.GetCurrentAnimatorStateInfo(layerIndex);
                 if (!info.loop)
                     return Mathf.Clamp01(info.normalizedTime);
             }
@@ -1508,7 +2132,7 @@ namespace Game.Presentation
             return distanceToOwner <= cloneDistanceToOwner + 0.35f;
         }
 
-        private Vector3 ResolveStableCombatAnchor(Vector3 targetPosition, float distanceToTarget, float dt)
+        private Vector3 ResolveStableCombatAnchor(Vector3 targetPosition, float distanceToTarget, float dt, PlayerCloneTacticalMode tacticalMode, bool usingRangedAttackMode)
         {
             _combatAnchorRefreshTimer = Mathf.Max(0f, _combatAnchorRefreshTimer - dt);
             bool targetThreatening = IsTargetThreatening(distanceToTarget);
@@ -1517,7 +2141,7 @@ namespace Game.Presentation
             if (!_hasCombatAnchorTarget || _combatAnchorRefreshTimer <= 0f || targetMoved || threatChanged)
             {
                 _combatAnchorReferenceTargetPosition = targetPosition;
-                _combatAnchorTarget = ResolveCombatAnchor(targetPosition, distanceToTarget);
+                _combatAnchorTarget = ResolveCombatAnchor(targetPosition, distanceToTarget, tacticalMode, usingRangedAttackMode);
                 _combatAnchorThreatening = targetThreatening;
                 float refreshInterval = _aiConfig != null ? Mathf.Max(0.08f, _aiConfig.decisionInterval * 1.6f) : 0.1f;
                 _combatAnchorRefreshTimer = refreshInterval;
@@ -1542,9 +2166,6 @@ namespace Game.Presentation
                 return false;
 
             float threatDistance = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.dodgeThreatDistance) : 4.2f;
-            if (_target.IsCastingSkill)
-                return true;
-
             if (_target.ActiveSkillTargetPosition.HasValue)
             {
                 float targetedDistance = Vector3.Distance(_target.ActiveSkillTargetPosition.Value, transform.position);
@@ -1557,7 +2178,7 @@ namespace Game.Presentation
 
             return _target.CurrentIntent.Type switch
             {
-                EnemyIntentType.CastSkill => true,
+                EnemyIntentType.CastSkill => distanceToTarget <= threatDistance * 0.85f,
                 EnemyIntentType.Punish => distanceToTarget <= threatDistance,
                 _ => false,
             };
@@ -1610,6 +2231,19 @@ namespace Game.Presentation
             float centerDistance = planarOffset.magnitude;
             float targetRadius = ResolveTargetPlanarRadius(enemy);
             return Mathf.Max(0f, centerDistance - targetRadius);
+        }
+
+        private bool ShouldUseDirectLargeTargetMeleeEngage(EnemyController enemy)
+        {
+            if (enemy == null)
+                return false;
+
+            if (IsFinalBossTarget(enemy))
+                return true;
+
+            float meleeAttackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange;
+            float targetRadius = ResolveTargetPlanarRadius(enemy);
+            return targetRadius >= Mathf.Max(1.6f, meleeAttackCastRange * 0.55f);
         }
 
         private void ResetDecisionTimer()
@@ -1707,7 +2341,7 @@ namespace Game.Presentation
 
         public void OnHit(float damage, float stunDuration)
         {
-            if (!IsAlive || damage <= 0f || _temporaryInvincibleTimer > 0f || _dodgeMotionTimer > 0f || _activeActionId == "Dodge")
+            if (!IsAlive || damage <= 0f || _temporaryInvincibleTimer > 0f || _stateScopedInvincibleCount > 0 || _dodgeMotionTimer > 0f || _activeActionId == "Dodge")
                 return;
 
             _currentHp = Mathf.Max(0f, _currentHp - damage);
@@ -1718,7 +2352,7 @@ namespace Game.Presentation
                 return;
             }
 
-            if (_temporarySuperArmorTimer <= 0f)
+            if (_temporarySuperArmorTimer <= 0f && _stateScopedSuperArmorCount <= 0)
                 ApplyHardControl(stunDuration);
         }
 
@@ -1750,6 +2384,7 @@ namespace Game.Presentation
                 return;
 
             DetachCurrentTimelineRunner();
+            StopLocomotionTimeline();
             _activeActionId = string.Empty;
             ClearBufferedAction();
             ClearComboWindow();
@@ -1759,7 +2394,8 @@ namespace Game.Presentation
             _decisionTimer = Mathf.Max(_decisionTimer, validDuration);
             _hardControlTimer = Mathf.Max(_hardControlTimer, validDuration);
             EndDodgeMotion();
-            _animatorController?.TriggerLocomotion();
+            ResetActionPlaybackSpeed();
+            TriggerCurrentModeLocomotion();
         }
 
         public void ApplyTemporarySuperArmor(float duration)
@@ -1776,6 +2412,26 @@ namespace Game.Presentation
                 return;
 
             _temporaryInvincibleTimer = Mathf.Max(_temporaryInvincibleTimer, duration);
+        }
+
+        public void AddStateScopedSuperArmor()
+        {
+            _stateScopedSuperArmorCount++;
+        }
+
+        public void RemoveStateScopedSuperArmor()
+        {
+            _stateScopedSuperArmorCount = Mathf.Max(0, _stateScopedSuperArmorCount - 1);
+        }
+
+        public void AddStateScopedInvincibility()
+        {
+            _stateScopedInvincibleCount++;
+        }
+
+        public void RemoveStateScopedInvincibility()
+        {
+            _stateScopedInvincibleCount = Mathf.Max(0, _stateScopedInvincibleCount - 1);
         }
 
         public void ApplyStatModifier(StatModifier modifier, float duration)
@@ -1799,41 +2455,86 @@ namespace Game.Presentation
             ApplyVitalCaps(previousMaxHp, previousMaxMp, false);
         }
 
-        private static int ResolveActiveSkillSlotIndex(SkillConfigEntry entry)
+        public void ApplyStatModifierUntilStateExit(StatModifier modifier, SkillCueRuntimeScope cueRuntime)
         {
-            if (entry == null)
+            if (modifier == null)
+                return;
+
+            float previousMaxHp = Mathf.Max(0f, MaxHp);
+            float previousMaxMp = Mathf.Max(0f, MaxMp);
+            StatModifier clonedModifier = modifier.Clone();
+            _combatStats.AddModifier(clonedModifier);
+            ApplyVitalCaps(previousMaxHp, previousMaxMp, false);
+            cueRuntime?.RegisterStateExitCallback(() =>
+            {
+                if (this == null)
+                    return;
+
+                float removePreviousMaxHp = Mathf.Max(0f, MaxHp);
+                float removePreviousMaxMp = Mathf.Max(0f, MaxMp);
+                _combatStats.RemoveModifier(clonedModifier);
+                ApplyVitalCaps(removePreviousMaxHp, removePreviousMaxMp, false);
+            });
+        }
+
+        private int ResolveActiveSkillSlotIndex(SkillConfigEntry entry)
+        {
+            if (entry == null || _owner?.PlayerModel == null)
                 return -1;
 
             string actionId = entry.GetResolvedActionId();
-            if (string.IsNullOrWhiteSpace(actionId) || !actionId.StartsWith("Skill", System.StringComparison.Ordinal))
-                return -1;
-
-            string suffix = actionId.Substring("Skill".Length);
-            return int.TryParse(suffix, out int slotIndex) ? slotIndex : -1;
+            return string.IsNullOrWhiteSpace(actionId)
+                ? -1
+                : _owner.PlayerModel.FindEquippedSkillSlotIndex(actionId);
         }
 
-        private bool CanCastActiveSkill(SkillConfigEntry entry)
+        private bool CanCastActiveSkill(SkillConfigEntry entry, int slotIndex = -1)
         {
             if (entry == null || !CanSpendMp(entry.mpCost))
                 return false;
 
-            int slotIndex = ResolveActiveSkillSlotIndex(entry);
+            if (slotIndex < 0)
+                slotIndex = ResolveActiveSkillSlotIndex(entry);
             return slotIndex >= 0 && GetActiveSkillCooldownRemaining(slotIndex) <= 0f;
         }
 
-        private bool TryCommitActiveSkill(SkillConfigEntry entry)
+        private bool IsSkillAvailableForCurrentAttackMode(SkillConfigEntry entry)
         {
-            if (!CanCastActiveSkill(entry))
+            if (entry == null || _owner?.PlayerModel == null)
+                return false;
+
+            if (entry.IsPassiveSkill)
+                return _owner.PlayerModel.HasUnlockedSkill(entry.skillId);
+
+            if (entry.IsActiveSkill)
+            {
+                string equippedActionId = entry.GetResolvedActionId();
+                return _owner.PlayerModel.HasUnlockedSkill(entry.skillId)
+                       && entry.SupportsAttackMode(_currentAttackMode)
+                       && !string.IsNullOrWhiteSpace(equippedActionId)
+                       && _owner.PlayerModel.FindEquippedSkillSlotIndex(equippedActionId) >= 0;
+            }
+
+            if (entry.IsBaseSkill)
+                return entry.SupportsAttackMode(_currentAttackMode);
+
+            return _owner.PlayerModel.HasUnlockedSkill(entry.skillId);
+        }
+
+        private bool TryCommitActiveSkill(SkillConfigEntry entry, int slotIndex = -1)
+        {
+            if (!CanCastActiveSkill(entry, slotIndex))
                 return false;
 
             SpendMp(entry.mpCost);
-            StartActiveSkillCooldown(entry);
+            StartActiveSkillCooldown(entry, slotIndex);
             return true;
         }
 
-        private void StartActiveSkillCooldown(SkillConfigEntry entry)
+        private void StartActiveSkillCooldown(SkillConfigEntry entry, int slotIndex = -1)
         {
-            int slotIndex = ResolveActiveSkillSlotIndex(entry);
+            if (slotIndex < 0)
+                slotIndex = ResolveActiveSkillSlotIndex(entry);
             if (slotIndex < 0 || entry == null)
                 return;
 
@@ -1842,6 +2543,48 @@ namespace Game.Presentation
                 return;
 
             _activeSkillCooldowns[slotIndex] = cooldown;
+        }
+
+        private void CollectEquippedActiveSkillCandidates(
+            SkillConfigDatabaseSO skillDb,
+            List<SkillConfigEntry> candidates,
+            List<int> candidateSlots)
+        {
+            if (skillDb == null || candidates == null || candidateSlots == null || _owner?.PlayerModel == null)
+                return;
+
+            for (int slotIndex = 0; slotIndex < PlayerModel.SkillSlotCount; slotIndex++)
+            {
+                if (!TryGetEquippedActiveSkillEntry(skillDb, slotIndex, out SkillConfigEntry entry))
+                    continue;
+                if (!CanCastActiveSkill(entry, slotIndex))
+                    continue;
+
+                candidates.Add(entry);
+                candidateSlots.Add(slotIndex);
+            }
+        }
+
+        private bool TryGetEquippedActiveSkillEntry(SkillConfigDatabaseSO skillDb, int slotIndex, out SkillConfigEntry entry)
+        {
+            entry = null;
+            if (skillDb == null || _owner?.PlayerModel == null || slotIndex < 0 || slotIndex >= PlayerModel.SkillSlotCount)
+                return false;
+
+            entry = _owner.PlayerModel.GetEquippedActiveSkillEntry(slotIndex, skillDb);
+            if (entry == null || !entry.IsActiveSkill)
+            {
+                entry = null;
+                return false;
+            }
+
+            if (!_owner.PlayerModel.HasUnlockedSkill(entry.skillId) || !entry.SupportsAttackMode(_currentAttackMode))
+            {
+                entry = null;
+                return false;
+            }
+
+            return true;
         }
 
         private float GetActiveSkillCooldownRemaining(int slotIndex)
@@ -1981,7 +2724,8 @@ namespace Game.Presentation
             BuffConfigSO buffConfig = ConfigManager.GetInstance()?.GetBuffConfig();
             _ownerSharedStats = _owner.PlayerModel.BuildCloneSharedStatsSnapshot(
                 skillConfig,
-                buffConfig != null ? buffConfig.GetModifierForBuff : null);
+                buffConfig != null ? buffConfig.GetModifierForBuff : null,
+                _currentAttackMode);
             _ownerSharedBuildSignature = buildSignature;
         }
 
@@ -1995,24 +2739,12 @@ namespace Game.Presentation
                 int hash = 17;
                 PlayerModel ownerModel = _owner.PlayerModel;
                 hash = hash * 31 + ownerModel.Exp.Level;
+                hash = hash * 31 + (int)_currentAttackMode;
 
-                WeaponInstance weapon = ownerModel.Equipment.EquippedWeapon;
-                if (weapon != null)
-                {
-                    hash = hash * 31 + (weapon.weaponId != null ? StringComparer.Ordinal.GetHashCode(weapon.weaponId) : 0);
-                    hash = hash * 31 + (int)weapon.type;
-                    hash = hash * 31 + (int)weapon.rarity;
-                    hash = hash * 31 + weapon.rolledHp.GetHashCode();
-                    hash = hash * 31 + weapon.rolledMp.GetHashCode();
-                    hash = hash * 31 + weapon.rolledAttack.GetHashCode();
-                    hash = hash * 31 + weapon.rolledDefense.GetHashCode();
-                    hash = hash * 31 + weapon.rolledHpRegen.GetHashCode();
-                    hash = hash * 31 + weapon.rolledMpRegen.GetHashCode();
-                    hash = hash * 31 + weapon.rolledCritRate.GetHashCode();
-                    hash = hash * 31 + weapon.rolledCritDmg.GetHashCode();
-                    hash = hash * 31 + weapon.rolledAttackSpeed.GetHashCode();
-                    hash = hash * 31 + weapon.rolledMoveSpeed.GetHashCode();
-                }
+                WeaponInstance meleeWeapon = ownerModel.GetEquippedWeapon(PlayerAttackMode.Melee);
+                hash = AppendWeaponSignature(hash, meleeWeapon);
+                WeaponInstance rangedWeapon = ownerModel.GetEquippedWeapon(PlayerAttackMode.Ranged);
+                hash = AppendWeaponSignature(hash, rangedWeapon);
 
                 if (ownerModel.BuffIds != null)
                 {
@@ -2043,6 +2775,30 @@ namespace Game.Presentation
                     hash = hash * 31 + skillHash;
                 }
 
+                return hash;
+            }
+        }
+
+        private static int AppendWeaponSignature(int hash, WeaponInstance weapon)
+        {
+            unchecked
+            {
+                if (weapon == null)
+                    return hash * 31;
+
+                hash = hash * 31 + (weapon.weaponId != null ? StringComparer.Ordinal.GetHashCode(weapon.weaponId) : 0);
+                hash = hash * 31 + (int)weapon.type;
+                hash = hash * 31 + (int)weapon.rarity;
+                hash = hash * 31 + weapon.rolledHp.GetHashCode();
+                hash = hash * 31 + weapon.rolledMp.GetHashCode();
+                hash = hash * 31 + weapon.rolledAttack.GetHashCode();
+                hash = hash * 31 + weapon.rolledDefense.GetHashCode();
+                hash = hash * 31 + weapon.rolledHpRegen.GetHashCode();
+                hash = hash * 31 + weapon.rolledMpRegen.GetHashCode();
+                hash = hash * 31 + weapon.rolledCritRate.GetHashCode();
+                hash = hash * 31 + weapon.rolledCritDmg.GetHashCode();
+                hash = hash * 31 + weapon.rolledAttackSpeed.GetHashCode();
+                hash = hash * 31 + weapon.rolledMoveSpeed.GetHashCode();
                 return hash;
             }
         }
@@ -2104,7 +2860,7 @@ namespace Game.Presentation
             EnsureCloneGlowLight();
             _animator.Rebind();
             _animator.Update(0f);
-            _animatorController.TriggerLocomotion();
+            RefreshAttackModePresentation();
         }
 
         private void EnterFollowLocomotion()
@@ -2121,9 +2877,9 @@ namespace Game.Presentation
 
             if (_animatorController != null)
             {
-                _animatorController.SetPlaybackSpeed(1f);
+                ResetActionPlaybackSpeed();
                 _animatorController.SetGrounded(true);
-                _animatorController.TriggerLocomotion();
+                TriggerCurrentModeLocomotion();
             }
         }
 
@@ -2140,9 +2896,9 @@ namespace Game.Presentation
             _isInCombatLocomotion = true;
             if (_animatorController != null)
             {
-                _animatorController.SetPlaybackSpeed(1f);
+                ResetActionPlaybackSpeed();
                 _animatorController.SetGrounded(true);
-                _animatorController.TriggerLocomotion();
+                TriggerCurrentModeLocomotion();
             }
         }
 
@@ -2721,12 +3477,16 @@ namespace Game.Presentation
 
         private void OnDisable()
         {
+            StopRangedPosture();
+            StopLocomotionTimeline();
             StopDetachedTimelineRunners();
             ActiveCloneActors.Remove(this);
         }
 
         private void OnDestroy()
         {
+            StopRangedPosture();
+            StopLocomotionTimeline();
             _timelineRunner?.Stop();
             StopDetachedTimelineRunners();
             ActiveCloneActors.Remove(this);

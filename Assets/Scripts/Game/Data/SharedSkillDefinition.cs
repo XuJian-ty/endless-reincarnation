@@ -96,6 +96,14 @@ namespace Game.Data
         UntilStateExit,
     }
 
+    public enum SkillEffectDurationMode
+    {
+        [InspectorName("指定时长")]
+        FixedTime,
+        [InspectorName("状态退出")]
+        UntilStateExit,
+    }
+
     [Serializable]
     public class SkillMotionSettings
     {
@@ -251,6 +259,10 @@ namespace Game.Data
         [InspectorLabel("射线最大距离")]
         [Tooltip("仅 Raycast 检测方式使用。")]
         [Min(0.01f)] public float rayMaxDistance = 50f;
+
+        [InspectorLabel("射线半径")]
+        [Tooltip("仅 Raycast 检测方式使用。0 表示细射线；大于 0 时会改为球形射线，相当于可调粗细。")]
+        [Min(0f)] public float rayRadius = 0f;
 
         [InspectorLabel("移动设置")]
         [Tooltip("用于实现向前推进的扇形、剑气判定等。碰撞检测模式暂不使用这组设置。")]
@@ -425,6 +437,10 @@ namespace Game.Data
         [Tooltip("击飞/腾空 使用该高度。")]
         [Min(0f)] public float height = 1f;
 
+        [InspectorLabel("持续方式")]
+        [Tooltip("指定时长=持续固定秒数；状态退出=持续到当前状态退出。仅顶层霸体/无敌效果建议使用“状态退出”。")]
+        public SkillEffectDurationMode durationMode = SkillEffectDurationMode.FixedTime;
+
         [InspectorLabel("持续时长(秒)")]
         [Tooltip("击退、拉拽、击飞、位移、腾空、眩晕、霸体、无敌 的持续时间。")]
         [Min(0f)] public float duration = 0.2f;
@@ -450,6 +466,10 @@ namespace Game.Data
         public bool UsesHeight =>
             effectType == PhysicsEffectType.Launch
             || effectType == PhysicsEffectType.Airborne;
+
+        public bool SupportsUntilStateExitDuration =>
+            effectType == PhysicsEffectType.SuperArmor
+            || effectType == PhysicsEffectType.Invincible;
     }
 
     [Serializable]
@@ -471,9 +491,16 @@ namespace Game.Data
         [Tooltip("勾选后按最大值或基础值比例计算，例如 0.2 表示 20%。")]
         public bool usePercent = false;
 
+        [InspectorLabel("持续方式")]
+        [Tooltip("指定时长=持续固定秒数；状态退出=持续到当前状态退出。仅对 HP/MP 以外的字段生效。")]
+        public SkillEffectDurationMode durationMode = SkillEffectDurationMode.FixedTime;
+
         [InspectorLabel("Buff 持续时长(秒)")]
         [Tooltip("仅对 HP/MP 以外的字段生效。0 表示本局常驻；大于 0 表示临时 Buff。")]
         [Min(0f)] public float duration = 0f;
+
+        public bool UsesDuration =>
+            statField != SkillStatField.HP && statField != SkillStatField.MP;
     }
 
     [System.Serializable]
@@ -688,6 +715,8 @@ namespace Game.Data
             return HasUntilStateExitEvent(damageEvents)
                 || HasUntilStateExitEvent(physicsEvents)
                 || HasUntilStateExitEvent(attributeEvents)
+                || HasUntilStateExitTopLevelEffects(physicsEvents)
+                || HasUntilStateExitTopLevelEffects(attributeEvents)
                 || HasUntilStateExitEvent(vfxEvents)
                 || HasUntilStateExitEvent(sfxEvents);
         }
@@ -920,7 +949,12 @@ namespace Game.Data
 
         public static float GetPhysicsEffectLifetime(SkillPhysicsEffect effect)
         {
-            return effect != null ? Mathf.Max(0f, effect.duration) : 0f;
+            if (effect == null)
+                return 0f;
+
+            return effect.durationMode == SkillEffectDurationMode.UntilStateExit
+                ? 0f
+                : Mathf.Max(0f, effect.duration);
         }
 
         public static float GetAttributeEffectLifetime(SkillAttributeEffect effect)
@@ -930,7 +964,61 @@ namespace Game.Data
 
             return effect.statField == SkillStatField.HP || effect.statField == SkillStatField.MP
                 ? 0f
-                : Mathf.Max(0f, effect.duration);
+                : effect.durationMode == SkillEffectDurationMode.UntilStateExit
+                    ? 0f
+                    : Mathf.Max(0f, effect.duration);
+        }
+
+        private static bool HasUntilStateExitTopLevelEffects(List<SkillPhysicsEvent> list)
+        {
+            if (list == null)
+                return false;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                SkillPhysicsEvent evt = list[i];
+                if (evt?.physicsEffects == null)
+                    continue;
+
+                for (int effectIndex = 0; effectIndex < evt.physicsEffects.Count; effectIndex++)
+                {
+                    SkillPhysicsEffect effect = evt.physicsEffects[effectIndex];
+                    if (effect != null
+                        && effect.SupportsUntilStateExitDuration
+                        && effect.durationMode == SkillEffectDurationMode.UntilStateExit)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasUntilStateExitTopLevelEffects(List<SkillAttributeEvent> list)
+        {
+            if (list == null)
+                return false;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                SkillAttributeEvent evt = list[i];
+                if (evt?.attributeEffects == null)
+                    continue;
+
+                for (int effectIndex = 0; effectIndex < evt.attributeEffects.Count; effectIndex++)
+                {
+                    SkillAttributeEffect effect = evt.attributeEffects[effectIndex];
+                    if (effect != null
+                        && effect.UsesDuration
+                        && effect.durationMode == SkillEffectDurationMode.UntilStateExit)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public static float GetVfxEffectLifetime(SkillVfxEffect effect)

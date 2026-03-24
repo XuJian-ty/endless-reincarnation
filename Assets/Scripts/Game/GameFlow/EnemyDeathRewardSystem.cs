@@ -37,6 +37,8 @@ namespace Game.GameFlow
                     GrantNormalEnemyRewards(player, enemyStats, deathPosition, rng, levelConfig);
                     break;
             }
+
+            EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
         }
 
         private static void GrantGuardianRewards(PlayerModel player, EnemyRuntimeStats enemyStats, Vector3 deathPosition, LevelConfigData levelConfig, System.Random rng)
