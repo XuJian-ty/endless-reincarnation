@@ -268,6 +268,14 @@ namespace Game.Data
         [Tooltip("用于实现向前推进的扇形、剑气判定等。碰撞检测模式暂不使用这组设置。")]
         public SkillMotionSettings motion = new SkillMotionSettings();
 
+        [HideInInspector]
+        [FormerlySerializedAs("companionVfxEffect")]
+        public SkillVfxEffect legacyCompanionVfxEffect;
+
+        [InspectorLabel("伴随特效效果(VFX)")]
+        [Tooltip("仅非碰撞检测使用。检测窗口创建时生成，检测窗口销毁时销毁，并随检测体一起移动。")]
+        public List<SkillVfxEffect> companionVfxEffects = new List<SkillVfxEffect>();
+
         [InspectorLabel("命中伤害效果")]
         [Tooltip("命中成功后触发的伤害子效果。")]
         public List<SkillHitDamageEffect> onHitDamageEffects = new List<SkillHitDamageEffect>();
@@ -283,7 +291,7 @@ namespace Game.Data
         [HideInInspector] public float hitStopDuration = 0f;
         [HideInInspector] public float hitStopTimeScale = 0f;
         [HideInInspector] public bool pauseCameraLookDuringHitStop = false;
-        [HideInInspector] public float damageMagnitude = 1f;
+        [HideInInspector] public float damageMagnitude = 0f;
         [HideInInspector] public bool nestedSubEffectsOwnedByLists = false;
 
         [InspectorLabel("命中物理效果")]
@@ -305,21 +313,27 @@ namespace Game.Data
         public bool TryMigrateLegacySubEffects()
         {
             bool migrated = false;
+            companionVfxEffects ??= new List<SkillVfxEffect>();
             onHitDamageEffects ??= new List<SkillHitDamageEffect>();
             onHitStopEffect ??= new SkillHitStopEffect();
             legacyOnHitStopEffects ??= new List<SkillHitStopEffect>();
+            bool listOwnedByCurrentFields = nestedSubEffectsOwnedByLists;
+            bool hasLegacyHitDamage = !listOwnedByCurrentFields && damageMagnitude > 0f;
+            bool hasLegacyHitStop =
+                hitStopDuration > 0f
+                || hitStopTimeScale > 0f
+                || pauseCameraLookDuringHitStop;
 
-            if (nestedSubEffectsOwnedByLists
-                && onHitDamageEffects.Count > 0
-                && legacyOnHitStopEffects.Count == 0
-                && hitStopDuration <= 0f
-                && hitStopTimeScale <= 0f
-                && !pauseCameraLookDuringHitStop)
+            if (legacyCompanionVfxEffect != null)
             {
-                return false;
+                if (!listOwnedByCurrentFields && companionVfxEffects.Count == 0)
+                    companionVfxEffects.Add(legacyCompanionVfxEffect);
+
+                legacyCompanionVfxEffect = null;
+                migrated = true;
             }
 
-            if (onHitDamageEffects.Count == 0)
+            if (hasLegacyHitDamage && onHitDamageEffects.Count == 0)
             {
                 onHitDamageEffects.Add(new SkillHitDamageEffect
                 {
@@ -327,11 +341,6 @@ namespace Game.Data
                 });
                 migrated = true;
             }
-
-            bool hasLegacyHitStop =
-                hitStopDuration > 0f
-                || hitStopTimeScale > 0f
-                || pauseCameraLookDuringHitStop;
             if (legacyOnHitStopEffects.Count > 0)
             {
                 SkillHitStopEffect primaryLegacyHitStopEffect = null;
@@ -369,7 +378,7 @@ namespace Game.Data
                 migrated = true;
             }
 
-            if (!migrated)
+            if (!migrated && listOwnedByCurrentFields)
                 return false;
 
             damageMagnitude = 0f;

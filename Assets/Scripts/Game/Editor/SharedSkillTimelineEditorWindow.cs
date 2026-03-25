@@ -99,6 +99,10 @@ namespace Game.Editor
         private int _activeSceneHitVfxEventIndex = -1;
         private int _activeSceneHitVfxDamageIndex = -1;
         private int _activeSceneHitVfxIndex = -1;
+        private int _activeSceneCompanionVfxEventIndex = -1;
+        private int _activeSceneCompanionVfxDamageIndex = -1;
+        private int _activeSceneCompanionVfxIndex = -1;
+        private readonly HashSet<string> _collapsedEffectKeys = new HashSet<string>();
         private readonly HashSet<string> _hiddenPreviewCueKeys = new HashSet<string>();
         private CharacterAnimationLibrarySO _animationLibrary;
         private int _selectedAnimationGroupIndex = -1;
@@ -107,7 +111,9 @@ namespace Game.Editor
         private GameObject _scenePreviewCuePrefab;
         private int _scenePreviewCueEventIndex = -1;
         private int _scenePreviewCueListIndex = -1;
+        private int _scenePreviewCueDamageIndex = -1;
         private TimelineTrackType _scenePreviewCueTrackType = TimelineTrackType.Vfx;
+        private bool _scenePreviewCueFollowsDamageWindow;
         private bool _scenePreviewCueHasWorldOrigin;
         private float _scenePreviewCueWorldOriginTriggerTime = -1f;
         private Vector3 _scenePreviewCueWorldOriginPosition;
@@ -199,11 +205,13 @@ namespace Game.Editor
             public GameObject prefab;
             public GameObject instance;
             public SkillVfxEffect effect;
+            public SkillDamageEffect damageEffect;
             public Transform explicitTarget;
             public Vector3 baseScale;
             public Vector3 originPosition;
             public Quaternion originRotation;
             public bool hasWorldOrigin;
+            public bool followsDamageWindow;
         }
 
         private sealed class PreviewOverlayLine
@@ -316,6 +324,22 @@ namespace Game.Editor
                     && TryGetOnHitSceneCuePlaybackContext(out float onHitTriggerTime, out Transform onHitExplicitTarget))
                 {
                     DrawCueSceneHandle(damageEffect.onHitVfxEffects[_activeSceneHitVfxIndex], onHitTriggerTime, onHitExplicitTarget, "命中特效效果");
+                }
+            }
+
+            if (GetTrackEvent(skill, TimelineTrackType.Damage, _activeSceneCompanionVfxEventIndex) is SkillDamageEvent activeCompanionVfxDamageEvent
+                && _activeSceneCompanionVfxDamageIndex >= 0
+                && activeCompanionVfxDamageEvent.damageEffects != null
+                && _activeSceneCompanionVfxDamageIndex < activeCompanionVfxDamageEvent.damageEffects.Count)
+            {
+                SkillDamageEffect damageEffect = activeCompanionVfxDamageEvent.damageEffects[_activeSceneCompanionVfxDamageIndex];
+                damageEffect?.TryMigrateLegacySubEffects();
+                if (damageEffect?.companionVfxEffects != null
+                    && _activeSceneCompanionVfxIndex >= 0
+                    && _activeSceneCompanionVfxIndex < damageEffect.companionVfxEffects.Count
+                    && TryGetSceneCompanionCuePlaybackContext(out float companionTriggerTime))
+                {
+                    DrawDamageCompanionCueSceneHandle(damageEffect, damageEffect.companionVfxEffects[_activeSceneCompanionVfxIndex], companionTriggerTime, "伴随特效效果");
                 }
             }
 
@@ -1915,7 +1939,16 @@ namespace Game.Editor
                 effect.TryMigrateLegacySubEffects();
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"命中效果 {i + 1}", EditorStyles.miniBoldLabel);
+                string effectSummary = GetDamageDetectionDisplayName(effect);
+                string companionSummary = JoinVfxEffectNames(effect.companionVfxEffects);
+                if (!string.IsNullOrWhiteSpace(companionSummary))
+                    effectSummary = $"{effectSummary} / 伴随特效:{companionSummary}";
+                string onHitSummary = BuildOnHitEffectSummary(effect);
+                if (!string.IsNullOrWhiteSpace(onHitSummary))
+                    effectSummary = $"{effectSummary} / {onHitSummary}";
+                bool isExpanded = DrawEffectFoldout(
+                    GetDamageEffectFoldoutKey(_selectedEventIndex, i),
+                    BuildIndexedFoldoutLabel("命中效果", i + 1, effectSummary));
                 bool isEditingDamage = _selectedEventTrackType == TimelineTrackType.Damage
                     && _activeSceneDamageEventIndex == _selectedEventIndex
                     && _activeSceneDamageIndex == i;
@@ -1930,80 +1963,83 @@ namespace Game.Editor
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                float newDetectionDuration = Mathf.Max(0f, EditorGUILayout.FloatField("检测时长(秒)", effect.detectionDuration));
-                EditorGUILayout.LabelField("检测时长(帧)", FormatFrameOnly(newDetectionDuration), EditorStyles.miniLabel);
-                DamageDetectionType newDetectionType = (DamageDetectionType)EditorGUILayout.EnumPopup("检测方式", effect.detectionType);
-                string newHitLayerName = EditorGUILayout.TextField("命中层级名", effect.hitLayerName ?? string.Empty);
-                AttackShapeType newShape = effect.shape;
-                Vector3 newCenterOffset = effect.centerOffset;
-                Vector3 newRotationEuler = effect.rotationEuler;
-                float newSphereRadius = effect.sphereRadius;
-                float newSectorAngle = effect.sectorAngle;
-                Vector3 newBoxSize = effect.boxSize;
-                string newColliderNodeName = effect.colliderNodeName ?? string.Empty;
-                Vector3 newRayOriginOffset = effect.rayOriginOffset;
-                float newRayMaxDistance = effect.rayMaxDistance;
-                float newRayRadius = effect.rayRadius;
-                SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
-
-                switch (newDetectionType)
+                if (isExpanded)
                 {
-                    case DamageDetectionType.RangeOverlap:
-                        newShape = (AttackShapeType)EditorGUILayout.EnumPopup("范围形状", effect.shape);
-                        newCenterOffset = EditorGUILayout.Vector3Field("中心偏移", effect.centerOffset);
-                        if (newShape == AttackShapeType.Sector || newShape == AttackShapeType.Box)
+                    EditorGUI.BeginChangeCheck();
+                    float newDetectionDuration = Mathf.Max(0f, EditorGUILayout.FloatField("检测时长(秒)", effect.detectionDuration));
+                    EditorGUILayout.LabelField("检测时长(帧)", FormatFrameOnly(newDetectionDuration), EditorStyles.miniLabel);
+                    DamageDetectionType newDetectionType = (DamageDetectionType)EditorGUILayout.EnumPopup("检测方式", effect.detectionType);
+                    string newHitLayerName = EditorGUILayout.TextField("命中层级名", effect.hitLayerName ?? string.Empty);
+                    AttackShapeType newShape = effect.shape;
+                    Vector3 newCenterOffset = effect.centerOffset;
+                    Vector3 newRotationEuler = effect.rotationEuler;
+                    float newSphereRadius = effect.sphereRadius;
+                    float newSectorAngle = effect.sectorAngle;
+                    Vector3 newBoxSize = effect.boxSize;
+                    string newColliderNodeName = effect.colliderNodeName ?? string.Empty;
+                    Vector3 newRayOriginOffset = effect.rayOriginOffset;
+                    float newRayMaxDistance = effect.rayMaxDistance;
+                    float newRayRadius = effect.rayRadius;
+                    SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
+
+                    switch (newDetectionType)
+                    {
+                        case DamageDetectionType.RangeOverlap:
+                            newShape = (AttackShapeType)EditorGUILayout.EnumPopup("范围形状", effect.shape);
+                            newCenterOffset = EditorGUILayout.Vector3Field("中心偏移", effect.centerOffset);
+                            if (newShape == AttackShapeType.Sector || newShape == AttackShapeType.Box)
+                                newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
+                            if (newShape == AttackShapeType.Sphere || newShape == AttackShapeType.Sector)
+                                newSphereRadius = Mathf.Max(0.01f, EditorGUILayout.FloatField("球体半径", effect.sphereRadius));
+                            if (newShape == AttackShapeType.Sector)
+                                newSectorAngle = Mathf.Clamp(EditorGUILayout.FloatField("扇形角度", effect.sectorAngle), 1f, 360f);
+                            if (newShape == AttackShapeType.Box)
+                                newBoxSize = ClampVector3(EditorGUILayout.Vector3Field("盒体尺寸", effect.boxSize), 0.01f);
+                            break;
+
+                        case DamageDetectionType.Collision:
+                            newColliderNodeName = EditorGUILayout.TextField("武器命中盒对象名", effect.colliderNodeName ?? string.Empty);
+                            break;
+
+                        case DamageDetectionType.Raycast:
+                            newRayOriginOffset = EditorGUILayout.Vector3Field("射线起点偏移", effect.rayOriginOffset);
                             newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
-                        if (newShape == AttackShapeType.Sphere || newShape == AttackShapeType.Sector)
-                            newSphereRadius = Mathf.Max(0.01f, EditorGUILayout.FloatField("球体半径", effect.sphereRadius));
-                        if (newShape == AttackShapeType.Sector)
-                            newSectorAngle = Mathf.Clamp(EditorGUILayout.FloatField("扇形角度", effect.sectorAngle), 1f, 360f);
-                        if (newShape == AttackShapeType.Box)
-                            newBoxSize = ClampVector3(EditorGUILayout.Vector3Field("盒体尺寸", effect.boxSize), 0.01f);
-                        break;
+                            newRayMaxDistance = Mathf.Max(0.01f, EditorGUILayout.FloatField("射线最大距离", effect.rayMaxDistance));
+                            newRayRadius = Mathf.Max(0f, EditorGUILayout.FloatField("射线半径", effect.rayRadius));
+                            break;
+                    }
 
-                    case DamageDetectionType.Collision:
-                        newColliderNodeName = EditorGUILayout.TextField("武器命中盒对象名", effect.colliderNodeName ?? string.Empty);
-                        break;
+                    if (newDetectionType != DamageDetectionType.Collision)
+                        DrawMotionSettingsEditor("移动设置", newMotion);
 
-                    case DamageDetectionType.Raycast:
-                        newRayOriginOffset = EditorGUILayout.Vector3Field("射线起点偏移", effect.rayOriginOffset);
-                        newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
-                        newRayMaxDistance = Mathf.Max(0.01f, EditorGUILayout.FloatField("射线最大距离", effect.rayMaxDistance));
-                        newRayRadius = Mathf.Max(0f, EditorGUILayout.FloatField("射线半径", effect.rayRadius));
-                        break;
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Hit Effect");
+                        effect.detectionDuration = SnapDuration(newDetectionDuration);
+                        effect.detectionType = newDetectionType;
+                        effect.hitLayerName = newHitLayerName;
+                        effect.shape = newShape;
+                        effect.centerOffset = newCenterOffset;
+                        effect.rotationEuler = newRotationEuler;
+                        effect.sphereRadius = Mathf.Max(0.01f, newSphereRadius);
+                        effect.sectorAngle = Mathf.Clamp(newSectorAngle, 1f, 360f);
+                        effect.boxSize = ClampVector3(newBoxSize, 0.01f);
+                        effect.colliderNodeName = newColliderNodeName;
+                        effect.rayOriginOffset = newRayOriginOffset;
+                        effect.rayMaxDistance = Mathf.Max(0.01f, newRayMaxDistance);
+                        effect.rayRadius = Mathf.Max(0f, newRayRadius);
+                        effect.motion = newMotion;
+                        MarkDatabaseDirty();
+                    }
+
+                    DrawHitStopEffectEditor(effect, i);
+                    DrawDamageCompanionVfxEditor(effect, i);
+                    DrawNestedHitDamageEffectsEditor(effect, i);
+                    DrawNestedVfxEffectsEditor(effect, i);
+                    DrawNestedSfxEffectsEditor(effect, i);
+                    DrawNestedPhysicsEffectsEditor(effect, i);
+                    DrawNestedAttributeEffectsEditor(effect, i);
                 }
-
-                DrawMotionSettingsEditor("移动设置", newMotion);
-
-                if (EditorGUI.EndChangeCheck())
-                {
-                    Undo.RecordObject(_database, "Edit Hit Effect");
-                    effect.detectionDuration = SnapDuration(newDetectionDuration);
-                    effect.detectionType = newDetectionType;
-                    effect.hitLayerName = newHitLayerName;
-                    effect.shape = newShape;
-                    effect.centerOffset = newCenterOffset;
-                    effect.rotationEuler = newRotationEuler;
-                    effect.sphereRadius = Mathf.Max(0.01f, newSphereRadius);
-                    effect.sectorAngle = Mathf.Clamp(newSectorAngle, 1f, 360f);
-                    effect.boxSize = ClampVector3(newBoxSize, 0.01f);
-                    effect.colliderNodeName = newColliderNodeName;
-                    effect.rayOriginOffset = newRayOriginOffset;
-                    effect.rayMaxDistance = Mathf.Max(0.01f, newRayMaxDistance);
-                    effect.rayRadius = Mathf.Max(0f, newRayRadius);
-                    effect.motion = newMotion;
-                    MarkDatabaseDirty();
-                }
-
-                DrawHitStopEffectEditor(effect);
-                if (newDetectionType == DamageDetectionType.Collision && newMotion.enabled)
-                    EditorGUILayout.HelpBox("碰撞检测模式暂不使用这组移动设置。", MessageType.Info);
-                DrawNestedHitDamageEffectsEditor(effect);
-                DrawNestedPhysicsEffectsEditor(effect);
-                DrawNestedAttributeEffectsEditor(effect);
-                DrawNestedVfxEffectsEditor(effect, i);
-                DrawNestedSfxEffectsEditor(effect, i);
 
                 EditorGUILayout.EndVertical();
             }
@@ -2040,6 +2076,21 @@ namespace Game.Editor
                         _activeSceneHitVfxDamageIndex--;
                     }
                 }
+                if (_selectedEventTrackType == TimelineTrackType.Damage
+                    && _activeSceneCompanionVfxEventIndex == _selectedEventIndex)
+                {
+                    if (_activeSceneCompanionVfxDamageIndex == removeIndex)
+                    {
+                        _activeSceneCompanionVfxEventIndex = -1;
+                        _activeSceneCompanionVfxDamageIndex = -1;
+                        _activeSceneCompanionVfxIndex = -1;
+                        DestroyScenePreviewCueInstance();
+                    }
+                    else if (_activeSceneCompanionVfxDamageIndex > removeIndex)
+                    {
+                        _activeSceneCompanionVfxDamageIndex--;
+                    }
+                }
                 MarkDatabaseDirty();
             }
 
@@ -2068,36 +2119,41 @@ namespace Game.Editor
                 SkillPhysicsEffect effect = evt.physicsEffects[i] ?? (evt.physicsEffects[i] = new SkillPhysicsEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"物理效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetTopLevelPhysicsFoldoutKey(_selectedEventIndex, i),
+                    BuildIndexedFoldoutLabel("物理效果", i + 1, GetPhysicsEffectDisplayName(effect.effectType)));
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                PhysicsEffectType newEffectType = DrawPhysicsEffectTypePopup(effect.effectType, false);
-                float newDistance = effect.distance;
-                float newHeight = effect.height;
-                if (UsesPhysicsDistance(newEffectType))
-                    newDistance = Mathf.Max(0f, EditorGUILayout.FloatField("距离", effect.distance));
-                if (UsesPhysicsHeight(newEffectType))
-                    newHeight = Mathf.Max(0f, EditorGUILayout.FloatField("高度", effect.height));
-                SkillEffectDurationMode newDurationMode = SupportsTopLevelUntilStateExit(newEffectType)
-                    ? (SkillEffectDurationMode)EditorGUILayout.EnumPopup("持续方式", effect.durationMode)
-                    : SkillEffectDurationMode.FixedTime;
-                float newDuration = effect.duration;
-                if (!SupportsTopLevelUntilStateExit(newEffectType) || newDurationMode == SkillEffectDurationMode.FixedTime)
-                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
-                else
-                    EditorGUILayout.HelpBox("该效果会持续到当前状态退出。", MessageType.None);
-                if (EditorGUI.EndChangeCheck())
+                if (isExpanded)
                 {
-                    Undo.RecordObject(_database, "Edit Physics Effect");
-                    effect.effectType = newEffectType;
-                    effect.distance = newDistance;
-                    effect.height = newHeight;
-                    effect.durationMode = newDurationMode;
-                    effect.duration = newDuration;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    PhysicsEffectType newEffectType = DrawPhysicsEffectTypePopup(effect.effectType, false);
+                    float newDistance = effect.distance;
+                    float newHeight = effect.height;
+                    if (UsesPhysicsDistance(newEffectType))
+                        newDistance = Mathf.Max(0f, EditorGUILayout.FloatField("距离", effect.distance));
+                    if (UsesPhysicsHeight(newEffectType))
+                        newHeight = Mathf.Max(0f, EditorGUILayout.FloatField("高度", effect.height));
+                    SkillEffectDurationMode newDurationMode = SupportsTopLevelUntilStateExit(newEffectType)
+                        ? (SkillEffectDurationMode)EditorGUILayout.EnumPopup("持续方式", effect.durationMode)
+                        : SkillEffectDurationMode.FixedTime;
+                    float newDuration = effect.duration;
+                    if (!SupportsTopLevelUntilStateExit(newEffectType) || newDurationMode == SkillEffectDurationMode.FixedTime)
+                        newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
+                    else
+                        EditorGUILayout.HelpBox("该效果会持续到当前状态退出。", MessageType.None);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Physics Effect");
+                        effect.effectType = newEffectType;
+                        effect.distance = newDistance;
+                        effect.height = newHeight;
+                        effect.durationMode = newDurationMode;
+                        effect.duration = newDuration;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -2135,38 +2191,43 @@ namespace Game.Editor
                 SkillAttributeEffect effect = evt.attributeEffects[i] ?? (evt.attributeEffects[i] = new SkillAttributeEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"属性效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetTopLevelAttributeFoldoutKey(_selectedEventIndex, i),
+                    BuildIndexedFoldoutLabel("属性效果", i + 1, GetAttributeEffectSummary(effect)));
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                SkillStatField newStatField = (SkillStatField)EditorGUILayout.EnumPopup("属性字段", effect.statField);
-                SkillTargetMode newTargetMode = SkillTargetMode.Self;
-                float newMagnitude = EditorGUILayout.FloatField("数值", effect.magnitude);
-                bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
-                float newDuration = effect.duration;
-                bool showDuration = newStatField != SkillStatField.HP && newStatField != SkillStatField.MP;
-                SkillEffectDurationMode newDurationMode = showDuration
-                    ? (SkillEffectDurationMode)EditorGUILayout.EnumPopup("持续方式", effect.durationMode)
-                    : SkillEffectDurationMode.FixedTime;
-                if (showDuration)
+                if (isExpanded)
                 {
-                    if (newDurationMode == SkillEffectDurationMode.FixedTime)
-                        newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
-                    else
-                        EditorGUILayout.HelpBox("该 Buff 会持续到当前状态退出。", MessageType.None);
-                }
-                if (EditorGUI.EndChangeCheck())
-                {
-                    Undo.RecordObject(_database, "Edit Attribute Effect");
-                    effect.statField = newStatField;
-                    effect.targetMode = newTargetMode;
-                    effect.magnitude = newMagnitude;
-                    effect.usePercent = newUsePercent;
-                    effect.durationMode = newDurationMode;
-                    effect.duration = showDuration ? newDuration : 0f;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    SkillStatField newStatField = (SkillStatField)EditorGUILayout.EnumPopup("属性字段", effect.statField);
+                    SkillTargetMode newTargetMode = SkillTargetMode.Self;
+                    float newMagnitude = EditorGUILayout.FloatField("数值", effect.magnitude);
+                    bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
+                    float newDuration = effect.duration;
+                    bool showDuration = newStatField != SkillStatField.HP && newStatField != SkillStatField.MP;
+                    SkillEffectDurationMode newDurationMode = showDuration
+                        ? (SkillEffectDurationMode)EditorGUILayout.EnumPopup("持续方式", effect.durationMode)
+                        : SkillEffectDurationMode.FixedTime;
+                    if (showDuration)
+                    {
+                        if (newDurationMode == SkillEffectDurationMode.FixedTime)
+                            newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
+                        else
+                            EditorGUILayout.HelpBox("该 Buff 会持续到当前状态退出。", MessageType.None);
+                    }
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Attribute Effect");
+                        effect.statField = newStatField;
+                        effect.targetMode = newTargetMode;
+                        effect.magnitude = newMagnitude;
+                        effect.usePercent = newUsePercent;
+                        effect.durationMode = newDurationMode;
+                        effect.duration = showDuration ? newDuration : 0f;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -2204,7 +2265,9 @@ namespace Game.Editor
                 SkillVfxEffect cue = evt.vfxEffects[i] ?? (evt.vfxEffects[i] = new SkillVfxEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"特效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetTopLevelVfxFoldoutKey(_selectedEventIndex, i),
+                    BuildIndexedFoldoutLabel("特效效果", i + 1, GetVfxEffectSummary(cue)));
                 string hiddenKey = GetEditorCueVisibilityKey(_selectedEventIndex, i);
                 bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
                 bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
@@ -2245,34 +2308,37 @@ namespace Game.Editor
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", cue.particlePrefab, typeof(GameObject), false);
-                CueAnchor newAnchor = DrawCueAnchorPopup("挂点", cue.anchor, TopLevelCueAnchors, TopLevelCueAnchorLabels);
-                Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", cue.offset);
-                Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", cue.rotationEuler);
-                Vector3 newScale = EditorGUILayout.Vector3Field("缩放", cue.scale);
-                SkillMotionSettings newMotion = CopyMotionSettings(cue.motion);
-                if (ShouldShowCueMotionSettings(newAnchor))
-                    DrawMotionSettingsEditor("移动设置", newMotion);
-                SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", cue.destroyMode);
-                float newDuration = cue.duration;
-                if (newDestroyMode == SkillCueDestroyMode.Timed)
-                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", cue.duration));
-                if (EditorGUI.EndChangeCheck())
+                if (isExpanded)
                 {
-                    Undo.RecordObject(_database, "Edit VFX Effect");
-                    cue.particlePrefab = newParticlePrefab;
-                    cue.anchor = newAnchor;
-                    cue.offset = newOffset;
-                    cue.rotationEuler = newRotationEuler;
-                    cue.scale = new Vector3(
-                        Mathf.Max(0.01f, newScale.x),
-                        Mathf.Max(0.01f, newScale.y),
-                        Mathf.Max(0.01f, newScale.z));
-                    cue.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
-                    cue.destroyMode = newDestroyMode;
-                    cue.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", cue.particlePrefab, typeof(GameObject), false);
+                    CueAnchor newAnchor = DrawCueAnchorPopup("挂点", cue.anchor, TopLevelCueAnchors, TopLevelCueAnchorLabels);
+                    Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", cue.offset);
+                    Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", cue.rotationEuler);
+                    Vector3 newScale = EditorGUILayout.Vector3Field("缩放", cue.scale);
+                    SkillMotionSettings newMotion = CopyMotionSettings(cue.motion);
+                    if (ShouldShowCueMotionSettings(newAnchor))
+                        DrawMotionSettingsEditor("移动设置", newMotion);
+                    SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", cue.destroyMode);
+                    float newDuration = cue.duration;
+                    if (newDestroyMode == SkillCueDestroyMode.Timed)
+                        newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", cue.duration));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit VFX Effect");
+                        cue.particlePrefab = newParticlePrefab;
+                        cue.anchor = newAnchor;
+                        cue.offset = newOffset;
+                        cue.rotationEuler = newRotationEuler;
+                        cue.scale = new Vector3(
+                            Mathf.Max(0.01f, newScale.x),
+                            Mathf.Max(0.01f, newScale.y),
+                            Mathf.Max(0.01f, newScale.z));
+                        cue.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
+                        cue.destroyMode = newDestroyMode;
+                        cue.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -2324,7 +2390,9 @@ namespace Game.Editor
                 SkillSfxEffect effect = evt.sfxEffects[i] ?? (evt.sfxEffects[i] = new SkillSfxEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"音效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetTopLevelSfxFoldoutKey(_selectedEventIndex, i),
+                    BuildIndexedFoldoutLabel("音效效果", i + 1, GetSfxEffectSummary(effect)));
                 string hiddenKey = GetEditorSfxVisibilityKey(_selectedEventIndex, i);
                 bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
                 bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
@@ -2342,25 +2410,28 @@ namespace Game.Editor
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
-                CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, TopLevelCueAnchors, TopLevelCueAnchorLabels);
-                Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
-                bool newLoop = EditorGUILayout.Toggle("循环播放", effect.loop);
-                SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
-                float newDuration = effect.duration;
-                if (newDestroyMode == SkillCueDestroyMode.Timed)
-                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
-                if (EditorGUI.EndChangeCheck())
+                if (isExpanded)
                 {
-                    Undo.RecordObject(_database, "Edit SFX Effect");
-                    effect.audioClip = newAudioClip;
-                    effect.anchor = newAnchor;
-                    effect.offset = newOffset;
-                    effect.loop = newLoop;
-                    effect.destroyMode = newDestroyMode;
-                    effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
+                    CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, TopLevelCueAnchors, TopLevelCueAnchorLabels);
+                    Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
+                    bool newLoop = EditorGUILayout.Toggle("循环播放", effect.loop);
+                    SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
+                    float newDuration = effect.duration;
+                    if (newDestroyMode == SkillCueDestroyMode.Timed)
+                        newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit SFX Effect");
+                        effect.audioClip = newAudioClip;
+                        effect.anchor = newAnchor;
+                        effect.offset = newOffset;
+                        effect.loop = newLoop;
+                        effect.destroyMode = newDestroyMode;
+                        effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -2444,13 +2515,13 @@ namespace Game.Editor
                 effect.onHitSfxEffects = new List<SkillSfxEffect>();
         }
 
-        private void DrawNestedHitDamageEffectsEditor(SkillDamageEffect damageEffect)
+        private void DrawNestedHitDamageEffectsEditor(SkillDamageEffect damageEffect, int damageIndex)
         {
             EnsureHitDamageEffects(damageEffect);
-            DrawNestedHitDamageEffectsList("命中伤害效果", damageEffect.onHitDamageEffects);
+            DrawNestedHitDamageEffectsList("命中伤害效果", damageEffect.onHitDamageEffects, damageIndex);
         }
 
-        private void DrawNestedHitDamageEffectsList(string title, List<SkillHitDamageEffect> effects)
+        private void DrawNestedHitDamageEffectsList(string title, List<SkillHitDamageEffect> effects, int damageIndex)
         {
             EditorGUILayout.Space(6f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -2470,18 +2541,23 @@ namespace Game.Editor
                 SkillHitDamageEffect effect = effects[i] ?? (effects[i] = new SkillHitDamageEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"命中伤害效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetNestedHitDamageFoldoutKey(_selectedEventIndex, damageIndex, i),
+                    BuildIndexedFoldoutLabel("命中伤害效果", i + 1, GetHitDamageEffectSummary(effect)));
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                float newDamageMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("伤害倍率", effect.damageMagnitude));
-                if (EditorGUI.EndChangeCheck())
+                if (isExpanded)
                 {
-                    Undo.RecordObject(_database, "Edit Nested Hit Damage Effect");
-                    effect.damageMagnitude = newDamageMagnitude;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    float newDamageMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("伤害倍率", effect.damageMagnitude));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Nested Hit Damage Effect");
+                        effect.damageMagnitude = newDamageMagnitude;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -2497,7 +2573,7 @@ namespace Game.Editor
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawHitStopEffectEditor(SkillDamageEffect damageEffect)
+        private void DrawHitStopEffectEditor(SkillDamageEffect damageEffect, int damageIndex)
         {
             EnsureHitStopEffect(damageEffect);
             SkillHitStopEffect effect = damageEffect?.onHitStopEffect;
@@ -2524,13 +2600,13 @@ namespace Game.Editor
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawNestedPhysicsEffectsEditor(SkillDamageEffect damageEffect)
+        private void DrawNestedPhysicsEffectsEditor(SkillDamageEffect damageEffect, int damageIndex)
         {
             EnsurePhysicsEffects(damageEffect);
-            DrawNestedPhysicsEffectsList("命中物理效果", damageEffect.onHitPhysicsEffects);
+            DrawNestedPhysicsEffectsList("命中物理效果", damageEffect.onHitPhysicsEffects, damageIndex);
         }
 
-        private void DrawNestedPhysicsEffectsList(string title, List<SkillPhysicsEffect> effects)
+        private void DrawNestedPhysicsEffectsList(string title, List<SkillPhysicsEffect> effects, int damageIndex)
         {
             EditorGUILayout.Space(6f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -2550,28 +2626,33 @@ namespace Game.Editor
                 SkillPhysicsEffect effect = effects[i] ?? (effects[i] = new SkillPhysicsEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"命中物理效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetNestedPhysicsFoldoutKey(_selectedEventIndex, damageIndex, i),
+                    BuildIndexedFoldoutLabel("命中物理效果", i + 1, GetPhysicsEffectDisplayName(effect.effectType)));
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                PhysicsEffectType newEffectType = DrawPhysicsEffectTypePopup(effect.effectType, true);
-                float newDistance = effect.distance;
-                float newHeight = effect.height;
-                if (UsesPhysicsDistance(newEffectType))
-                    newDistance = Mathf.Max(0f, EditorGUILayout.FloatField("距离", effect.distance));
-                if (UsesPhysicsHeight(newEffectType))
-                    newHeight = Mathf.Max(0f, EditorGUILayout.FloatField("高度", effect.height));
-                float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
-                if (EditorGUI.EndChangeCheck())
+                if (isExpanded)
                 {
-                    Undo.RecordObject(_database, "Edit Nested Physics Effect");
-                    effect.effectType = newEffectType;
-                    effect.distance = newDistance;
-                    effect.height = newHeight;
-                    effect.duration = newDuration;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    PhysicsEffectType newEffectType = DrawPhysicsEffectTypePopup(effect.effectType, true);
+                    float newDistance = effect.distance;
+                    float newHeight = effect.height;
+                    if (UsesPhysicsDistance(newEffectType))
+                        newDistance = Mathf.Max(0f, EditorGUILayout.FloatField("距离", effect.distance));
+                    if (UsesPhysicsHeight(newEffectType))
+                        newHeight = Mathf.Max(0f, EditorGUILayout.FloatField("高度", effect.height));
+                    float newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(秒)", effect.duration));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Nested Physics Effect");
+                        effect.effectType = newEffectType;
+                        effect.distance = newDistance;
+                        effect.height = newHeight;
+                        effect.duration = newDuration;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -2665,13 +2746,13 @@ namespace Game.Editor
             return anchor == CueAnchor.World;
         }
 
-        private void DrawNestedAttributeEffectsEditor(SkillDamageEffect damageEffect)
+        private void DrawNestedAttributeEffectsEditor(SkillDamageEffect damageEffect, int damageIndex)
         {
             EnsureAttributeEffects(damageEffect);
-            DrawNestedAttributeEffectsList("命中属性效果", damageEffect.onHitAttributeEffects);
+            DrawNestedAttributeEffectsList("命中属性效果", damageEffect.onHitAttributeEffects, damageIndex);
         }
 
-        private void DrawNestedAttributeEffectsList(string title, List<SkillAttributeEffect> effects)
+        private void DrawNestedAttributeEffectsList(string title, List<SkillAttributeEffect> effects, int damageIndex)
         {
             EditorGUILayout.Space(6f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -2691,31 +2772,36 @@ namespace Game.Editor
                 SkillAttributeEffect effect = effects[i] ?? (effects[i] = new SkillAttributeEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"命中属性效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetNestedAttributeFoldoutKey(_selectedEventIndex, damageIndex, i),
+                    BuildIndexedFoldoutLabel("命中属性效果", i + 1, GetAttributeEffectSummary(effect)));
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                SkillStatField newStatField = (SkillStatField)EditorGUILayout.EnumPopup("属性字段", effect.statField);
-                int targetModeIndex = effect.targetMode == SkillTargetMode.DetectedTargets ? 1 : 0;
-                targetModeIndex = EditorGUILayout.Popup("作用目标", targetModeIndex, new[] { "自身", "命中目标" });
-                SkillTargetMode newTargetMode = targetModeIndex == 1 ? SkillTargetMode.DetectedTargets : SkillTargetMode.Self;
-                float newMagnitude = EditorGUILayout.FloatField("数值", effect.magnitude);
-                bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
-                float newDuration = effect.duration;
-                bool showDuration = newStatField != SkillStatField.HP && newStatField != SkillStatField.MP;
-                if (showDuration)
-                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
-                if (EditorGUI.EndChangeCheck())
+                if (isExpanded)
                 {
-                    Undo.RecordObject(_database, "Edit Nested Attribute Effect");
-                    effect.statField = newStatField;
-                    effect.targetMode = newTargetMode;
-                    effect.magnitude = newMagnitude;
-                    effect.usePercent = newUsePercent;
-                    effect.duration = showDuration ? newDuration : 0f;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    SkillStatField newStatField = (SkillStatField)EditorGUILayout.EnumPopup("属性字段", effect.statField);
+                    int targetModeIndex = effect.targetMode == SkillTargetMode.DetectedTargets ? 1 : 0;
+                    targetModeIndex = EditorGUILayout.Popup("作用目标", targetModeIndex, new[] { "自身", "命中目标" });
+                    SkillTargetMode newTargetMode = targetModeIndex == 1 ? SkillTargetMode.DetectedTargets : SkillTargetMode.Self;
+                    float newMagnitude = EditorGUILayout.FloatField("数值", effect.magnitude);
+                    bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
+                    float newDuration = effect.duration;
+                    bool showDuration = newStatField != SkillStatField.HP && newStatField != SkillStatField.MP;
+                    if (showDuration)
+                        newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("Buff 持续时长(秒)", effect.duration));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Nested Attribute Effect");
+                        effect.statField = newStatField;
+                        effect.targetMode = newTargetMode;
+                        effect.magnitude = newMagnitude;
+                        effect.usePercent = newUsePercent;
+                        effect.duration = showDuration ? newDuration : 0f;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -2735,6 +2821,142 @@ namespace Game.Editor
         {
             EnsureVfxEffects(damageEffect);
             DrawNestedVfxEffectsList("命中特效效果", damageEffect.onHitVfxEffects, damageIndex);
+        }
+
+        private void DrawDamageCompanionVfxEditor(SkillDamageEffect damageEffect, int damageIndex)
+        {
+            if (damageEffect == null || damageEffect.detectionType == DamageDetectionType.Collision)
+                return;
+
+            EnsureCompanionVfxEffects(damageEffect);
+
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("伴随特效效果", EditorStyles.miniBoldLabel);
+            if (GUILayout.Button("添加", GUILayout.Width(48f)))
+            {
+                Undo.RecordObject(_database, "Add Damage Companion VFX");
+                damageEffect.companionVfxEffects.Add(new SkillVfxEffect());
+                MarkDatabaseDirty();
+            }
+            GUILayout.EndHorizontal();
+
+            int removeIndex = -1;
+            for (int i = 0; i < damageEffect.companionVfxEffects.Count; i++)
+            {
+                SkillVfxEffect effect = damageEffect.companionVfxEffects[i] ?? (damageEffect.companionVfxEffects[i] = new SkillVfxEffect());
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
+                bool isExpanded = DrawEffectFoldout(
+                    GetCompanionVfxFoldoutKey(_selectedEventIndex, damageIndex, i),
+                    BuildIndexedFoldoutLabel("伴随特效效果", i + 1, GetVfxEffectSummary(effect)));
+                string hiddenKey = GetEditorCompanionCueVisibilityKey(_selectedEventIndex, damageIndex, i);
+                bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
+                bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
+                if (newVisible != visible)
+                {
+                    if (newVisible)
+                        _hiddenPreviewCueKeys.Remove(hiddenKey);
+                    else
+                        _hiddenPreviewCueKeys.Add(hiddenKey);
+
+                    bool isCurrentHidden = _activeSceneCompanionVfxEventIndex == _selectedEventIndex
+                        && _activeSceneCompanionVfxDamageIndex == damageIndex
+                        && _activeSceneCompanionVfxIndex == i;
+                    if (!newVisible && isCurrentHidden)
+                    {
+                        _activeSceneCompanionVfxEventIndex = -1;
+                        _activeSceneCompanionVfxDamageIndex = -1;
+                        _activeSceneCompanionVfxIndex = -1;
+                        DestroyScenePreviewCueInstance();
+                    }
+
+                    Repaint();
+                    SceneView.RepaintAll();
+                }
+
+                bool isEditingCompanionVfx = _selectedEventTrackType == TimelineTrackType.Damage
+                    && _activeSceneCompanionVfxEventIndex == _selectedEventIndex
+                    && _activeSceneCompanionVfxDamageIndex == damageIndex
+                    && _activeSceneCompanionVfxIndex == i;
+                if (GUILayout.Button(isEditingCompanionVfx ? "编辑中" : "场景编辑", GUILayout.Width(64f)))
+                {
+                    _hiddenPreviewCueKeys.Remove(hiddenKey);
+                    bool same = isEditingCompanionVfx;
+                    _activeSceneCompanionVfxEventIndex = same ? -1 : _selectedEventIndex;
+                    _activeSceneCompanionVfxDamageIndex = same ? -1 : damageIndex;
+                    _activeSceneCompanionVfxIndex = same ? -1 : i;
+                    if (!same)
+                        UpdateScenePreviewCueInstance();
+                    else
+                        DestroyScenePreviewCueInstance();
+                    Repaint();
+                    SceneView.RepaintAll();
+                }
+
+                if (GUILayout.Button("删除", GUILayout.Width(48f)))
+                    removeIndex = i;
+                GUILayout.EndHorizontal();
+
+                if (isExpanded)
+                {
+                    EditorGUI.BeginChangeCheck();
+                    GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", effect.particlePrefab, typeof(GameObject), false);
+                    Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
+                    Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
+                    Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Damage Companion VFX");
+                        effect.particlePrefab = newParticlePrefab;
+                        effect.anchor = CueAnchor.World;
+                        effect.offset = newOffset;
+                        effect.rotationEuler = newRotationEuler;
+                        effect.scale = ClampVector3(newScale, 0.01f);
+                        effect.motion = new SkillMotionSettings();
+                        effect.destroyMode = SkillCueDestroyMode.NaturalDestroy;
+                        effect.duration = 0f;
+                        MarkDatabaseDirty();
+                    }
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0)
+            {
+                Undo.RecordObject(_database, "Remove Damage Companion VFX");
+                damageEffect.companionVfxEffects.RemoveAt(removeIndex);
+                if (_activeSceneCompanionVfxEventIndex == _selectedEventIndex
+                    && _activeSceneCompanionVfxDamageIndex == damageIndex)
+                {
+                    if (_activeSceneCompanionVfxIndex == removeIndex)
+                    {
+                        _activeSceneCompanionVfxEventIndex = -1;
+                        _activeSceneCompanionVfxDamageIndex = -1;
+                        _activeSceneCompanionVfxIndex = -1;
+                        DestroyScenePreviewCueInstance();
+                    }
+                    else if (_activeSceneCompanionVfxIndex > removeIndex)
+                    {
+                        _activeSceneCompanionVfxIndex--;
+                    }
+                }
+                MarkDatabaseDirty();
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        private static void EnsureCompanionVfxEffects(SkillDamageEffect damageEffect)
+        {
+            if (damageEffect == null)
+                return;
+
+            damageEffect.TryMigrateLegacySubEffects();
+            if (damageEffect.companionVfxEffects == null)
+                damageEffect.companionVfxEffects = new List<SkillVfxEffect>();
         }
 
         private void DrawNestedVfxEffectsList(string title, List<SkillVfxEffect> effects, int damageIndex)
@@ -2757,7 +2979,9 @@ namespace Game.Editor
                 SkillVfxEffect effect = effects[i] ?? (effects[i] = new SkillVfxEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"命中特效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetNestedVfxFoldoutKey(_selectedEventIndex, damageIndex, i),
+                    BuildIndexedFoldoutLabel("命中特效效果", i + 1, GetVfxEffectSummary(effect)));
                 string hiddenKey = GetEditorOnHitCueVisibilityKey(_selectedEventIndex, damageIndex, i);
                 bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
                 bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
@@ -2804,34 +3028,37 @@ namespace Game.Editor
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", effect.particlePrefab, typeof(GameObject), false);
-                CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, OnHitCueAnchors, OnHitCueAnchorLabels);
-                Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
-                Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
-                Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
-                SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
-                if (ShouldShowCueMotionSettings(newAnchor))
-                    DrawMotionSettingsEditor("移动设置", newMotion);
-                SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
-                float newDuration = effect.duration;
-                if (newDestroyMode == SkillCueDestroyMode.Timed)
-                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
-                if (EditorGUI.EndChangeCheck())
+                if (isExpanded)
                 {
-                    Undo.RecordObject(_database, "Edit Nested VFX Effect");
-                    effect.particlePrefab = newParticlePrefab;
-                    effect.anchor = newAnchor;
-                    effect.offset = newOffset;
-                    effect.rotationEuler = newRotationEuler;
-                    effect.scale = new Vector3(
-                        Mathf.Max(0.01f, newScale.x),
-                        Mathf.Max(0.01f, newScale.y),
-                        Mathf.Max(0.01f, newScale.z));
-                    effect.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
-                    effect.destroyMode = newDestroyMode;
-                    effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    GameObject newParticlePrefab = (GameObject)EditorGUILayout.ObjectField("粒子特效 Prefab", effect.particlePrefab, typeof(GameObject), false);
+                    CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, OnHitCueAnchors, OnHitCueAnchorLabels);
+                    Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
+                    Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
+                    Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
+                    SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
+                    if (ShouldShowCueMotionSettings(newAnchor))
+                        DrawMotionSettingsEditor("移动设置", newMotion);
+                    SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
+                    float newDuration = effect.duration;
+                    if (newDestroyMode == SkillCueDestroyMode.Timed)
+                        newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Nested VFX Effect");
+                        effect.particlePrefab = newParticlePrefab;
+                        effect.anchor = newAnchor;
+                        effect.offset = newOffset;
+                        effect.rotationEuler = newRotationEuler;
+                        effect.scale = new Vector3(
+                            Mathf.Max(0.01f, newScale.x),
+                            Mathf.Max(0.01f, newScale.y),
+                            Mathf.Max(0.01f, newScale.z));
+                        effect.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
+                        effect.destroyMode = newDestroyMode;
+                        effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -2873,7 +3100,9 @@ namespace Game.Editor
                 SkillSfxEffect effect = effects[i] ?? (effects[i] = new SkillSfxEffect());
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"命中音效效果 {i + 1}", EditorStyles.miniBoldLabel);
+                bool isExpanded = DrawEffectFoldout(
+                    GetNestedSfxFoldoutKey(_selectedEventIndex, damageIndex, i),
+                    BuildIndexedFoldoutLabel("命中音效效果", i + 1, GetSfxEffectSummary(effect)));
                 string hiddenKey = GetEditorOnHitSfxVisibilityKey(_selectedEventIndex, damageIndex, i);
                 bool visible = !_hiddenPreviewCueKeys.Contains(hiddenKey);
                 bool newVisible = EditorGUILayout.ToggleLeft("显示", visible, GUILayout.Width(50f));
@@ -2891,25 +3120,28 @@ namespace Game.Editor
                     removeIndex = i;
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
-                AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
-                CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, OnHitCueAnchors, OnHitCueAnchorLabels);
-                Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
-                bool newLoop = EditorGUILayout.Toggle("循环播放", effect.loop);
-                SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
-                float newDuration = effect.duration;
-                if (newDestroyMode == SkillCueDestroyMode.Timed)
-                    newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
-                if (EditorGUI.EndChangeCheck())
+                if (isExpanded)
                 {
-                    Undo.RecordObject(_database, "Edit Nested SFX Effect");
-                    effect.audioClip = newAudioClip;
-                    effect.anchor = newAnchor;
-                    effect.offset = newOffset;
-                    effect.loop = newLoop;
-                    effect.destroyMode = newDestroyMode;
-                    effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
-                    MarkDatabaseDirty();
+                    EditorGUI.BeginChangeCheck();
+                    AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
+                    CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, OnHitCueAnchors, OnHitCueAnchorLabels);
+                    Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
+                    bool newLoop = EditorGUILayout.Toggle("循环播放", effect.loop);
+                    SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
+                    float newDuration = effect.duration;
+                    if (newDestroyMode == SkillCueDestroyMode.Timed)
+                        newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(_database, "Edit Nested SFX Effect");
+                        effect.audioClip = newAudioClip;
+                        effect.anchor = newAnchor;
+                        effect.offset = newOffset;
+                        effect.loop = newLoop;
+                        effect.destroyMode = newDestroyMode;
+                        effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
+                        MarkDatabaseDirty();
+                    }
                 }
 
                 EditorGUILayout.EndVertical();
@@ -3215,6 +3447,17 @@ namespace Game.Editor
                     {
                         _activeSceneHitVfxEventIndex--;
                     }
+
+                    if (_activeSceneCompanionVfxEventIndex == _selectedEventIndex)
+                    {
+                        _activeSceneCompanionVfxEventIndex = -1;
+                        _activeSceneCompanionVfxDamageIndex = -1;
+                        _activeSceneCompanionVfxIndex = -1;
+                    }
+                    else if (_activeSceneCompanionVfxEventIndex > _selectedEventIndex)
+                    {
+                        _activeSceneCompanionVfxEventIndex--;
+                    }
                     _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetDamageEventList(skill).Count - 1);
                     break;
                 case TimelineTrackType.Physics:
@@ -3267,6 +3510,9 @@ namespace Game.Editor
             _activeSceneHitVfxEventIndex = -1;
             _activeSceneHitVfxDamageIndex = -1;
             _activeSceneHitVfxIndex = -1;
+            _activeSceneCompanionVfxEventIndex = -1;
+            _activeSceneCompanionVfxDamageIndex = -1;
+            _activeSceneCompanionVfxIndex = -1;
             DestroyScenePreviewCueInstance();
             MarkDatabaseDirty();
         }
@@ -3807,6 +4053,73 @@ namespace Game.Editor
             }
 
             List<PreviewDamageHitResult> damageHits = CollectPreviewDamageHitHistory(skill);
+            List<SkillDamageEvent> damageEvents = GetDamageEventList(skill);
+            if (damageEvents != null)
+            {
+                for (int eventIndex = 0; eventIndex < damageEvents.Count; eventIndex++)
+                {
+                    SkillDamageEvent evt = damageEvents[eventIndex];
+                    if (evt?.damageEffects == null)
+                        continue;
+
+                    float endTime = evt.triggerMode == SkillEventTriggerMode.Repeated ? GetPreviewRepeatedEndTime(evt) : evt.startTime;
+                    float interval = Mathf.Max(0.01f, evt.repeatInterval);
+                    int triggerIndex = 0;
+                    for (float triggerTime = evt.startTime; triggerTime <= endTime + 0.0001f; triggerTime += evt.triggerMode == SkillEventTriggerMode.Repeated ? interval : endTime + 1f)
+                    {
+                        for (int damageEffectIndex = 0; damageEffectIndex < evt.damageEffects.Count; damageEffectIndex++)
+                        {
+                            SkillDamageEffect damageEffect = evt.damageEffects[damageEffectIndex];
+                            damageEffect?.TryMigrateLegacySubEffects();
+                            if (damageEffect == null
+                                || damageEffect.detectionType == DamageDetectionType.Collision
+                                || damageEffect.detectionDuration <= 0f
+                                || damageEffect.companionVfxEffects == null)
+                            {
+                                continue;
+                            }
+
+                            float companionDuration = Mathf.Max(0f, damageEffect.detectionDuration);
+                            if (_previewTime + 0.0001f < triggerTime || _previewTime > triggerTime + companionDuration + 0.0001f)
+                                continue;
+
+                            for (int effectIndex = 0; effectIndex < damageEffect.companionVfxEffects.Count; effectIndex++)
+                            {
+                                SkillVfxEffect companionVfx = damageEffect.companionVfxEffects[effectIndex];
+                                if (companionVfx?.particlePrefab == null)
+                                    continue;
+
+                                if (!IsCompanionCueVisible(eventIndex, damageEffectIndex, effectIndex))
+                                    continue;
+
+                                if (!_isPlaying && IsSceneEditingCompanionCue(eventIndex, damageEffectIndex, effectIndex))
+                                    continue;
+
+                                string key = GetTimelinePreviewDamageCompanionVfxKey(eventIndex, triggerIndex, damageEffectIndex, effectIndex);
+                                activeKeys.Add(key);
+                                TimelinePreviewVfxInstance playback = EnsureTimelinePreviewVfxInstance(
+                                    key,
+                                    companionVfx,
+                                    TimelineTrackType.Damage,
+                                    eventIndex,
+                                    effectIndex,
+                                    triggerIndex,
+                                    triggerTime,
+                                    null,
+                                    damageEffect,
+                                    true);
+                                if (playback != null)
+                                    SimulateTimelinePreviewVfx(playback, Mathf.Max(0f, _previewTime - triggerTime));
+                            }
+                        }
+
+                        if (evt.triggerMode != SkillEventTriggerMode.Repeated)
+                            break;
+                        triggerIndex++;
+                    }
+                }
+            }
+
             for (int i = 0; i < damageHits.Count; i++)
             {
                 PreviewDamageHitResult hit = damageHits[i];
@@ -3858,7 +4171,9 @@ namespace Game.Editor
 
                 if (playback.trackType == TimelineTrackType.Damage && playback.effect != null)
                 {
-                    float playbackDuration = GetVfxPlaybackDuration(playback.effect, playback.triggerTime);
+                    float playbackDuration = playback.followsDamageWindow && playback.damageEffect != null
+                        ? Mathf.Max(0f, playback.damageEffect.detectionDuration)
+                        : GetVfxPlaybackDuration(playback.effect, playback.triggerTime);
                     if (_previewTime + 0.0001f >= playback.triggerTime
                         && _previewTime <= playback.triggerTime + playbackDuration + 0.0001f)
                         continue;
@@ -3869,7 +4184,17 @@ namespace Game.Editor
             }
         }
 
-        private TimelinePreviewVfxInstance EnsureTimelinePreviewVfxInstance(string key, SkillVfxEffect effect, TimelineTrackType trackType, int eventIndex, int effectIndex, int triggerIndex, float triggerTime, Transform explicitTarget)
+        private TimelinePreviewVfxInstance EnsureTimelinePreviewVfxInstance(
+            string key,
+            SkillVfxEffect effect,
+            TimelineTrackType trackType,
+            int eventIndex,
+            int effectIndex,
+            int triggerIndex,
+            float triggerTime,
+            Transform explicitTarget,
+            SkillDamageEffect damageEffect = null,
+            bool followsDamageWindow = false)
         {
             for (int i = 0; i < _timelinePreviewVfxInstances.Count; i++)
             {
@@ -3882,7 +4207,9 @@ namespace Game.Editor
                     playback.effect = effect;
                     playback.triggerTime = triggerTime;
                     playback.explicitTarget = explicitTarget;
-                    if (effect == null || effect.anchor != CueAnchor.World)
+                    playback.damageEffect = damageEffect;
+                    playback.followsDamageWindow = followsDamageWindow;
+                    if (followsDamageWindow || effect == null || effect.anchor != CueAnchor.World)
                         playback.hasWorldOrigin = false;
                     EnsureTimelinePreviewCueWorldOrigin(playback);
                     UpdateTimelinePreviewVfxTransform(playback);
@@ -3908,9 +4235,13 @@ namespace Game.Editor
                 prefab = effect.particlePrefab,
                 instance = instance,
                 effect = effect,
+                damageEffect = damageEffect,
                 explicitTarget = explicitTarget,
                 baseScale = instance.transform.localScale,
+                followsDamageWindow = followsDamageWindow,
             };
+            if (followsDamageWindow)
+                ConfigureDamageCompanionPreviewParticles(instance);
             EnsureTimelinePreviewCueWorldOrigin(created);
             _timelinePreviewVfxInstances.Add(created);
             UpdateTimelinePreviewVfxTransform(created);
@@ -3928,6 +4259,11 @@ namespace Game.Editor
             return $"hit:{eventIndex}:{triggerIndex}:{damageEffectIndex}:{effectIndex}:{targetId}";
         }
 
+        private static string GetTimelinePreviewDamageCompanionVfxKey(int eventIndex, int triggerIndex, int damageEffectIndex, int companionEffectIndex)
+        {
+            return $"body:{eventIndex}:{triggerIndex}:{damageEffectIndex}:{companionEffectIndex}";
+        }
+
         private void UpdateTimelinePreviewVfxTransform(TimelinePreviewVfxInstance playback)
         {
             if (playback?.instance == null || playback.effect == null)
@@ -3935,7 +4271,12 @@ namespace Game.Editor
 
             Vector3 position;
             Quaternion rotation;
-            if (playback.effect.anchor == CueAnchor.World)
+            if (playback.followsDamageWindow)
+            {
+                if (!TryEvaluatePreviewDamageCompanionTransform(playback, out position, out rotation))
+                    return;
+            }
+            else if (playback.effect.anchor == CueAnchor.World)
             {
                 EnsureTimelinePreviewCueWorldOrigin(playback);
                 if (!playback.hasWorldOrigin)
@@ -3959,6 +4300,70 @@ namespace Game.Editor
             playback.instance.transform.localScale = Vector3.Scale(playback.baseScale, playback.effect.scale);
         }
 
+        private bool TryEvaluatePreviewDamageCompanionTransform(TimelinePreviewVfxInstance playback, out Vector3 position, out Quaternion rotation)
+        {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+            if (playback?.damageEffect == null || playback.effect == null)
+                return false;
+
+            if (!TryEvaluatePreviewDamageCompanionTransform(playback.damageEffect, playback.effect, playback.triggerTime, _previewTime, out position, out rotation))
+                return false;
+
+            return true;
+        }
+
+        private bool TryEvaluatePreviewDamageCompanionTransform(SkillDamageEffect damageEffect, SkillVfxEffect cue, float triggerTime, float sampleTime, out Vector3 position, out Quaternion rotation)
+        {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+            if (damageEffect == null || cue == null)
+                return false;
+
+            if (!TryEvaluatePreviewDamageWindowTransform(damageEffect, triggerTime, sampleTime, out Vector3 bodyPosition, out Quaternion bodyRotation))
+                return false;
+
+            position = bodyPosition + bodyRotation * cue.offset;
+            rotation = bodyRotation * Quaternion.Euler(cue.rotationEuler);
+            return true;
+        }
+
+        private bool TryEvaluatePreviewDamageWindowTransform(SkillDamageEffect damageEffect, float triggerTime, float sampleTime, out Vector3 position, out Quaternion rotation)
+        {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+            if (_previewTarget == null || damageEffect == null)
+                return false;
+
+            Transform preview = _previewTarget.transform;
+            if (preview == null)
+                return false;
+
+            float elapsed = Mathf.Max(0f, sampleTime - triggerTime);
+            Vector3 motionOffset = Vector3.zero;
+            if (damageEffect.motion != null && damageEffect.motion.IsActive)
+            {
+                Vector3 motionDirection = damageEffect.motion.direction.sqrMagnitude > 0.0001f
+                    ? damageEffect.motion.direction.normalized
+                    : Vector3.forward;
+                motionOffset = preview.rotation * motionDirection * (damageEffect.motion.speed * elapsed);
+            }
+
+            switch (damageEffect.detectionType)
+            {
+                case DamageDetectionType.RangeOverlap:
+                    position = preview.TransformPoint(damageEffect.centerOffset) + motionOffset;
+                    rotation = Quaternion.Euler(damageEffect.rotationEuler);
+                    return true;
+                case DamageDetectionType.Raycast:
+                    position = preview.TransformPoint(damageEffect.rayOriginOffset) + motionOffset;
+                    rotation = Quaternion.Euler(damageEffect.rotationEuler);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         private static void SimulateTimelinePreviewVfx(TimelinePreviewVfxInstance playback, float localTime)
         {
             if (playback?.instance == null)
@@ -3972,6 +4377,24 @@ namespace Game.Editor
                     continue;
 
                 particleSystem.Simulate(localTime, false, true, true);
+            }
+        }
+
+        private static void ConfigureDamageCompanionPreviewParticles(GameObject instance)
+        {
+            if (instance == null)
+                return;
+
+            ParticleSystem[] particleSystems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            for (int i = 0; i < particleSystems.Length; i++)
+            {
+                ParticleSystem particleSystem = particleSystems[i];
+                if (particleSystem == null)
+                    continue;
+
+                var main = particleSystem.main;
+                if (main.simulationSpace == ParticleSystemSimulationSpace.World)
+                    main.simulationSpace = ParticleSystemSimulationSpace.Local;
             }
         }
 
@@ -4119,7 +4542,7 @@ namespace Game.Editor
                 return;
 
             List<PreviewOverlayLine> lines = BuildActivePreviewOverlayLines(skill);
-            List<PreviewDamageHitResult> damageHits = CollectPreviewDamageHitHistory(skill);
+            List<PreviewDamageHitResult> damageHits = CollectCurrentPreviewDamageHits(skill);
             if (lines.Count == 0)
             {
                 DrawPreviewPhysicsOverlays(skill, damageHits);
@@ -4856,6 +5279,9 @@ namespace Game.Editor
             if (_previewTarget == null || effect == null)
                 return targets;
 
+            // Scene 视图里直接拖动物体后，先同步物理世界，避免预览命中仍读取旧碰撞体位置。
+            Physics.SyncTransforms();
+
             var buffer = new Collider[32];
             int hitCount = 0;
             bool ranDetection = false;
@@ -5022,6 +5448,8 @@ namespace Game.Editor
                                 if (effect == null)
                                     continue;
 
+                                effect.TryMigrateLegacySubEffects();
+
                                 string detectionLabel = effect.detectionType switch
                                 {
                                     DamageDetectionType.RangeOverlap => effect.shape switch
@@ -5042,6 +5470,10 @@ namespace Game.Editor
                                     + (effect.onHitSfxEffects?.Count ?? 0);
                                 if (onHitCount > 0)
                                     detectionLabel += $" / 命中附加{onHitCount}";
+
+                                string companionVfxName = JoinVfxEffectNames(effect.companionVfxEffects);
+                                if (effect.detectionType != DamageDetectionType.Collision && !string.IsNullOrWhiteSpace(companionVfxName))
+                                    detectionLabel += $" / 伴随特效效果:{companionVfxName}";
 
                                 parts.Add(detectionLabel);
                             }
@@ -5358,16 +5790,16 @@ namespace Game.Editor
             var parts = new List<string>();
             if (effect.onHitDamageEffects != null && effect.onHitDamageEffects.Count > 0)
                 parts.Add($"命中伤害:{JoinHitDamageEffectValues(effect.onHitDamageEffects)}");
-            if (SkillDamageEffect.HasConfiguredHitStopEffect(effect.onHitStopEffect))
-                parts.Add($"命中停顿:{FormatHitStopEffectName(effect.onHitStopEffect)}");
-            if (effect.onHitPhysicsEffects != null && effect.onHitPhysicsEffects.Count > 0)
-                parts.Add($"命中物理:{JoinPhysicsEffectNames(effect.onHitPhysicsEffects)}");
-            if (effect.onHitAttributeEffects != null && effect.onHitAttributeEffects.Count > 0)
-                parts.Add($"命中属性:{JoinAttributeEffectNames(effect.onHitAttributeEffects)}");
             if (effect.onHitVfxEffects != null && effect.onHitVfxEffects.Count > 0)
                 parts.Add($"命中特效:{JoinVfxEffectNames(effect.onHitVfxEffects)}");
             if (effect.onHitSfxEffects != null && effect.onHitSfxEffects.Count > 0)
                 parts.Add($"命中音效:{JoinSfxEffectNames(effect.onHitSfxEffects)}");
+            if (effect.onHitPhysicsEffects != null && effect.onHitPhysicsEffects.Count > 0)
+                parts.Add($"命中物理:{JoinPhysicsEffectNames(effect.onHitPhysicsEffects)}");
+            if (effect.onHitAttributeEffects != null && effect.onHitAttributeEffects.Count > 0)
+                parts.Add($"命中属性:{JoinAttributeEffectNames(effect.onHitAttributeEffects)}");
+            if (SkillDamageEffect.HasConfiguredHitStopEffect(effect.onHitStopEffect))
+                parts.Add($"命中停顿:{FormatHitStopEffectName(effect.onHitStopEffect)}");
             return string.Join(" / ", parts);
         }
 
@@ -5453,6 +5885,9 @@ namespace Game.Editor
             _activeSceneHitVfxEventIndex = -1;
             _activeSceneHitVfxDamageIndex = -1;
             _activeSceneHitVfxIndex = -1;
+            _activeSceneCompanionVfxEventIndex = -1;
+            _activeSceneCompanionVfxDamageIndex = -1;
+            _activeSceneCompanionVfxIndex = -1;
             DestroyScenePreviewCueInstance();
         }
 
@@ -6865,6 +7300,8 @@ namespace Game.Editor
                         continue;
                     }
 
+                    effect.TryMigrateLegacySubEffects();
+
                     if (string.IsNullOrWhiteSpace(effect.hitLayerName))
                         warnings.Add($"命中效果 {i + 1} 没有填写命中层级名。");
 
@@ -6893,6 +7330,17 @@ namespace Game.Editor
                             warnings.Add($"命中效果 {i + 1} 的射线最大距离必须大于 0。");
                         if (effect.rayRadius < 0f)
                             warnings.Add($"命中效果 {i + 1} 的射线半径不能小于 0。");
+                    }
+
+                    if (effect.detectionType != DamageDetectionType.Collision
+                        && effect.companionVfxEffects != null)
+                    {
+                        for (int j = 0; j < effect.companionVfxEffects.Count; j++)
+                        {
+                            SkillVfxEffect companionVfx = effect.companionVfxEffects[j];
+                            if (companionVfx != null && companionVfx.particlePrefab == null)
+                                warnings.Add($"命中效果 {i + 1} 的伴随特效效果 {j + 1} 没有粒子特效 Prefab。");
+                        }
                     }
 
                     SkillHitStopEffect hitStopEffect = effect.GetEffectiveHitStopEffect();
@@ -7324,6 +7772,43 @@ namespace Game.Editor
             Handles.color = oldColor;
         }
 
+        private void DrawDamageCompanionCueSceneHandle(SkillDamageEffect damageEffect, SkillVfxEffect cue, float triggerTime, string label)
+        {
+            if (damageEffect == null || cue == null || _previewTarget == null)
+                return;
+
+            if (!TryEvaluatePreviewDamageCompanionTransform(damageEffect, cue, triggerTime, _previewTime, out Vector3 worldPosition, out Quaternion worldRotation))
+                return;
+
+            Vector3 scale = cue.scale;
+            float handleSize = HandleUtility.GetHandleSize(worldPosition);
+
+            Color oldColor = Handles.color;
+            Handles.color = new Color(0.18f, 0.9f, 1f, 1f);
+            DrawSceneTextLabel(worldPosition + Vector3.up * handleSize * 0.15f, label);
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newWorldPosition = Handles.PositionHandle(worldPosition, worldRotation);
+            Quaternion newWorldRotation = Handles.RotationHandle(worldRotation, newWorldPosition);
+            Vector3 newScale = Handles.ScaleHandle(scale, newWorldPosition, newWorldRotation, handleSize * 0.75f);
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (!TryEvaluatePreviewDamageWindowTransform(damageEffect, triggerTime, _previewTime, out Vector3 bodyPosition, out Quaternion bodyRotation))
+                    return;
+
+                Undo.RecordObject(_database, "Edit Damage Companion VFX Scene Handle");
+                cue.offset = Quaternion.Inverse(bodyRotation) * (newWorldPosition - bodyPosition);
+                cue.rotationEuler = (Quaternion.Inverse(bodyRotation) * newWorldRotation).eulerAngles;
+                cue.scale = ClampVector3(newScale, 0.01f);
+                MarkDatabaseDirty();
+                SceneView.RepaintAll();
+            }
+
+            DrawSceneCueBounds(cue, worldPosition, worldRotation);
+
+            Handles.color = oldColor;
+        }
+
         private void DrawDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
         {
             if (effect == null || _previewTarget == null)
@@ -7593,6 +8078,44 @@ namespace Game.Editor
             }
 
             SkillTimelineEvent evt = GetSelectedSceneEvent();
+            if (TryGetActiveSceneCompanionCue(evt, out SkillDamageEffect companionDamageEffect, out SkillVfxEffect companionCue, out int companionCueEventIndex, out int companionCueListIndex))
+            {
+                if (companionCue == null || companionCue.particlePrefab == null)
+                {
+                    DestroyScenePreviewCueInstance();
+                    return;
+                }
+
+                bool needRecreateCompanion = _scenePreviewCueInstance == null
+                    || _scenePreviewCuePrefab != companionCue.particlePrefab
+                    || _scenePreviewCueTrackType != TimelineTrackType.Damage
+                    || _scenePreviewCueEventIndex != companionCueEventIndex
+                    || _scenePreviewCueDamageIndex != _activeSceneCompanionVfxDamageIndex
+                    || _scenePreviewCueListIndex != companionCueListIndex
+                    || !_scenePreviewCueFollowsDamageWindow;
+                if (needRecreateCompanion)
+                    RecreateScenePreviewCueInstance(companionCue, TimelineTrackType.Damage, companionCueEventIndex, _activeSceneCompanionVfxDamageIndex, companionCueListIndex, true);
+
+                if (_scenePreviewCueInstance == null)
+                    return;
+
+                if (!TryGetSceneCompanionCuePlaybackContext(out float companionTriggerTime))
+                {
+                    _scenePreviewCueInstance.SetActive(false);
+                    return;
+                }
+
+                UpdateScenePreviewCompanionCueTransform(companionDamageEffect, companionCue, companionTriggerTime);
+                bool shouldShowCompanion = _previewTime + 0.0001f >= companionTriggerTime;
+                _scenePreviewCueInstance.SetActive(shouldShowCompanion);
+                if (!shouldShowCompanion)
+                    return;
+
+                float companionLocalTime = Mathf.Max(0f, _previewTime - companionTriggerTime);
+                SimulateScenePreviewParticles(companionLocalTime);
+                return;
+            }
+
             if (!TryGetActiveSceneCue(evt, out SkillVfxEffect cue, out int cueEventIndex, out int cueListIndex, out TimelineTrackType cueTrackType))
             {
                 DestroyScenePreviewCueInstance();
@@ -7608,10 +8131,12 @@ namespace Game.Editor
                 || _scenePreviewCuePrefab != cue.particlePrefab
                 || _scenePreviewCueTrackType != cueTrackType
                 || _scenePreviewCueEventIndex != cueEventIndex
-                || _scenePreviewCueListIndex != cueListIndex;
+                || _scenePreviewCueDamageIndex != -1
+                || _scenePreviewCueListIndex != cueListIndex
+                || _scenePreviewCueFollowsDamageWindow;
 
             if (needRecreate)
-                RecreateScenePreviewCueInstance(cue, cueTrackType, cueEventIndex, cueListIndex);
+                RecreateScenePreviewCueInstance(cue, cueTrackType, cueEventIndex, -1, cueListIndex, false);
 
             if (_scenePreviewCueInstance == null)
                 return;
@@ -7680,7 +8205,42 @@ namespace Game.Editor
             return false;
         }
 
-        private void RecreateScenePreviewCueInstance(SkillVfxEffect cue, TimelineTrackType cueTrackType, int cueEventIndex, int cueListIndex)
+        private bool TryGetActiveSceneCompanionCue(SkillTimelineEvent evt, out SkillDamageEffect damageEffect, out SkillVfxEffect cue, out int cueEventIndex, out int cueListIndex)
+        {
+            damageEffect = null;
+            cue = null;
+            cueEventIndex = -1;
+            cueListIndex = -1;
+
+            if (evt == null
+                || _selectedEventTrackType != TimelineTrackType.Damage
+                || _activeSceneCompanionVfxEventIndex != _selectedEventIndex
+                || _activeSceneCompanionVfxDamageIndex < 0
+                || _activeSceneCompanionVfxIndex < 0
+                || evt.damageEffects == null
+                || _activeSceneCompanionVfxDamageIndex >= evt.damageEffects.Count)
+            {
+                return false;
+            }
+
+            damageEffect = evt.damageEffects[_activeSceneCompanionVfxDamageIndex];
+            damageEffect?.TryMigrateLegacySubEffects();
+            if (damageEffect?.companionVfxEffects == null
+                || _activeSceneCompanionVfxIndex >= damageEffect.companionVfxEffects.Count)
+            {
+                return false;
+            }
+
+            if (!IsCompanionCueVisible(_selectedEventIndex, _activeSceneCompanionVfxDamageIndex, _activeSceneCompanionVfxIndex))
+                return false;
+
+            cue = damageEffect.companionVfxEffects[_activeSceneCompanionVfxIndex];
+            cueEventIndex = _selectedEventIndex;
+            cueListIndex = _activeSceneCompanionVfxIndex;
+            return cue != null;
+        }
+
+        private void RecreateScenePreviewCueInstance(SkillVfxEffect cue, TimelineTrackType cueTrackType, int cueEventIndex, int cueDamageIndex, int cueListIndex, bool followsDamageWindow)
         {
             DestroyScenePreviewCueInstance();
             if (cue?.particlePrefab == null)
@@ -7695,9 +8255,13 @@ namespace Game.Editor
             _scenePreviewCuePrefab = cue.particlePrefab;
             _scenePreviewCueTrackType = cueTrackType;
             _scenePreviewCueEventIndex = cueEventIndex;
+            _scenePreviewCueDamageIndex = cueDamageIndex;
             _scenePreviewCueListIndex = cueListIndex;
+            _scenePreviewCueFollowsDamageWindow = followsDamageWindow;
             _scenePreviewCueHasWorldOrigin = false;
             _scenePreviewCueWorldOriginTriggerTime = -1f;
+            if (followsDamageWindow)
+                ConfigureDamageCompanionPreviewParticles(_scenePreviewCueInstance);
         }
 
         private void UpdateScenePreviewCueTransform(SkillVfxEffect cue)
@@ -7739,6 +8303,22 @@ namespace Game.Editor
             _scenePreviewCueInstance.transform.localScale = cue.scale;
         }
 
+        private void UpdateScenePreviewCompanionCueTransform(SkillDamageEffect damageEffect, SkillVfxEffect cue, float triggerTime)
+        {
+            if (_scenePreviewCueInstance == null || damageEffect == null || cue == null)
+                return;
+
+            if (!TryEvaluatePreviewDamageCompanionTransform(damageEffect, cue, triggerTime, _previewTime, out Vector3 position, out Quaternion rotation))
+            {
+                _scenePreviewCueInstance.SetActive(false);
+                return;
+            }
+
+            _scenePreviewCueInstance.transform.position = position;
+            _scenePreviewCueInstance.transform.rotation = rotation;
+            _scenePreviewCueInstance.transform.localScale = cue.scale;
+        }
+
         private bool IsSceneEditingTopLevelCue(int eventIndex, int effectIndex)
         {
             return _activeSceneCueEventIndex >= 0
@@ -7756,6 +8336,126 @@ namespace Game.Editor
                 && _activeSceneHitVfxIndex == onHitEffectIndex;
         }
 
+        private bool IsSceneEditingCompanionCue(int eventIndex, int damageEffectIndex, int companionEffectIndex)
+        {
+            return _activeSceneCompanionVfxEventIndex >= 0
+                && _activeSceneCompanionVfxDamageIndex >= 0
+                && _activeSceneCompanionVfxIndex >= 0
+                && _activeSceneCompanionVfxEventIndex == eventIndex
+                && _activeSceneCompanionVfxDamageIndex == damageEffectIndex
+                && _activeSceneCompanionVfxIndex == companionEffectIndex;
+        }
+
+        private bool DrawEffectFoldout(string key, string label)
+        {
+            bool expanded = !_collapsedEffectKeys.Contains(key);
+            bool newExpanded = EditorGUILayout.Foldout(expanded, label, true);
+            if (newExpanded != expanded)
+            {
+                if (newExpanded)
+                    _collapsedEffectKeys.Remove(key);
+                else
+                    _collapsedEffectKeys.Add(key);
+            }
+
+            return newExpanded;
+        }
+
+        private static string BuildFoldoutLabel(string title, string summary = null)
+        {
+            return title;
+        }
+
+        private static string BuildIndexedFoldoutLabel(string title, int index, string summary = null)
+        {
+            return BuildFoldoutLabel($"{title} {index}", summary);
+        }
+
+        private static string GetVfxEffectSummary(SkillVfxEffect effect)
+        {
+            return effect?.particlePrefab != null ? effect.particlePrefab.name : string.Empty;
+        }
+
+        private static string GetSfxEffectSummary(SkillSfxEffect effect)
+        {
+            return effect?.audioClip != null ? effect.audioClip.name : string.Empty;
+        }
+
+        private static string GetHitDamageEffectSummary(SkillHitDamageEffect effect)
+        {
+            return effect != null ? $"倍率 {effect.damageMagnitude:0.##}" : string.Empty;
+        }
+
+        private static string GetAttributeEffectSummary(SkillAttributeEffect effect)
+        {
+            if (effect == null)
+                return string.Empty;
+
+            string targetText = effect.targetMode == SkillTargetMode.DetectedTargets ? "命中目标" : "自身";
+            string valueText = effect.usePercent ? $"{effect.magnitude:0.##}%" : effect.magnitude.ToString("0.##");
+            return $"{targetText} {GetStatFieldDisplayName(effect.statField)} {valueText}{GetAttributeEffectDurationSuffix(effect)}";
+        }
+
+        private string GetDamageEffectFoldoutKey(int eventIndex, int damageEffectIndex)
+        {
+            return $"damagefold:{eventIndex}:{damageEffectIndex}";
+        }
+
+        private string GetHitStopFoldoutKey(int eventIndex, int damageEffectIndex)
+        {
+            return $"hitstopfold:{eventIndex}:{damageEffectIndex}";
+        }
+
+        private string GetTopLevelPhysicsFoldoutKey(int eventIndex, int effectIndex)
+        {
+            return $"physicsfold:{eventIndex}:{effectIndex}";
+        }
+
+        private string GetTopLevelAttributeFoldoutKey(int eventIndex, int effectIndex)
+        {
+            return $"attrfold:{eventIndex}:{effectIndex}";
+        }
+
+        private string GetTopLevelVfxFoldoutKey(int eventIndex, int effectIndex)
+        {
+            return $"vfxfold:{eventIndex}:{effectIndex}";
+        }
+
+        private string GetTopLevelSfxFoldoutKey(int eventIndex, int effectIndex)
+        {
+            return $"sfxfold:{eventIndex}:{effectIndex}";
+        }
+
+        private string GetNestedHitDamageFoldoutKey(int eventIndex, int damageEffectIndex, int effectIndex)
+        {
+            return $"hitdamagefold:{eventIndex}:{damageEffectIndex}:{effectIndex}";
+        }
+
+        private string GetNestedPhysicsFoldoutKey(int eventIndex, int damageEffectIndex, int effectIndex)
+        {
+            return $"hitphysicsfold:{eventIndex}:{damageEffectIndex}:{effectIndex}";
+        }
+
+        private string GetNestedAttributeFoldoutKey(int eventIndex, int damageEffectIndex, int effectIndex)
+        {
+            return $"hitattrfold:{eventIndex}:{damageEffectIndex}:{effectIndex}";
+        }
+
+        private string GetNestedVfxFoldoutKey(int eventIndex, int damageEffectIndex, int effectIndex)
+        {
+            return $"hitvfxfold:{eventIndex}:{damageEffectIndex}:{effectIndex}";
+        }
+
+        private string GetCompanionVfxFoldoutKey(int eventIndex, int damageEffectIndex, int effectIndex)
+        {
+            return $"companionvfxfold:{eventIndex}:{damageEffectIndex}:{effectIndex}";
+        }
+
+        private string GetNestedSfxFoldoutKey(int eventIndex, int damageEffectIndex, int effectIndex)
+        {
+            return $"hitsfxfold:{eventIndex}:{damageEffectIndex}:{effectIndex}";
+        }
+
         private string GetEditorCueVisibilityKey(int eventIndex, int effectIndex)
         {
             return $"cue:{eventIndex}:{effectIndex}";
@@ -7764,6 +8464,11 @@ namespace Game.Editor
         private string GetEditorOnHitCueVisibilityKey(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
         {
             return $"hitcue:{eventIndex}:{damageEffectIndex}:{onHitEffectIndex}";
+        }
+
+        private string GetEditorCompanionCueVisibilityKey(int eventIndex, int damageEffectIndex, int companionEffectIndex)
+        {
+            return $"bodycue:{eventIndex}:{damageEffectIndex}:{companionEffectIndex}";
         }
 
         private string GetEditorSfxVisibilityKey(int eventIndex, int effectIndex)
@@ -7784,6 +8489,11 @@ namespace Game.Editor
         private bool IsOnHitCueVisible(int eventIndex, int damageEffectIndex, int onHitEffectIndex)
         {
             return !_hiddenPreviewCueKeys.Contains(GetEditorOnHitCueVisibilityKey(eventIndex, damageEffectIndex, onHitEffectIndex));
+        }
+
+        private bool IsCompanionCueVisible(int eventIndex, int damageEffectIndex, int companionEffectIndex)
+        {
+            return !_hiddenPreviewCueKeys.Contains(GetEditorCompanionCueVisibilityKey(eventIndex, damageEffectIndex, companionEffectIndex));
         }
 
         private bool IsTopLevelSfxVisible(int eventIndex, int effectIndex)
@@ -7928,6 +8638,19 @@ namespace Game.Editor
             triggerTime = bestHit.hitTime;
             explicitTarget = bestHit.hitTargets[0];
             return true;
+        }
+
+        private bool TryGetSceneCompanionCuePlaybackContext(out float triggerTime)
+        {
+            triggerTime = 0f;
+            if (_activeSceneCompanionVfxEventIndex < 0
+                || _activeSceneCompanionVfxDamageIndex < 0
+                || _activeSceneCompanionVfxIndex < 0)
+            {
+                return false;
+            }
+
+            return TryGetSceneDamageTriggerTime(_activeSceneCompanionVfxEventIndex, out triggerTime);
         }
 
         private bool TryEvaluatePreviewCueTransform(SkillVfxEffect cue, Transform explicitTarget, float triggerTime, out Vector3 position, out Quaternion rotation)
@@ -8126,7 +8849,9 @@ namespace Game.Editor
             _scenePreviewCuePrefab = null;
             _scenePreviewCueTrackType = TimelineTrackType.Vfx;
             _scenePreviewCueEventIndex = -1;
+            _scenePreviewCueDamageIndex = -1;
             _scenePreviewCueListIndex = -1;
+            _scenePreviewCueFollowsDamageWindow = false;
             _scenePreviewCueHasWorldOrigin = false;
             _scenePreviewCueWorldOriginTriggerTime = -1f;
             _scenePreviewCueWorldOriginPosition = Vector3.zero;
@@ -8236,7 +8961,7 @@ namespace Game.Editor
             if (skill == null)
                 return null;
 
-            List<PreviewDamageHitResult> hits = CollectPreviewDamageHitHistory(skill);
+            List<PreviewDamageHitResult> hits = CollectCurrentPreviewDamageHits(skill);
             for (int i = 0; i < hits.Count; i++)
             {
                 PreviewDamageHitResult hit = hits[i];

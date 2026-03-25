@@ -173,22 +173,6 @@ namespace Game.Presentation
                     alreadyHitTargets.Add(DamageTargetsScratch[i]);
             }
 
-            float stunDuration = 0.2f;
-            List<SkillHitDamageEffect> hitDamageEffects = damageEffect.GetEffectiveHitDamageEffects();
-            for (int damageIndex = 0; damageIndex < hitDamageEffects.Count; damageIndex++)
-            {
-                SkillHitDamageEffect hitDamageEffect = hitDamageEffects[damageIndex];
-                if (hitDamageEffect == null)
-                    continue;
-
-                float finalMultiplier = Mathf.Max(0f, hitDamageEffect.damageMagnitude);
-                if (finalMultiplier <= 0f)
-                    continue;
-
-                for (int i = 0; i < DamageTargetsScratch.Count; i++)
-                    ApplyDamageToTarget(DamageTargetsScratch[i], ctx, finalMultiplier, stunDuration);
-            }
-
             SkillHitStopEffect hitStopEffect = damageEffect.GetEffectiveHitStopEffect();
             if (SkillDamageEffect.HasConfiguredHitStopEffect(hitStopEffect))
             {
@@ -372,6 +356,22 @@ namespace Game.Presentation
         {
             if (damageEffect == null || ctx == null || damageTargets == null || damageTargets.Count == 0)
                 return;
+
+            float stunDuration = 0.2f;
+            List<SkillHitDamageEffect> hitDamageEffects = damageEffect.GetEffectiveHitDamageEffects();
+            for (int damageIndex = 0; damageIndex < hitDamageEffects.Count; damageIndex++)
+            {
+                SkillHitDamageEffect hitDamageEffect = hitDamageEffects[damageIndex];
+                if (hitDamageEffect == null)
+                    continue;
+
+                float finalMultiplier = Mathf.Max(0f, hitDamageEffect.damageMagnitude);
+                if (finalMultiplier <= 0f)
+                    continue;
+
+                for (int i = 0; i < damageTargets.Count; i++)
+                    ApplyDamageToTarget(damageTargets[i], ctx, finalMultiplier, stunDuration);
+            }
 
             if (damageEffect.onHitVfxEffects != null)
             {

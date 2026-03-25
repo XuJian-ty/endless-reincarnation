@@ -31,6 +31,7 @@ namespace Game.Presentation
             public SkillDamageEffect effect;
             public float endTime;
             public SkillCollisionHitbox collisionHitbox;
+            public UnityEngine.GameObject companionVfxRoot;
             public float startTime;
             public UnityEngine.Vector3 originPosition;
             public UnityEngine.Quaternion originRotation;
@@ -215,6 +216,8 @@ namespace Game.Presentation
                 if (effect == null)
                     continue;
 
+                effect.TryMigrateLegacySubEffects();
+
                 if (effect.detectionType == DamageDetectionType.Collision)
                 {
                     float detectionDuration = effect.detectionDuration > 0f
@@ -258,6 +261,7 @@ namespace Game.Presentation
                     originRotation = _context.CasterTransform != null ? _context.CasterTransform.rotation : UnityEngine.Quaternion.identity,
                 };
                 UpdateDynamicCompletionTime(_elapsed + SharedSkillDefinition.GetDamageEffectLifetime(effect));
+                CreateDamageWindowCompanionVfx(detectionWindow);
                 _activeDamageWindows.Add(detectionWindow);
                 SkillEffectExecutor.ExecuteDamageEffect(
                     effect,
@@ -281,6 +285,7 @@ namespace Game.Presentation
                 if (window?.effect == null)
                 {
                     CloseCollisionWindow(window);
+                    DestroyDamageWindowCompanionVfx(window);
                     _activeDamageWindows.RemoveAt(i);
                     continue;
                 }
@@ -288,10 +293,12 @@ namespace Game.Presentation
                 if (_elapsed > window.endTime + 0.0001f)
                 {
                     CloseCollisionWindow(window);
+                    DestroyDamageWindowCompanionVfx(window);
                     _activeDamageWindows.RemoveAt(i);
                     continue;
                 }
 
+                UpdateDamageWindowCompanionVfx(window, _elapsed - window.startTime);
                 SkillEffectExecutor.ExecuteDamageEffect(
                     window.effect,
                     _context,
@@ -306,7 +313,10 @@ namespace Game.Presentation
         private void ClearActiveDamageWindows()
         {
             for (int i = _activeDamageWindows.Count - 1; i >= 0; i--)
+            {
                 CloseCollisionWindow(_activeDamageWindows[i]);
+                DestroyDamageWindowCompanionVfx(_activeDamageWindows[i]);
+            }
 
             _activeDamageWindows.Clear();
         }
@@ -351,6 +361,136 @@ namespace Game.Presentation
         private static SkillDetectionMotionFrame CreateMotionFrame(ActiveDamageWindow window, float elapsed)
         {
             return new SkillDetectionMotionFrame(window.originPosition, window.originRotation, elapsed);
+        }
+
+        private void CreateDamageWindowCompanionVfx(ActiveDamageWindow window)
+        {
+            if (!ShouldCreateDamageWindowCompanionVfx(window))
+                return;
+
+            List<SkillVfxEffect> companionVfxEffects = window.effect.companionVfxEffects;
+            string rootName = "[SkillDamageCompanion]";
+            for (int i = 0; i < companionVfxEffects.Count; i++)
+            {
+                SkillVfxEffect effect = companionVfxEffects[i];
+                if (effect?.particlePrefab != null)
+                {
+                    rootName = $"[SkillDamageCompanion]{effect.particlePrefab.name}";
+                    break;
+                }
+            }
+
+            var root = new UnityEngine.GameObject(rootName);
+            root.AddComponent<SkillCuePauseProxy>();
+
+            float rangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(_context.CasterTransform);
+            for (int i = 0; i < companionVfxEffects.Count; i++)
+            {
+                SkillVfxEffect companionVfx = companionVfxEffects[i];
+                if (companionVfx?.particlePrefab == null)
+                    continue;
+
+                UnityEngine.GameObject instance = UnityEngine.Object.Instantiate(companionVfx.particlePrefab, root.transform);
+                instance.transform.localPosition = companionVfx.offset;
+                instance.transform.localRotation = UnityEngine.Quaternion.Euler(companionVfx.rotationEuler);
+                instance.transform.localScale = UnityEngine.Vector3.Scale(instance.transform.localScale, companionVfx.scale * rangeScale);
+                ConfigureDamageWindowCompanionParticles(instance);
+            }
+
+            window.companionVfxRoot = root;
+            UpdateDamageWindowCompanionVfx(window, 0f);
+        }
+
+        private void UpdateDamageWindowCompanionVfx(ActiveDamageWindow window, float elapsed)
+        {
+            if (window?.companionVfxRoot == null)
+                return;
+
+            if (!TryEvaluateDamageWindowTransform(window, elapsed, out UnityEngine.Vector3 position, out UnityEngine.Quaternion rotation))
+                return;
+
+            window.companionVfxRoot.transform.SetPositionAndRotation(position, rotation);
+        }
+
+        private static void DestroyDamageWindowCompanionVfx(ActiveDamageWindow window)
+        {
+            if (window?.companionVfxRoot == null)
+                return;
+
+            UnityEngine.Object.Destroy(window.companionVfxRoot);
+            window.companionVfxRoot = null;
+        }
+
+        private bool ShouldCreateDamageWindowCompanionVfx(ActiveDamageWindow window)
+        {
+            if (window?.effect == null
+                || window.effect.detectionType == DamageDetectionType.Collision
+                || _context?.CasterTransform == null)
+            {
+                return false;
+            }
+
+            List<SkillVfxEffect> companionVfxEffects = window.effect.companionVfxEffects;
+            if (companionVfxEffects == null)
+                return false;
+
+            for (int i = 0; i < companionVfxEffects.Count; i++)
+            {
+                if (companionVfxEffects[i]?.particlePrefab != null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static void ConfigureDamageWindowCompanionParticles(UnityEngine.GameObject instance)
+        {
+            if (instance == null)
+                return;
+
+            UnityEngine.ParticleSystem[] particleSystems = instance.GetComponentsInChildren<UnityEngine.ParticleSystem>(true);
+            for (int i = 0; i < particleSystems.Length; i++)
+            {
+                UnityEngine.ParticleSystem particleSystem = particleSystems[i];
+                if (particleSystem == null)
+                    continue;
+
+                UnityEngine.ParticleSystem.MainModule main = particleSystem.main;
+                if (main.simulationSpace == UnityEngine.ParticleSystemSimulationSpace.World)
+                    main.simulationSpace = UnityEngine.ParticleSystemSimulationSpace.Local;
+            }
+        }
+
+        private static bool TryEvaluateDamageWindowTransform(
+            ActiveDamageWindow window,
+            float elapsed,
+            out UnityEngine.Vector3 position,
+            out UnityEngine.Quaternion rotation)
+        {
+            position = UnityEngine.Vector3.zero;
+            rotation = UnityEngine.Quaternion.identity;
+            if (window?.effect == null)
+                return false;
+
+            SkillDamageEffect effect = window.effect;
+            SkillDetectionMotionFrame motionFrame = CreateMotionFrame(window, elapsed);
+            UnityEngine.Vector3 motionOffset = effect.motion != null && effect.motion.IsActive
+                ? effect.motion.direction.normalized * effect.motion.speed * motionFrame.Elapsed
+                : UnityEngine.Vector3.zero;
+
+            switch (effect.detectionType)
+            {
+                case DamageDetectionType.RangeOverlap:
+                    position = motionFrame.OriginPosition + motionFrame.OriginRotation * (effect.centerOffset + motionOffset);
+                    rotation = UnityEngine.Quaternion.Euler(effect.rotationEuler);
+                    return true;
+                case DamageDetectionType.Raycast:
+                    position = motionFrame.OriginPosition + motionFrame.OriginRotation * (effect.rayOriginOffset + motionOffset);
+                    rotation = UnityEngine.Quaternion.Euler(effect.rotationEuler);
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         private void EvaluateTrack<T>(List<T> events, EventState[] states, Action<T, ISkillExecutionContext, SkillCueRuntimeScope> executor)
