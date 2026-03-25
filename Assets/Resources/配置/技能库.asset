@@ -172,6 +172,19 @@ MonoBehaviour:
             enabled: 1
             speed: 20
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -239,6 +252,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -379,6 +405,19 @@ MonoBehaviour:
             enabled: 1
             speed: 20
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -446,6 +485,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -592,6 +644,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -744,6 +809,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -805,6 +883,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0
           onHitStopEffect:
@@ -951,6 +1042,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects: []
           onHitStopEffect:
             hitStopDuration: 0
@@ -1093,6 +1197,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -1218,6 +1335,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects: []
           onHitStopEffect:
             hitStopDuration: 0
@@ -1309,6 +1439,19 @@ MonoBehaviour:
             enabled: 1
             speed: 40
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 3
           onHitStopEffect:
@@ -1321,7 +1464,12 @@ MonoBehaviour:
           pauseCameraLookDuringHitStop: 0
           damageMagnitude: 0
           nestedSubEffectsOwnedByLists: 1
-          onHitPhysicsEffects: []
+          onHitPhysicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.2
           onHitAttributeEffects: []
           onHitVfxEffects:
           - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
@@ -1436,6 +1584,19 @@ MonoBehaviour:
             enabled: 1
             speed: 40
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -1587,6 +1748,19 @@ MonoBehaviour:
             enabled: 1
             speed: 10
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2
           onHitStopEffect:
@@ -1731,6 +1905,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -1821,6 +2008,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -1905,6 +2105,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -1992,6 +2205,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 0}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -2047,6 +2273,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -2102,6 +2341,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.8925
           onHitStopEffect:
@@ -2146,6 +2398,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1.05
           onHitStopEffect:
@@ -2210,6 +2475,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1.6875
           onHitStopEffect:
@@ -2277,6 +2555,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.5525
           onHitStopEffect:
@@ -2329,6 +2620,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.8
           onHitStopEffect:
@@ -2396,6 +2700,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1.875
           onHitStopEffect:
@@ -2534,6 +2851,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.03
           onHitStopEffect:
@@ -2605,6 +2935,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.95
           onHitStopEffect:
@@ -2672,6 +3015,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.3200002
           onHitStopEffect:
@@ -2754,6 +3110,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1.5525
           onHitStopEffect:
@@ -2806,6 +3175,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.52
           onHitStopEffect:
@@ -2918,6 +3300,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1
           onHitStopEffect:
@@ -2970,6 +3365,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.61200005
           onHitStopEffect:
@@ -3022,6 +3430,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.8
           onHitStopEffect:
@@ -3128,6 +3549,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.16
           onHitStopEffect:
@@ -3204,6 +3638,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.578
           onHitStopEffect:
@@ -3256,6 +3703,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.45
           onHitStopEffect:
@@ -3332,6 +3792,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.75
           onHitStopEffect:
@@ -3418,6 +3891,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.56
           onHitStopEffect:
@@ -3482,6 +3968,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 1.89
           onHitStopEffect:
@@ -3546,6 +4045,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.73
           onHitStopEffect:
@@ -3658,6 +4170,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.72
           onHitStopEffect:
@@ -3722,6 +4247,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.63750005
           onHitStopEffect:
@@ -3774,6 +4312,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 2.9399998
           onHitStopEffect:
@@ -3850,6 +4401,19 @@ MonoBehaviour:
             enabled: 0
             speed: 0
             direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
           onHitDamageEffects:
           - damageMagnitude: 0.85
           onHitStopEffect:
@@ -4064,6 +4628,19 @@ MonoBehaviour:
           enabled: 1
           speed: 20
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -4131,6 +4708,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -4271,6 +4861,19 @@ MonoBehaviour:
           enabled: 1
           speed: 20
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -4338,6 +4941,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -4484,6 +5100,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -4636,6 +5265,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -4697,6 +5339,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0
         onHitStopEffect:
@@ -4843,6 +5498,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects: []
         onHitStopEffect:
           hitStopDuration: 0
@@ -4985,6 +5653,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -5110,6 +5791,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects: []
         onHitStopEffect:
           hitStopDuration: 0
@@ -5201,6 +5895,19 @@ MonoBehaviour:
           enabled: 1
           speed: 40
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 3
         onHitStopEffect:
@@ -5213,7 +5920,12 @@ MonoBehaviour:
         pauseCameraLookDuringHitStop: 0
         damageMagnitude: 0
         nestedSubEffectsOwnedByLists: 1
-        onHitPhysicsEffects: []
+        onHitPhysicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          durationMode: 0
+          duration: 0.2
         onHitAttributeEffects: []
         onHitVfxEffects:
         - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
@@ -5328,6 +6040,19 @@ MonoBehaviour:
           enabled: 1
           speed: 40
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -5479,6 +6204,19 @@ MonoBehaviour:
           enabled: 1
           speed: 10
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2
         onHitStopEffect:
@@ -5623,6 +6361,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -5713,6 +6464,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -5797,6 +6561,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -5881,6 +6658,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 0}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -5933,6 +6723,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -5985,6 +6788,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.8925
         onHitStopEffect:
@@ -6029,6 +6845,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1.05
         onHitStopEffect:
@@ -6093,6 +6922,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1.6875
         onHitStopEffect:
@@ -6157,6 +6999,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.5525
         onHitStopEffect:
@@ -6209,6 +7064,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.8
         onHitStopEffect:
@@ -6273,6 +7141,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1.875
         onHitStopEffect:
@@ -6408,6 +7289,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.03
         onHitStopEffect:
@@ -6479,6 +7373,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.95
         onHitStopEffect:
@@ -6543,6 +7450,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.3200002
         onHitStopEffect:
@@ -6625,6 +7545,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1.5525
         onHitStopEffect:
@@ -6677,6 +7610,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.52
         onHitStopEffect:
@@ -6786,6 +7732,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1
         onHitStopEffect:
@@ -6838,6 +7797,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.61200005
         onHitStopEffect:
@@ -6890,6 +7862,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.8
         onHitStopEffect:
@@ -6993,6 +7978,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.16
         onHitStopEffect:
@@ -7069,6 +8067,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.578
         onHitStopEffect:
@@ -7121,6 +8132,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.45
         onHitStopEffect:
@@ -7197,6 +8221,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.75
         onHitStopEffect:
@@ -7280,6 +8317,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.56
         onHitStopEffect:
@@ -7344,6 +8394,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 1.89
         onHitStopEffect:
@@ -7408,6 +8471,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.73
         onHitStopEffect:
@@ -7517,6 +8593,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.72
         onHitStopEffect:
@@ -7581,6 +8670,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.63750005
         onHitStopEffect:
@@ -7633,6 +8735,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 2.9399998
         onHitStopEffect:
@@ -7709,6 +8824,19 @@ MonoBehaviour:
           enabled: 0
           speed: 0
           direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
         onHitDamageEffects:
         - damageMagnitude: 0.85
         onHitStopEffect:

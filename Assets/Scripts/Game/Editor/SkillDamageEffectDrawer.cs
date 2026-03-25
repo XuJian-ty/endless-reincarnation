@@ -36,6 +36,7 @@ namespace Game.Editor
                 var rayMaxDistance = property.FindPropertyRelative("rayMaxDistance");
                 var rayRadius = property.FindPropertyRelative("rayRadius");
                 var motion = property.FindPropertyRelative("motion");
+                var companionVfxEffects = property.FindPropertyRelative("companionVfxEffects");
                 var onHitDamageEffects = property.FindPropertyRelative("onHitDamageEffects");
                 var onHitStopEffect = property.FindPropertyRelative("onHitStopEffect");
                 var onHitPhysicsEffects = property.FindPropertyRelative("onHitPhysicsEffects");
@@ -84,7 +85,11 @@ namespace Game.Editor
                     y = DrawProperty(y, position, rayRadius);
                 }
 
-                y = DrawProperty(y, position, motion);
+                if (detection != DamageDetectionType.Collision)
+                {
+                    y = DrawProperty(y, position, motion);
+                    y = DrawProperty(y, position, companionVfxEffects);
+                }
                 y = DrawProperty(y, position, onHitStopEffect);
                 y = DrawProperty(y, position, onHitDamageEffects);
                 y = DrawProperty(y, position, onHitPhysicsEffects);
@@ -147,7 +152,11 @@ namespace Game.Editor
                 height += GetChildHeight(property.FindPropertyRelative("rayRadius"));
             }
 
-            height += GetChildHeight(property.FindPropertyRelative("motion"));
+            if (detection != DamageDetectionType.Collision)
+            {
+                height += GetChildHeight(property.FindPropertyRelative("motion"));
+                height += GetChildHeight(property.FindPropertyRelative("companionVfxEffects"));
+            }
             height += GetChildHeight(property.FindPropertyRelative("onHitStopEffect"));
             height += GetChildHeight(property.FindPropertyRelative("onHitDamageEffects"));
             height += GetChildHeight(property.FindPropertyRelative("onHitPhysicsEffects"));
