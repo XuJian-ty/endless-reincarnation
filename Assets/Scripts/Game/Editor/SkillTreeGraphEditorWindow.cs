@@ -160,10 +160,10 @@ namespace Game.Editor
                 return;
             }
 
-            SkillConfigEntry entry = _skillConfig != null ? _skillConfig.GetEntry(selectedNode.skillId) : null;
+            SkillConfigEntry entry = _skillConfig != null ? _skillConfig.GetEntryByActionId(selectedNode.actionId) : null;
             string displayName = entry != null && !string.IsNullOrWhiteSpace(entry.displayName)
                 ? entry.displayName.Trim()
-                : selectedNode.skillId;
+                : selectedNode.actionId;
 
             GUILayout.Space(12f);
             EditorGUILayout.LabelField($"当前节点：{displayName}", GUILayout.Width(220f));
@@ -211,10 +211,10 @@ namespace Game.Editor
                 if (candidate == null || candidate == selectedNode)
                     continue;
 
-                SkillConfigEntry candidateEntry = _skillConfig != null ? _skillConfig.GetEntry(candidate.skillId) : null;
+                SkillConfigEntry candidateEntry = _skillConfig != null ? _skillConfig.GetEntryByActionId(candidate.actionId) : null;
                 string label = candidateEntry != null && !string.IsNullOrWhiteSpace(candidateEntry.displayName)
                     ? candidateEntry.displayName.Trim()
-                    : candidate.skillId;
+                    : candidate.actionId;
 
                 bool contains = ContainsPredecessor(selectedNode, candidate.nodeId);
                 EditorGUI.BeginChangeCheck();
@@ -236,11 +236,11 @@ namespace Game.Editor
             if (node == null)
                 return "节点";
 
-            SkillConfigEntry entry = _skillConfig != null ? _skillConfig.GetEntry(node.skillId) : null;
+            SkillConfigEntry entry = _skillConfig != null ? _skillConfig.GetEntryByActionId(node.actionId) : null;
             if (entry != null && !string.IsNullOrWhiteSpace(entry.displayName))
                 return $"{entry.displayName.Trim()} ({node.nodeId})";
 
-            return $"{node.skillId} ({node.nodeId})";
+            return $"{node.actionId} ({node.nodeId})";
         }
 
         private void DrawCanvasBackground(Vector2 viewportSize, Vector2 logicalContentSize, float renderScale)
@@ -316,7 +316,7 @@ namespace Game.Editor
                     continue;
 
                 Rect nodeRect = GetScaledNodeRect(node, renderScale);
-                SkillConfigEntry entry = _skillConfig != null ? _skillConfig.GetEntry(node.skillId) : null;
+                SkillConfigEntry entry = _skillConfig != null ? _skillConfig.GetEntryByActionId(node.actionId) : null;
                 bool isSelected = string.Equals(_selectedNodeId, node.nodeId, StringComparison.Ordinal);
 
                 EditorGUI.DrawRect(nodeRect, isSelected
@@ -748,11 +748,17 @@ namespace Game.Editor
                 if (entry == null || (!entry.IsActiveSkill && !entry.IsPassiveSkill))
                     continue;
 
-                SkillTreeNodeDefinition existingNode = _graphConfig.GetNodeBySkillId(entry.skillId);
+                string entryId = entry.GetResolvedActionId();
+                if (string.IsNullOrWhiteSpace(entryId))
+                    continue;
+
+                SkillTreeNodeDefinition existingNode = _graphConfig.GetNodeByActionId(entryId);
                 if (existingNode != null)
                 {
                     if (string.IsNullOrWhiteSpace(existingNode.nodeId))
-                        existingNode.nodeId = entry.skillId;
+                        existingNode.nodeId = entryId;
+                    if (string.IsNullOrWhiteSpace(existingNode.actionId))
+                        existingNode.actionId = entryId;
                     continue;
                 }
 
@@ -763,8 +769,8 @@ namespace Game.Editor
 
                 _graphConfig.nodes.Add(new SkillTreeNodeDefinition
                 {
-                    nodeId = entry.skillId,
-                    skillId = entry.skillId,
+                    nodeId = entryId,
+                    actionId = entryId,
                     position = new Vector2(180f + column * 280f, 160f + row * 220f),
                 });
             }

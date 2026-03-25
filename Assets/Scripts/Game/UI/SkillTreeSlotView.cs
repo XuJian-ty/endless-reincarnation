@@ -90,7 +90,15 @@ namespace Game.UI
             }
 
             if (_skillNameText != null)
-                _skillNameText.text = string.IsNullOrWhiteSpace(entry.displayName) ? entry.skillId : entry.displayName.Trim();
+            {
+                if (!string.IsNullOrWhiteSpace(entry.displayName))
+                    _skillNameText.text = entry.displayName.Trim();
+                else
+                {
+                    string actionId = entry.GetResolvedActionId();
+                    _skillNameText.text = string.IsNullOrWhiteSpace(actionId) ? "技能" : actionId;
+                }
+            }
 
             if (_hintText != null)
             {

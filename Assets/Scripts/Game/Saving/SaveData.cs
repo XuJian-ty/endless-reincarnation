@@ -45,6 +45,7 @@ namespace Game.Saving
         public WeaponInstance    rangedEquippedWeapon;
         public int              currentAttackMode;
         public List<string> buffIds          = new List<string>();
+        /// <summary>为兼容旧字段名仍保留 unlockedSkillIds，实际存储的是玩家已解锁技能/被动的 actionId。</summary>
         public List<string> unlockedSkillIds = new List<string>();
         /// <summary>技能树槽位到主动技能 actionId 的映射。索引即槽位索引，空字符串表示该槽位未装备技能。</summary>
         public List<string> equippedSkillActionIds = new List<string>();

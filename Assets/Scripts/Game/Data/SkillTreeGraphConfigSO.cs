@@ -20,8 +20,8 @@ namespace Game.Data
         [InspectorLabel("节点ID")]
         public string nodeId = "";
 
-        [InspectorLabel("技能ID")]
-        public string skillId = "";
+        [InspectorLabel("动作ID")]
+        public string actionId = "";
 
         [InspectorLabel("节点位置")]
         public Vector2 position = new Vector2(240f, 180f);
@@ -88,32 +88,32 @@ namespace Game.Data
             return null;
         }
 
-        public SkillTreeNodeDefinition GetNodeBySkillId(string skillId)
+        public SkillTreeNodeDefinition GetNodeByActionId(string actionId)
         {
-            if (nodes == null || string.IsNullOrWhiteSpace(skillId))
+            if (nodes == null || string.IsNullOrWhiteSpace(actionId))
                 return null;
 
-            string normalized = skillId.Trim();
+            string normalized = actionId.Trim();
             for (int i = 0; i < nodes.Count; i++)
             {
                 SkillTreeNodeDefinition node = nodes[i];
-                if (node == null || string.IsNullOrWhiteSpace(node.skillId))
+                if (node == null || string.IsNullOrWhiteSpace(node.actionId))
                     continue;
 
-                if (string.Equals(node.skillId.Trim(), normalized, StringComparison.Ordinal))
+                if (string.Equals(node.actionId.Trim(), normalized, StringComparison.Ordinal))
                     return node;
             }
 
             return null;
         }
 
-        public bool CanUnlock(string skillId, Func<string, bool> isSkillUnlocked)
+        public bool CanUnlock(string actionId, Func<string, bool> isActionUnlocked)
         {
-            SkillTreeNodeDefinition node = GetNodeBySkillId(skillId);
+            SkillTreeNodeDefinition node = GetNodeByActionId(actionId);
             if (node == null)
                 return false;
 
-            if (isSkillUnlocked == null)
+            if (isActionUnlocked == null)
                 return node.predecessorNodeIds == null || node.predecessorNodeIds.Count == 0;
 
             if (node.predecessorNodeIds == null || node.predecessorNodeIds.Count == 0)
@@ -126,10 +126,10 @@ namespace Game.Data
                     continue;
 
                 SkillTreeNodeDefinition predecessor = GetNodeById(predecessorNodeId);
-                if (predecessor == null || string.IsNullOrWhiteSpace(predecessor.skillId))
+                if (predecessor == null || string.IsNullOrWhiteSpace(predecessor.actionId))
                     continue;
 
-                if (isSkillUnlocked(predecessor.skillId.Trim()))
+                if (isActionUnlocked(predecessor.actionId.Trim()))
                     return true;
             }
 
@@ -140,7 +140,7 @@ namespace Game.Data
         {
             List<string> errors = new List<string>();
             Dictionary<string, SkillTreeNodeDefinition> nodeById = new Dictionary<string, SkillTreeNodeDefinition>(StringComparer.Ordinal);
-            Dictionary<string, SkillTreeNodeDefinition> nodeBySkillId = new Dictionary<string, SkillTreeNodeDefinition>(StringComparer.Ordinal);
+            Dictionary<string, SkillTreeNodeDefinition> nodeByActionId = new Dictionary<string, SkillTreeNodeDefinition>(StringComparer.Ordinal);
 
             if (nodes == null || nodes.Count == 0)
             {
@@ -166,18 +166,18 @@ namespace Game.Data
                         errors.Add($"技能树节点ID重复：{normalizedNodeId}");
                 }
 
-                if (string.IsNullOrWhiteSpace(node.skillId))
+                if (string.IsNullOrWhiteSpace(node.actionId))
                 {
-                    errors.Add($"技能树节点 {node.nodeId} 缺少技能ID。");
+                    errors.Add($"技能树节点 {node.nodeId} 缺少动作ID。");
                 }
                 else
                 {
-                    string normalizedSkillId = node.skillId.Trim();
-                    if (!nodeBySkillId.TryAdd(normalizedSkillId, node))
-                        errors.Add($"技能树技能ID重复：{normalizedSkillId}");
+                    string normalizedActionId = node.actionId.Trim();
+                    if (!nodeByActionId.TryAdd(normalizedActionId, node))
+                        errors.Add($"技能树动作ID重复：{normalizedActionId}");
 
-                    if (skillConfig != null && skillConfig.GetEntry(normalizedSkillId) == null)
-                        errors.Add($"技能树节点 {node.nodeId} 引用了不存在的技能ID：{normalizedSkillId}");
+                    if (skillConfig != null && skillConfig.GetEntryByActionId(normalizedActionId) == null)
+                        errors.Add($"技能树节点 {node.nodeId} 引用了不存在的动作ID：{normalizedActionId}");
                 }
             }
 

@@ -59,8 +59,8 @@ namespace Game.Domain
             set => SetCurrency(ItemIds.TalentPoint, Math.Max(0, value));
         }
 
-        public List<string> BuffIds            { get; private set; } = new List<string>();
-        public HashSet<string> UnlockedSkillIds { get; private set; } = new HashSet<string>();
+        public List<string> BuffIds             { get; private set; } = new List<string>();
+        public HashSet<string> UnlockedActionIds { get; private set; } = new HashSet<string>(StringComparer.Ordinal);
 
         private readonly List<AppliedBuffModifier> _buffModifiers = new List<AppliedBuffModifier>();
         private readonly Dictionary<string, StatModifier> _passiveSkillModifiers = new Dictionary<string, StatModifier>();
@@ -117,7 +117,24 @@ namespace Game.Domain
 
             return count;
         }
-        public bool HasUnlockedSkill(string skillId) => !string.IsNullOrEmpty(skillId) && UnlockedSkillIds.Contains(skillId);
+        public bool HasUnlockedAction(string actionId)
+        {
+            if (string.IsNullOrWhiteSpace(actionId))
+                return false;
+
+            string normalizedActionId = actionId.Trim();
+            if (UnlockedActionIds.Contains(normalizedActionId))
+                return true;
+
+            normalizedActionId = ResolveUnlockedActionId(normalizedActionId);
+            return !string.IsNullOrEmpty(normalizedActionId) && UnlockedActionIds.Contains(normalizedActionId);
+        }
+
+        public bool HasUnlockedEntry(SkillConfigEntry entry)
+        {
+            return entry != null && HasUnlockedAction(entry.GetResolvedActionId());
+        }
+
         public bool IsSkillAvailable(SkillConfigEntry entry)
         {
             if (entry == null)
@@ -127,10 +144,10 @@ namespace Game.Domain
                 return entry.SupportsAttackMode(_currentAttackMode);
 
             if (entry.IsActiveSkill || entry.IsPassiveSkill)
-                return HasUnlockedSkill(entry.skillId)
+                return HasUnlockedEntry(entry)
                        && (!entry.IsActiveSkill || entry.SupportsAttackMode(_currentAttackMode));
 
-            return HasUnlockedSkill(entry.skillId);
+            return HasUnlockedEntry(entry);
         }
 
         public WeaponInstance GetEquippedWeapon(PlayerAttackMode attackMode)
@@ -214,7 +231,7 @@ namespace Game.Domain
 
             string normalizedActionId = actionId.Trim();
             SkillConfigEntry entry = config != null ? config.GetActiveSkillEntryByActionId(normalizedActionId) : null;
-            if (entry == null || !HasUnlockedSkill(entry.skillId))
+            if (entry == null || !HasUnlockedEntry(entry))
                 return false;
 
             int previousSlotIndex = FindEquippedSkillSlotIndex(normalizedActionId);
@@ -531,16 +548,16 @@ namespace Game.Domain
             }
         }
 
-        public bool UnlockSkill(string skillId, SkillConfigDatabaseSO config)
+        public bool UnlockAction(string actionId, SkillConfigDatabaseSO config)
         {
-            if (string.IsNullOrWhiteSpace(skillId))
+            string normalizedActionId = ResolveUnlockedActionId(actionId, config);
+            if (string.IsNullOrWhiteSpace(normalizedActionId))
                 return false;
 
-            string normalizedSkillId = skillId.Trim();
-            if (!UnlockedSkillIds.Add(normalizedSkillId))
+            if (!UnlockedActionIds.Add(normalizedActionId))
                 return false;
 
-            ApplyPassiveSkillModifier(normalizedSkillId, config);
+            ApplyPassiveSkillModifier(normalizedActionId, config);
             return true;
         }
 
@@ -559,14 +576,14 @@ namespace Game.Domain
             if (equippedWeapon != null)
                 snapshot.AddModifier(equippedWeapon.ToModifier());
 
-            if (config != null && UnlockedSkillIds != null)
+            if (config != null && UnlockedActionIds != null)
             {
-                foreach (string skillId in UnlockedSkillIds)
+                foreach (string actionId in UnlockedActionIds)
                 {
-                    if (string.IsNullOrWhiteSpace(skillId))
+                    if (string.IsNullOrWhiteSpace(actionId))
                         continue;
 
-                    SkillConfigEntry entry = config.GetEntry(skillId);
+                    SkillConfigEntry entry = config.GetEntryByActionId(actionId);
                     if (entry == null || !entry.IsPassiveSkill || entry.passiveStatModifier == null)
                         continue;
 
@@ -597,27 +614,28 @@ namespace Game.Domain
         public void RefreshUnlockedSkillEffects(SkillConfigDatabaseSO config)
         {
             ClearPassiveSkillModifiers();
-            if (config?.entries == null || UnlockedSkillIds == null || UnlockedSkillIds.Count == 0)
+            if (config?.entries == null || UnlockedActionIds == null || UnlockedActionIds.Count == 0)
                 return;
 
-            foreach (string skillId in UnlockedSkillIds)
-                ApplyPassiveSkillModifier(skillId, config);
+            foreach (string actionId in UnlockedActionIds)
+                ApplyPassiveSkillModifier(actionId, config);
         }
 
-        private void ApplyPassiveSkillModifier(string skillId, SkillConfigDatabaseSO config)
+        private void ApplyPassiveSkillModifier(string actionId, SkillConfigDatabaseSO config)
         {
-            if (config == null || string.IsNullOrWhiteSpace(skillId))
+            string normalizedActionId = ResolveUnlockedActionId(actionId, config);
+            if (config == null || string.IsNullOrWhiteSpace(normalizedActionId))
                 return;
 
-            var entry = config.GetEntry(skillId);
+            var entry = config.GetEntryByActionId(normalizedActionId);
             if (entry == null || !entry.IsPassiveSkill || entry.passiveStatModifier == null)
                 return;
 
-            if (_passiveSkillModifiers.ContainsKey(entry.skillId))
+            if (_passiveSkillModifiers.ContainsKey(normalizedActionId))
                 return;
 
             var modifier = entry.passiveStatModifier.Clone();
-            _passiveSkillModifiers[entry.skillId] = modifier;
+            _passiveSkillModifiers[normalizedActionId] = modifier;
             Stats.AddModifier(modifier);
         }
 
@@ -693,8 +711,17 @@ namespace Game.Domain
                             AddStackable(s.itemId, s.count);
             }
 
-            BuffIds          = run.buffIds         != null ? new List<string>(run.buffIds)            : new List<string>();
-            UnlockedSkillIds = run.unlockedSkillIds != null ? new HashSet<string>(run.unlockedSkillIds) : new HashSet<string>();
+            BuffIds = run.buffIds != null ? new List<string>(run.buffIds) : new List<string>();
+            UnlockedActionIds = new HashSet<string>(StringComparer.Ordinal);
+            if (run.unlockedSkillIds != null)
+            {
+                for (int i = 0; i < run.unlockedSkillIds.Count; i++)
+                {
+                    string normalizedActionId = ResolveUnlockedActionId(run.unlockedSkillIds[i]);
+                    if (!string.IsNullOrWhiteSpace(normalizedActionId))
+                        UnlockedActionIds.Add(normalizedActionId);
+                }
+            }
             LoadEquippedSkillActions(run);
             ClearBuffModifiers();
             CurrentHp = Mathf.Clamp(CurrentHp, 0f, Stats.MaxHp);
@@ -735,7 +762,7 @@ namespace Game.Domain
             run.rangedEquippedWeapon = Equipment.GetEquippedWeapon(PlayerAttackMode.Ranged);
             run.currentAttackMode = (int)_currentAttackMode;
             run.buffIds          = new List<string>(BuffIds);
-            run.unlockedSkillIds = new List<string>(UnlockedSkillIds);
+            run.unlockedSkillIds = new List<string>(UnlockedActionIds);
             run.equippedSkillActionIds = new List<string>(SkillSlotCount);
             for (int i = 0; i < SkillSlotCount; i++)
                 run.equippedSkillActionIds.Add(GetEquippedSkillActionId(i));
@@ -793,6 +820,25 @@ namespace Game.Domain
         private void NotifyLoadoutChanged()
         {
             LoadoutChanged?.Invoke();
+        }
+
+        private string ResolveUnlockedActionId(string entryId, SkillConfigDatabaseSO config = null)
+        {
+            if (string.IsNullOrWhiteSpace(entryId))
+                return string.Empty;
+
+            string normalizedEntryId = entryId.Trim();
+            SkillConfigDatabaseSO resolvedConfig = config ?? ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            SkillConfigEntry entry = resolvedConfig != null ? resolvedConfig.GetEntryByActionId(normalizedEntryId) : null;
+            entry ??= resolvedConfig != null ? resolvedConfig.GetEntry(normalizedEntryId) : null;
+            if (entry != null)
+            {
+                string resolvedActionId = entry.GetResolvedActionId();
+                if (!string.IsNullOrWhiteSpace(resolvedActionId))
+                    return resolvedActionId;
+            }
+
+            return normalizedEntryId;
         }
     }
 }

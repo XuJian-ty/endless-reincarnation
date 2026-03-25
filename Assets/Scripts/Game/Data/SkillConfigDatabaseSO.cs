@@ -44,26 +44,30 @@ namespace Game.Data
     /// <summary>
     /// 玩家单条动作/技能配置。
     ///
-    /// 被动技能：isPassive=true，只需 skillId / displayName / talentCost，运行时由被动系统读取。
-    /// 主动/基础技能：按 animationTrigger 与 skillId 绑定动画与技能逻辑。
+    /// 被动技能：isPassive=true，仍需填写 actionId 作为身份标识；skillId 只负责映射被动效果定义。
+    /// 主动/基础技能：按 actionId 绑定身份与状态逻辑，按“技能效果库引用 + skillId”绑定技能效果定义。
     ///
     /// 触发链（主动/基础技能）：
     ///   状态机根据输入和上下文得到动作ID → 先检查玩家动作及技能配置库中的条目是否可用/已解锁
     ///   → 向 Animator 发送 animationTrigger
-    ///   → SkillTimelineRunner 按 skillId 找到技能库中的定义 → 逐帧触发事件
+    ///   → SkillTimelineRunner 按“技能效果库引用 + skillId”找到技能效果定义 → 逐帧触发事件
     ///   → SkillEffectExecutor 执行伤害/特效/属性效果
     /// </summary>
     [Serializable]
     public class SkillConfigEntry
     {
         [Header("─ 基础信息 ──────────────────────────")]
-        [InspectorLabel("动作ID（只读）")]
-        [Tooltip("基础动作/主动技能从状态机进入配置库时使用的映射标记。\n默认使用玩家状态类名去掉 State 后缀的结果，例如 Jump、Dodge、Attack0、Skill0。")]
+        [InspectorLabel("动作ID（技能身份标识）")]
+        [Tooltip("所有基础动作/主动技能/被动技能统一使用的身份标识。\n默认使用玩家状态类名去掉 State 后缀的结果，例如 Jump、Dodge、Attack0、Skill0。")]
         public string actionId = "";
 
-        [InspectorLabel("技能 ID（全局唯一）")]
-        [Tooltip("基础动作/主动技能用于映射技能库中的技能效果定义。\n被动技能填写自己的被动 skillId。")]
+        [InspectorLabel("技能 ID（技能效果表现）")]
+        [Tooltip("只用于映射所选技能效果库中的技能效果定义，不再承担玩家解锁、冷却、技能树身份等逻辑职责。")]
         public string skillId = "";
+
+        [InspectorLabel("技能效果库引用")]
+        [Tooltip("留空则使用默认的“技能效果库”。填写后会优先从该库中按 skillId 查找技能效果定义。")]
+        public SkillEffectDatabaseSO skillEffectDatabase;
 
         [InspectorLabel("显示名称")]
         [Tooltip("技能树 UI 中展示的名称，不影响逻辑。")]
@@ -100,7 +104,7 @@ namespace Game.Data
         public int mpCost = 0;
 
         [InspectorLabel("动画 Trigger")]
-        [Tooltip("播放该技能/动作时发送给 Animator 的 Trigger 名。留空时默认使用 skillId。")]
+        [Tooltip("播放该技能/动作时发送给 Animator 的 Trigger 名。留空时默认使用 actionId。")]
         public string animationTrigger = "";
 
         [InspectorLabel("冷却(秒)")]
@@ -138,12 +142,31 @@ namespace Game.Data
             if (!string.IsNullOrWhiteSpace(actionId))
                 return actionId.Trim();
 
-            return skillId;
+            return string.Empty;
         }
 
         public string GetResolvedActionId()
         {
-            return string.IsNullOrWhiteSpace(actionId) ? string.Empty : actionId.Trim();
+            if (!string.IsNullOrWhiteSpace(actionId))
+                return actionId.Trim();
+
+            return string.Empty;
+        }
+
+        public SkillEffectDatabaseSO GetResolvedSkillEffectDatabase()
+        {
+            return skillEffectDatabase != null
+                ? skillEffectDatabase
+                : global::Game.ConfigManager.GetInstance()?.GetSkillEffectDatabase();
+        }
+
+        public SharedSkillDefinition ResolveSkillEffectDefinition()
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return null;
+
+            SkillEffectDatabaseSO database = GetResolvedSkillEffectDatabase();
+            return database != null ? database.GetEntry(skillId.Trim()) : null;
         }
 
         public bool IsPassiveSkill =>
@@ -218,7 +241,7 @@ namespace Game.Data
     public class SkillConfigDatabaseSO : ScriptableObject
     {
         [InspectorLabel("技能配置列表")]
-        [Tooltip("顺序对应动作/技能的配置列表。基础动作和主动技能通过动作ID映射；被动技能只用于技能树和属性增强。")]
+        [Tooltip("顺序对应动作/技能的配置列表。基础动作、主动技能、被动技能统一通过动作ID标识；skillId 仅负责映射技能效果。")]
         public List<SkillConfigEntry> entries = new List<SkillConfigEntry>();
 
         [InspectorLabel("形态基础动作映射")]
@@ -239,7 +262,7 @@ namespace Game.Data
             string normalized = actionId.Trim();
             foreach (var e in entries)
             {
-                if (e == null || e.IsPassiveSkill) continue;
+                if (e == null) continue;
                 if (string.Equals(e.GetResolvedActionId(), normalized, StringComparison.Ordinal))
                     return e;
             }
@@ -276,11 +299,6 @@ namespace Game.Data
         {
             var entry = GetEntryByActionId(actionId);
             return entry != null && entry.IsBaseSkill ? entry : null;
-        }
-
-        public SkillConfigEntry GetBaseEntryByActionId(string baseActionId)
-        {
-            return GetBaseEntry(baseActionId);
         }
 
         public SkillConfigEntry GetActiveSkillEntryByActionId(string skillActionId)

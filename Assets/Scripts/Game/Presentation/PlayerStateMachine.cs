@@ -27,10 +27,10 @@ namespace Game.Presentation
         public PlayerStateBase PreviousState { get; private set; }
 
         private readonly IPlayerContext _ctx;
-        private readonly Dictionary<int, float> _activeSkillCooldowns = new Dictionary<int, float>(4);
-        private readonly List<int> _cooldownUpdateSlots = new List<int>(4);
+        private readonly Dictionary<string, float> _activeSkillCooldowns = new Dictionary<string, float>(StringComparer.Ordinal);
+        private readonly List<string> _cooldownUpdateActionIds = new List<string>(4);
         private readonly List<float> _cooldownUpdateValues = new List<float>(4);
-        private readonly List<int> _cooldownExpiredSlots = new List<int>(4);
+        private readonly List<string> _cooldownExpiredActionIds = new List<string>(4);
 
         // ── 预输入 ────────────────────────────────────────────────────────
         private PendingActionData _pending = PendingActionData.Empty;
@@ -119,16 +119,29 @@ namespace Game.Presentation
             if (slotIndex < 0 || entry == null || !entry.IsActiveSkill)
                 return;
 
+            string actionId = ResolveCooldownActionId(slotIndex, entry);
+            if (string.IsNullOrWhiteSpace(actionId))
+                return;
+
             float cooldown = Mathf.Max(0f, entry.cooldownSeconds);
             if (cooldown <= 0f)
                 return;
 
-            _activeSkillCooldowns[slotIndex] = cooldown;
+            _activeSkillCooldowns[actionId] = cooldown;
         }
 
         public float GetActiveSkillCooldownRemaining(int slotIndex)
         {
-            return _activeSkillCooldowns.TryGetValue(slotIndex, out float remaining)
+            string actionId = ResolveCooldownActionId(slotIndex);
+            return GetActiveSkillCooldownRemaining(actionId);
+        }
+
+        private float GetActiveSkillCooldownRemaining(string actionId)
+        {
+            if (string.IsNullOrWhiteSpace(actionId))
+                return 0f;
+
+            return _activeSkillCooldowns.TryGetValue(actionId, out float remaining)
                 ? Mathf.Max(0f, remaining)
                 : 0f;
         }
@@ -263,7 +276,7 @@ namespace Game.Presentation
             SkillConfigEntry entry = _ctx.PlayerModel.GetEquippedActiveSkillEntry(slotIndex, skillDb);
             return entry != null
                    && _ctx.PlayerModel.IsSkillAvailable(entry)
-                   && GetActiveSkillCooldownRemaining(slotIndex) <= 0f;
+                   && GetActiveSkillCooldownRemaining(entry.GetResolvedActionId()) <= 0f;
         }
 
         private void TickActiveSkillCooldowns(float dt)
@@ -271,30 +284,44 @@ namespace Game.Presentation
             if (_activeSkillCooldowns.Count <= 0 || dt <= 0f)
                 return;
 
-            _cooldownUpdateSlots.Clear();
+            _cooldownUpdateActionIds.Clear();
             _cooldownUpdateValues.Clear();
-            _cooldownExpiredSlots.Clear();
+            _cooldownExpiredActionIds.Clear();
 
-            foreach (KeyValuePair<int, float> pair in _activeSkillCooldowns)
+            foreach (KeyValuePair<string, float> pair in _activeSkillCooldowns)
             {
                 float next = pair.Value - dt;
                 if (next > 0f)
                 {
-                    _cooldownUpdateSlots.Add(pair.Key);
+                    _cooldownUpdateActionIds.Add(pair.Key);
                     _cooldownUpdateValues.Add(next);
                     continue;
                 }
 
-                _cooldownExpiredSlots.Add(pair.Key);
+                _cooldownExpiredActionIds.Add(pair.Key);
             }
 
-            for (int i = 0; i < _cooldownUpdateSlots.Count; i++)
+            for (int i = 0; i < _cooldownUpdateActionIds.Count; i++)
             {
-                _activeSkillCooldowns[_cooldownUpdateSlots[i]] = _cooldownUpdateValues[i];
+                _activeSkillCooldowns[_cooldownUpdateActionIds[i]] = _cooldownUpdateValues[i];
             }
 
-            for (int i = 0; i < _cooldownExpiredSlots.Count; i++)
-                _activeSkillCooldowns.Remove(_cooldownExpiredSlots[i]);
+            for (int i = 0; i < _cooldownExpiredActionIds.Count; i++)
+                _activeSkillCooldowns.Remove(_cooldownExpiredActionIds[i]);
+        }
+
+        private string ResolveCooldownActionId(int slotIndex, SkillConfigEntry entry = null)
+        {
+            if (entry != null)
+            {
+                string resolvedActionId = entry.GetResolvedActionId();
+                if (!string.IsNullOrWhiteSpace(resolvedActionId))
+                    return resolvedActionId;
+            }
+
+            return _ctx?.PlayerModel != null
+                ? _ctx.PlayerModel.GetEquippedSkillActionId(slotIndex)
+                : string.Empty;
         }
 
         private void TransitionTo(PlayerStateBase next)

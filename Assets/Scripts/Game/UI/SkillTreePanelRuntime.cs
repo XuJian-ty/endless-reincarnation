@@ -12,7 +12,6 @@ namespace Game.UI
 {
     internal sealed class SkillTreePanelRuntime
     {
-        private const string RuntimeRootName = "SkillTreeRuntimeRoot";
         private const string NodePrefabResourcePath = "UI/SkillTreeNode";
         private const string SlotPrefabResourcePath = "UI/SkillTreeSlot";
         private const float GraphNodeDiameter = 92f;
@@ -134,7 +133,7 @@ namespace Game.UI
 
             PlayerModel player = ResolvePlayerModel();
             SkillConfigEntry entry = nodeView.Entry;
-            if (player == null || !entry.IsActiveSkill || !player.HasUnlockedSkill(entry.skillId))
+            if (player == null || !entry.IsActiveSkill || !player.HasUnlockedEntry(entry))
             {
                 RefreshAll();
                 return;
@@ -325,7 +324,7 @@ namespace Game.UI
                 if (entry == null)
                     continue;
 
-                bool unlocked = player != null && player.HasUnlockedSkill(entry.skillId);
+                bool unlocked = player != null && player.HasUnlockedEntry(entry);
                 bool canUnlock = !unlocked && player != null && CanUnlockEntry(entry, player);
                 bool selected = ReferenceEquals(view, _selectedNodeView);
                 view.RefreshVisual(selected, unlocked, canUnlock);
@@ -346,7 +345,7 @@ namespace Game.UI
                 return;
             }
 
-            bool unlocked = player != null && player.HasUnlockedSkill(entry.skillId);
+            bool unlocked = player != null && player.HasUnlockedEntry(entry);
             bool canUnlock = !unlocked && player != null && CanUnlockEntry(entry, player);
 
             if (_skillTypeText != null)
@@ -389,10 +388,10 @@ namespace Game.UI
             for (int i = 0; i < _graphConfig.nodes.Count; i++)
             {
                 SkillTreeNodeDefinition node = _graphConfig.nodes[i];
-                if (node == null || string.IsNullOrWhiteSpace(node.skillId))
+                if (node == null || string.IsNullOrWhiteSpace(node.actionId))
                     continue;
 
-                SkillConfigEntry entry = _skillConfig.GetEntry(node.skillId.Trim());
+                SkillConfigEntry entry = ResolveGraphEntry(node.actionId.Trim());
                 if (entry == null || (!entry.IsActiveSkill && !entry.IsPassiveSkill))
                     continue;
 
@@ -499,7 +498,7 @@ namespace Game.UI
                     if (!_nodeViews.TryGetValue(predecessorNodeId.Trim(), out SkillTreeNodeView predecessorView))
                         continue;
 
-                    bool predecessorUnlocked = player != null && predecessorView.Entry != null && player.HasUnlockedSkill(predecessorView.Entry.skillId);
+                    bool predecessorUnlocked = player != null && predecessorView.Entry != null && player.HasUnlockedEntry(predecessorView.Entry);
                     Color color = predecessorUnlocked
                         ? new Color(0.30f, 0.83f, 0.70f, 0.92f)
                         : new Color(0.34f, 0.38f, 0.39f, 0.90f);
@@ -563,7 +562,7 @@ namespace Game.UI
                 SkillTreeSlotView slotView = _slotViews[i];
                 string actionId = player != null ? player.GetEquippedSkillActionId(slotView.SlotIndex) : string.Empty;
                 SkillConfigEntry entry = !string.IsNullOrWhiteSpace(actionId) ? _skillConfig.GetEntryByActionId(actionId) : null;
-                bool unlocked = entry != null && player != null && player.HasUnlockedSkill(entry.skillId);
+                bool unlocked = entry != null && player != null && player.HasUnlockedEntry(entry);
                 bool available = entry != null && player != null && player.IsSkillAvailable(entry);
                 slotView.RefreshVisual(entry, unlocked, available);
             }
@@ -579,7 +578,7 @@ namespace Game.UI
                 return;
             }
 
-            if (player.HasUnlockedSkill(entry.skillId))
+            if (player.HasUnlockedEntry(entry))
             {
                 SetStatus($"{GetDisplayName(entry)} 已解锁。", false);
                 return;
@@ -598,7 +597,7 @@ namespace Game.UI
                 return;
             }
 
-            if (!player.UnlockSkill(entry.skillId, _skillConfig))
+            if (!player.UnlockAction(entry.GetResolvedActionId(), _skillConfig))
             {
                 if (talentCost > 0)
                     player.AddItemCount(PlayerModel.ItemIds.TalentPoint, talentCost);
@@ -620,7 +619,7 @@ namespace Game.UI
             if (_graphConfig == null)
                 return true;
 
-            return _graphConfig.CanUnlock(entry.skillId, player.HasUnlockedSkill);
+            return _graphConfig.CanUnlock(entry.GetResolvedActionId(), player.HasUnlockedAction);
         }
 
         private void UpdateDragGhostPosition(PointerEventData eventData)
@@ -643,25 +642,15 @@ namespace Game.UI
                 _dragGhostRoot.gameObject.SetActive(false);
         }
 
-        private void DisableLegacyChildren()
-        {
-            for (int i = 0; i < _panel.transform.childCount; i++)
-            {
-                Transform child = _panel.transform.GetChild(i);
-                if (child == null)
-                    continue;
-
-                if (string.Equals(child.name, RuntimeRootName, StringComparison.Ordinal))
-                    continue;
-
-                child.gameObject.SetActive(false);
-            }
-        }
-
         private PlayerModel ResolvePlayerModel()
         {
             ILevelUIModel levelUiModel = LevelUIModelLocator.Get();
             return levelUiModel?.Player ?? GameStateMachine.GetInstance()?.Player;
+        }
+
+        private SkillConfigEntry ResolveGraphEntry(string actionId)
+        {
+            return _skillConfig != null ? _skillConfig.GetEntryByActionId(actionId) : null;
         }
 
         private void SetStatus(string message, bool isError)
@@ -745,7 +734,11 @@ namespace Game.UI
             if (entry == null)
                 return "技能";
 
-            return string.IsNullOrWhiteSpace(entry.displayName) ? entry.skillId : entry.displayName.Trim();
+            if (!string.IsNullOrWhiteSpace(entry.displayName))
+                return entry.displayName.Trim();
+
+            string actionId = entry.GetResolvedActionId();
+            return string.IsNullOrWhiteSpace(actionId) ? "技能" : actionId;
         }
 
         private static string GetDescription(SkillConfigEntry entry)

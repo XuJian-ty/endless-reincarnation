@@ -30,6 +30,14 @@ namespace Game.Editor
         private const float ResizeHandleWidth = 6f;
         private const float PlayheadHitWidth = 6f;
         private const bool ShowScenePreviewText = false;
+        private const float CompactSkillObjectWidth = 142f;
+        private const float CompactSkillGroupWidth = 70f;
+        private const float CompactSkillMenuWidth = 70f;
+        private const float CompactAnimationObjectWidth = 136f;
+        private const float CompactAnimationGroupWidth = 70f;
+        private const float CompactAnimationEntryWidth = 70f;
+        private const float CompactStatusLabelWidth = 40f;
+        private const float CompactPreviewControlGapWidth = 0f;
 
         private static readonly Color TimelineBackground = new Color(0.18f, 0.18f, 0.18f, 1f);
         private static readonly Color RulerBackground = new Color(0.22f, 0.22f, 0.22f, 1f);
@@ -47,11 +55,12 @@ namespace Game.Editor
         private static readonly CueAnchor[] OnHitCueAnchors = { CueAnchor.Caster, CueAnchor.Target, CueAnchor.World };
         private static readonly string[] OnHitCueAnchorLabels = { "自身", "目标", "世界" };
 
-        private SharedSkillDatabaseSO _database;
+        private SkillEffectDatabaseSO _database;
         private SerializedObject _serializedDb;
 
         private int _selectedGroupIndex = -1;
         private int _selectedSkillIndex = -1;
+        private int _selectedSkillVariantIndex = -1;
         private int _selectedEventIndex = -1;
         private TimelineTrackType _selectedEventTrackType = TimelineTrackType.Damage;
 
@@ -595,20 +604,28 @@ namespace Game.Editor
                 EditorGUILayout.BeginHorizontal();
                 try
                 {
+                    GUILayout.FlexibleSpace();
                     DrawSkillLibrarySelectorCompact();
-                    GUILayout.Space(6f);
+                    GUILayout.Space(CompactPreviewControlGapWidth);
                     DrawPreviewControlsCompact();
-                    GUILayout.Space(6f);
+                    GUILayout.Space(CompactPreviewControlGapWidth);
                     DrawAnimationLibrarySelectorCompact();
                     GUILayout.FlexibleSpace();
-                    if (_isPlaying)
-                        GUILayout.Label("播放中", EditorStyles.miniLabel, GUILayout.Width(40f));
-                    else if (AnimationMode.InAnimationMode())
-                        GUILayout.Label("预览中", EditorStyles.miniLabel, GUILayout.Width(40f));
                 }
                 finally
                 {
                     EditorGUILayout.EndHorizontal();
+                }
+
+                string previewStateLabel = _isPlaying
+                    ? "播放中"
+                    : (AnimationMode.InAnimationMode() ? "预览中" : string.Empty);
+                if (!string.IsNullOrEmpty(previewStateLabel))
+                {
+                    GUI.Label(
+                        new Rect(rect.width - CompactStatusLabelWidth - 4f, 2f, CompactStatusLabelWidth, 18f),
+                        previewStateLabel,
+                        EditorStyles.miniLabel);
                 }
 
                 GUILayout.Space(4f);
@@ -789,8 +806,8 @@ namespace Game.Editor
                         EditorGUI.BeginDisabledGroup(!hasSkill);
                         try
                         {
-                            if (GUILayout.Button("清空事件", compactRightButtonStyle, GUILayout.Width(84f)))
-                                ClearAllEvents(skill);
+                            if (GUILayout.Button("清空事件", compactRightButtonStyle, GUILayout.Width(66f)))
+                                ConfirmAndClearAllEvents(skill);
                         }
                         finally
                         {
@@ -1149,15 +1166,26 @@ namespace Game.Editor
         private void DrawSkillInspector(SharedSkillDefinition skill)
         {
             EditorGUILayout.LabelField("技能", EditorStyles.boldLabel);
+            SkillEffectVariantGroupDefinition skillGroup = GetSelectedSkillVariantGroup();
+            bool isDefaultVariant = _selectedSkillVariantIndex == 0;
+
+            using (new EditorGUI.DisabledScope(true))
+                EditorGUILayout.TextField("技能组", SkillEffectDatabaseSO.GetVariantGroupName(skillGroup));
+
+            if (isDefaultVariant)
+                EditorGUILayout.HelpBox("默认技能效果不可改名；如需替换效果，请在当前技能组下新增技能效果变体。", MessageType.None);
 
             EditorGUI.BeginChangeCheck();
-            string newSkillId = EditorGUILayout.TextField("技能ID", skill.skillId ?? string.Empty);
+            string newSkillId;
+            using (new EditorGUI.DisabledScope(isDefaultVariant))
+                newSkillId = EditorGUILayout.TextField("技能ID", skill.skillId ?? string.Empty);
             bool newIgnoreAnimationDamageEvents = EditorGUILayout.Toggle("忽略动画帧伤害事件", skill.ignoreAnimationDamageEvents);
             if (!EditorGUI.EndChangeCheck())
                 return;
 
             Undo.RecordObject(_database, "Edit Skill");
-            skill.skillId = newSkillId;
+            if (!isDefaultVariant)
+                skill.skillId = newSkillId;
             skill.ignoreAnimationDamageEvents = newIgnoreAnimationDamageEvents;
             MarkDatabaseDirty();
         }
@@ -1554,8 +1582,8 @@ namespace Game.Editor
                 SampleAnimationAtTime(_previewTime);
             }
 
-            GUILayout.Space(6f);
-            GUILayout.Label($"{FormatTimelineTime(_previewTime)} / {FormatTimelineTime(GetPreviewTotalDuration())}", EditorStyles.miniLabel, GUILayout.Width(168f));
+            GUILayout.Space(0f);
+            GUILayout.Label($"{FormatTimelineTime(_previewTime)} / {FormatTimelineTime(GetPreviewTotalDuration())}", EditorStyles.miniLabel, GUILayout.Width(124f));
         }
 
         private void IteratePreviewTriggerTimes(SkillTimedEventBase evt, System.Action<float> action)
@@ -3162,40 +3190,10 @@ namespace Game.Editor
             if (_database == null)
                 return;
 
+            _database.Synchronize();
             EditorUtility.SetDirty(_database);
             RebuildSerializedDb();
             Repaint();
-        }
-        private void AddSkill()
-        {
-            EnsureGroupList();
-            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
-            Undo.RecordObject(_database, "Add Skill");
-            visibleSkills.Add(new SharedSkillDefinition
-            {
-                skillId = $"new_skill_{visibleSkills.Count}",
-                damageEvents = new List<SkillDamageEvent>(),
-                physicsEvents = new List<SkillPhysicsEvent>(),
-                attributeEvents = new List<SkillAttributeEvent>(),
-                vfxEvents = new List<SkillVfxEvent>(),
-                sfxEvents = new List<SkillSfxEvent>(),
-            });
-            _selectedSkillIndex = visibleSkills.Count - 1;
-            ClearSelectedEvent();
-            MarkDatabaseDirty();
-        }
-
-        private void RemoveSelectedSkill()
-        {
-            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
-            if (!HasSelectedSkill() || _selectedSkillIndex < 0 || _selectedSkillIndex >= visibleSkills.Count)
-                return;
-
-            Undo.RecordObject(_database, "Delete Skill");
-            visibleSkills.RemoveAt(_selectedSkillIndex);
-            _selectedSkillIndex = Mathf.Clamp(_selectedSkillIndex - 1, -1, visibleSkills.Count - 1);
-            ClearSelectedEvent();
-            MarkDatabaseDirty();
         }
 
         private void AddEvent(SharedSkillDefinition skill, TimelineTrackType trackType, float? explicitStartTime = null)
@@ -3515,6 +3513,17 @@ namespace Game.Editor
             _activeSceneCompanionVfxIndex = -1;
             DestroyScenePreviewCueInstance();
             MarkDatabaseDirty();
+        }
+
+        private void ConfirmAndClearAllEvents(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return;
+
+            if (!EditorUtility.DisplayDialog("确认清空事件", "确定要清空当前技能的所有事件吗？此操作不可撤销。", "确定", "取消"))
+                return;
+
+            ClearAllEvents(skill);
         }
 
         private void SortEvents(SharedSkillDefinition skill)
@@ -5863,9 +5872,9 @@ namespace Game.Editor
             List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
             if (visibleSkills == null)
                 return null;
-            if (_selectedSkillIndex < 0 || _selectedSkillIndex >= visibleSkills.Count)
+            if (_selectedSkillVariantIndex < 0 || _selectedSkillVariantIndex >= visibleSkills.Count)
                 return null;
-            return visibleSkills[_selectedSkillIndex];
+            return visibleSkills[_selectedSkillVariantIndex];
         }
 
         private void SelectEvent(TimelineTrackType trackType, int eventIndex)
@@ -6144,19 +6153,18 @@ namespace Game.Editor
             if (_database == null)
                 return;
 
+            _database.Synchronize();
             if (_database.groups == null)
                 _database.groups = new List<SkillGroupDefinition>();
 
             if (_database.groups.Count == 0)
             {
-                if (_database.entries == null)
-                    _database.entries = new List<SharedSkillDefinition>();
-
                 _database.groups.Add(new SkillGroupDefinition
                 {
                     groupId = "default",
                     groupName = "默认分组",
-                    entries = _database.entries,
+                    skillGroups = new List<SkillEffectVariantGroupDefinition>(),
+                    entries = new List<SharedSkillDefinition>(),
                 });
                 _selectedGroupIndex = 0;
                 return;
@@ -6166,8 +6174,11 @@ namespace Game.Editor
             {
                 if (_database.groups[i] == null)
                     _database.groups[i] = new SkillGroupDefinition();
-                else if (_database.groups[i].entries == null)
-                    _database.groups[i].entries = new List<SharedSkillDefinition>();
+                else
+                {
+                    _database.groups[i].skillGroups ??= new List<SkillEffectVariantGroupDefinition>();
+                    _database.groups[i].entries ??= new List<SharedSkillDefinition>();
+                }
             }
 
             if (_selectedGroupIndex < 0 || _selectedGroupIndex >= _database.groups.Count)
@@ -6191,7 +6202,9 @@ namespace Game.Editor
                 if (newGroupIndex != _selectedGroupIndex)
                 {
                     _selectedGroupIndex = newGroupIndex;
-                    _selectedSkillIndex = -1;
+                    _selectedSkillIndex = 0;
+                    _selectedSkillVariantIndex = 0;
+                    EnsureSkillSelectionIsValid();
                     ClearSelectedEvent();
                     _timelineScrollX = 0f;
                     StopPreview();
@@ -6220,41 +6233,156 @@ namespace Game.Editor
             return labels;
         }
 
-        private string[] GetSkillEntryOptions()
+        private string GetSelectedSkillMenuLabel()
         {
-            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
-            if (visibleSkills == null || visibleSkills.Count == 0)
-                return new[] { "未选择技能" };
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return "未选择技能";
 
-            var labels = new string[visibleSkills.Count];
-            for (int i = 0; i < visibleSkills.Count; i++)
+            string skillId = !string.IsNullOrWhiteSpace(skill.skillId)
+                ? skill.skillId
+                : "未命名技能";
+            string groupName = SkillEffectDatabaseSO.GetVariantGroupName(GetSelectedSkillVariantGroup());
+            if (string.IsNullOrWhiteSpace(groupName) || groupName == skillId)
+                return skillId;
+
+            return $"{groupName}/{skillId}";
+        }
+
+        private void DrawSkillSelectionDropdown(GUIStyle style, params GUILayoutOption[] options)
+        {
+            EnsureSkillSelectionIsValid();
+
+            GUIContent buttonContent = new GUIContent(GetSelectedSkillMenuLabel());
+            Rect buttonRect = GUILayoutUtility.GetRect(buttonContent, style, options);
+
+            EditorGUI.BeginDisabledGroup(!HasSelectableSkillVariants());
+            try
             {
-                SharedSkillDefinition entry = visibleSkills[i];
-                labels[i] = entry == null || string.IsNullOrWhiteSpace(entry.skillId)
-                    ? $"技能{i + 1}"
-                    : entry.skillId;
+                if (EditorGUI.DropdownButton(buttonRect, buttonContent, FocusType.Passive, style))
+                    ShowSkillSelectionMenu(buttonRect);
+            }
+            finally
+            {
+                EditorGUI.EndDisabledGroup();
+            }
+        }
+
+        private bool HasSelectableSkillVariants()
+        {
+            List<SkillEffectVariantGroupDefinition> visibleSkillGroups = GetVisibleSkillGroups();
+            if (visibleSkillGroups == null)
+                return false;
+
+            for (int groupIndex = 0; groupIndex < visibleSkillGroups.Count; groupIndex++)
+            {
+                SkillEffectVariantGroupDefinition skillGroup = visibleSkillGroups[groupIndex];
+                if (skillGroup?.entries != null && skillGroup.entries.Count > 0)
+                    return true;
             }
 
-            return labels;
+            return false;
+        }
+
+        private void ShowSkillSelectionMenu(Rect buttonRect)
+        {
+            GenericMenu menu = new GenericMenu();
+            List<SkillEffectVariantGroupDefinition> visibleSkillGroups = GetVisibleSkillGroups();
+            bool hasEntries = false;
+
+            if (visibleSkillGroups != null)
+            {
+                for (int groupIndex = 0; groupIndex < visibleSkillGroups.Count; groupIndex++)
+                {
+                    SkillEffectVariantGroupDefinition skillGroup = visibleSkillGroups[groupIndex];
+                    List<SharedSkillDefinition> entries = skillGroup?.entries;
+                    if (entries == null || entries.Count == 0)
+                        continue;
+
+                    string groupName = SkillEffectDatabaseSO.GetVariantGroupName(skillGroup);
+                    if (string.IsNullOrWhiteSpace(groupName))
+                        groupName = $"技能组{groupIndex + 1}";
+
+                    for (int variantIndex = 0; variantIndex < entries.Count; variantIndex++)
+                    {
+                        SharedSkillDefinition entry = entries[variantIndex];
+                        string skillLabel = entry != null && !string.IsNullOrWhiteSpace(entry.skillId)
+                            ? entry.skillId
+                            : $"技能效果{variantIndex + 1}";
+                        int capturedGroupIndex = groupIndex;
+                        int capturedVariantIndex = variantIndex;
+                        bool isSelected = capturedGroupIndex == _selectedSkillIndex
+                            && capturedVariantIndex == _selectedSkillVariantIndex;
+
+                        menu.AddItem(
+                            new GUIContent($"{groupName}/{skillLabel}"),
+                            isSelected,
+                            () => SelectSkillVariant(capturedGroupIndex, capturedVariantIndex));
+                        hasEntries = true;
+                    }
+                }
+            }
+
+            if (!hasEntries)
+                menu.AddDisabledItem(new GUIContent("未选择技能"));
+
+            menu.DropDown(buttonRect);
+        }
+
+        private void SelectSkillVariant(int skillIndex, int skillVariantIndex)
+        {
+            _selectedSkillIndex = skillIndex;
+            _selectedSkillVariantIndex = skillVariantIndex;
+            EnsureSkillSelectionIsValid();
+            ClearSelectedEvent();
+            _timelineScrollX = 0f;
+            StopPreview();
+            Repaint();
+        }
+
+        private List<SkillEffectVariantGroupDefinition> GetVisibleSkillGroups()
+        {
+            EnsureGroupList();
+            return _database?.GetVariantGroupsInGroup(_selectedGroupIndex) ?? new List<SkillEffectVariantGroupDefinition>();
         }
 
         private List<SharedSkillDefinition> GetVisibleSkillList()
         {
             EnsureGroupList();
-            return _database?.GetEntriesInGroup(_selectedGroupIndex) ?? new List<SharedSkillDefinition>();
+            return _database?.GetEntriesInVariantGroup(_selectedGroupIndex, _selectedSkillIndex) ?? new List<SharedSkillDefinition>();
+        }
+
+        private SkillEffectVariantGroupDefinition GetSelectedSkillVariantGroup()
+        {
+            List<SkillEffectVariantGroupDefinition> visibleSkillGroups = GetVisibleSkillGroups();
+            if (visibleSkillGroups == null)
+                return null;
+            if (_selectedSkillIndex < 0 || _selectedSkillIndex >= visibleSkillGroups.Count)
+                return null;
+            return visibleSkillGroups[_selectedSkillIndex];
         }
 
         private void EnsureSkillSelectionIsValid()
         {
             EnsureGroupList();
-            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
-            if (visibleSkills == null || visibleSkills.Count == 0)
+            List<SkillEffectVariantGroupDefinition> visibleSkillGroups = GetVisibleSkillGroups();
+            if (visibleSkillGroups == null || visibleSkillGroups.Count == 0)
             {
                 _selectedSkillIndex = -1;
+                _selectedSkillVariantIndex = -1;
                 return;
             }
 
-            _selectedSkillIndex = Mathf.Clamp(_selectedSkillIndex, 0, visibleSkills.Count - 1);
+            _selectedSkillIndex = Mathf.Clamp(_selectedSkillIndex, 0, visibleSkillGroups.Count - 1);
+
+            List<SharedSkillDefinition> visibleSkills = GetVisibleSkillList();
+            if (visibleSkills == null || visibleSkills.Count == 0)
+            {
+                _selectedSkillVariantIndex = -1;
+                return;
+            }
+
+            _selectedSkillVariantIndex = Mathf.Clamp(_selectedSkillVariantIndex, 0, visibleSkills.Count - 1);
         }
 
         private void DrawPreviewTargetSelector()
@@ -6312,17 +6440,18 @@ namespace Game.Editor
         private void DrawSkillLibrarySelectorCompact()
         {
             EditorGUI.BeginChangeCheck();
-            SharedSkillDatabaseSO newDatabase = (SharedSkillDatabaseSO)EditorGUILayout.ObjectField(
+            SkillEffectDatabaseSO newDatabase = (SkillEffectDatabaseSO)EditorGUILayout.ObjectField(
                 _database,
-                typeof(SharedSkillDatabaseSO),
+                typeof(SkillEffectDatabaseSO),
                 false,
-                GUILayout.Width(150f));
+                GUILayout.Width(CompactSkillObjectWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _database = newDatabase;
                 RebuildSerializedDb();
                 _selectedGroupIndex = 0;
                 _selectedSkillIndex = 0;
+                _selectedSkillVariantIndex = 0;
                 EnsureSkillSelectionIsValid();
                 ClearSelectedEvent();
                 _timelineScrollX = 0f;
@@ -6334,11 +6463,12 @@ namespace Game.Editor
             string[] groupOptions = GetGroupDisplayOptions();
             EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
             EditorGUI.BeginChangeCheck();
-            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(88f));
+            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(CompactSkillGroupWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _selectedGroupIndex = newGroupIndex;
                 _selectedSkillIndex = 0;
+                _selectedSkillVariantIndex = 0;
                 EnsureSkillSelectionIsValid();
                 ClearSelectedEvent();
                 _timelineScrollX = 0f;
@@ -6346,41 +6476,7 @@ namespace Game.Editor
             }
             EditorGUI.EndDisabledGroup();
 
-            string[] skillOptions = GetSkillEntryOptions();
-            EditorGUI.BeginDisabledGroup(skillOptions.Length <= 1);
-            EditorGUI.BeginChangeCheck();
-            int newSkillIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedSkillIndex), skillOptions, EditorStyles.toolbarPopup, GUILayout.Width(120f));
-            if (EditorGUI.EndChangeCheck())
-            {
-                _selectedSkillIndex = newSkillIndex;
-                EnsureSkillSelectionIsValid();
-                ClearSelectedEvent();
-                _timelineScrollX = 0f;
-                StopPreview();
-            }
-            EditorGUI.EndDisabledGroup();
-
-            EditorGUI.BeginDisabledGroup(_database == null || _selectedGroupIndex < 0);
-            try
-            {
-                if (GUILayout.Button("+", EditorStyles.miniButtonLeft, GUILayout.Width(20f)))
-                    AddSkill();
-
-                EditorGUI.BeginDisabledGroup(!HasSelectedSkill());
-                try
-                {
-                    if (GUILayout.Button("-", EditorStyles.miniButtonRight, GUILayout.Width(20f)))
-                        RemoveSelectedSkill();
-                }
-                finally
-                {
-                    EditorGUI.EndDisabledGroup();
-                }
-            }
-            finally
-            {
-                EditorGUI.EndDisabledGroup();
-            }
+            DrawSkillSelectionDropdown(EditorStyles.toolbarPopup, GUILayout.Width(CompactSkillMenuWidth));
         }
 
         private void DrawAnimationLibrarySelectorCompact()
@@ -6390,7 +6486,7 @@ namespace Game.Editor
                 _animationLibrary,
                 typeof(CharacterAnimationLibrarySO),
                 false,
-                GUILayout.Width(150f));
+                GUILayout.Width(CompactAnimationObjectWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _animationLibrary = newLibrary;
@@ -6405,7 +6501,7 @@ namespace Game.Editor
             string[] groupOptions = GetAnimationGroupOptions();
             EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
             EditorGUI.BeginChangeCheck();
-            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(88f));
+            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(CompactAnimationGroupWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _selectedAnimationGroupIndex = newGroupIndex;
@@ -6418,7 +6514,7 @@ namespace Game.Editor
             string[] entryOptions = GetAnimationEntryOptions();
             EditorGUI.BeginDisabledGroup(entryOptions.Length <= 1);
             EditorGUI.BeginChangeCheck();
-            int newEntryIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationEntryIndex), entryOptions, EditorStyles.toolbarPopup, GUILayout.Width(120f));
+            int newEntryIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationEntryIndex), entryOptions, EditorStyles.toolbarPopup, GUILayout.Width(CompactAnimationEntryWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _selectedAnimationEntryIndex = newEntryIndex;
@@ -6436,13 +6532,14 @@ namespace Game.Editor
                 EditorGUILayout.LabelField("技能库", EditorStyles.boldLabel);
 
                 EditorGUI.BeginChangeCheck();
-                SharedSkillDatabaseSO newDatabase = (SharedSkillDatabaseSO)EditorGUILayout.ObjectField(_database, typeof(SharedSkillDatabaseSO), false);
+                SkillEffectDatabaseSO newDatabase = (SkillEffectDatabaseSO)EditorGUILayout.ObjectField(_database, typeof(SkillEffectDatabaseSO), false);
                 if (EditorGUI.EndChangeCheck())
                 {
                     _database = newDatabase;
                     RebuildSerializedDb();
                     _selectedGroupIndex = 0;
                     _selectedSkillIndex = 0;
+                    _selectedSkillVariantIndex = 0;
                     EnsureSkillSelectionIsValid();
                     ClearSelectedEvent();
                     _timelineScrollX = 0f;
@@ -6459,6 +6556,7 @@ namespace Game.Editor
                 {
                     _selectedGroupIndex = newGroupIndex;
                     _selectedSkillIndex = 0;
+                    _selectedSkillVariantIndex = 0;
                     EnsureSkillSelectionIsValid();
                     ClearSelectedEvent();
                     _timelineScrollX = 0f;
@@ -6466,39 +6564,7 @@ namespace Game.Editor
                 }
                 EditorGUI.EndDisabledGroup();
 
-                string[] skillOptions = GetSkillEntryOptions();
-                EditorGUI.BeginDisabledGroup(skillOptions.Length <= 1);
-                EditorGUI.BeginChangeCheck();
-                int newSkillIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedSkillIndex), skillOptions);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    _selectedSkillIndex = newSkillIndex;
-                    EnsureSkillSelectionIsValid();
-                    ClearSelectedEvent();
-                    _timelineScrollX = 0f;
-                    StopPreview();
-                }
-                EditorGUI.EndDisabledGroup();
-
-                EditorGUILayout.BeginHorizontal();
-                try
-                {
-                    EditorGUI.BeginDisabledGroup(_database == null);
-                    if (GUILayout.Button("+", GUILayout.Width(26f)))
-                        AddSkill();
-                    EditorGUI.EndDisabledGroup();
-
-                    EditorGUI.BeginDisabledGroup(_database == null || !HasSelectedSkill());
-                    if (GUILayout.Button("-", GUILayout.Width(26f)))
-                        RemoveSelectedSkill();
-                    EditorGUI.EndDisabledGroup();
-
-                    GUILayout.FlexibleSpace();
-                }
-                finally
-                {
-                    EditorGUILayout.EndHorizontal();
-                }
+                DrawSkillSelectionDropdown(EditorStyles.popup);
             }
             finally
             {
@@ -6562,17 +6628,18 @@ namespace Game.Editor
         private void DrawSkillLibrarySelector()
         {
             EditorGUI.BeginChangeCheck();
-            SharedSkillDatabaseSO newDatabase = (SharedSkillDatabaseSO)EditorGUILayout.ObjectField(
+            SkillEffectDatabaseSO newDatabase = (SkillEffectDatabaseSO)EditorGUILayout.ObjectField(
                 _database,
-                typeof(SharedSkillDatabaseSO),
+                typeof(SkillEffectDatabaseSO),
                 false,
-                GUILayout.Width(150f));
+                GUILayout.Width(CompactSkillObjectWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _database = newDatabase;
                 RebuildSerializedDb();
                 _selectedGroupIndex = 0;
                 _selectedSkillIndex = 0;
+                _selectedSkillVariantIndex = 0;
                 EnsureSkillSelectionIsValid();
                 ClearSelectedEvent();
                 _timelineScrollX = 0f;
@@ -6584,11 +6651,12 @@ namespace Game.Editor
             string[] groupOptions = GetGroupDisplayOptions();
             EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
             EditorGUI.BeginChangeCheck();
-            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(88f));
+            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(CompactSkillGroupWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _selectedGroupIndex = newGroupIndex;
                 _selectedSkillIndex = 0;
+                _selectedSkillVariantIndex = 0;
                 EnsureSkillSelectionIsValid();
                 ClearSelectedEvent();
                 _timelineScrollX = 0f;
@@ -6596,29 +6664,7 @@ namespace Game.Editor
             }
             EditorGUI.EndDisabledGroup();
 
-            string[] skillOptions = GetSkillEntryOptions();
-            EditorGUI.BeginDisabledGroup(skillOptions.Length <= 1);
-            EditorGUI.BeginChangeCheck();
-            int newSkillIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedSkillIndex), skillOptions, EditorStyles.toolbarPopup, GUILayout.Width(120f));
-            if (EditorGUI.EndChangeCheck())
-            {
-                _selectedSkillIndex = newSkillIndex;
-                EnsureSkillSelectionIsValid();
-                ClearSelectedEvent();
-                _timelineScrollX = 0f;
-                StopPreview();
-            }
-            EditorGUI.EndDisabledGroup();
-
-            EditorGUI.BeginDisabledGroup(_database == null);
-            if (GUILayout.Button("+", EditorStyles.miniButtonLeft, GUILayout.Width(22f)))
-                AddSkill();
-            EditorGUI.EndDisabledGroup();
-
-            EditorGUI.BeginDisabledGroup(_database == null || !HasSelectedSkill());
-            if (GUILayout.Button("-", EditorStyles.miniButtonRight, GUILayout.Width(22f)))
-                RemoveSelectedSkill();
-            EditorGUI.EndDisabledGroup();
+            DrawSkillSelectionDropdown(EditorStyles.toolbarPopup, GUILayout.Width(CompactSkillMenuWidth));
         }
 
         private void DrawAnimationLibrarySelector()
@@ -6628,7 +6674,7 @@ namespace Game.Editor
                 _animationLibrary,
                 typeof(CharacterAnimationLibrarySO),
                 false,
-                GUILayout.Width(150f));
+                GUILayout.Width(CompactAnimationObjectWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _animationLibrary = newLibrary;
@@ -6643,7 +6689,7 @@ namespace Game.Editor
             string[] groupOptions = GetAnimationGroupOptions();
             EditorGUI.BeginDisabledGroup(groupOptions.Length <= 1);
             EditorGUI.BeginChangeCheck();
-            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(88f));
+            int newGroupIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationGroupIndex), groupOptions, EditorStyles.toolbarPopup, GUILayout.Width(CompactAnimationGroupWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _selectedAnimationGroupIndex = newGroupIndex;
@@ -6656,7 +6702,7 @@ namespace Game.Editor
             string[] entryOptions = GetAnimationEntryOptions();
             EditorGUI.BeginDisabledGroup(entryOptions.Length <= 1);
             EditorGUI.BeginChangeCheck();
-            int newEntryIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationEntryIndex), entryOptions, EditorStyles.toolbarPopup, GUILayout.Width(120f));
+            int newEntryIndex = EditorGUILayout.Popup(Mathf.Max(0, _selectedAnimationEntryIndex), entryOptions, EditorStyles.toolbarPopup, GUILayout.Width(CompactAnimationEntryWidth));
             if (EditorGUI.EndChangeCheck())
             {
                 _selectedAnimationEntryIndex = newEntryIndex;
@@ -6829,7 +6875,7 @@ namespace Game.Editor
         {
             if (_database == null)
             {
-                _database = Resources.Load<SharedSkillDatabaseSO>("配置/技能库");
+                _database = Resources.Load<SkillEffectDatabaseSO>("配置/技能效果库");
             }
 
             if (_database != null && _serializedDb == null)

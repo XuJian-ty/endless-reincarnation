@@ -25,7 +25,7 @@ namespace Game.Editor
         }
 
         private const string EnemyStatsDatabasePath = "Assets/Resources/配置/敌人属性库.asset";
-        private const string SharedSkillDatabasePath = "Assets/Resources/配置/技能库.asset";
+        private const string SkillEffectDatabasePath = "Assets/Resources/配置/技能效果库.asset";
         private const string AnimationLibraryPath = "Assets/Resources/配置/动画库.asset";
         private const string EnemyAnimatorTemplatePath = "Assets/外部导入/Animator/EnemyAnimator.controller";
         private const string EnemyPrefabFolder = "Assets/Resources/Prefabs";
@@ -40,7 +40,7 @@ namespace Game.Editor
                     archetype,
                     createDedicatedControllerIfMissing: true,
                     out EnemyStatsDatabaseSO enemyStatsDatabase,
-                    out SharedSkillDatabaseSO sharedSkillDatabase,
+                    out SkillEffectDatabaseSO sharedSkillDatabase,
                     out CharacterAnimationLibrarySO animationLibrary,
                     out AnimatorController animatorController,
                     out string dependencyError))
@@ -102,7 +102,7 @@ namespace Game.Editor
                     archetype,
                     createDedicatedControllerIfMissing: false,
                     out EnemyStatsDatabaseSO enemyStatsDatabase,
-                    out SharedSkillDatabaseSO sharedSkillDatabase,
+                    out SkillEffectDatabaseSO sharedSkillDatabase,
                     out CharacterAnimationLibrarySO animationLibrary,
                     out AnimatorController animatorController,
                     out string dependencyError))
@@ -139,7 +139,7 @@ namespace Game.Editor
                     archetype,
                     createDedicatedControllerIfMissing: true,
                     out EnemyStatsDatabaseSO enemyStatsDatabase,
-                    out SharedSkillDatabaseSO sharedSkillDatabase,
+                    out SkillEffectDatabaseSO sharedSkillDatabase,
                     out CharacterAnimationLibrarySO animationLibrary,
                     out AnimatorController animatorController,
                     out string dependencyError))
@@ -162,7 +162,7 @@ namespace Game.Editor
                     archetype,
                     createDedicatedControllerIfMissing: true,
                     out EnemyStatsDatabaseSO enemyStatsDatabase,
-                    out SharedSkillDatabaseSO sharedSkillDatabase,
+                    out SkillEffectDatabaseSO sharedSkillDatabase,
                     out CharacterAnimationLibrarySO animationLibrary,
                     out AnimatorController animatorController,
                     out string dependencyError))
@@ -192,7 +192,7 @@ namespace Game.Editor
                 return true;
 
             EnemyStatsDatabaseSO enemyStatsDatabase = AssetDatabase.LoadAssetAtPath<EnemyStatsDatabaseSO>(EnemyStatsDatabasePath);
-            SharedSkillDatabaseSO sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SharedSkillDatabaseSO>(SharedSkillDatabasePath);
+            SkillEffectDatabaseSO sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
             CharacterAnimationLibrarySO animationLibrary = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(AnimationLibraryPath);
             AnimatorController dedicatedAnimatorController = archetype.dedicatedAnimatorController as AnimatorController;
             EnemySpawnTaskDatabaseSO[] taskDatabases = LoadAssetsOfType<EnemySpawnTaskDatabaseSO>();
@@ -223,14 +223,14 @@ namespace Game.Editor
             EnemyArchetypeSO archetype,
             bool createDedicatedControllerIfMissing,
             out EnemyStatsDatabaseSO enemyStatsDatabase,
-            out SharedSkillDatabaseSO sharedSkillDatabase,
+            out SkillEffectDatabaseSO sharedSkillDatabase,
             out CharacterAnimationLibrarySO animationLibrary,
             out AnimatorController animatorController,
             out string errorMessage)
         {
             errorMessage = null;
             enemyStatsDatabase = AssetDatabase.LoadAssetAtPath<EnemyStatsDatabaseSO>(EnemyStatsDatabasePath);
-            sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SharedSkillDatabaseSO>(SharedSkillDatabasePath);
+            sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
             animationLibrary = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(AnimationLibraryPath);
             animatorController = null;
 
@@ -248,7 +248,7 @@ namespace Game.Editor
 
             if (sharedSkillDatabase == null)
             {
-                errorMessage = $"未找到技能库：{SharedSkillDatabasePath}";
+                errorMessage = $"未找到技能效果库：{SkillEffectDatabasePath}";
                 return false;
             }
 
@@ -420,7 +420,7 @@ namespace Game.Editor
         private static void NormalizeEnemySkillAuthoring(
             EnemyArchetypeSO archetype,
             EnemyStatsDatabaseSO enemyStatsDatabase,
-            SharedSkillDatabaseSO sharedSkillDatabase,
+            SkillEffectDatabaseSO sharedSkillDatabase,
             CharacterAnimationLibrarySO animationLibrary,
             AnimatorController animatorController)
         {
@@ -871,7 +871,7 @@ namespace Game.Editor
         private static List<UnityEngine.Object> BuildDirtyAssetList(
             EnemyArchetypeSO archetype,
             EnemyStatsDatabaseSO enemyStatsDatabase,
-            SharedSkillDatabaseSO sharedSkillDatabase,
+            SkillEffectDatabaseSO sharedSkillDatabase,
             CharacterAnimationLibrarySO animationLibrary,
             AnimatorController animatorController)
         {
@@ -1020,7 +1020,7 @@ namespace Game.Editor
         }
 
         private static void EnsureSharedSkillDefinition(
-            SharedSkillDatabaseSO sharedSkillDatabase,
+            SkillEffectDatabaseSO sharedSkillDatabase,
             EnemyArchetypeSO archetype,
             EnemySkillSlotBinding slot,
             SharedSkillDefinition templateDefinition)
@@ -1029,9 +1029,11 @@ namespace Game.Editor
                 return;
 
             SkillGroupDefinition group = FindOrCreateSharedSkillGroup(sharedSkillDatabase, archetype);
-            SharedSkillDefinition existing = FindSharedSkillDefinition(group, slot.skillId);
+            SkillEffectVariantGroupDefinition existingGroup = FindSharedSkillVariantGroup(group, slot.skillId);
+            SharedSkillDefinition existing = SkillEffectDatabaseSO.GetPrimaryEntry(existingGroup);
             if (existing != null)
             {
+                existing.skillId = slot.skillId;
                 existing.displayName = slot.displayName;
                 return;
             }
@@ -1039,14 +1041,18 @@ namespace Game.Editor
             SharedSkillDefinition created = CloneSharedSkillDefinition(templateDefinition);
             created.skillId = slot.skillId;
             created.displayName = slot.displayName;
-            group.entries ??= new List<SharedSkillDefinition>();
-            group.entries.Add(created);
+            group.skillGroups ??= new List<SkillEffectVariantGroupDefinition>();
+            group.skillGroups.Add(new SkillEffectVariantGroupDefinition
+            {
+                groupName = slot.skillId,
+                entries = new List<SharedSkillDefinition> { created },
+            });
             NormalizeSharedSkillGroupOrder(group);
             RebuildSharedSkillFlatEntries(sharedSkillDatabase);
         }
 
         private static void MoveOrCreateSharedSkillDefinition(
-            SharedSkillDatabaseSO sharedSkillDatabase,
+            SkillEffectDatabaseSO sharedSkillDatabase,
             SkillGroupDefinition targetGroup,
             string currentSkillId,
             string expectedSkillId,
@@ -1055,24 +1061,34 @@ namespace Game.Editor
             if (sharedSkillDatabase == null || targetGroup == null || string.IsNullOrWhiteSpace(expectedSkillId))
                 return;
 
-            SharedSkillDefinition entry = FindSharedSkillDefinition(sharedSkillDatabase, expectedSkillId);
-            if (entry == null && !string.IsNullOrWhiteSpace(currentSkillId))
-                entry = FindSharedSkillDefinition(sharedSkillDatabase, currentSkillId);
+            SkillGroupDefinition ownerGroup = null;
+            SkillEffectVariantGroupDefinition variantGroup = FindSharedSkillVariantGroup(sharedSkillDatabase, expectedSkillId, out ownerGroup);
+            if (variantGroup == null && !string.IsNullOrWhiteSpace(currentSkillId))
+                variantGroup = FindSharedSkillVariantGroup(sharedSkillDatabase, currentSkillId, out ownerGroup);
 
+            SharedSkillDefinition entry = SkillEffectDatabaseSO.GetPrimaryEntry(variantGroup);
             if (entry == null)
             {
                 SharedSkillDefinition template = GetLastSharedSkillDefinition(targetGroup);
                 entry = CloneSharedSkillDefinition(template);
-                targetGroup.entries ??= new List<SharedSkillDefinition>();
-                targetGroup.entries.Add(entry);
+                variantGroup = new SkillEffectVariantGroupDefinition
+                {
+                    groupName = expectedSkillId,
+                    entries = new List<SharedSkillDefinition> { entry },
+                };
+                targetGroup.skillGroups ??= new List<SkillEffectVariantGroupDefinition>();
+                targetGroup.skillGroups.Add(variantGroup);
             }
             else
             {
-                MoveSharedSkillDefinitionToGroup(sharedSkillDatabase, targetGroup, entry);
+                if (!ReferenceEquals(ownerGroup, targetGroup))
+                    MoveSharedSkillDefinitionToGroup(sharedSkillDatabase, targetGroup, variantGroup);
             }
 
             entry.skillId = expectedSkillId;
             entry.displayName = displayName;
+            if (variantGroup != null)
+                variantGroup.groupName = expectedSkillId;
         }
 
         private static SharedSkillDefinition CloneSharedSkillDefinition(SharedSkillDefinition template)
@@ -1087,55 +1103,63 @@ namespace Game.Editor
 
         private static SharedSkillDefinition GetLastSharedSkillDefinition(SkillGroupDefinition group)
         {
-            if (group?.entries == null || group.entries.Count == 0)
+            if (group?.skillGroups == null || group.skillGroups.Count == 0)
                 return null;
-            return group.entries[group.entries.Count - 1];
+
+            for (int i = group.skillGroups.Count - 1; i >= 0; i--)
+            {
+                SharedSkillDefinition entry = SkillEffectDatabaseSO.GetPrimaryEntry(group.skillGroups[i]);
+                if (entry != null)
+                    return entry;
+            }
+
+            return null;
         }
 
         private static void MoveSharedSkillDefinitionToGroup(
-            SharedSkillDatabaseSO sharedSkillDatabase,
+            SkillEffectDatabaseSO sharedSkillDatabase,
             SkillGroupDefinition targetGroup,
-            SharedSkillDefinition entry)
+            SkillEffectVariantGroupDefinition variantGroup)
         {
-            if (sharedSkillDatabase?.groups == null || targetGroup == null || entry == null)
+            if (sharedSkillDatabase?.groups == null || targetGroup == null || variantGroup == null)
                 return;
 
             for (int groupIndex = 0; groupIndex < sharedSkillDatabase.groups.Count; groupIndex++)
             {
                 SkillGroupDefinition group = sharedSkillDatabase.groups[groupIndex];
-                if (group?.entries == null)
+                if (group?.skillGroups == null)
                     continue;
 
-                if (!group.entries.Remove(entry))
+                if (!group.skillGroups.Remove(variantGroup))
                     continue;
 
-                targetGroup.entries ??= new List<SharedSkillDefinition>();
-                if (!targetGroup.entries.Contains(entry))
-                    targetGroup.entries.Add(entry);
+                targetGroup.skillGroups ??= new List<SkillEffectVariantGroupDefinition>();
+                if (!targetGroup.skillGroups.Contains(variantGroup))
+                    targetGroup.skillGroups.Add(variantGroup);
                 return;
             }
         }
 
-        private static void RemoveSharedSkillDefinition(SharedSkillDatabaseSO sharedSkillDatabase, EnemyArchetypeSO archetype, string skillId)
+        private static void RemoveSharedSkillDefinition(SkillEffectDatabaseSO sharedSkillDatabase, EnemyArchetypeSO archetype, string skillId)
         {
             if (sharedSkillDatabase?.groups == null || string.IsNullOrWhiteSpace(skillId))
                 return;
 
             SkillGroupDefinition group = FindOrCreateSharedSkillGroup(sharedSkillDatabase, archetype);
-            if (group?.entries != null)
+            if (group?.skillGroups != null)
             {
-                for (int i = group.entries.Count - 1; i >= 0; i--)
+                for (int i = group.skillGroups.Count - 1; i >= 0; i--)
                 {
-                    SharedSkillDefinition entry = group.entries[i];
-                    if (entry != null && string.Equals(entry.skillId, skillId, StringComparison.Ordinal))
-                        group.entries.RemoveAt(i);
+                    SkillEffectVariantGroupDefinition variantGroup = group.skillGroups[i];
+                    if (variantGroup != null && string.Equals(SkillEffectDatabaseSO.GetVariantGroupName(variantGroup), skillId, StringComparison.Ordinal))
+                        group.skillGroups.RemoveAt(i);
                 }
             }
 
             RebuildSharedSkillFlatEntries(sharedSkillDatabase);
         }
 
-        private static void RemoveEnemySharedSkillGroup(SharedSkillDatabaseSO sharedSkillDatabase, string enemyId)
+        private static void RemoveEnemySharedSkillGroup(SkillEffectDatabaseSO sharedSkillDatabase, string enemyId)
         {
             if (sharedSkillDatabase?.groups == null || string.IsNullOrWhiteSpace(enemyId))
                 return;
@@ -1154,8 +1178,9 @@ namespace Game.Editor
             RebuildSharedSkillFlatEntries(sharedSkillDatabase);
         }
 
-        private static SkillGroupDefinition FindOrCreateSharedSkillGroup(SharedSkillDatabaseSO sharedSkillDatabase, EnemyArchetypeSO archetype)
+        private static SkillGroupDefinition FindOrCreateSharedSkillGroup(SkillEffectDatabaseSO sharedSkillDatabase, EnemyArchetypeSO archetype)
         {
+            sharedSkillDatabase.Synchronize();
             sharedSkillDatabase.groups ??= new List<SkillGroupDefinition>();
 
             string enemyId = ResolveEnemyId(archetype);
@@ -1165,7 +1190,7 @@ namespace Game.Editor
                 if (group != null && string.Equals(group.groupId, enemyId, StringComparison.Ordinal))
                 {
                     group.groupName = ResolveEnemyGroupName(archetype);
-                    group.entries ??= new List<SharedSkillDefinition>();
+                    group.skillGroups ??= new List<SkillEffectVariantGroupDefinition>();
                     return group;
                 }
             }
@@ -1174,6 +1199,7 @@ namespace Game.Editor
             {
                 groupId = enemyId,
                 groupName = ResolveEnemyGroupName(archetype),
+                skillGroups = new List<SkillEffectVariantGroupDefinition>(),
                 entries = new List<SharedSkillDefinition>(),
             };
             sharedSkillDatabase.groups.Add(created);
@@ -1189,24 +1215,40 @@ namespace Game.Editor
                 : ResolveEnemyId(archetype);
         }
 
-        private static SharedSkillDefinition FindSharedSkillDefinition(SharedSkillDatabaseSO sharedSkillDatabase, string skillId)
+        private static SharedSkillDefinition FindSharedSkillDefinition(SkillEffectDatabaseSO sharedSkillDatabase, string skillId)
         {
             return sharedSkillDatabase != null ? sharedSkillDatabase.GetEntry(skillId) : null;
         }
 
-        private static SharedSkillDefinition FindSharedSkillDefinition(SkillGroupDefinition group, string skillId)
+        private static SkillEffectVariantGroupDefinition FindSharedSkillVariantGroup(SkillEffectDatabaseSO sharedSkillDatabase, string skillId, out SkillGroupDefinition ownerGroup)
         {
-            if (group?.entries == null || string.IsNullOrWhiteSpace(skillId))
+            ownerGroup = null;
+            if (sharedSkillDatabase?.groups == null || string.IsNullOrWhiteSpace(skillId))
                 return null;
 
-            for (int i = 0; i < group.entries.Count; i++)
+            for (int groupIndex = 0; groupIndex < sharedSkillDatabase.groups.Count; groupIndex++)
             {
-                SharedSkillDefinition entry = group.entries[i];
-                if (entry != null && string.Equals(entry.skillId, skillId, StringComparison.Ordinal))
-                    return entry;
+                SkillGroupDefinition group = sharedSkillDatabase.groups[groupIndex];
+                SkillEffectVariantGroupDefinition variantGroup = FindSharedSkillVariantGroup(group, skillId);
+                if (variantGroup == null)
+                    continue;
+
+                ownerGroup = group;
+                return variantGroup;
             }
 
             return null;
+        }
+
+        private static SkillEffectVariantGroupDefinition FindSharedSkillVariantGroup(SkillGroupDefinition group, string skillId)
+        {
+            return SkillEffectDatabaseSO.FindVariantGroup(group, skillId);
+        }
+
+        private static SharedSkillDefinition FindSharedSkillDefinition(SkillGroupDefinition group, string skillId)
+        {
+            SkillEffectVariantGroupDefinition variantGroup = FindSharedSkillVariantGroup(group, skillId);
+            return SkillEffectDatabaseSO.GetPrimaryEntry(variantGroup);
         }
 
         private static CharacterAnimationEntry EnsureAnimationEntry(
@@ -1854,10 +1896,12 @@ namespace Game.Editor
 
         private static void NormalizeSharedSkillGroupOrder(SkillGroupDefinition group)
         {
-            if (group?.entries == null)
+            if (group?.skillGroups == null)
                 return;
 
-            group.entries.Sort((left, right) => CompareEnemySkillNames(left != null ? left.skillId : string.Empty, right != null ? right.skillId : string.Empty));
+            group.skillGroups.Sort((left, right) => CompareEnemySkillNames(
+                SkillEffectDatabaseSO.GetPrimaryEntry(left) != null ? SkillEffectDatabaseSO.GetPrimaryEntry(left).skillId : string.Empty,
+                SkillEffectDatabaseSO.GetPrimaryEntry(right) != null ? SkillEffectDatabaseSO.GetPrimaryEntry(right).skillId : string.Empty));
         }
 
         private static void NormalizeAnimationGroupOrder(CharacterAnimationGroupDefinition group)
@@ -1929,35 +1973,18 @@ namespace Game.Editor
             }
         }
 
-        private static void RebuildSharedSkillFlatEntries(SharedSkillDatabaseSO sharedSkillDatabase)
+        private static void RebuildSharedSkillFlatEntries(SkillEffectDatabaseSO sharedSkillDatabase)
         {
             if (sharedSkillDatabase == null)
                 return;
 
-            sharedSkillDatabase.entries ??= new List<SharedSkillDefinition>();
-            sharedSkillDatabase.entries.Clear();
-            if (sharedSkillDatabase.groups == null)
-                return;
-
-            for (int groupIndex = 0; groupIndex < sharedSkillDatabase.groups.Count; groupIndex++)
-            {
-                SkillGroupDefinition group = sharedSkillDatabase.groups[groupIndex];
-                if (group?.entries == null)
-                    continue;
-
-                for (int i = 0; i < group.entries.Count; i++)
-                {
-                    SharedSkillDefinition entry = group.entries[i];
-                    if (entry != null)
-                        sharedSkillDatabase.entries.Add(entry);
-                }
-            }
+            sharedSkillDatabase.Synchronize();
         }
 
         private static void FinalizeChanges(
             EnemyArchetypeSO archetype,
             EnemyStatsDatabaseSO enemyStatsDatabase,
-            SharedSkillDatabaseSO sharedSkillDatabase,
+            SkillEffectDatabaseSO sharedSkillDatabase,
             CharacterAnimationLibrarySO animationLibrary,
             AnimatorController animatorController)
         {
