@@ -5,7 +5,7 @@ using Game.Presentation;
 
 namespace Game.Data
 {
-    public static class SharedSkillDatabaseDefaults
+    public static class SkillEffectDatabaseDefaults
     {
         private sealed class DefaultEventSpec
         {
@@ -22,11 +22,11 @@ namespace Game.Data
             public SkillSfxEffect[] sfxEffects;
         }
 
-        public static SharedSkillDatabaseSO CreateRuntimeDefault()
+        public static SkillEffectDatabaseSO CreateRuntimeDefault()
         {
-            var db = ScriptableObject.CreateInstance<SharedSkillDatabaseSO>();
+            var db = ScriptableObject.CreateInstance<SkillEffectDatabaseSO>();
             db.groups = CreateDefaultGroups();
-            db.entries = FlattenEntries(db.groups);
+            db.Synchronize();
             return db;
         }
 
@@ -135,7 +135,11 @@ namespace Game.Data
                 if (group == null)
                     group = groups[0];
 
-                group.entries.Add(skill);
+                group.skillGroups.Add(new SkillEffectVariantGroupDefinition
+                {
+                    groupName = skill.skillId,
+                    entries = new List<SharedSkillDefinition> { skill },
+                });
             }
 
             return groups;
@@ -143,12 +147,11 @@ namespace Game.Data
 
         private static List<SkillGroupDefinition> TryCloneExistingGroups()
         {
-            SharedSkillDatabaseSO existing = Resources.Load<SharedSkillDatabaseSO>("配置/技能库");
-            if (existing == null)
-                existing = Resources.Load<SharedSkillDatabaseSO>("配置/共享技能库");
+            SkillEffectDatabaseSO existing = Resources.Load<SkillEffectDatabaseSO>("配置/技能效果库");
             if (existing?.groups == null || existing.groups.Count == 0)
                 return null;
 
+            existing.Synchronize();
             return CloneGroups(existing.groups);
         }
 
@@ -168,11 +171,44 @@ namespace Game.Data
                 {
                     groupId = group.groupId,
                     groupName = group.groupName,
+                    skillGroups = new List<SkillEffectVariantGroupDefinition>(),
                     entries = new List<SharedSkillDefinition>(),
                 };
                 var seenSkillIds = new HashSet<string>();
 
-                if (group.entries != null)
+                if (group.skillGroups != null && group.skillGroups.Count > 0)
+                {
+                    for (int skillGroupIndex = 0; skillGroupIndex < group.skillGroups.Count; skillGroupIndex++)
+                    {
+                        SkillEffectVariantGroupDefinition skillGroup = group.skillGroups[skillGroupIndex];
+                        if (skillGroup == null)
+                            continue;
+
+                        var clonedSkillGroup = new SkillEffectVariantGroupDefinition
+                        {
+                            groupName = skillGroup.groupName,
+                            entries = new List<SharedSkillDefinition>(),
+                        };
+
+                        if (skillGroup.entries != null)
+                        {
+                            for (int entryIndex = 0; entryIndex < skillGroup.entries.Count; entryIndex++)
+                            {
+                                SharedSkillDefinition entry = skillGroup.entries[entryIndex];
+                                if (entry == null)
+                                    continue;
+                                if (!string.IsNullOrWhiteSpace(entry.skillId) && !seenSkillIds.Add(entry.skillId))
+                                    continue;
+
+                                clonedSkillGroup.entries.Add(Clone(entry));
+                            }
+                        }
+
+                        if (clonedSkillGroup.entries.Count > 0)
+                            clonedGroup.skillGroups.Add(clonedSkillGroup);
+                    }
+                }
+                else if (group.entries != null)
                 {
                     for (int entryIndex = 0; entryIndex < group.entries.Count; entryIndex++)
                     {
@@ -182,7 +218,11 @@ namespace Game.Data
                         if (!string.IsNullOrWhiteSpace(entry.skillId) && !seenSkillIds.Add(entry.skillId))
                             continue;
 
-                        clonedGroup.entries.Add(Clone(entry));
+                        clonedGroup.skillGroups.Add(new SkillEffectVariantGroupDefinition
+                        {
+                            groupName = entry.skillId,
+                            entries = new List<SharedSkillDefinition> { Clone(entry) },
+                        });
                     }
                 }
 
@@ -206,6 +246,7 @@ namespace Game.Data
             {
                 groupId = groupId,
                 groupName = groupName,
+                skillGroups = new List<SkillEffectVariantGroupDefinition>(),
                 entries = new List<SharedSkillDefinition>(),
             };
         }
@@ -278,14 +319,33 @@ namespace Game.Data
             for (int groupIndex = 0; groupIndex < groups.Count; groupIndex++)
             {
                 var group = groups[groupIndex];
-                if (group?.entries == null)
+                if (group == null)
                     continue;
 
-                for (int i = 0; i < group.entries.Count; i++)
+                if (group.skillGroups != null && group.skillGroups.Count > 0)
                 {
-                    var entry = group.entries[i];
-                    if (entry != null)
-                        result.Add(entry);
+                    for (int skillGroupIndex = 0; skillGroupIndex < group.skillGroups.Count; skillGroupIndex++)
+                    {
+                        SkillEffectVariantGroupDefinition skillGroup = group.skillGroups[skillGroupIndex];
+                        if (skillGroup?.entries == null)
+                            continue;
+
+                        for (int i = 0; i < skillGroup.entries.Count; i++)
+                        {
+                            SharedSkillDefinition entry = skillGroup.entries[i];
+                            if (entry != null)
+                                result.Add(entry);
+                        }
+                    }
+                }
+                else if (group.entries != null)
+                {
+                    for (int i = 0; i < group.entries.Count; i++)
+                    {
+                        var entry = group.entries[i];
+                        if (entry != null)
+                            result.Add(entry);
+                    }
                 }
             }
 

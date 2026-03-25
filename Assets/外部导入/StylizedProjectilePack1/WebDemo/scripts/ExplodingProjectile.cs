@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 /* THIS CODE IS JUST FOR PREVIEW AND TESTING */

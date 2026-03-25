@@ -19,7 +19,7 @@ namespace Game.Editor
             public ChildAnimatorState childState;
         }
 
-        private const string SharedSkillDatabasePath = "Assets/Resources/配置/技能库.asset";
+        private const string SkillEffectDatabasePath = "Assets/Resources/配置/技能效果库.asset";
         private const string AnimationLibraryPath = "Assets/Resources/配置/动画库.asset";
         private const string InputActionsPath = "Assets/Input/PlayerInputActions.inputactions";
         private const string KeyRebindConfigPath = "Assets/Resources/配置/按键重绑定配置.asset";
@@ -40,7 +40,7 @@ namespace Game.Editor
             }
 
             if (!TryLoadDependencies(
-                    out SharedSkillDatabaseSO sharedSkillDatabase,
+                    out SkillEffectDatabaseSO sharedSkillDatabase,
                     out CharacterAnimationLibrarySO animationLibrary,
                     out AnimatorController animatorController,
                     out InputActionAsset inputActions,
@@ -76,7 +76,7 @@ namespace Game.Editor
 
             Undo.RecordObjects(dirtyAssets.ToArray(), "添加主动技能");
 
-            AppendSkillConfigEntry(skillConfig, actionId, displayName);
+            AppendSkillConfigEntry(skillConfig, sharedSkillDatabase, actionId, displayName);
             AppendSharedSkillDefinition(sharedSkillDatabase, actionId, displayName);
             CharacterAnimationEntry animationEntry = AppendAnimationEntry(animationLibrary, actionId);
             EnsureAnimatorSkillState(animatorController, actionId, animationEntry, out errorMessage);
@@ -129,7 +129,7 @@ namespace Game.Editor
             }
 
             if (!TryLoadDependencies(
-                    out SharedSkillDatabaseSO sharedSkillDatabase,
+                    out SkillEffectDatabaseSO sharedSkillDatabase,
                     out CharacterAnimationLibrarySO animationLibrary,
                     out AnimatorController animatorController,
                     out InputActionAsset inputActions,
@@ -210,7 +210,7 @@ namespace Game.Editor
         }
 
         private static bool TryLoadDependencies(
-            out SharedSkillDatabaseSO sharedSkillDatabase,
+            out SkillEffectDatabaseSO sharedSkillDatabase,
             out CharacterAnimationLibrarySO animationLibrary,
             out AnimatorController animatorController,
             out InputActionAsset inputActions,
@@ -218,10 +218,10 @@ namespace Game.Editor
             out string errorMessage)
         {
             errorMessage = null;
-            sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SharedSkillDatabaseSO>(SharedSkillDatabasePath);
+            sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
             if (sharedSkillDatabase == null)
             {
-                errorMessage = $"未找到技能库：{SharedSkillDatabasePath}";
+                errorMessage = $"未找到技能效果库：{SkillEffectDatabasePath}";
                 animationLibrary = null;
                 animatorController = null;
                 inputActions = null;
@@ -268,7 +268,7 @@ namespace Game.Editor
 
         private static int ResolveNextSkillIndex(
             SkillConfigDatabaseSO skillConfig,
-            SharedSkillDatabaseSO sharedSkillDatabase,
+            SkillEffectDatabaseSO sharedSkillDatabase,
             CharacterAnimationLibrarySO animationLibrary,
             AnimatorController animatorController,
             InputActionAsset inputActions,
@@ -279,7 +279,7 @@ namespace Game.Editor
             maxSkillIndex = Mathf.Max(maxSkillIndex, GetMaxSkillIndex(skillConfig?.entries, entry => entry != null ? entry.GetResolvedActionId() : string.Empty));
 
             SkillGroupDefinition sharedPlayerGroup = FindOrCreateSharedSkillGroup(sharedSkillDatabase);
-            maxSkillIndex = Mathf.Max(maxSkillIndex, GetMaxSkillIndex(sharedPlayerGroup?.entries, entry => entry != null ? entry.skillId : string.Empty));
+            maxSkillIndex = Mathf.Max(maxSkillIndex, GetMaxSkillIndex(GetPrimarySharedSkillDefinitions(sharedPlayerGroup), entry => entry != null ? entry.skillId : string.Empty));
 
             CharacterAnimationGroupDefinition animationPlayerGroup = FindOrCreateAnimationGroup(animationLibrary);
             maxSkillIndex = Mathf.Max(maxSkillIndex, GetMaxSkillIndex(animationPlayerGroup?.entries, entry => entry != null ? entry.animationId : string.Empty));
@@ -356,7 +356,7 @@ namespace Game.Editor
             return maxSkillIndex;
         }
 
-        private static void AppendSkillConfigEntry(SkillConfigDatabaseSO skillConfig, string actionId, string displayName)
+        private static void AppendSkillConfigEntry(SkillConfigDatabaseSO skillConfig, SkillEffectDatabaseSO sharedSkillDatabase, string actionId, string displayName)
         {
             skillConfig.entries ??= new List<SkillConfigEntry>();
 
@@ -367,6 +367,7 @@ namespace Game.Editor
 
             created.actionId = actionId;
             created.skillId = actionId;
+            created.skillEffectDatabase = sharedSkillDatabase;
             created.displayName = displayName;
             created.animationTrigger = actionId;
             created.isPassive = false;
@@ -399,28 +400,35 @@ namespace Game.Editor
             return removed;
         }
 
-        private static void AppendSharedSkillDefinition(SharedSkillDatabaseSO sharedSkillDatabase, string actionId, string displayName)
+        private static void AppendSharedSkillDefinition(SkillEffectDatabaseSO sharedSkillDatabase, string actionId, string displayName)
         {
             SkillGroupDefinition group = FindOrCreateSharedSkillGroup(sharedSkillDatabase);
-            group.entries ??= new List<SharedSkillDefinition>();
+            group.skillGroups ??= new List<SkillEffectVariantGroupDefinition>();
 
-            SharedSkillDefinition existing = FindSharedSkillDefinition(group.entries, actionId);
+            SkillEffectVariantGroupDefinition existingVariantGroup = FindSharedSkillVariantGroup(group, actionId);
+            SharedSkillDefinition existing = SkillEffectDatabaseSO.GetPrimaryEntry(existingVariantGroup);
             if (existing != null)
             {
+                existing.skillId = actionId;
                 existing.displayName = displayName;
+                existingVariantGroup.groupName = actionId;
                 NormalizePlayerSkillDefinitions(group);
                 RebuildSharedSkillFlatEntries(sharedSkillDatabase);
                 return;
             }
 
-            SharedSkillDefinition template = FindHighestSharedSkillDefinition(group.entries);
+            SharedSkillDefinition template = FindHighestSharedSkillDefinition(GetPrimarySharedSkillDefinitions(group));
             SharedSkillDefinition created = template != null
                 ? CloneManaged(template)
                 : CreateDefaultSharedSkillDefinition();
 
             created.skillId = actionId;
             created.displayName = displayName;
-            group.entries.Add(created);
+            group.skillGroups.Add(new SkillEffectVariantGroupDefinition
+            {
+                groupName = actionId,
+                entries = new List<SharedSkillDefinition> { created },
+            });
 
             NormalizePlayerSkillDefinitions(group);
             RebuildSharedSkillFlatEntries(sharedSkillDatabase);
@@ -571,21 +579,26 @@ namespace Game.Editor
             return clone;
         }
 
-        private static SkillGroupDefinition FindOrCreateSharedSkillGroup(SharedSkillDatabaseSO sharedSkillDatabase)
+        private static SkillGroupDefinition FindOrCreateSharedSkillGroup(SkillEffectDatabaseSO sharedSkillDatabase)
         {
+            sharedSkillDatabase.Synchronize();
             sharedSkillDatabase.groups ??= new List<SkillGroupDefinition>();
 
             for (int i = 0; i < sharedSkillDatabase.groups.Count; i++)
             {
                 SkillGroupDefinition group = sharedSkillDatabase.groups[i];
                 if (group != null && (group.groupId == PlayerGroupId || group.groupName == PlayerGroupName))
+                {
+                    group.skillGroups ??= new List<SkillEffectVariantGroupDefinition>();
                     return group;
+                }
             }
 
             SkillGroupDefinition created = new SkillGroupDefinition
             {
                 groupId = PlayerGroupId,
                 groupName = PlayerGroupName,
+                skillGroups = new List<SkillEffectVariantGroupDefinition>(),
                 entries = new List<SharedSkillDefinition>(),
             };
             sharedSkillDatabase.groups.Add(created);
@@ -613,7 +626,7 @@ namespace Game.Editor
             return created;
         }
 
-        private static SkillGroupDefinition FindSharedSkillGroup(SharedSkillDatabaseSO sharedSkillDatabase)
+        private static SkillGroupDefinition FindSharedSkillGroup(SkillEffectDatabaseSO sharedSkillDatabase)
         {
             if (sharedSkillDatabase?.groups == null)
                 return null;
@@ -641,6 +654,27 @@ namespace Game.Editor
             }
 
             return null;
+        }
+
+        private static SkillEffectVariantGroupDefinition FindSharedSkillVariantGroup(SkillGroupDefinition group, string skillId)
+        {
+            return SkillEffectDatabaseSO.FindVariantGroup(group, skillId);
+        }
+
+        private static List<SharedSkillDefinition> GetPrimarySharedSkillDefinitions(SkillGroupDefinition group)
+        {
+            List<SharedSkillDefinition> result = new List<SharedSkillDefinition>();
+            if (group?.skillGroups == null)
+                return result;
+
+            for (int i = 0; i < group.skillGroups.Count; i++)
+            {
+                SharedSkillDefinition primaryEntry = SkillEffectDatabaseSO.GetPrimaryEntry(group.skillGroups[i]);
+                if (primaryEntry != null)
+                    result.Add(primaryEntry);
+            }
+
+            return result;
         }
 
         private static SharedSkillDefinition FindSharedSkillDefinition(List<SharedSkillDefinition> entries, string skillId)
@@ -675,28 +709,31 @@ namespace Game.Editor
 
         private static void NormalizePlayerSkillDefinitions(SkillGroupDefinition group)
         {
-            if (group?.entries == null)
+            if (group?.skillGroups == null)
                 return;
 
-            List<SharedSkillDefinition> normalEntries = new List<SharedSkillDefinition>();
-            List<SharedSkillDefinition> activeSkillEntries = new List<SharedSkillDefinition>();
-            for (int i = 0; i < group.entries.Count; i++)
+            List<SkillEffectVariantGroupDefinition> normalEntries = new List<SkillEffectVariantGroupDefinition>();
+            List<SkillEffectVariantGroupDefinition> activeSkillEntries = new List<SkillEffectVariantGroupDefinition>();
+            for (int i = 0; i < group.skillGroups.Count; i++)
             {
-                SharedSkillDefinition entry = group.entries[i];
-                if (entry == null)
+                SkillEffectVariantGroupDefinition entryGroup = group.skillGroups[i];
+                SharedSkillDefinition entry = SkillEffectDatabaseSO.GetPrimaryEntry(entryGroup);
+                if (entryGroup == null || entry == null)
                     continue;
 
                 if (TryParseSkillName(entry.skillId, out _))
-                    activeSkillEntries.Add(entry);
+                    activeSkillEntries.Add(entryGroup);
                 else
-                    normalEntries.Add(entry);
+                    normalEntries.Add(entryGroup);
             }
 
-            activeSkillEntries.Sort((left, right) => CompareSkillNames(left?.skillId, right?.skillId));
+            activeSkillEntries.Sort((left, right) => CompareSkillNames(
+                SkillEffectDatabaseSO.GetPrimaryEntry(left)?.skillId,
+                SkillEffectDatabaseSO.GetPrimaryEntry(right)?.skillId));
 
-            group.entries.Clear();
-            group.entries.AddRange(normalEntries);
-            group.entries.AddRange(activeSkillEntries);
+            group.skillGroups.Clear();
+            group.skillGroups.AddRange(normalEntries);
+            group.skillGroups.AddRange(activeSkillEntries);
         }
 
         private static void NormalizePlayerAnimationEntries(CharacterAnimationGroupDefinition group)
@@ -738,26 +775,9 @@ namespace Game.Editor
             return leftIndex.CompareTo(rightIndex);
         }
 
-        private static void RebuildSharedSkillFlatEntries(SharedSkillDatabaseSO sharedSkillDatabase)
+        private static void RebuildSharedSkillFlatEntries(SkillEffectDatabaseSO sharedSkillDatabase)
         {
-            sharedSkillDatabase.entries ??= new List<SharedSkillDefinition>();
-            sharedSkillDatabase.entries.Clear();
-            if (sharedSkillDatabase.groups == null)
-                return;
-
-            for (int groupIndex = 0; groupIndex < sharedSkillDatabase.groups.Count; groupIndex++)
-            {
-                SkillGroupDefinition group = sharedSkillDatabase.groups[groupIndex];
-                if (group?.entries == null)
-                    continue;
-
-                for (int i = 0; i < group.entries.Count; i++)
-                {
-                    SharedSkillDefinition entry = group.entries[i];
-                    if (entry != null)
-                        sharedSkillDatabase.entries.Add(entry);
-                }
-            }
+            sharedSkillDatabase.Synchronize();
         }
 
         private static void EnsureAnimatorSkillState(
@@ -805,17 +825,17 @@ namespace Game.Editor
             EnsureAnyStateTransition(stateMachine, state, actionId);
         }
 
-        private static void RemoveSharedSkillDefinition(SharedSkillDatabaseSO sharedSkillDatabase, string actionId)
+        private static void RemoveSharedSkillDefinition(SkillEffectDatabaseSO sharedSkillDatabase, string actionId)
         {
             SkillGroupDefinition group = FindSharedSkillGroup(sharedSkillDatabase);
-            if (group?.entries == null || string.IsNullOrWhiteSpace(actionId))
+            if (group?.skillGroups == null || string.IsNullOrWhiteSpace(actionId))
                 return;
 
-            for (int i = group.entries.Count - 1; i >= 0; i--)
+            for (int i = group.skillGroups.Count - 1; i >= 0; i--)
             {
-                SharedSkillDefinition entry = group.entries[i];
-                if (entry != null && string.Equals(entry.skillId, actionId, StringComparison.Ordinal))
-                    group.entries.RemoveAt(i);
+                SkillEffectVariantGroupDefinition variantGroup = group.skillGroups[i];
+                if (variantGroup != null && string.Equals(SkillEffectDatabaseSO.GetVariantGroupName(variantGroup), actionId, StringComparison.Ordinal))
+                    group.skillGroups.RemoveAt(i);
             }
 
             NormalizePlayerSkillDefinitions(group);

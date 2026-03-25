@@ -10,11 +10,2376 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d166a875a80b6a347a3a335babfa589a, type: 3}
-  m_Name: "\u6280\u80FD\u5E93"
+  m_Name: "\u6280\u80FD\u6548\u679C\u5E93"
   m_EditorClassIdentifier: 
   groups:
   - groupId: player
     groupName: "\u73A9\u5BB6"
+    skillGroups:
+    - groupName: NormalIdle
+      entries:
+      - skillId: NormalIdle
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: NormalWalk
+      entries:
+      - skillId: NormalWalk
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 9ab3daf624296df48bf846f1a11121be, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 1
+            destroyMode: 2
+            duration: 0
+    - groupName: NormalRun
+      entries:
+      - skillId: NormalRun
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: cdd473cc55a29d84db0be6c33d3af55c, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 1
+            destroyMode: 2
+            duration: 0
+    - groupName: AimIdle
+      entries:
+      - skillId: AimIdle
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: AimWalk
+      entries:
+      - skillId: AimWalk
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 9ab3daf624296df48bf846f1a11121be, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 1
+            destroyMode: 2
+            duration: 0
+    - groupName: AimRun
+      entries:
+      - skillId: AimRun
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: cdd473cc55a29d84db0be6c33d3af55c, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 1
+            destroyMode: 2
+            duration: 0
+    - groupName: Jump
+      entries:
+      - skillId: Jump
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: Dodge
+      entries:
+      - skillId: Dodge
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: Land
+      entries:
+      - skillId: Land
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: Attack0
+      entries:
+      - skillId: Attack0
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: 70
+          startTime: 0.23333335
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 5.0000005
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 0
+            centerOffset: {x: -0.9416549, y: 1.4264365, z: -1.5517324}
+            rotationEuler: {x: 324.9689, y: 3.9861112, z: 79.99004}
+            sphereRadius: 5
+            sectorAngle: 230
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 1
+              speed: 20
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 2
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
+                type: 3}
+              anchor: 1
+              offset: {x: -0.5545611, y: 0.76219934, z: -0.0848856}
+              rotationEuler: {x: -0, y: 0, z: 0}
+              scale: {x: 0.5, y: 0.5, z: 0.5}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 1
+              duration: 0.2
+            onHitSfxEffects:
+            - audioClip: {fileID: 8300000, guid: 508a68b953973ed499ebb682f19e3bd3,
+                type: 3}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              loop: 0
+              destroyMode: 0
+              duration: 0
+        - eventId: evt_4
+          startTime: 0.23333335
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0.5
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 2}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 2
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: evt_8
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 8.766667
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_0
+          startTime: 0.26666668
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0.7, z: 0.5}
+            rotationEuler: {x: 0, y: 0, z: 82.4}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0.7, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 75}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_3
+          startTime: 0.23333335
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 8609793798989012907, guid: 0ff6ac2b88dee4b43982cc7f2a106909,
+              type: 3}
+            anchor: 2
+            offset: {x: -0.5912154, y: 1.5463992, z: -1}
+            rotationEuler: {x: 6.4151645, y: 82.51191, z: 281.03247}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              speed: 20
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 1
+            duration: 5
+        sfxEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 5cd28d5e48263824589bb092c7c55f44, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_7
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 8800b5aa2cc5e734a8cfc37e10242347, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: Attack1
+      entries:
+      - skillId: Attack1
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_2
+          startTime: 0.26666668
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 5.0000005
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 0
+            centerOffset: {x: 0.68013096, y: 1, z: 2.7307496}
+            rotationEuler: {x: -0, y: 342.70993, z: 0}
+            sphereRadius: 5
+            sectorAngle: 230
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 1
+              speed: 20
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
+                type: 3}
+              anchor: 1
+              offset: {x: -1.1983666, y: 0.76, z: -0.91704893}
+              rotationEuler: {x: -0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            onHitSfxEffects:
+            - audioClip: {fileID: 8300000, guid: 508a68b953973ed499ebb682f19e3bd3,
+                type: 3}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              loop: 0
+              destroyMode: 0
+              duration: 0
+        - eventId: evt_4
+          startTime: 0.26666668
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0.5
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 2}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 2
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: evt_6
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 9.6
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0.26666668
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 8008210279060486150, guid: 5a970aecdd97bb24f8f68f4a327c07c3,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0.7, z: 1.5}
+            rotationEuler: {x: -0, y: 300, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0.7, z: 1.5}
+            rotationEuler: {x: 0, y: 140, z: 180}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_3
+          startTime: 0.26666668
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 8609793798989012907, guid: 0ff6ac2b88dee4b43982cc7f2a106909,
+              type: 3}
+            anchor: 2
+            offset: {x: 0.9613881, y: 0.9999999, z: 3.3363485}
+            rotationEuler: {x: 273.2608, y: 116.01806, z: 270.00006}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              speed: 20
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 1
+            duration: 5
+        sfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 5cd28d5e48263824589bb092c7c55f44, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+          - audioClip: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_5
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 7f4af05b3e1dfa74abd1cec7afecb315, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: Attack2
+      entries:
+      - skillId: Attack2
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_2
+          startTime: 0.6666667
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 1
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects:
+            - audioClip: {fileID: 8300000, guid: 508a68b953973ed499ebb682f19e3bd3,
+                type: 3}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              loop: 0
+              destroyMode: 0
+              duration: 0
+        physicsEvents:
+        - eventId: evt_5
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 6.5000005
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_3
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 2001595592669538821, guid: 432b6d8f6c1c7df4695b90df6c8db7c7,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0.65, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_3
+          startTime: 0.5666667
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 8262102246949548658, guid: b28600130c843ab48b208c3cb19613d7,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0.65, z: 0.3}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0.65, z: 0.3}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_4
+          startTime: 0.43333337
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+          - audioClip: {fileID: 8300000, guid: 5ca23b9f233734446a52422d1408123a, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_4
+          startTime: 0.26666668
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: c18a802584087d24c8300622c4502854, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: Attack3
+      entries:
+      - skillId: Attack3
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_2
+          startTime: 1.3333334
+          triggerMode: 1
+          activeDuration: 0.3
+          activeDurationMode: 0
+          repeatInterval: 0.10000001
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0.033333335
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 2
+            centerOffset: {x: 0, y: 0.6026802, z: 11.754494}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 12.198585}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 0.5
+              height: 1
+              durationMode: 0
+              duration: 0.1
+            onHitAttributeEffects: []
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
+                type: 3}
+              anchor: 1
+              offset: {x: -1.3, y: 0.5, z: -0.8}
+              rotationEuler: {x: -0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            onHitSfxEffects: []
+        - eventId: evt_6
+          startTime: 1.3333334
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0.033333335
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects:
+            - audioClip: {fileID: 8300000, guid: 508a68b953973ed499ebb682f19e3bd3,
+                type: 3}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              loop: 0
+              destroyMode: 0
+              duration: 0
+        physicsEvents:
+        - eventId: evt_6
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 7.0000005
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 6663020237317949801, guid: 1f0754f224af04141b10edc780c129e6,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 10.654}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 1
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_4
+          startTime: 1.3000001
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 1467176678092317590, guid: 3d2577ae792621e468ceedab40731658,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 20}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          - particlePrefab: {fileID: 635983316383569129, guid: 5fffc8fa92d96104e97890bc690ac720,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 20}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_0
+          startTime: 0.90000004
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 74e13c117190cc34f8ee0e9256ea43c6, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_5
+          startTime: 0.73333335
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 95f025b649e1a7c4a89421b882d5a6dd, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: AirAttack
+      entries:
+      - skillId: AirAttack
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_4
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 2
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 0
+            centerOffset: {x: 0, y: 1.8052559, z: 5.1355877}
+            rotationEuler: {x: 347.20093, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects: []
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 1
+            nestedSubEffectsOwnedByLists: 0
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: evt_3
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 3
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.2
+        attributeEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          attributeEffects:
+          - statField: 2
+            targetMode: 0
+            magnitude: 50
+            usePercent: 0
+            durationMode: 0
+            duration: 10
+        vfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 1
+          activeDuration: 0.20000002
+          activeDurationMode: 0
+          repeatInterval: 0.10000001
+          vfxEffects:
+          - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 1
+          activeDuration: 0.20000002
+          activeDurationMode: 0
+          repeatInterval: 0.10000001
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: ChargeStart
+      entries:
+      - skillId: ChargeStart
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: ChargeLoop
+      entries:
+      - skillId: ChargeLoop
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 1
+          activeDuration: 0
+          activeDurationMode: 1
+          repeatInterval: 0.10000001
+          vfxEffects:
+          - particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents: []
+    - groupName: ChargeRelease
+      entries:
+      - skillId: ChargeRelease
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 8372332783136226562, guid: 426d5a46bb731d542b637d4e046fecb4,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          - particlePrefab: {fileID: 2071025297289623881, guid: 448772dc5fb1251449d5027dcd08b3ec,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects: []
+        - eventId: 
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects: []
+    - groupName: FallAttackStart
+      entries:
+      - skillId: FallAttackStart
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: FallAttackLoop
+      entries:
+      - skillId: FallAttackLoop
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: FallAttackLand
+      entries:
+      - skillId: FallAttackLand
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects: []
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 1
+            nestedSubEffectsOwnedByLists: 0
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 00393121fe79c974e92d6337f4eccdef, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: Fall
+      entries:
+      - skillId: Fall
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: Shoot
+      entries:
+      - skillId: Shoot
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: shot
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 5.0000005
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 2
+            centerOffset: {x: 0, y: 1.18, z: 0.5}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1
+            sectorAngle: 180
+            boxSize: {x: 0.5, y: 0.5, z: 2.25}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0.5
+            motion:
+              enabled: 1
+              speed: 40
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+                type: 3}
+              anchor: 1
+              offset: {x: 0, y: 0.8980476, z: 0}
+              rotationEuler: {x: -0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_3
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+              type: 3}
+            anchor: 0
+            offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_4
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 1.18, z: 1}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              speed: 40
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 1
+            duration: 5
+        sfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: e2894f01e84c45146ba859b81b2d6cbd, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+      - skillId: Shoot_Variant1
+        displayName: Shoot_Variant1
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: shot
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 5.0000005
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 2
+            centerOffset: {x: 0, y: 1.18, z: 0.5}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1
+            sectorAngle: 180
+            boxSize: {x: 0.5, y: 0.5, z: 2.25}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0.5
+            motion:
+              enabled: 1
+              speed: 40
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+                type: 3}
+              anchor: 1
+              offset: {x: 0, y: 0.8980476, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_3
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+              type: 3}
+            anchor: 0
+            offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_4
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 1.18, z: 1}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              speed: 40
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 1
+            duration: 5
+        sfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: e2894f01e84c45146ba859b81b2d6cbd, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: ShootCharge
+      entries:
+      - skillId: ShootCharge
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: burst
+          startTime: 0
+          triggerMode: 1
+          activeDuration: 0
+          activeDurationMode: 1
+          repeatInterval: 0.20000002
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 5.0000005
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 2
+            centerOffset: {x: 0, y: 1.18, z: 0.5}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 0.5, y: 0.5, z: 2.5}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0.5
+            motion:
+              enabled: 1
+              speed: 40
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+                type: 3}
+              anchor: 1
+              offset: {x: -0.01321435, y: 0.92083675, z: -0.002316475}
+              rotationEuler: {x: -0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_3
+          startTime: 0
+          triggerMode: 1
+          activeDuration: 0
+          activeDurationMode: 1
+          repeatInterval: 0.20000002
+          vfxEffects:
+          - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+              type: 3}
+            anchor: 0
+            offset: {x: 0.17940223, y: 1.2355455, z: 0.8696799}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_4
+          startTime: 0
+          triggerMode: 1
+          activeDuration: 0
+          activeDurationMode: 1
+          repeatInterval: 0.20000002
+          vfxEffects:
+          - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 1.18, z: 1}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              speed: 40
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 1
+            duration: 5
+        sfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: be3ab8c2ce7c7ef49b5645fc9059bdfb, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 1
+            destroyMode: 2
+            duration: 0
+    - groupName: Aim
+      entries:
+      - skillId: Aim
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: HitStun
+      entries:
+      - skillId: HitStun
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: PlayerDeath
+      entries:
+      - skillId: PlayerDeath
+        displayName: 
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: Skill0
+      entries:
+      - skillId: Skill0
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 1
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: -0.02645874}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            sphereRadius: 3
+            sectorAngle: 360
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 1
+              speed: 10
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 2
+              height: 1
+              durationMode: 0
+              duration: 1
+            onHitAttributeEffects:
+            - statField: 0
+              targetMode: 0
+              magnitude: 0.2
+              usePercent: 1
+              durationMode: 0
+              duration: 0
+            - statField: 12
+              targetMode: 0
+              magnitude: 0.2
+              usePercent: 1
+              durationMode: 0
+              duration: 5
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+                type: 3}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: -0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 1
+              duration: 6
+            onHitSfxEffects:
+            - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667,
+                type: 3}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              loop: 0
+              destroyMode: 0
+              duration: 0
+        physicsEvents:
+        - eventId: evt_3
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 7
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 6
+        attributeEvents:
+        - eventId: evt_4
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          attributeEffects:
+          - statField: 2
+            targetMode: 0
+            magnitude: 0
+            usePercent: 0
+            durationMode: 0
+            duration: 7
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 7953274726775274605, guid: 011e27cfead306647a07e1c09d1cfeb9,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              speed: 10
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 1
+            duration: 4
+        sfxEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 1
+          activeDuration: 0.033333335
+          activeDurationMode: 0
+          repeatInterval: 0.10000001
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 8072efeecc8957949aca9a8ece2971ab, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: Skill1
+      entries:
+      - skillId: Skill1
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0.13333334
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 3
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects:
+            - statField: 0
+              targetMode: 1
+              magnitude: 111
+              usePercent: 0
+              durationMode: 0
+              duration: 0
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: Skill2
+      entries:
+      - skillId: Skill2
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: Skill3
+      entries:
+      - skillId: Skill3
+        displayName: 
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: cd5261ff219a3e44b8550d58337e4cc2, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
     entries:
     - skillId: NormalIdle
       displayName: 
@@ -1552,6 +3917,151 @@ MonoBehaviour:
           loop: 0
           destroyMode: 0
           duration: 0
+    - skillId: Shoot_Variant1
+      displayName: Shoot_Variant1
+      ignoreAnimationDamageEvents: 1
+      damageEvents:
+      - eventId: shot
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        hitStopSettingsOwnedByEvent: 0
+        damageEffects:
+        - detectionDuration: 5.0000005
+          detectionType: 0
+          hitLayerName: Enemy
+          shape: 2
+          centerOffset: {x: 0, y: 1.18, z: 0.5}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          sphereRadius: 1
+          sectorAngle: 180
+          boxSize: {x: 0.5, y: 0.5, z: 2.25}
+          colliderNodeName: 
+          rayOriginOffset: {x: 0, y: 1, z: 0}
+          rayMaxDistance: 50
+          rayRadius: 0.5
+          motion:
+            enabled: 1
+            speed: 40
+            direction: {x: 0, y: 0, z: 1}
+          legacyCompanionVfxEffect:
+            particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          companionVfxEffects: []
+          onHitDamageEffects:
+          - damageMagnitude: 3
+          onHitStopEffect:
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+          legacyOnHitStopEffects: []
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          damageMagnitude: 0
+          nestedSubEffectsOwnedByLists: 1
+          onHitPhysicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.2
+          onHitAttributeEffects: []
+          onHitVfxEffects:
+          - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+              type: 3}
+            anchor: 1
+            offset: {x: 0, y: 0.8980476, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+          onHitSfxEffects: []
+      physicsEvents:
+      - eventId: evt_2
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        physicsEffects:
+        - effectType: 6
+          distance: 1
+          height: 1
+          durationMode: 1
+          duration: 0.2
+      attributeEvents: []
+      vfxEvents:
+      - eventId: evt_3
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+            type: 3}
+          anchor: 0
+          offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+      - eventId: evt_4
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        vfxEffects:
+        - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+            type: 3}
+          anchor: 2
+          offset: {x: 0, y: 1.18, z: 1}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 1
+            speed: 40
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 1
+          duration: 5
+      sfxEvents:
+      - eventId: evt_1
+        startTime: 0
+        triggerMode: 0
+        activeDuration: 0
+        activeDurationMode: 0
+        repeatInterval: 0.1
+        sfxEffects:
+        - audioClip: {fileID: 8300000, guid: e2894f01e84c45146ba859b81b2d6cbd, type: 3}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          loop: 0
+          destroyMode: 0
+          duration: 0
     - skillId: ShootCharge
       displayName: 
       ignoreAnimationDamageEvents: 1
@@ -2172,6 +4682,74 @@ MonoBehaviour:
           duration: 0
   - groupId: melee_minion
     groupName: "\u8FD1\u6218\u5C0F\u602A"
+    skillGroups:
+    - groupName: melee_minionSkill0
+      entries:
+      - skillId: melee_minionSkill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: 
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1
+            sectorAngle: 180
+            boxSize: {x: 0, y: 0, z: 0}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 0
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 0}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: melee_minionSkill0
       displayName: "\u6280\u80FD0"
@@ -2240,6 +4818,74 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: ranged_minion
     groupName: "\u8FDC\u7A0B\u5C0F\u602A"
+    skillGroups:
+    - groupName: ranged_minionSkill0
+      entries:
+      - skillId: ranged_minionSkill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: shot
+          startTime: 0.28
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 2
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 14
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: ranged_minionSkill0
       displayName: "\u6280\u80FD0"
@@ -2308,6 +4954,222 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: elite_1
     groupName: "\u7CBE\u82F11"
+    skillGroups:
+    - groupName: elite_1Skill0
+      entries:
+      - skillId: elite_1Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: hit_a
+          startTime: 0.2
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 2.4
+            sectorAngle: 110
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.8925
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        - eventId: hit_b
+          startTime: 0.45
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 2.4
+            sectorAngle: 110
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1.05
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: hit_b
+          startTime: 0.45
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.1
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: elite_1Skill1
+      entries:
+      - skillId: elite_1Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: slam
+          startTime: 0.48
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 1.4}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 2.2, y: 1.8, z: 3.2}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1.6875
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: slam
+          startTime: 0.48
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.14
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: elite_1Skill0
       displayName: "\u6280\u80FD0"
@@ -2522,6 +5384,153 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: elite_2
     groupName: "\u7CBE\u82F12"
+    skillGroups:
+    - groupName: elite_2Skill0
+      entries:
+      - skillId: elite_2Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: burst
+          startTime: 0.2
+          triggerMode: 1
+          activeDuration: 0.36
+          activeDurationMode: 0
+          repeatInterval: 0.18
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 2
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 16
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.5525
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: elite_2Skill1
+      entries:
+      - skillId: elite_2Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: hook
+          startTime: 0.35
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 4.2
+            sectorAngle: 80
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.8
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: hook
+          startTime: 0.35
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 1
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.18
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: elite_2Skill0
       displayName: "\u6280\u80FD0"
@@ -2667,6 +5676,159 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: guardian_1
     groupName: "\u5B88\u536B\u80051"
+    skillGroups:
+    - groupName: guardian_1Skill0
+      entries:
+      - skillId: guardian_1Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: crush
+          startTime: 0.033333335
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 1.4}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 2.2, y: 1.8, z: 3.2}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1.875
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
+                type: 3}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: crush
+          startTime: 0.5
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.18
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 1467176678092317590, guid: 3d2577ae792621e468ceedab40731658,
+              type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents:
+        - eventId: evt_3
+          startTime: 0.033333335
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 3b540afc17f0166439c7d48d6648fd50, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+    - groupName: guardian_1Skill1
+      entries:
+      - skillId: guardian_1Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents:
+        - eventId: fortify
+          startTime: 0.15
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          attributeEffects:
+          - statField: 2
+            targetMode: 0
+            magnitude: 4
+            usePercent: 0
+            durationMode: 0
+            duration: 4
+          - statField: 3
+            targetMode: 0
+            magnitude: 8
+            usePercent: 0
+            durationMode: 0
+            duration: 4
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: guardian_1Skill0
       displayName: "\u6280\u80FD0"
@@ -2818,6 +5980,172 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: guardian_2
     groupName: "\u5B88\u536B\u80052"
+    skillGroups:
+    - groupName: guardian_2Skill0
+      entries:
+      - skillId: guardian_2Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: impact
+          startTime: 0.28
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 2}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 2.4, y: 1.8, z: 4.4}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.03
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: step
+          startTime: 0.05
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 3
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.18
+        - eventId: impact
+          startTime: 0.26666668
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: guardian_2Skill1
+      entries:
+      - skillId: guardian_2Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: chain
+          startTime: 0.32
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 4.2
+            sectorAngle: 80
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.95
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: chain
+          startTime: 0.32
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 1
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.2
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: guardian_2Skill0
       displayName: "\u6280\u80FD0"
@@ -2982,6 +6310,297 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: boss_1
     groupName: Boss1
+    skillGroups:
+    - groupName: boss_1Skill0
+      entries:
+      - skillId: boss_1Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: slash
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 3.4
+            sectorAngle: 140
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.3200002
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: slash
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.1
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 0}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            destroyMode: 0
+            duration: 0
+        sfxEvents: []
+    - groupName: boss_1Skill1
+      entries:
+      - skillId: boss_1Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: shot
+          startTime: 0.28
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 2
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 20
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1.5525
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_1Skill2
+      entries:
+      - skillId: boss_1Skill2
+        displayName: "\u6280\u80FD2"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: impact
+          startTime: 0.3
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 2}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 2.4, y: 1.8, z: 4.4}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.52
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: dash
+          startTime: 0.05
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 3
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.2
+        - eventId: impact
+          startTime: 0.3
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.16
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_1Skill3
+      entries:
+      - skillId: boss_1Skill3
+        displayName: "\u6280\u80FD3"
+        ignoreAnimationDamageEvents: 1
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents:
+        - eventId: buff
+          startTime: 0.2
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          attributeEffects:
+          - statField: 2
+            targetMode: 0
+            magnitude: 6
+            usePercent: 0
+            durationMode: 0
+            duration: 3.5
+          - statField: 3
+            targetMode: 0
+            magnitude: 4
+            usePercent: 0
+            durationMode: 0
+            duration: 3.5
+          - statField: 4
+            targetMode: 0
+            magnitude: 0.2
+            usePercent: 0
+            durationMode: 0
+            duration: 3.5
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: boss_1Skill0
       displayName: "\u6280\u80FD0"
@@ -3267,6 +6886,261 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: boss_2
     groupName: Boss2
+    skillGroups:
+    - groupName: boss_2Skill0
+      entries:
+      - skillId: boss_2Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_4
+          startTime: 0.13333334
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Enemy
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_2Skill1
+      entries:
+      - skillId: boss_2Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: volley
+          startTime: 0.22
+          triggerMode: 1
+          activeDuration: 0.45
+          activeDurationMode: 0
+          repeatInterval: 0.15
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 2
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 16
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.61200005
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_2Skill2
+      entries:
+      - skillId: boss_2Skill2
+        displayName: "\u6280\u80FD2"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: crash
+          startTime: 0.32
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 2}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 2.4, y: 1.8, z: 4.4}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.8
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: dash
+          startTime: 0.05
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 3
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.2
+        - eventId: crash
+          startTime: 0.32
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.18
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_2Skill3
+      entries:
+      - skillId: boss_2Skill3
+        displayName: "\u6280\u80FD3"
+        ignoreAnimationDamageEvents: 1
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents:
+        - eventId: rage
+          startTime: 0.18
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          attributeEffects:
+          - statField: 2
+            targetMode: 0
+            magnitude: 8
+            usePercent: 0
+            durationMode: 0
+            duration: 4
+          - statField: 4
+            targetMode: 0
+            magnitude: 0.35
+            usePercent: 0
+            durationMode: 0
+            duration: 4
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: boss_2Skill0
       displayName: "\u6280\u80FD0"
@@ -3516,6 +7390,354 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: boss_3
     groupName: Boss3
+    skillGroups:
+    - groupName: boss_3Skill0
+      entries:
+      - skillId: boss_3Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: cleave
+          startTime: 0.46
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 3.4
+            sectorAngle: 140
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.16
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: pull
+          startTime: 0.14
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 1
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.18
+        - eventId: cleave
+          startTime: 0.46
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.1
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_3Skill1
+      entries:
+      - skillId: boss_3Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: barrage
+          startTime: 0.25
+          triggerMode: 1
+          activeDuration: 0.6
+          activeDurationMode: 0
+          repeatInterval: 0.15
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 2
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 16
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.578
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_3Skill2
+      entries:
+      - skillId: boss_3Skill2
+        displayName: "\u6280\u80FD2"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: impact
+          startTime: 0.3
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 2}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 2.4, y: 1.8, z: 4.4}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.45
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: lunge
+          startTime: 0.05
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 3
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.22
+        - eventId: impact
+          startTime: 0.3
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.16
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_3Skill3
+      entries:
+      - skillId: boss_3Skill3
+        displayName: "\u6280\u80FD3"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: drain_hit
+          startTime: 0.28
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 4.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.75
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: drain_hit
+          startTime: 0.28
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 1
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.12
+        attributeEvents:
+        - eventId: heal
+          startTime: 0.45
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          attributeEffects:
+          - statField: 0
+            targetMode: 0
+            magnitude: 0.08
+            usePercent: 1
+            durationMode: 0
+            duration: 0
+          - statField: 3
+            targetMode: 0
+            magnitude: 5
+            usePercent: 0
+            durationMode: 0
+            duration: 3
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: boss_3Skill0
       displayName: "\u6280\u80FD0"
@@ -3858,6 +8080,291 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: boss_4
     groupName: Boss4
+    skillGroups:
+    - groupName: boss_4Skill0
+      entries:
+      - skillId: boss_4Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: spin
+          startTime: 0.2
+          triggerMode: 1
+          activeDuration: 0.5
+          activeDurationMode: 0
+          repeatInterval: 0.16
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 2.6
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.56
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: spin
+          startTime: 0.2
+          triggerMode: 1
+          activeDuration: 0.5
+          activeDurationMode: 0
+          repeatInterval: 0.16
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.08
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_4Skill1
+      entries:
+      - skillId: boss_4Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: pierce
+          startTime: 0.28
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 2
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 20
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 1.89
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: pierce
+          startTime: 0.28
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.12
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_4Skill2
+      entries:
+      - skillId: boss_4Skill2
+        displayName: "\u6280\u80FD2"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: finish
+          startTime: 0.26
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 2}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 2.4, y: 1.8, z: 4.4}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.73
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: rush
+          startTime: 0.04
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 3
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.22
+        - eventId: finish
+          startTime: 0.26
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.18
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_4Skill3
+      entries:
+      - skillId: boss_4Skill3
+        displayName: "\u6280\u80FD3"
+        ignoreAnimationDamageEvents: 1
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents:
+        - eventId: battlecry
+          startTime: 0.18
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          attributeEffects:
+          - statField: 2
+            targetMode: 0
+            magnitude: 6
+            usePercent: 0
+            durationMode: 0
+            duration: 4
+          - statField: 4
+            targetMode: 0
+            magnitude: 0.45
+            usePercent: 0
+            durationMode: 0
+            duration: 4
+          - statField: 5
+            targetMode: 0
+            magnitude: 1.2
+            usePercent: 0
+            durationMode: 0
+            duration: 4
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: boss_4Skill0
       displayName: "\u6280\u80FD0"
@@ -4137,6 +8644,348 @@ MonoBehaviour:
       sfxEvents: []
   - groupId: boss_5
     groupName: Boss5
+    skillGroups:
+    - groupName: boss_5Skill0
+      entries:
+      - skillId: boss_5Skill0
+        displayName: "\u6280\u80FD0"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: cleave
+          startTime: 0.38
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 0
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 3.4
+            sectorAngle: 140
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.72
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: cleave
+          startTime: 0.38
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.12
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_5Skill1
+      entries:
+      - skillId: boss_5Skill1
+        displayName: "\u6280\u80FD1"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: storm
+          startTime: 0.2
+          triggerMode: 1
+          activeDuration: 0.75
+          activeDurationMode: 0
+          repeatInterval: 0.15
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 2
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 16
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.63750005
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_5Skill2
+      entries:
+      - skillId: boss_5Skill2
+        displayName: "\u6280\u80FD2"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: stomp
+          startTime: 0.3
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0
+            detectionType: 0
+            hitLayerName: Player
+            shape: 2
+            centerOffset: {x: 0, y: 0, z: 2}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 2.4, y: 1.8, z: 4.4}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 2.9399998
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: charge
+          startTime: 0.04
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 3
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.24
+        - eventId: stomp
+          startTime: 0.3
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 0
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.2
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+    - groupName: boss_5Skill3
+      entries:
+      - skillId: boss_5Skill3
+        displayName: "\u6280\u80FD3"
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: roar_hit
+          startTime: 0.25
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+          hitStopSettingsOwnedByEvent: 0
+          damageEffects:
+          - detectionDuration: 0.033333335
+            detectionType: 0
+            hitLayerName: Player
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 4.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+            legacyCompanionVfxEffect:
+              particlePrefab: {fileID: 0}
+              anchor: 0
+              offset: {x: 0, y: 0, z: 0}
+              rotationEuler: {x: 0, y: 0, z: 0}
+              scale: {x: 1, y: 1, z: 1}
+              motion:
+                enabled: 0
+                speed: 0
+                direction: {x: 0, y: 0, z: 1}
+              destroyMode: 0
+              duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 0.85
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            legacyOnHitStopEffects: []
+            hitStopDuration: 0
+            hitStopTimeScale: 0
+            pauseCameraLookDuringHitStop: 0
+            damageMagnitude: 0
+            nestedSubEffectsOwnedByLists: 1
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: roar_hit
+          startTime: 0.25
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 1
+            distance: 1
+            height: 1
+            durationMode: 0
+            duration: 0.1
+        attributeEvents:
+        - eventId: regen
+          startTime: 0.40000004
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          attributeEffects:
+          - statField: 0
+            targetMode: 0
+            magnitude: 0.12
+            usePercent: 1
+            durationMode: 0
+            duration: 0
+          - statField: 2
+            targetMode: 0
+            magnitude: 5
+            usePercent: 0
+            durationMode: 0
+            duration: 4.5
+          - statField: 3
+            targetMode: 0
+            magnitude: 6
+            usePercent: 0
+            durationMode: 0
+            duration: 4.5
+        vfxEvents: []
+        sfxEvents: []
     entries:
     - skillId: boss_5Skill0
       displayName: "\u6280\u80FD0"
@@ -5987,6 +10836,151 @@ MonoBehaviour:
         anchor: 2
         offset: {x: 0, y: 1.18, z: 1}
         rotationEuler: {x: -0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 1
+          speed: 40
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 1
+        duration: 5
+    sfxEvents:
+    - eventId: evt_1
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      sfxEffects:
+      - audioClip: {fileID: 8300000, guid: e2894f01e84c45146ba859b81b2d6cbd, type: 3}
+        anchor: 0
+        offset: {x: 0, y: 0, z: 0}
+        loop: 0
+        destroyMode: 0
+        duration: 0
+  - skillId: Shoot_Variant1
+    displayName: Shoot_Variant1
+    ignoreAnimationDamageEvents: 1
+    damageEvents:
+    - eventId: shot
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      hitStopDuration: 0
+      hitStopTimeScale: 0
+      pauseCameraLookDuringHitStop: 0
+      hitStopSettingsOwnedByEvent: 0
+      damageEffects:
+      - detectionDuration: 5.0000005
+        detectionType: 0
+        hitLayerName: Enemy
+        shape: 2
+        centerOffset: {x: 0, y: 1.18, z: 0.5}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        sphereRadius: 1
+        sectorAngle: 180
+        boxSize: {x: 0.5, y: 0.5, z: 2.25}
+        colliderNodeName: 
+        rayOriginOffset: {x: 0, y: 1, z: 0}
+        rayMaxDistance: 50
+        rayRadius: 0.5
+        motion:
+          enabled: 1
+          speed: 40
+          direction: {x: 0, y: 0, z: 1}
+        legacyCompanionVfxEffect:
+          particlePrefab: {fileID: 0}
+          anchor: 0
+          offset: {x: 0, y: 0, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        companionVfxEffects: []
+        onHitDamageEffects:
+        - damageMagnitude: 3
+        onHitStopEffect:
+          hitStopDuration: 0
+          hitStopTimeScale: 0
+          pauseCameraLookDuringHitStop: 0
+        legacyOnHitStopEffects: []
+        hitStopDuration: 0
+        hitStopTimeScale: 0
+        pauseCameraLookDuringHitStop: 0
+        damageMagnitude: 0
+        nestedSubEffectsOwnedByLists: 1
+        onHitPhysicsEffects:
+        - effectType: 0
+          distance: 1
+          height: 1
+          durationMode: 0
+          duration: 0.2
+        onHitAttributeEffects: []
+        onHitVfxEffects:
+        - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+            type: 3}
+          anchor: 1
+          offset: {x: 0, y: 0.8980476, z: 0}
+          rotationEuler: {x: 0, y: 0, z: 0}
+          scale: {x: 1, y: 1, z: 1}
+          motion:
+            enabled: 0
+            speed: 0
+            direction: {x: 0, y: 0, z: 1}
+          destroyMode: 0
+          duration: 0
+        onHitSfxEffects: []
+    physicsEvents:
+    - eventId: evt_2
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      physicsEffects:
+      - effectType: 6
+        distance: 1
+        height: 1
+        durationMode: 1
+        duration: 0.2
+    attributeEvents: []
+    vfxEvents:
+    - eventId: evt_3
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
+          type: 3}
+        anchor: 0
+        offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
+        rotationEuler: {x: 0, y: 0, z: 0}
+        scale: {x: 1, y: 1, z: 1}
+        motion:
+          enabled: 0
+          speed: 0
+          direction: {x: 0, y: 0, z: 1}
+        destroyMode: 0
+        duration: 0
+    - eventId: evt_4
+      startTime: 0
+      triggerMode: 0
+      activeDuration: 0
+      activeDurationMode: 0
+      repeatInterval: 0.1
+      vfxEffects:
+      - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
+          type: 3}
+        anchor: 2
+        offset: {x: 0, y: 1.18, z: 1}
+        rotationEuler: {x: 0, y: 0, z: 0}
         scale: {x: 1, y: 1, z: 1}
         motion:
           enabled: 1

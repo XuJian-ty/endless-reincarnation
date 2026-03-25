@@ -15,7 +15,7 @@ namespace Game
         private const string ConfigFolderName = "配置";
 
         private EnemyStatsDatabaseSO _enemyStatsDatabase;
-        private SharedSkillDatabaseSO _sharedSkillDatabase;
+        private SkillEffectDatabaseSO _skillEffectDatabase;
         private LevelConfigDatabaseSO _levelConfigDatabase;
         private WeaponDatabaseSO _weaponDatabase;
         private LevelGrowthSO _levelGrowth;
@@ -71,20 +71,15 @@ namespace Game
                 : 0;
         }
 
-        public SharedSkillDatabaseSO GetSkillDatabase()
+        public SkillEffectDatabaseSO GetSkillEffectDatabase()
         {
-            if (_sharedSkillDatabase == null)
+            if (_skillEffectDatabase == null)
             {
-                _sharedSkillDatabase = Resources.Load<SharedSkillDatabaseSO>(ConfigPathPrefix + "技能库");
-                if (_sharedSkillDatabase == null)
-                    _sharedSkillDatabase = SharedSkillDatabaseDefaults.CreateRuntimeDefault();
+                _skillEffectDatabase = Resources.Load<SkillEffectDatabaseSO>(ConfigPathPrefix + "技能效果库");
+                if (_skillEffectDatabase == null)
+                    _skillEffectDatabase = SkillEffectDatabaseDefaults.CreateRuntimeDefault();
             }
-            return _sharedSkillDatabase;
-        }
-
-        public SharedSkillDatabaseSO GetSharedSkillDatabase()
-        {
-            return GetSkillDatabase();
+            return _skillEffectDatabase;
         }
 
         public LevelConfigDatabaseSO GetLevelConfigDatabase()

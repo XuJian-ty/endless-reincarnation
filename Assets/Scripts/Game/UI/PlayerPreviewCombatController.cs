@@ -247,21 +247,28 @@ namespace Game.UI
                 return;
 
             SkillConfigEntry entry = ResolveAttackEntry(comboIndex);
-            string skillId = entry != null && !string.IsNullOrWhiteSpace(entry.skillId)
-                ? entry.skillId.Trim()
-                : ResolveAttackActionId(comboIndex);
-            SharedSkillDefinition definition = GetSharedSkillDefinition(skillId);
+            SharedSkillDefinition definition = GetSharedSkillDefinition(entry, comboIndex);
             _previewCueTimeline.Begin(definition, _previewRoot);
         }
 
-        private SharedSkillDefinition GetSharedSkillDefinition(string skillId)
+        private SharedSkillDefinition GetSharedSkillDefinition(SkillConfigEntry entry, int comboIndex)
         {
+            if (entry != null)
+            {
+                SharedSkillDefinition resolvedDefinition = entry.ResolveSkillEffectDefinition();
+                if (resolvedDefinition != null)
+                    return resolvedDefinition;
+            }
+
+            string skillId = entry != null && !string.IsNullOrWhiteSpace(entry.skillId)
+                ? entry.skillId.Trim()
+                : ResolveAttackActionId(comboIndex);
             if (string.IsNullOrWhiteSpace(skillId))
                 return null;
 
-            var db = ConfigManager.GetInstance()?.GetSkillDatabase();
+            var db = ConfigManager.GetInstance()?.GetSkillEffectDatabase();
             if (db == null)
-                db = Resources.Load<SharedSkillDatabaseSO>("配置/技能库");
+                db = Resources.Load<SkillEffectDatabaseSO>("配置/技能效果库");
             return db != null ? db.GetEntry(skillId) : null;
         }
 

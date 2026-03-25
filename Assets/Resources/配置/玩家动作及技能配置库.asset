@@ -1201,7 +1201,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 1
-  - actionId: 
+  - actionId: passive_1
     skillId: passive_1
     displayName: "\u88AB\u52A81"
     description: "\u88AB\u52A81\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1232,7 +1232,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_2
     skillId: passive_2
     displayName: "\u88AB\u52A82"
     description: "\u88AB\u52A82\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1263,7 +1263,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_3
     skillId: passive_3
     displayName: "\u88AB\u52A83"
     description: "\u88AB\u52A83\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1294,7 +1294,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_4
     skillId: passive_4
     displayName: "\u88AB\u52A84"
     description: "\u88AB\u52A84\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1325,7 +1325,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_5
     skillId: passive_5
     displayName: "\u88AB\u52A85"
     description: "\u88AB\u52A85\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1356,7 +1356,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_6
     skillId: passive_6
     displayName: "\u88AB\u52A86"
     description: "\u88AB\u52A86\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1387,7 +1387,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_7
     skillId: passive_7
     displayName: "\u88AB\u52A87"
     description: "\u88AB\u52A87\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1418,7 +1418,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_8
     skillId: passive_8
     displayName: "\u88AB\u52A88"
     description: "\u88AB\u52A88\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1449,7 +1449,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_9
     skillId: passive_9
     displayName: "\u88AB\u52A89"
     description: "\u88AB\u52A89\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1480,7 +1480,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_10
     skillId: passive_10
     displayName: "\u88AB\u52A810"
     description: "\u88AB\u52A810\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1511,7 +1511,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_11
     skillId: passive_11
     displayName: "\u88AB\u52A811"
     description: "\u88AB\u52A811\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
@@ -1542,7 +1542,7 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: 
+  - actionId: passive_12
     skillId: passive_12
     displayName: "\u88AB\u52A812"
     description: "\u88AB\u52A812\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"

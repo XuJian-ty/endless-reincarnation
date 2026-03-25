@@ -61,7 +61,7 @@ namespace Game.Presentation
             if (binding == null || string.IsNullOrWhiteSpace(binding.skillId))
                 return null;
 
-            var sharedDb = ConfigManager.GetInstance()?.GetSkillDatabase();
+            var sharedDb = ConfigManager.GetInstance()?.GetSkillEffectDatabase();
             var sharedDef = sharedDb != null ? sharedDb.GetEntry(binding.skillId) : null;
             if (sharedDef == null)
             {

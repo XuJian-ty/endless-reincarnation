@@ -87,12 +87,12 @@ namespace Game.Editor
             return existing;
         }
 
-        private static SharedSkillDatabaseSO CreateOrMergeSharedSkillDatabaseAsset(SharedSkillDatabaseSO source, string assetPath)
+        private static SkillEffectDatabaseSO CreateOrMergeSkillEffectDatabaseAsset(SkillEffectDatabaseSO source, string assetPath)
         {
             string objectName = Path.GetFileNameWithoutExtension(assetPath);
             source.name = objectName;
 
-            var existing = AssetDatabase.LoadAssetAtPath<SharedSkillDatabaseSO>(assetPath);
+            var existing = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(assetPath);
             if (existing == null)
             {
                 AssetDatabase.CreateAsset(source, assetPath);
@@ -711,7 +711,7 @@ namespace Game.Editor
         {
             EnsureConfigFolder();
             CreateEnemyStatsDatabase();
-            CreateSharedSkillDatabase();
+            CreateSkillEffectDatabase();
             CreateEnemyArchetypeDatabase();
             var enemySpawnTaskDatabase = CreateEnemySpawnTaskDatabase();
             var enemySpawnPlanLibrary = CreateEnemySpawnPlanLibrary(enemySpawnTaskDatabase);
@@ -830,11 +830,11 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
         }
 
-        private static void CreateSharedSkillDatabase()
+        private static void CreateSkillEffectDatabase()
         {
             EnsureConfigFolder();
-            var db = SharedSkillDatabaseDefaults.CreateRuntimeDefault();
-            CreateOrMergeSharedSkillDatabaseAsset(db, $"{ResourcesConfigDir}/技能库.asset");
+            var db = SkillEffectDatabaseDefaults.CreateRuntimeDefault();
+            CreateOrMergeSkillEffectDatabaseAsset(db, $"{ResourcesConfigDir}/技能效果库.asset");
             AssetDatabase.SaveAssets();
         }
 
@@ -897,6 +897,7 @@ namespace Game.Editor
             {
                 db.entries.Add(new SkillConfigEntry
                 {
+                    actionId = $"passive_{i}",
                     skillId = $"passive_{i}",
                     displayName = $"被动{i}",
                     description = $"被动{i}，解锁后会立即生效。",
@@ -968,8 +969,8 @@ namespace Game.Editor
                 if (entry == null)
                     continue;
 
-                if (!entry.IsPassiveSkill && !string.IsNullOrWhiteSpace(target.actionId)
-                    && string.Equals(entry.actionId, target.actionId, System.StringComparison.Ordinal))
+                if (!string.IsNullOrWhiteSpace(target.actionId)
+                    && string.Equals(entry.GetResolvedActionId(), target.actionId, System.StringComparison.Ordinal))
                     return entry;
 
                 if (!string.IsNullOrWhiteSpace(target.skillId)

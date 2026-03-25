@@ -147,6 +147,7 @@ namespace Game.Editor
         private void DrawBaseSkillFields(SerializedProperty entryProp)
         {
             DrawReadOnlyProperty(entryProp, nameof(SkillConfigEntry.actionId));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.skillEffectDatabase));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
@@ -158,6 +159,7 @@ namespace Game.Editor
         private void DrawActiveSkillFields(SerializedProperty entryProp)
         {
             DrawReadOnlyProperty(entryProp, nameof(SkillConfigEntry.actionId));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.skillEffectDatabase));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
@@ -172,6 +174,8 @@ namespace Game.Editor
 
         private void DrawPassiveSkillFields(SerializedProperty entryProp)
         {
+            DrawReadOnlyProperty(entryProp, nameof(SkillConfigEntry.actionId));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.skillEffectDatabase));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
@@ -250,17 +254,21 @@ namespace Game.Editor
                 return;
             }
 
-            actionIdProp.stringValue = string.Empty;
+            if (string.IsNullOrWhiteSpace(actionIdProp.stringValue))
+                actionIdProp.stringValue = $"passive_{orderIndex + 1}";
         }
 
         private string ResolveEntryTitle(SerializedProperty entryProp, PlayerSkillEntryGroup group, int orderIndex)
         {
             SerializedProperty displayName = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.displayName));
+            SerializedProperty actionId = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.actionId));
             SerializedProperty skillId = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.skillId));
 
             string resolvedName = displayName != null && !string.IsNullOrWhiteSpace(displayName.stringValue)
                 ? displayName.stringValue.Trim()
-                : (skillId != null ? skillId.stringValue.Trim() : string.Empty);
+                : (actionId != null && !string.IsNullOrWhiteSpace(actionId.stringValue)
+                    ? actionId.stringValue.Trim()
+                    : (skillId != null ? skillId.stringValue.Trim() : string.Empty));
 
             if (string.IsNullOrEmpty(resolvedName))
             {
@@ -331,22 +339,29 @@ namespace Game.Editor
             entryProp.isExpanded = true;
 
             SerializedProperty skillId = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.skillId));
-            string defaultActionId = group == PlayerSkillEntryGroup.ActiveSkill
-                ? $"Skill{orderIndex}"
-                : string.Empty;
+            string defaultActionId = group switch
+            {
+                PlayerSkillEntryGroup.ActiveSkill => $"Skill{orderIndex}",
+                PlayerSkillEntryGroup.PassiveSkill => $"passive_{orderIndex + 1}",
+                _ => string.Empty
+            };
             if (skillId != null)
             {
                 skillId.stringValue = group switch
                 {
                     PlayerSkillEntryGroup.ActiveSkill => defaultActionId,
-                    PlayerSkillEntryGroup.PassiveSkill => $"passive_{orderIndex + 1}",
+                    PlayerSkillEntryGroup.PassiveSkill => defaultActionId,
                     _ => string.Empty
                 };
             }
 
             SerializedProperty actionId = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.actionId));
             if (actionId != null)
-                actionId.stringValue = group == PlayerSkillEntryGroup.ActiveSkill ? defaultActionId : string.Empty;
+                actionId.stringValue = group == PlayerSkillEntryGroup.BaseSkill ? string.Empty : defaultActionId;
+
+            SerializedProperty skillEffectDatabase = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.skillEffectDatabase));
+            if (skillEffectDatabase != null)
+                skillEffectDatabase.objectReferenceValue = null;
 
             SerializedProperty displayName = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.displayName));
             if (displayName != null)

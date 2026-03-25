@@ -44,7 +44,6 @@ public class projectileActor : MonoBehaviour {
    // public ParticleSystem muzzleflare;
 
     public bool swarmMissileLauncher = false;
-    int projectileSimFire = 1;
 
     public bool Torque = false;
     public float Tor_min, Tor_max;
@@ -60,10 +59,6 @@ public class projectileActor : MonoBehaviour {
         if (UImaster)
         {
             UiText.text = bombList[bombType].name.ToString();
-        }
-        if (swarmMissileLauncher)
-        {
-            projectileSimFire = 5;
         }
 	}
 	

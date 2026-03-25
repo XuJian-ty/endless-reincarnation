@@ -237,7 +237,7 @@ namespace Game.Presentation
             if (string.IsNullOrWhiteSpace(skillId))
                 return;
 
-            SharedSkillDefinition definition = ConfigManager.GetInstance()?.GetSkillDatabase()?.GetEntry(skillId);
+            SharedSkillDefinition definition = ConfigManager.GetInstance()?.GetSkillEffectDatabase()?.GetEntry(skillId);
             if (definition == null)
                 return;
 

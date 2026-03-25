@@ -69,10 +69,10 @@ namespace Game.Presentation
         }
 
         private readonly List<Material> _instancedMaterials = new List<Material>();
-        private readonly Dictionary<int, float> _activeSkillCooldowns = new Dictionary<int, float>(4);
-        private readonly List<int> _cooldownUpdateSlots = new List<int>(4);
+        private readonly Dictionary<string, float> _activeSkillCooldowns = new Dictionary<string, float>(StringComparer.Ordinal);
+        private readonly List<string> _cooldownUpdateActionIds = new List<string>(4);
         private readonly List<float> _cooldownUpdateValues = new List<float>(4);
-        private readonly List<int> _cooldownExpiredSlots = new List<int>(4);
+        private readonly List<string> _cooldownExpiredActionIds = new List<string>(4);
         private readonly List<RuntimeModifier> _runtimeModifiers = new List<RuntimeModifier>();
         private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
         private readonly CloneCombatMemory _combatMemory = new CloneCombatMemory();
@@ -1099,7 +1099,7 @@ namespace Game.Presentation
             _rangedPostureTimelineRunner?.Stop();
             _rangedPostureTimelineRunner = null;
 
-            SharedSkillDefinition definition = ConfigManager.GetInstance()?.GetSkillDatabase()?.GetEntry(entry.skillId);
+            SharedSkillDefinition definition = entry.ResolveSkillEffectDefinition();
             if (definition == null)
                 return;
 
@@ -1168,7 +1168,7 @@ namespace Game.Presentation
                 return;
             }
 
-            SharedSkillDefinition definition = ConfigManager.GetInstance()?.GetSkillDatabase()?.GetEntry(skillId);
+            SharedSkillDefinition definition = entry.ResolveSkillEffectDefinition();
             if (definition == null)
             {
                 StopLocomotionTimeline();
@@ -1321,7 +1321,7 @@ namespace Game.Presentation
             _activeActionId = actionId ?? string.Empty;
             _activeActionElapsed = 0f;
 
-            SharedSkillDefinition definition = ConfigManager.GetInstance()?.GetSkillDatabase()?.GetEntry(entry.skillId);
+            SharedSkillDefinition definition = entry.ResolveSkillEffectDefinition();
             if (definition != null)
                 BeginTimeline(definition, actionId, overrideDuration);
             else
@@ -2495,7 +2495,10 @@ namespace Game.Presentation
 
             if (slotIndex < 0)
                 slotIndex = ResolveActiveSkillSlotIndex(entry);
-            return slotIndex >= 0 && GetActiveSkillCooldownRemaining(slotIndex) <= 0f;
+            if (slotIndex < 0)
+                return false;
+
+            return GetActiveSkillCooldownRemaining(ResolveCooldownActionId(entry, slotIndex)) <= 0f;
         }
 
         private bool IsSkillAvailableForCurrentAttackMode(SkillConfigEntry entry)
@@ -2504,12 +2507,12 @@ namespace Game.Presentation
                 return false;
 
             if (entry.IsPassiveSkill)
-                return _owner.PlayerModel.HasUnlockedSkill(entry.skillId);
+                return _owner.PlayerModel.HasUnlockedEntry(entry);
 
             if (entry.IsActiveSkill)
             {
                 string equippedActionId = entry.GetResolvedActionId();
-                return _owner.PlayerModel.HasUnlockedSkill(entry.skillId)
+                return _owner.PlayerModel.HasUnlockedEntry(entry)
                        && entry.SupportsAttackMode(_currentAttackMode)
                        && !string.IsNullOrWhiteSpace(equippedActionId)
                        && _owner.PlayerModel.FindEquippedSkillSlotIndex(equippedActionId) >= 0;
@@ -2518,7 +2521,7 @@ namespace Game.Presentation
             if (entry.IsBaseSkill)
                 return entry.SupportsAttackMode(_currentAttackMode);
 
-            return _owner.PlayerModel.HasUnlockedSkill(entry.skillId);
+            return _owner.PlayerModel.HasUnlockedEntry(entry);
         }
 
         private bool TryCommitActiveSkill(SkillConfigEntry entry, int slotIndex = -1)
@@ -2533,16 +2536,32 @@ namespace Game.Presentation
 
         private void StartActiveSkillCooldown(SkillConfigEntry entry, int slotIndex = -1)
         {
-            if (slotIndex < 0)
-                slotIndex = ResolveActiveSkillSlotIndex(entry);
-            if (slotIndex < 0 || entry == null)
+            string actionId = ResolveCooldownActionId(entry, slotIndex);
+            if (string.IsNullOrWhiteSpace(actionId) || entry == null)
                 return;
 
             float cooldown = Mathf.Max(0f, entry.cooldownSeconds);
             if (cooldown <= 0f)
                 return;
 
-            _activeSkillCooldowns[slotIndex] = cooldown;
+            _activeSkillCooldowns[actionId] = cooldown;
+        }
+
+        private string ResolveCooldownActionId(SkillConfigEntry entry, int slotIndex = -1)
+        {
+            if (entry != null)
+            {
+                string actionId = entry.GetResolvedActionId();
+                if (!string.IsNullOrWhiteSpace(actionId))
+                    return actionId;
+            }
+
+            if (slotIndex < 0)
+                slotIndex = ResolveActiveSkillSlotIndex(entry);
+
+            return _owner?.PlayerModel != null && slotIndex >= 0
+                ? _owner.PlayerModel.GetEquippedSkillActionId(slotIndex)
+                : string.Empty;
         }
 
         private void CollectEquippedActiveSkillCandidates(
@@ -2578,7 +2597,7 @@ namespace Game.Presentation
                 return false;
             }
 
-            if (!_owner.PlayerModel.HasUnlockedSkill(entry.skillId) || !entry.SupportsAttackMode(_currentAttackMode))
+            if (!_owner.PlayerModel.HasUnlockedEntry(entry) || !entry.SupportsAttackMode(_currentAttackMode))
             {
                 entry = null;
                 return false;
@@ -2587,9 +2606,12 @@ namespace Game.Presentation
             return true;
         }
 
-        private float GetActiveSkillCooldownRemaining(int slotIndex)
+        private float GetActiveSkillCooldownRemaining(string actionId)
         {
-            return _activeSkillCooldowns.TryGetValue(slotIndex, out float remaining)
+            if (string.IsNullOrWhiteSpace(actionId))
+                return 0f;
+
+            return _activeSkillCooldowns.TryGetValue(actionId, out float remaining)
                 ? Mathf.Max(0f, remaining)
                 : 0f;
         }
@@ -2599,29 +2621,29 @@ namespace Game.Presentation
             if (_activeSkillCooldowns.Count <= 0 || dt <= 0f)
                 return;
 
-            _cooldownUpdateSlots.Clear();
+            _cooldownUpdateActionIds.Clear();
             _cooldownUpdateValues.Clear();
-            _cooldownExpiredSlots.Clear();
+            _cooldownExpiredActionIds.Clear();
 
-            foreach (KeyValuePair<int, float> pair in _activeSkillCooldowns)
+            foreach (KeyValuePair<string, float> pair in _activeSkillCooldowns)
             {
                 float remaining = Mathf.Max(0f, pair.Value - dt);
                 if (remaining <= 0f)
                 {
-                    _cooldownExpiredSlots.Add(pair.Key);
+                    _cooldownExpiredActionIds.Add(pair.Key);
                 }
                 else
                 {
-                    _cooldownUpdateSlots.Add(pair.Key);
+                    _cooldownUpdateActionIds.Add(pair.Key);
                     _cooldownUpdateValues.Add(remaining);
                 }
             }
 
-            for (int i = 0; i < _cooldownUpdateSlots.Count; i++)
-                _activeSkillCooldowns[_cooldownUpdateSlots[i]] = _cooldownUpdateValues[i];
+            for (int i = 0; i < _cooldownUpdateActionIds.Count; i++)
+                _activeSkillCooldowns[_cooldownUpdateActionIds[i]] = _cooldownUpdateValues[i];
 
-            for (int i = 0; i < _cooldownExpiredSlots.Count; i++)
-                _activeSkillCooldowns.Remove(_cooldownExpiredSlots[i]);
+            for (int i = 0; i < _cooldownExpiredActionIds.Count; i++)
+                _activeSkillCooldowns.Remove(_cooldownExpiredActionIds[i]);
         }
 
         private void TickRuntimeModifiers()
@@ -2761,15 +2783,15 @@ namespace Game.Presentation
                     }
                 }
 
-                if (ownerModel.UnlockedSkillIds != null)
+                if (ownerModel.UnlockedActionIds != null)
                 {
                     int skillHash = 0;
-                    foreach (string skillId in ownerModel.UnlockedSkillIds)
+                    foreach (string actionId in ownerModel.UnlockedActionIds)
                     {
-                        if (string.IsNullOrWhiteSpace(skillId))
+                        if (string.IsNullOrWhiteSpace(actionId))
                             continue;
 
-                        skillHash ^= StringComparer.Ordinal.GetHashCode(skillId);
+                        skillHash ^= StringComparer.Ordinal.GetHashCode(actionId);
                     }
 
                     hash = hash * 31 + skillHash;
