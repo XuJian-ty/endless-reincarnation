@@ -427,7 +427,7 @@ MonoBehaviour:
     naturalExitTarget: 1
   - actionId: Attack0
     skillId: Attack0
-    displayName: "\u666E\u653B1"
+    displayName: "\u8FD1\u6218\u666E\u653B1\u6BB5"
     description: 
     skillIcon: {fileID: 0}
     isPassive: 0
@@ -466,7 +466,7 @@ MonoBehaviour:
     naturalExitTarget: 1
   - actionId: Attack1
     skillId: Attack1
-    displayName: "\u666E\u653B2"
+    displayName: "\u8FD1\u6218\u666E\u653B2\u6BB5"
     description: 
     skillIcon: {fileID: 0}
     isPassive: 0
@@ -505,7 +505,7 @@ MonoBehaviour:
     naturalExitTarget: 1
   - actionId: Attack2
     skillId: Attack2
-    displayName: "\u666E\u653B3"
+    displayName: "\u8FD1\u6218\u666E\u653B3\u6BB5"
     description: 
     skillIcon: {fileID: 0}
     isPassive: 0
@@ -544,7 +544,7 @@ MonoBehaviour:
     naturalExitTarget: 1
   - actionId: Attack3
     skillId: Attack3
-    displayName: "\u666E\u653B4"
+    displayName: "\u8FD1\u6218\u666E\u653B4\u6BB5"
     description: 
     skillIcon: {fileID: 0}
     isPassive: 0
@@ -712,7 +712,7 @@ MonoBehaviour:
     naturalExitTarget: 0
   - actionId: ChargeRelease
     skillId: ChargeRelease
-    displayName: "\u84C4\u529B\u91CA\u653E"
+    displayName: "\u8FD1\u6218\u84C4\u529B\u91CA\u653E"
     description: 
     skillIcon: {fileID: 0}
     isPassive: 0
@@ -928,7 +928,7 @@ MonoBehaviour:
     naturalExitTarget: 0
   - actionId: Shoot
     skillId: Shoot
-    displayName: "\u5C04\u51FB"
+    displayName: "\u8FDC\u7A0B\u666E\u653B(\u70B9\u5C04)"
     description: 
     skillIcon: {fileID: 0}
     isPassive: 0
@@ -967,7 +967,7 @@ MonoBehaviour:
     naturalExitTarget: 1
   - actionId: ShootCharge
     skillId: ShootCharge
-    displayName: "\u6301\u7EED\u5C04\u51FB"
+    displayName: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)"
     description: 
     skillIcon: {fileID: 0}
     isPassive: 0

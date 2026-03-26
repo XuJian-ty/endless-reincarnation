@@ -49,6 +49,8 @@ namespace Game.Saving
         public List<string> unlockedSkillIds = new List<string>();
         /// <summary>技能树槽位到主动技能 actionId 的映射。索引即槽位索引，空字符串表示该槽位未装备技能。</summary>
         public List<string> equippedSkillActionIds = new List<string>();
+        /// <summary>技能动作到当前所选变异 skillId 的映射；缺省时回退到动作配置中的默认 skillId。</summary>
+        public List<SkillMutationSelectionSave> selectedSkillMutations = new List<SkillMutationSelectionSave>();
         public List<string> defeatedBossIds  = new List<string>();
         public bool         isGameCleared;
 
@@ -73,6 +75,13 @@ namespace Game.Saving
         public string        currentLevelBuffId;
         /// <summary>当前关卡内的场景快照；为 null 表示新进关卡</summary>
         public LevelSnapshot levelSnapshot;
+    }
+
+    [Serializable]
+    public class SkillMutationSelectionSave
+    {
+        public string actionId;
+        public string skillId;
     }
 
     [Serializable]

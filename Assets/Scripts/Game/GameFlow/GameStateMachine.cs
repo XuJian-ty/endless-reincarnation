@@ -97,6 +97,8 @@ namespace Game.GameFlow
             var data = SaveSystem.GetInstance().Load(saveId);
             if (data?.run == null) return false;
 
+            Time.timeScale = 1f;
+
             _currentSaveId     = saveId;
             _currentPlayerName = data.playerName ?? "";
             _currentRun        = data.run;

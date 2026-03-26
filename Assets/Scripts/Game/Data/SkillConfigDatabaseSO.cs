@@ -98,7 +98,7 @@ namespace Game.Data
         [Tooltip("仅主动技能使用。用于限制该技能可在哪些形态下释放。")]
         public PlayerAttackModeMask supportedAttackModes = PlayerAttackModeMask.All;
 
-        [InspectorLabel("天赋点消耗")]
+        [InspectorLabel("解锁天赋点消耗")]
         [Tooltip("在技能树中解锁此技能需要消耗的天赋点数。")]
         public int talentCost = 1;
 
@@ -157,6 +157,14 @@ namespace Game.Data
             return string.Empty;
         }
 
+        public string GetResolvedSkillId()
+        {
+            if (!string.IsNullOrWhiteSpace(skillId))
+                return skillId.Trim();
+
+            return string.Empty;
+        }
+
         public SkillEffectDatabaseSO GetResolvedSkillEffectDatabase()
         {
             return skillEffectDatabase != null
@@ -166,11 +174,16 @@ namespace Game.Data
 
         public SharedSkillDefinition ResolveSkillEffectDefinition()
         {
-            if (string.IsNullOrWhiteSpace(skillId))
+            return ResolveSkillEffectDefinition(GetResolvedSkillId());
+        }
+
+        public SharedSkillDefinition ResolveSkillEffectDefinition(string resolvedSkillId)
+        {
+            if (string.IsNullOrWhiteSpace(resolvedSkillId))
                 return null;
 
             SkillEffectDatabaseSO database = GetResolvedSkillEffectDatabase();
-            return database != null ? database.GetEntry(skillId.Trim()) : null;
+            return database != null ? database.GetEntry(resolvedSkillId.Trim()) : null;
         }
 
         public PassiveSkillEffectDatabaseSO GetResolvedPassiveSkillEffectDatabase()
@@ -182,11 +195,16 @@ namespace Game.Data
 
         public PassiveSkillEffectDefinition ResolvePassiveSkillEffectDefinition()
         {
-            if (string.IsNullOrWhiteSpace(skillId))
+            return ResolvePassiveSkillEffectDefinition(GetResolvedSkillId());
+        }
+
+        public PassiveSkillEffectDefinition ResolvePassiveSkillEffectDefinition(string resolvedSkillId)
+        {
+            if (string.IsNullOrWhiteSpace(resolvedSkillId))
                 return null;
 
             PassiveSkillEffectDatabaseSO database = GetResolvedPassiveSkillEffectDatabase();
-            return database != null ? database.GetEntry(skillId.Trim()) : null;
+            return database != null ? database.GetEntry(resolvedSkillId.Trim()) : null;
         }
 
         public StatModifier ResolvePassiveStatModifier()
@@ -199,6 +217,87 @@ namespace Game.Data
             }
 
             return passiveStatModifier;
+        }
+
+        public SkillEffectVariantGroupDefinition ResolveSkillEffectVariantGroup()
+        {
+            string resolvedSkillId = GetResolvedSkillId();
+            if (string.IsNullOrWhiteSpace(resolvedSkillId))
+                return null;
+
+            SkillEffectDatabaseSO database = GetResolvedSkillEffectDatabase();
+            if (database?.groups == null)
+                return null;
+
+            for (int groupIndex = 0; groupIndex < database.groups.Count; groupIndex++)
+            {
+                SkillGroupDefinition group = database.groups[groupIndex];
+                SkillEffectVariantGroupDefinition variantGroup = SkillEffectDatabaseSO.FindVariantGroup(group, resolvedSkillId);
+                if (variantGroup != null)
+                    return variantGroup;
+            }
+
+            return null;
+        }
+
+        public PassiveSkillEffectVariantGroupDefinition ResolvePassiveSkillEffectVariantGroup()
+        {
+            string resolvedSkillId = GetResolvedSkillId();
+            if (string.IsNullOrWhiteSpace(resolvedSkillId))
+                return null;
+
+            PassiveSkillEffectDatabaseSO database = GetResolvedPassiveSkillEffectDatabase();
+            if (database?.groups == null)
+                return null;
+
+            for (int groupIndex = 0; groupIndex < database.groups.Count; groupIndex++)
+            {
+                PassiveSkillEffectGroupDefinition group = database.groups[groupIndex];
+                PassiveSkillEffectVariantGroupDefinition variantGroup = PassiveSkillEffectDatabaseSO.FindVariantGroup(group, resolvedSkillId);
+                if (variantGroup != null)
+                    return variantGroup;
+            }
+
+            return null;
+        }
+
+        public bool ContainsSkillVariant(string resolvedSkillId)
+        {
+            if (string.IsNullOrWhiteSpace(resolvedSkillId))
+                return false;
+
+            string normalizedSkillId = resolvedSkillId.Trim();
+            if (string.Equals(GetResolvedSkillId(), normalizedSkillId, StringComparison.Ordinal))
+                return true;
+
+            if (IsPassiveSkill)
+            {
+                PassiveSkillEffectVariantGroupDefinition variantGroup = ResolvePassiveSkillEffectVariantGroup();
+                if (variantGroup?.entries == null)
+                    return false;
+
+                for (int i = 0; i < variantGroup.entries.Count; i++)
+                {
+                    PassiveSkillEffectDefinition entry = variantGroup.entries[i];
+                    if (entry != null && string.Equals(entry.skillId, normalizedSkillId, StringComparison.Ordinal))
+                        return true;
+                }
+
+                return false;
+            }
+
+            SkillEffectVariantGroupDefinition sharedVariantGroup = ResolveSkillEffectVariantGroup();
+            if (sharedVariantGroup?.entries == null)
+                return false;
+
+            for (int i = 0; i < sharedVariantGroup.entries.Count; i++)
+            {
+                SharedSkillDefinition entry = sharedVariantGroup.entries[i];
+                if (entry != null && string.Equals(entry.skillId, normalizedSkillId, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
         }
 
         private static bool HasAnyStatModifierValue(StatModifier modifier)

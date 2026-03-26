@@ -44,7 +44,7 @@ namespace Game.Data
         [InspectorLabel("技能小分组")]
         public List<SkillEffectVariantGroupDefinition> skillGroups = new List<SkillEffectVariantGroupDefinition>();
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public List<SharedSkillDefinition> entries = new List<SharedSkillDefinition>();
     }
 
@@ -58,7 +58,7 @@ namespace Game.Data
         [InspectorLabel("技能分组")]
         public List<SkillGroupDefinition> groups = new List<SkillGroupDefinition>();
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public List<SharedSkillDefinition> entries = new List<SharedSkillDefinition>();
 
         private void OnEnable()

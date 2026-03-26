@@ -12,13 +12,13 @@ namespace Game.Domain
         [InspectorLabel("法力加算")] public float mpAdd;
         [InspectorLabel("攻击加算")] public float attackAdd;
         [InspectorLabel("防御加算")] public float defenseAdd;
-        [InspectorLabel("吸血")] public float lifeStealAdd;
+        [InspectorLabel("生命回复加算")] public float hpRegenAdd;
+        [InspectorLabel("法力回复加算")] public float mpRegenAdd;
         [InspectorLabel("暴击率")] public float critRateAdd;
         [InspectorLabel("暴击伤害")] public float critDmgAdd;
         [InspectorLabel("攻速加成")] public float attackSpeedAdd;
         [InspectorLabel("移速加成")] public float moveSpeedAdd;
-        [InspectorLabel("生命回复加算")] public float hpRegenAdd;
-        [InspectorLabel("法力回复加算")] public float mpRegenAdd;
+        [InspectorLabel("吸血比例")] public float lifeStealAdd;
         [InspectorLabel("增伤比例")] public float damageBonusAdd;
         [InspectorLabel("减伤比例")] public float damageReduceAdd;
 
@@ -30,13 +30,13 @@ namespace Game.Domain
                 mpAdd = mpAdd,
                 attackAdd = attackAdd,
                 defenseAdd = defenseAdd,
-                lifeStealAdd = lifeStealAdd,
+                hpRegenAdd = hpRegenAdd,
+                mpRegenAdd = mpRegenAdd,
                 critRateAdd = critRateAdd,
                 critDmgAdd = critDmgAdd,
                 attackSpeedAdd = attackSpeedAdd,
                 moveSpeedAdd = moveSpeedAdd,
-                hpRegenAdd = hpRegenAdd,
-                mpRegenAdd = mpRegenAdd,
+                lifeStealAdd = lifeStealAdd,
                 damageBonusAdd = damageBonusAdd,
                 damageReduceAdd = damageReduceAdd
             };

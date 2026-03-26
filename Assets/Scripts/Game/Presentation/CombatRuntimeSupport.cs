@@ -130,7 +130,7 @@ namespace Game.Presentation
             for (int i = _modifiers.Count - 1; i >= 0; i--)
             {
                 if (now <= _modifiers[i].endTime) continue;
-                _playerController.PlayerModel.Stats.RemoveModifier(_modifiers[i].modifier);
+                _playerController.PlayerModel.RemoveStatModifierAndSyncVitals(_modifiers[i].modifier);
                 _modifiers.RemoveAt(i);
             }
         }
@@ -139,10 +139,10 @@ namespace Game.Presentation
         {
             if (_playerController?.PlayerModel == null) return;
             for (int i = 0; i < _modifiers.Count; i++)
-                _playerController.PlayerModel.Stats.RemoveModifier(_modifiers[i].modifier);
+                _playerController.PlayerModel.RemoveStatModifierAndSyncVitals(_modifiers[i].modifier);
             _modifiers.Clear();
             for (int i = 0; i < _stateScopedModifiers.Count; i++)
-                _playerController.PlayerModel.Stats.RemoveModifier(_stateScopedModifiers[i]);
+                _playerController.PlayerModel.RemoveStatModifierAndSyncVitals(_stateScopedModifiers[i]);
             _stateScopedModifiers.Clear();
         }
 
@@ -152,7 +152,7 @@ namespace Game.Presentation
                 return;
 
             var clone = modifier.Clone();
-            _playerController.PlayerModel.Stats.AddModifier(clone);
+            _playerController.PlayerModel.AddStatModifierAndSyncVitals(clone);
             _modifiers.Add(new RuntimeModifier
             {
                 modifier = clone,
@@ -166,7 +166,7 @@ namespace Game.Presentation
                 return;
 
             StatModifier clone = modifier.Clone();
-            _playerController.PlayerModel.Stats.AddModifier(clone);
+            _playerController.PlayerModel.AddStatModifierAndSyncVitals(clone);
             _stateScopedModifiers.Add(clone);
             cueRuntime?.RegisterStateExitCallback(() =>
             {
@@ -174,7 +174,7 @@ namespace Game.Presentation
                     return;
 
                 if (_stateScopedModifiers.Remove(clone))
-                    _playerController.PlayerModel.Stats.RemoveModifier(clone);
+                    _playerController.PlayerModel.RemoveStatModifierAndSyncVitals(clone);
             });
         }
     }

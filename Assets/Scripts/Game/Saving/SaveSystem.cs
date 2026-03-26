@@ -14,7 +14,7 @@ namespace Game.Saving
     /// </summary>
     public class SaveSystem : BaseManager<SaveSystem>
     {
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         private ISaveStorage _storage;
         private List<SaveEntry> _index = new List<SaveEntry>();
@@ -153,6 +153,10 @@ namespace Game.Saving
                         data.run.currentAttackMode = (int)PlayerAttackMode.Melee;
                 }
             }
+            if (data.version < 3)
+            {
+                data.run.selectedSkillMutations ??= new List<SkillMutationSelectionSave>();
+            }
             if (data.run.levelSnapshot != null)
             {
                 data.run.levelSnapshot.enemies ??= new List<EnemySnapshot>();
@@ -279,6 +283,7 @@ namespace Game.Saving
                     currentAttackMode = (int)PlayerAttackMode.Melee,
                     buffIds          = new List<string>(),
                     unlockedSkillIds = new List<string>(),
+                    selectedSkillMutations = new List<SkillMutationSelectionSave>(),
                     defeatedBossIds  = new List<string>(),
                     isGameCleared    = false,
                     checkpoint       = null,

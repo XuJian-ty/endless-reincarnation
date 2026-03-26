@@ -678,8 +678,19 @@ namespace Game.Data
         [Tooltip("玩家与敌人都通过该 ID 引用此技能定义。该值需要全局唯一。")]
         public string skillId = "";
 
+        [InspectorLabel("技能效果描述")]
+        [Tooltip("用于技能树变异面板展示该技能效果的说明。")]
+        [TextArea(2, 5)]
+        public string effectDescription = "";
+
+        [InspectorLabel("变异天赋点消耗")]
+        [Tooltip("在技能树中切换到该变异方向时需要消耗的天赋点数。")]
+        [Min(0)]
+        public int mutationTalentCost = 0;
+
+        [InspectorLabel("显示名称")]
+        [Tooltip("用于技能树变异面板展示该技能效果的名称。留空时回退为技能ID。")]
         [FormerlySerializedAs("displayName")]
-        [HideInInspector]
         public string displayName = "";
 
         [Header("行为控制")]

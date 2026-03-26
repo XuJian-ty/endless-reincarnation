@@ -73,9 +73,13 @@ namespace Game.UI
             }
 
             if (_typeBadge != null)
-                _typeBadge.color = entry != null && entry.IsActiveSkill
-                    ? new Color(0.33f, 0.88f, 0.79f, 1f)
-                    : new Color(0.95f, 0.74f, 0.31f, 1f);
+                _typeBadge.color = entry == null
+                    ? new Color(0.95f, 0.74f, 0.31f, 1f)
+                    : entry.IsBaseSkill
+                        ? new Color(0.56f, 0.78f, 0.93f, 1f)
+                        : entry.IsActiveSkill
+                            ? new Color(0.33f, 0.88f, 0.79f, 1f)
+                            : new Color(0.95f, 0.74f, 0.31f, 1f);
         }
 
         public void RefreshVisual(bool isSelected, bool isUnlocked, bool canUnlock)

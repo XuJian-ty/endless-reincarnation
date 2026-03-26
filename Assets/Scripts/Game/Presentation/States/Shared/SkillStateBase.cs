@@ -67,7 +67,7 @@ namespace Game.Presentation
 
         private void TryStartTimeline(SkillConfigEntry entry)
         {
-            if (entry == null || string.IsNullOrEmpty(entry.skillId)) return;
+            if (entry == null) return;
             StartConfiguredTimelineByActionId(ActionId);
         }
 

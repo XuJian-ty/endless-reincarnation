@@ -738,6 +738,26 @@ namespace Game.Presentation
             return skillDb != null ? skillDb.GetEntryByActionId(actionId) : null;
         }
 
+        private string ResolveRuntimeSkillId(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return string.Empty;
+
+            return _owner?.PlayerModel != null
+                ? _owner.PlayerModel.ResolveSkillEffectId(entry)
+                : entry.GetResolvedSkillId();
+        }
+
+        private SharedSkillDefinition ResolveRuntimeSkillDefinition(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return null;
+
+            return _owner?.PlayerModel != null
+                ? _owner.PlayerModel.ResolveSkillEffectDefinition(entry)
+                : entry.ResolveSkillEffectDefinition();
+        }
+
         private static float ResolvePendingThreshold(SkillConfigEntry entry, GameAction action, float fallback)
         {
             if (entry != null && entry.TryGetPendingReleaseThreshold(action, out float configured))
@@ -1099,7 +1119,7 @@ namespace Game.Presentation
             _rangedPostureTimelineRunner?.Stop();
             _rangedPostureTimelineRunner = null;
 
-            SharedSkillDefinition definition = entry.ResolveSkillEffectDefinition();
+            SharedSkillDefinition definition = ResolveRuntimeSkillDefinition(entry);
             if (definition == null)
                 return;
 
@@ -1161,14 +1181,14 @@ namespace Game.Presentation
                 return;
 
             SkillConfigEntry entry = ResolveActionConfigEntry(actionId);
-            string skillId = entry != null ? entry.skillId : string.Empty;
+            string skillId = ResolveRuntimeSkillId(entry);
             if (string.IsNullOrWhiteSpace(skillId))
             {
                 StopLocomotionTimeline();
                 return;
             }
 
-            SharedSkillDefinition definition = entry.ResolveSkillEffectDefinition();
+            SharedSkillDefinition definition = ResolveRuntimeSkillDefinition(entry);
             if (definition == null)
             {
                 StopLocomotionTimeline();
@@ -1321,7 +1341,7 @@ namespace Game.Presentation
             _activeActionId = actionId ?? string.Empty;
             _activeActionElapsed = 0f;
 
-            SharedSkillDefinition definition = entry.ResolveSkillEffectDefinition();
+            SharedSkillDefinition definition = ResolveRuntimeSkillDefinition(entry);
             if (definition != null)
                 BeginTimeline(definition, actionId, overrideDuration);
             else

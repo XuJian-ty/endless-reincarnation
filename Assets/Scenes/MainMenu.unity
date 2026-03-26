@@ -694,6 +694,66 @@ PrefabInstance:
       propertyPath: m_Name
       value: SkillTreePanel
       objectReference: {fileID: 0}
+    - target: {fileID: 100000000000000184, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000000000000130, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000000000000130, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 114000000000000182, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000000000000182, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 114000000000000184, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 24
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000000000000185, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000000000000186, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 24
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000000000000189, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000000000000191, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000000000000191, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 114000000000000193, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 24
+      objectReference: {fileID: 0}
     - target: {fileID: 200000000000000001, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
         type: 3}
       propertyPath: m_Pivot.x
@@ -794,45 +854,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 200000000000000082, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: -10
-      objectReference: {fileID: 0}
-    - target: {fileID: 200000000000000082, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
-        type: 3}
-      propertyPath: m_SizeDelta.y
-      value: -10
-      objectReference: {fileID: 0}
     - target: {fileID: 200000000000000092, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
         type: 3}
       propertyPath: m_SizeDelta.x
       value: 16
       objectReference: {fileID: 0}
-    - target: {fileID: 200000000000000110, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: -485
-      objectReference: {fileID: 0}
-    - target: {fileID: 200000000000000110, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
-        type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -242.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 200000000000000111, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: -10
-      objectReference: {fileID: 0}
-    - target: {fileID: 200000000000000111, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+    - target: {fileID: 200000000000000182, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: -10
+      value: 48
       objectReference: {fileID: 0}
-    - target: {fileID: 200000000000000120, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+    - target: {fileID: 200000000000000184, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
         type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 485
+      propertyPath: m_SizeDelta.y
+      value: 450
+      objectReference: {fileID: 0}
+    - target: {fileID: 200000000000000186, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 250
+      objectReference: {fileID: 0}
+    - target: {fileID: 200000000000000191, guid: 6f3ab9f203b64c74a8a3d9be52c88b11,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 48
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

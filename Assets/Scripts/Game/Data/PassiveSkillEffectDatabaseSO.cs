@@ -11,8 +11,28 @@ namespace Game.Data
         [InspectorLabel("技能ID")]
         public string skillId = "";
 
+        [InspectorLabel("显示名称")]
+        [Tooltip("用于技能树变异面板展示该被动效果的名称。留空时回退为技能ID。")]
+        public string displayName = "";
+
+        [InspectorLabel("技能效果描述")]
+        [TextArea(2, 5)]
+        public string effectDescription = "";
+
+        [InspectorLabel("变异天赋点消耗")]
+        [Min(0)]
+        public int mutationTalentCost = 0;
+
         [InspectorLabel("属性加成")]
         public StatModifier statModifier = new StatModifier();
+
+        public string GetResolvedDisplayName()
+        {
+            if (!string.IsNullOrWhiteSpace(displayName))
+                return displayName.Trim();
+
+            return !string.IsNullOrWhiteSpace(skillId) ? skillId.Trim() : string.Empty;
+        }
     }
 
     [Serializable]
@@ -55,7 +75,7 @@ namespace Game.Data
         [InspectorLabel("技能小分组")]
         public List<PassiveSkillEffectVariantGroupDefinition> skillGroups = new List<PassiveSkillEffectVariantGroupDefinition>();
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public List<PassiveSkillEffectDefinition> entries = new List<PassiveSkillEffectDefinition>();
     }
 
@@ -68,7 +88,7 @@ namespace Game.Data
         [InspectorLabel("被动技能分组")]
         public List<PassiveSkillEffectGroupDefinition> groups = new List<PassiveSkillEffectGroupDefinition>();
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public List<PassiveSkillEffectDefinition> entries = new List<PassiveSkillEffectDefinition>();
 
         private void OnEnable()
