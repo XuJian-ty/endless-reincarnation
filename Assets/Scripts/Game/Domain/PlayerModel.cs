@@ -39,6 +39,7 @@ namespace Game.Domain
 
         private readonly InventorySlot[] _slots = new InventorySlot[SlotCount];
         private readonly string[] _equippedSkillActionIds = new string[SkillSlotCount];
+        private readonly Dictionary<string, string> _selectedSkillVariantIds = new Dictionary<string, string>(StringComparer.Ordinal);
         /// <summary>仅存金币与天赋点；药剂、仙露等在 _slots 中</summary>
         private readonly Dictionary<string, int> _currency = new Dictionary<string, int>();
         private PlayerAttackMode _currentAttackMode = PlayerAttackMode.Melee;
@@ -160,8 +161,11 @@ namespace Game.Domain
             if (_currentAttackMode == attackMode)
                 return false;
 
+            float previousMaxHp = Mathf.Max(0f, Stats.MaxHp);
+            float previousMaxMp = Mathf.Max(0f, Stats.MaxMp);
             _currentAttackMode = attackMode;
             Equipment?.SetActiveAttackMode(attackMode);
+            ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
             NotifyLoadoutChanged();
             return true;
         }
@@ -219,6 +223,118 @@ namespace Game.Domain
                 return null;
 
             return config.GetActiveSkillEntryByActionId(actionId);
+        }
+
+        public string ResolveSkillEffectId(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return string.Empty;
+
+            string defaultSkillId = entry.GetResolvedSkillId();
+            string actionId = entry.GetResolvedActionId();
+            if (string.IsNullOrWhiteSpace(actionId))
+                return defaultSkillId;
+
+            if (_selectedSkillVariantIds.TryGetValue(actionId, out string selectedSkillId)
+                && entry.ContainsSkillVariant(selectedSkillId))
+            {
+                return selectedSkillId.Trim();
+            }
+
+            return defaultSkillId;
+        }
+
+        public SharedSkillDefinition ResolveSkillEffectDefinition(SkillConfigEntry entry)
+        {
+            if (entry == null || entry.IsPassiveSkill)
+                return null;
+
+            string resolvedSkillId = ResolveSkillEffectId(entry);
+            SharedSkillDefinition definition = entry.ResolveSkillEffectDefinition(resolvedSkillId);
+            return definition ?? entry.ResolveSkillEffectDefinition();
+        }
+
+        public PassiveSkillEffectDefinition ResolvePassiveSkillEffectDefinition(SkillConfigEntry entry)
+        {
+            if (entry == null || !entry.IsPassiveSkill)
+                return null;
+
+            string resolvedSkillId = ResolveSkillEffectId(entry);
+            PassiveSkillEffectDefinition definition = entry.ResolvePassiveSkillEffectDefinition(resolvedSkillId);
+            return definition ?? entry.ResolvePassiveSkillEffectDefinition();
+        }
+
+        public StatModifier ResolvePassiveStatModifier(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return null;
+
+            PassiveSkillEffectDefinition definition = ResolvePassiveSkillEffectDefinition(entry);
+            if (definition?.statModifier != null)
+            {
+                if (HasAnyStatModifierValue(definition.statModifier) || !HasAnyStatModifierValue(entry.passiveStatModifier))
+                    return definition.statModifier;
+            }
+
+            return entry.passiveStatModifier;
+        }
+
+        public string ResolveSkillEffectDescription(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return string.Empty;
+
+            if (entry.IsPassiveSkill)
+            {
+                PassiveSkillEffectDefinition passiveDefinition = ResolvePassiveSkillEffectDefinition(entry);
+                return !string.IsNullOrWhiteSpace(passiveDefinition?.effectDescription)
+                    ? passiveDefinition.effectDescription.Trim()
+                    : string.Empty;
+            }
+
+            SharedSkillDefinition definition = ResolveSkillEffectDefinition(entry);
+            return !string.IsNullOrWhiteSpace(definition?.effectDescription)
+                ? definition.effectDescription.Trim()
+                : string.Empty;
+        }
+
+        public bool TrySetSelectedSkillVariant(string actionId, string skillId, SkillConfigDatabaseSO config)
+        {
+            SkillConfigDatabaseSO resolvedConfig = config ?? ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            string normalizedActionId = ResolveUnlockedActionId(actionId, resolvedConfig);
+            string normalizedSkillId = NormalizeId(skillId);
+            if (string.IsNullOrWhiteSpace(normalizedActionId) || string.IsNullOrWhiteSpace(normalizedSkillId) || resolvedConfig == null)
+                return false;
+
+            SkillConfigEntry entry = resolvedConfig.GetEntryByActionId(normalizedActionId);
+            if (entry == null || !entry.ContainsSkillVariant(normalizedSkillId))
+                return false;
+
+            string defaultSkillId = entry.GetResolvedSkillId();
+            bool changed;
+            if (string.Equals(defaultSkillId, normalizedSkillId, StringComparison.Ordinal))
+            {
+                changed = _selectedSkillVariantIds.Remove(normalizedActionId);
+            }
+            else if (_selectedSkillVariantIds.TryGetValue(normalizedActionId, out string existingSkillId)
+                     && string.Equals(existingSkillId, normalizedSkillId, StringComparison.Ordinal))
+            {
+                changed = false;
+            }
+            else
+            {
+                _selectedSkillVariantIds[normalizedActionId] = normalizedSkillId;
+                changed = true;
+            }
+
+            if (!changed)
+                return false;
+
+            if (entry.IsPassiveSkill && HasUnlockedEntry(entry))
+                RefreshUnlockedSkillEffects(resolvedConfig);
+
+            NotifyLoadoutChanged();
+            return true;
         }
 
         public bool AssignSkillActionToSlot(int slotIndex, string actionId, SkillConfigDatabaseSO config)
@@ -367,7 +483,10 @@ namespace Game.Domain
                 return true;
             }
 
+            float previousMaxHp = Mathf.Max(0f, Stats.MaxHp);
+            float previousMaxMp = Mathf.Max(0f, Stats.MaxMp);
             Equipment.Equip(_currentAttackMode, selectedWeapon);
+            ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
 
             if (previouslyEquipped != null)
             {
@@ -394,7 +513,10 @@ namespace Game.Domain
             if (!CanAddWeapon())
                 return false;
 
+            float previousMaxHp = Mathf.Max(0f, Stats.MaxHp);
+            float previousMaxMp = Mathf.Max(0f, Stats.MaxMp);
             WeaponInstance removedWeapon = Equipment.Unequip(_currentAttackMode);
+            ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
             bool added = AddWeapon(removedWeapon);
             if (added)
                 NotifyLoadoutChanged();
@@ -474,11 +596,10 @@ namespace Game.Domain
             int levels = Exp.AddExp(amount);
             if (levels > 0 && _levelGrowth != null)
             {
-                float missingHp = Mathf.Max(0f, Stats.MaxHp - CurrentHp);
-                float missingMp = Mathf.Max(0f, Stats.MaxMp - CurrentMp);
+                float previousMaxHp = Mathf.Max(0f, Stats.MaxHp);
+                float previousMaxMp = Mathf.Max(0f, Stats.MaxMp);
                 _levelGrowth.GetStatsForLevel(Exp.Level, Stats);
-                CurrentHp = Mathf.Clamp(Stats.MaxHp - missingHp, 0f, Stats.MaxHp);
-                CurrentMp = Mathf.Clamp(Stats.MaxMp - missingMp, 0f, Stats.MaxMp);
+                ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
             }
             return levels;
         }
@@ -497,7 +618,7 @@ namespace Game.Domain
                     buffId = buffId,
                     modifier = clonedModifier
                 });
-                Stats.AddModifier(clonedModifier);
+                AddStatModifierAndSyncVitals(clonedModifier);
             }
         }
 
@@ -511,7 +632,7 @@ namespace Game.Domain
                 if (entry == null || entry.buffId != buffId)
                     continue;
 
-                Stats.RemoveModifier(entry.modifier);
+                RemoveStatModifierAndSyncVitals(entry.modifier);
                 _buffModifiers.RemoveAt(i);
                 break;
             }
@@ -519,6 +640,13 @@ namespace Game.Domain
 
         public void ClearBuffModifiers()
         {
+            ClearBuffModifiers(true);
+        }
+
+        private void ClearBuffModifiers(bool syncVitals)
+        {
+            float previousMaxHp = syncVitals ? Mathf.Max(0f, Stats.MaxHp) : 0f;
+            float previousMaxMp = syncVitals ? Mathf.Max(0f, Stats.MaxMp) : 0f;
             for (int i = 0; i < _buffModifiers.Count; i++)
             {
                 AppliedBuffModifier entry = _buffModifiers[i];
@@ -526,12 +654,16 @@ namespace Game.Domain
                     Stats.RemoveModifier(entry.modifier);
             }
             _buffModifiers.Clear();
+            if (syncVitals)
+                ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
         }
 
         public void ReapplyBuffModifiers(Func<string, StatModifier> getModifier)
         {
             if (getModifier == null) return;
-            ClearBuffModifiers();
+            float previousMaxHp = Mathf.Max(0f, Stats.MaxHp);
+            float previousMaxMp = Mathf.Max(0f, Stats.MaxMp);
+            ClearBuffModifiers(false);
             foreach (string id in BuffIds)
             {
                 var mod = getModifier(id);
@@ -546,6 +678,7 @@ namespace Game.Domain
                     Stats.AddModifier(clonedModifier);
                 }
             }
+            ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
         }
 
         public bool UnlockAction(string actionId, SkillConfigDatabaseSO config)
@@ -587,7 +720,7 @@ namespace Game.Domain
                     if (entry == null || !entry.IsPassiveSkill)
                         continue;
 
-                    StatModifier passiveModifier = entry.ResolvePassiveStatModifier();
+                    StatModifier passiveModifier = ResolvePassiveStatModifier(entry);
                     if (passiveModifier != null)
                         snapshot.AddModifier(passiveModifier.Clone());
                 }
@@ -615,15 +748,27 @@ namespace Game.Domain
 
         public void RefreshUnlockedSkillEffects(SkillConfigDatabaseSO config)
         {
-            ClearPassiveSkillModifiers();
+            float previousMaxHp = Mathf.Max(0f, Stats.MaxHp);
+            float previousMaxMp = Mathf.Max(0f, Stats.MaxMp);
+            ClearPassiveSkillModifiers(false);
             if (config?.entries == null || UnlockedActionIds == null || UnlockedActionIds.Count == 0)
+            {
+                ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
                 return;
+            }
 
             foreach (string actionId in UnlockedActionIds)
-                ApplyPassiveSkillModifier(actionId, config);
+                ApplyPassiveSkillModifier(actionId, config, false);
+
+            ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
         }
 
         private void ApplyPassiveSkillModifier(string actionId, SkillConfigDatabaseSO config)
+        {
+            ApplyPassiveSkillModifier(actionId, config, true);
+        }
+
+        private void ApplyPassiveSkillModifier(string actionId, SkillConfigDatabaseSO config, bool syncVitals)
         {
             string normalizedActionId = ResolveUnlockedActionId(actionId, config);
             if (config == null || string.IsNullOrWhiteSpace(normalizedActionId))
@@ -636,20 +781,32 @@ namespace Game.Domain
             if (_passiveSkillModifiers.ContainsKey(normalizedActionId))
                 return;
 
-            StatModifier sourceModifier = entry.ResolvePassiveStatModifier();
+            StatModifier sourceModifier = ResolvePassiveStatModifier(entry);
             if (sourceModifier == null)
                 return;
 
             var modifier = sourceModifier.Clone();
             _passiveSkillModifiers[normalizedActionId] = modifier;
-            Stats.AddModifier(modifier);
+            if (syncVitals)
+                AddStatModifierAndSyncVitals(modifier);
+            else
+                Stats.AddModifier(modifier);
         }
 
         private void ClearPassiveSkillModifiers()
         {
+            ClearPassiveSkillModifiers(true);
+        }
+
+        private void ClearPassiveSkillModifiers(bool syncVitals)
+        {
+            float previousMaxHp = syncVitals ? Mathf.Max(0f, Stats.MaxHp) : 0f;
+            float previousMaxMp = syncVitals ? Mathf.Max(0f, Stats.MaxMp) : 0f;
             foreach (var modifier in _passiveSkillModifiers.Values)
                 Stats.RemoveModifier(modifier);
             _passiveSkillModifiers.Clear();
+            if (syncVitals)
+                ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
         }
 
         public void LoadFrom(RunData run)
@@ -657,6 +814,7 @@ namespace Game.Domain
             if (run == null) return;
             for (int i = 0; i < SlotCount; i++) _slots[i].Clear();
             for (int i = 0; i < SkillSlotCount; i++) _equippedSkillActionIds[i] = string.Empty;
+            _selectedSkillVariantIds.Clear();
             _currency.Clear();
 
             if (run.player != null)
@@ -728,6 +886,7 @@ namespace Game.Domain
                         UnlockedActionIds.Add(normalizedActionId);
                 }
             }
+            LoadSelectedSkillVariants(run);
             LoadEquippedSkillActions(run);
             ClearBuffModifiers();
             CurrentHp = Mathf.Clamp(CurrentHp, 0f, Stats.MaxHp);
@@ -772,12 +931,56 @@ namespace Game.Domain
             run.equippedSkillActionIds = new List<string>(SkillSlotCount);
             for (int i = 0; i < SkillSlotCount; i++)
                 run.equippedSkillActionIds.Add(GetEquippedSkillActionId(i));
+            run.selectedSkillMutations = new List<SkillMutationSelectionSave>();
+            if (_selectedSkillVariantIds.Count > 0)
+            {
+                List<string> actionIds = new List<string>(_selectedSkillVariantIds.Keys);
+                actionIds.Sort(StringComparer.Ordinal);
+                for (int i = 0; i < actionIds.Count; i++)
+                {
+                    string actionId = actionIds[i];
+                    if (!_selectedSkillVariantIds.TryGetValue(actionId, out string selectedSkillId)
+                        || string.IsNullOrWhiteSpace(actionId)
+                        || string.IsNullOrWhiteSpace(selectedSkillId))
+                    {
+                        continue;
+                    }
+
+                    run.selectedSkillMutations.Add(new SkillMutationSelectionSave
+                    {
+                        actionId = actionId,
+                        skillId = selectedSkillId
+                    });
+                }
+            }
         }
 
         public void TakeDamage(float damage) => CurrentHp = Mathf.Max(0f, CurrentHp - damage);
         public void Heal(float amount) => CurrentHp = Mathf.Min(Stats.MaxHp, CurrentHp + amount);
         public void SpendMp(float amount) => CurrentMp = Mathf.Max(0f, CurrentMp - amount);
         public bool CanSpendMp(float amount) => CurrentMp >= amount;
+
+        public void AddStatModifierAndSyncVitals(StatModifier modifier)
+        {
+            if (modifier == null)
+                return;
+
+            float previousMaxHp = Mathf.Max(0f, Stats.MaxHp);
+            float previousMaxMp = Mathf.Max(0f, Stats.MaxMp);
+            Stats.AddModifier(modifier);
+            ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
+        }
+
+        public void RemoveStatModifierAndSyncVitals(StatModifier modifier)
+        {
+            if (modifier == null)
+                return;
+
+            float previousMaxHp = Mathf.Max(0f, Stats.MaxHp);
+            float previousMaxMp = Mathf.Max(0f, Stats.MaxMp);
+            Stats.RemoveModifier(modifier);
+            ApplyVitalCapsAfterStatChange(previousMaxHp, previousMaxMp);
+        }
 
         private static void ApplyDefaultLevel1Stats(Stats stats)
         {
@@ -823,9 +1026,68 @@ namespace Game.Domain
             }
         }
 
+        private void LoadSelectedSkillVariants(RunData run)
+        {
+            _selectedSkillVariantIds.Clear();
+            if (run?.selectedSkillMutations == null || run.selectedSkillMutations.Count == 0)
+                return;
+
+            SkillConfigDatabaseSO config = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            for (int i = 0; i < run.selectedSkillMutations.Count; i++)
+            {
+                SkillMutationSelectionSave selection = run.selectedSkillMutations[i];
+                string actionId = ResolveUnlockedActionId(selection?.actionId, config);
+                string selectedSkillId = NormalizeId(selection?.skillId);
+                if (string.IsNullOrWhiteSpace(actionId) || string.IsNullOrWhiteSpace(selectedSkillId))
+                    continue;
+
+                if (config == null)
+                {
+                    _selectedSkillVariantIds[actionId] = selectedSkillId;
+                    continue;
+                }
+
+                SkillConfigEntry entry = config.GetEntryByActionId(actionId);
+                if (entry == null || !entry.ContainsSkillVariant(selectedSkillId))
+                    continue;
+
+                if (string.Equals(entry.GetResolvedSkillId(), selectedSkillId, StringComparison.Ordinal))
+                    continue;
+
+                _selectedSkillVariantIds[actionId] = selectedSkillId;
+            }
+        }
+
         private void NotifyLoadoutChanged()
         {
             LoadoutChanged?.Invoke();
+        }
+
+        private static bool HasAnyStatModifierValue(StatModifier modifier)
+        {
+            if (modifier == null)
+                return false;
+
+            if (!Mathf.Approximately(modifier.hpAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.mpAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.attackAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.defenseAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.lifeStealAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.critRateAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.critDmgAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.attackSpeedAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.moveSpeedAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.hpRegenAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.mpRegenAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.damageBonusAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.damageReduceAdd, 0f)) return true;
+
+            return false;
+        }
+
+        private static string NormalizeId(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
         }
 
         private string ResolveUnlockedActionId(string entryId, SkillConfigDatabaseSO config = null)
@@ -845,6 +1107,20 @@ namespace Game.Domain
             }
 
             return normalizedEntryId;
+        }
+
+        private void ApplyVitalCapsAfterStatChange(float previousMaxHp, float previousMaxMp)
+        {
+            float currentMaxHp = Mathf.Max(0f, Stats.MaxHp);
+            if (currentMaxHp > previousMaxHp)
+                CurrentHp += currentMaxHp - previousMaxHp;
+
+            float currentMaxMp = Mathf.Max(0f, Stats.MaxMp);
+            if (currentMaxMp > previousMaxMp)
+                CurrentMp += currentMaxMp - previousMaxMp;
+
+            CurrentHp = Mathf.Clamp(CurrentHp, 0f, currentMaxHp);
+            CurrentMp = Mathf.Clamp(CurrentMp, 0f, currentMaxMp);
         }
     }
 }

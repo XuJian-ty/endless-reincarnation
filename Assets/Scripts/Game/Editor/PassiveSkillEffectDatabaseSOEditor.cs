@@ -17,14 +17,15 @@ namespace Game.Editor
 
         private void OnEnable()
         {
+            PassiveSkillEffectDatabaseSO database = target as PassiveSkillEffectDatabaseSO;
+            database?.Synchronize();
+            EnsurePassiveSkillGroups(LoadDefaultSkillConfigDatabase(), database, false);
             _groupsProperty = serializedObject.FindProperty("groups");
         }
 
         public override void OnInspectorGUI()
         {
             PassiveSkillEffectDatabaseSO database = (PassiveSkillEffectDatabaseSO)target;
-            database?.Synchronize();
-            EnsurePassiveSkillGroups(LoadDefaultSkillConfigDatabase(), database, false);
             serializedObject.Update();
 
             if (_groupsProperty == null)
@@ -204,6 +205,9 @@ namespace Game.Editor
                         }
                     }
 
+                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("displayName"), new GUIContent("显示名称"));
+                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("effectDescription"), new GUIContent("技能效果描述"));
+                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("mutationTalentCost"));
                     EditorGUILayout.PropertyField(statModifierProperty, true);
                 }
             }

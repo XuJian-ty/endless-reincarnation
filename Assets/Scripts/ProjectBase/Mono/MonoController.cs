@@ -15,8 +15,8 @@ public class MonoController : MonoBehaviour {
 
     private event UnityAction updateEvent;
 
-	// Use this for initialization
-	void Start () {
+	private void Awake()
+    {
         DontDestroyOnLoad(this.gameObject);
 	}
 	

@@ -115,3 +115,43 @@ MonoBehaviour:
     - passive_8
     - passive_5
     edgeRouteOverrides: []
+  - nodeId: Attack0
+    actionId: Attack0
+    position: {x: 112, y: 944}
+    predecessorNodeIds: []
+    edgeRouteOverrides: []
+  - nodeId: Attack1
+    actionId: Attack1
+    position: {x: 372, y: 944}
+    predecessorNodeIds:
+    - Attack0
+    edgeRouteOverrides: []
+  - nodeId: Attack2
+    actionId: Attack2
+    position: {x: 632, y: 944}
+    predecessorNodeIds:
+    - Attack1
+    edgeRouteOverrides: []
+  - nodeId: Attack3
+    actionId: Attack3
+    position: {x: 892, y: 944}
+    predecessorNodeIds:
+    - Attack2
+    edgeRouteOverrides: []
+  - nodeId: ChargeRelease
+    actionId: ChargeRelease
+    position: {x: 1152, y: 944}
+    predecessorNodeIds:
+    - Attack3
+    edgeRouteOverrides: []
+  - nodeId: Shoot
+    actionId: Shoot
+    position: {x: 1452, y: 944}
+    predecessorNodeIds: []
+    edgeRouteOverrides: []
+  - nodeId: ShootCharge
+    actionId: ShootCharge
+    position: {x: 1712, y: 944}
+    predecessorNodeIds:
+    - Shoot
+    edgeRouteOverrides: []

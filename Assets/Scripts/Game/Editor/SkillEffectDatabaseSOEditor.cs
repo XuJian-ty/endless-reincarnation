@@ -12,13 +12,14 @@ namespace Game.Editor
 
         private void OnEnable()
         {
+            SkillEffectDatabaseSO database = target as SkillEffectDatabaseSO;
+            database?.Synchronize();
             _groupsProperty = serializedObject.FindProperty("groups");
         }
 
         public override void OnInspectorGUI()
         {
             SkillEffectDatabaseSO database = (SkillEffectDatabaseSO)target;
-            database?.Synchronize();
             serializedObject.Update();
 
             DrawToolbar();
@@ -179,6 +180,9 @@ namespace Game.Editor
                         }
                     }
 
+                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("displayName"), new GUIContent("显示名称"));
+                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("effectDescription"), new GUIContent("技能效果描述"));
+                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("mutationTalentCost"));
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("ignoreAnimationDamageEvents"));
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("damageEvents"), new GUIContent("命中事件列表"), true);
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("physicsEvents"), new GUIContent("物理事件列表"), true);

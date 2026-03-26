@@ -671,23 +671,22 @@ namespace Game.Presentation
             if (model == null)
                 return;
 
+            float resolvedMagnitude = ResolvePlayerStatMagnitude(model, field, magnitude, usePercent);
             if (field == SkillStatField.HP)
             {
-                float amount = usePercent ? model.Stats.MaxHp * magnitude : magnitude;
-                if (amount > 0f)
-                    ApplyHealToPlayer(player, amount, true);
+                if (resolvedMagnitude > 0f)
+                    ApplyHealToPlayer(player, resolvedMagnitude, true);
                 return;
             }
 
             if (field == SkillStatField.MP)
             {
-                float amount = usePercent ? model.Stats.MaxMp * magnitude : magnitude;
-                if (amount > 0f)
-                    ApplyManaToPlayer(player, amount, true);
+                if (resolvedMagnitude > 0f)
+                    ApplyManaToPlayer(player, resolvedMagnitude, true);
                 return;
             }
 
-            var modifier = BuildModifierForField(field, magnitude, usePercent ? 1f : 0f);
+            var modifier = BuildModifierForField(field, resolvedMagnitude);
             if (modifier == null)
                 return;
 
@@ -704,7 +703,7 @@ namespace Game.Presentation
             }
             else
             {
-                model.Stats.AddModifier(modifier);
+                model.AddStatModifierAndSyncVitals(modifier);
             }
         }
 
@@ -736,7 +735,7 @@ namespace Game.Presentation
                 return;
             }
 
-            var modifier = BuildModifierForField(field, magnitude, usePercent ? 1f : 0f);
+            var modifier = BuildModifierForField(field, magnitude);
             if (modifier == null)
                 return;
 
@@ -763,7 +762,7 @@ namespace Game.Presentation
                 return;
             }
 
-            var modifier = BuildModifierForField(field, magnitude, usePercent ? 1f : 0f);
+            var modifier = BuildModifierForField(field, magnitude);
             if (modifier == null)
                 return;
 
@@ -1100,7 +1099,50 @@ namespace Game.Presentation
             return collider.transform;
         }
 
-        private static StatModifier BuildModifierForField(SkillStatField field, float magnitude, float percentBase)
+        private static float ResolvePlayerStatMagnitude(PlayerModel model, SkillStatField field, float magnitude, bool usePercent)
+        {
+            if (!usePercent || model == null)
+                return magnitude;
+
+            return GetPlayerStatPercentBase(model, field) * magnitude;
+        }
+
+        private static float GetPlayerStatPercentBase(PlayerModel model, SkillStatField field)
+        {
+            Stats stats = model?.Stats;
+            if (stats == null)
+                return 0f;
+
+            switch (field)
+            {
+                case SkillStatField.HP:
+                    return Mathf.Max(0f, stats.baseHp);
+                case SkillStatField.MP:
+                    return Mathf.Max(0f, stats.baseMp);
+                case SkillStatField.Attack:
+                    return Mathf.Max(0f, stats.baseAttack);
+                case SkillStatField.Defense:
+                    return Mathf.Max(0f, stats.baseDefense);
+                case SkillStatField.HPRegen:
+                    return Mathf.Max(0f, stats.baseHpRegen);
+                case SkillStatField.MPRegen:
+                    return Mathf.Max(0f, stats.baseMpRegen);
+                case SkillStatField.CritRate:
+                    return Mathf.Max(0f, stats.baseCritRate);
+                case SkillStatField.CritDamage:
+                    return Mathf.Max(0f, stats.baseCritDmg);
+                case SkillStatField.MoveSpeed:
+                case SkillStatField.AttackSpeed:
+                case SkillStatField.SkillDamage:
+                case SkillStatField.DamageReduce:
+                case SkillStatField.LifeSteal:
+                    return 1f;
+                default:
+                    return 0f;
+            }
+        }
+
+        private static StatModifier BuildModifierForField(SkillStatField field, float magnitude)
         {
             var modifier = new StatModifier();
             switch (field)

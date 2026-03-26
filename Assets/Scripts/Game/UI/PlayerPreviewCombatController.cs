@@ -255,13 +255,15 @@ namespace Game.UI
         {
             if (entry != null)
             {
-                SharedSkillDefinition resolvedDefinition = entry.ResolveSkillEffectDefinition();
+                SharedSkillDefinition resolvedDefinition = _playerModel != null
+                    ? _playerModel.ResolveSkillEffectDefinition(entry)
+                    : entry.ResolveSkillEffectDefinition();
                 if (resolvedDefinition != null)
                     return resolvedDefinition;
             }
 
-            string skillId = entry != null && !string.IsNullOrWhiteSpace(entry.skillId)
-                ? entry.skillId.Trim()
+            string skillId = entry != null
+                ? (_playerModel != null ? _playerModel.ResolveSkillEffectId(entry) : entry.GetResolvedSkillId())
                 : ResolveAttackActionId(comboIndex);
             if (string.IsNullOrWhiteSpace(skillId))
                 return null;

@@ -19,566 +19,294 @@ MonoBehaviour:
     - groupName: passive_1
       entries:
       - skillId: passive_1
+        displayName: "\u589E\u52A0\u8840\u91CF"
+        effectDescription: "\u589E\u52A01000\u6700\u5927\u751F\u547D\u503C\u3002"
+        mutationTalentCost: 0
         statModifier:
-          hpAdd: 0
+          hpAdd: 1000
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_1_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u8840\u91CF"
+        effectDescription: "\u589E\u52A02000\u6700\u5927\u751F\u547D\u503C\u3002"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 2000
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
           hpRegenAdd: 0
           mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_1_Variant2
+        displayName: "\u51CF\u5C11\u8840\u91CF\u589E\u52A0\u653B\u51FB"
+        effectDescription: "\u51CF\u5C111000\u6700\u5927\u751F\u547D\u503C\uFF0C\u589E\u52A0200\u653B\u51FB\u529B\u3002"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: -1000
+          mpAdd: 0
+          attackAdd: 200
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_1_Variant3
+        displayName: "\u589E\u52A0\u5DE8\u989D\u8840\u91CF"
+        effectDescription: "\u589E\u52A05000\u6700\u5927\u751F\u547D\u503C\u3002"
+        mutationTalentCost: 3
+        statModifier:
+          hpAdd: 5000
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_2
       entries:
       - skillId: passive_2
+        displayName: 
+        effectDescription: "\u88AB\u52A82\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_3
       entries:
       - skillId: passive_3
+        displayName: 
+        effectDescription: "\u88AB\u52A83\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_4
       entries:
       - skillId: passive_4
+        displayName: 
+        effectDescription: "\u88AB\u52A84\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_5
       entries:
       - skillId: passive_5
+        displayName: 
+        effectDescription: "\u88AB\u52A85\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_6
       entries:
       - skillId: passive_6
+        displayName: 
+        effectDescription: "\u88AB\u52A86\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_7
       entries:
       - skillId: passive_7
+        displayName: 
+        effectDescription: "\u88AB\u52A87\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_8
       entries:
       - skillId: passive_8
+        displayName: 
+        effectDescription: "\u88AB\u52A88\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_9
       entries:
       - skillId: passive_9
+        displayName: 
+        effectDescription: "\u88AB\u52A89\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_10
       entries:
       - skillId: passive_10
+        displayName: 
+        effectDescription: "\u88AB\u52A810\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_11
       entries:
       - skillId: passive_11
+        displayName: 
+        effectDescription: "\u88AB\u52A811\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_12
       entries:
       - skillId: passive_12
+        displayName: 
+        effectDescription: "\u88AB\u52A812\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          lifeStealAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
+          lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
-    entries:
-    - skillId: passive_1
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_2
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_3
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_4
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_5
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_6
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_7
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_8
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_9
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_10
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_11
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-    - skillId: passive_12
-      statModifier:
-        hpAdd: 0
-        mpAdd: 0
-        attackAdd: 0
-        defenseAdd: 0
-        lifeStealAdd: 0
-        critRateAdd: 0
-        critDmgAdd: 0
-        attackSpeedAdd: 0
-        moveSpeedAdd: 0
-        hpRegenAdd: 0
-        mpRegenAdd: 0
-        damageBonusAdd: 0
-        damageReduceAdd: 0
-  entries:
-  - skillId: passive_1
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_2
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_3
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_4
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_5
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_6
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_7
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_8
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_9
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_10
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_11
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0
-  - skillId: passive_12
-    statModifier:
-      hpAdd: 0
-      mpAdd: 0
-      attackAdd: 0
-      defenseAdd: 0
-      lifeStealAdd: 0
-      critRateAdd: 0
-      critDmgAdd: 0
-      attackSpeedAdd: 0
-      moveSpeedAdd: 0
-      hpRegenAdd: 0
-      mpRegenAdd: 0
-      damageBonusAdd: 0
-      damageReduceAdd: 0

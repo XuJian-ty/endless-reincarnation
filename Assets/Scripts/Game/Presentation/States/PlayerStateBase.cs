@@ -184,7 +184,7 @@ namespace Game.Presentation
         protected void StartConfiguredTimelineByActionId(string actionId = null, float overrideDuration = -1f)
         {
             SkillConfigEntry entry = ResolvePlayerActionEntry(actionId);
-            string skillId = entry != null ? entry.skillId : string.Empty;
+            string skillId = ResolveRuntimeSkillId(entry);
             if (string.IsNullOrWhiteSpace(skillId))
                 return;
 
@@ -222,7 +222,7 @@ namespace Game.Presentation
 
         protected void StartTimelineSkill(SkillConfigEntry entry, float overrideDuration, string actionId)
         {
-            string skillId = entry != null ? entry.skillId : string.Empty;
+            string skillId = ResolveRuntimeSkillId(entry);
             StartTimelineSkill(ref _timelineRunner, ref _timelineActionId, entry, skillId, overrideDuration, actionId);
         }
 
@@ -295,7 +295,7 @@ namespace Game.Presentation
         private void StartConfiguredBaseActionTimelineInternal(string resolvedActionId, float overrideDuration, bool forceRestart)
         {
             SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
-            string skillId = entry != null ? entry.skillId : string.Empty;
+            string skillId = ResolveRuntimeSkillId(entry);
             if (string.IsNullOrWhiteSpace(skillId))
                 return;
 
@@ -311,7 +311,7 @@ namespace Game.Presentation
         private void StartConfiguredAuxiliaryBaseActionTimelineInternal(string resolvedActionId, float overrideDuration, bool forceRestart)
         {
             SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
-            string skillId = entry != null ? entry.skillId : string.Empty;
+            string skillId = ResolveRuntimeSkillId(entry);
             if (string.IsNullOrWhiteSpace(skillId))
             {
                 StopAuxiliaryTimelineSkill();
@@ -327,6 +327,17 @@ namespace Game.Presentation
             StartTimelineSkill(ref _auxiliaryTimelineRunner, ref _auxiliaryTimelineActionId, entry, skillId, overrideDuration, resolvedActionId);
         }
 
+        private string ResolveRuntimeSkillId(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return string.Empty;
+
+            if (Ctx?.PlayerModel != null)
+                return Ctx.PlayerModel.ResolveSkillEffectId(entry);
+
+            return entry.GetResolvedSkillId();
+        }
+
         private void StartTimelineSkill(ref SkillTimelineRunner runner, ref string runningActionId, SkillConfigEntry entry, string skillId, float overrideDuration, string actionId)
         {
             StopTimelineSkill(ref runner, ref runningActionId);
@@ -334,7 +345,11 @@ namespace Game.Presentation
             if (string.IsNullOrWhiteSpace(skillId))
                 return;
 
-            SharedSkillDefinition def = entry != null ? entry.ResolveSkillEffectDefinition() : null;
+            SharedSkillDefinition def = entry != null && Ctx?.PlayerModel != null
+                ? Ctx.PlayerModel.ResolveSkillEffectDefinition(entry)
+                : entry != null
+                    ? entry.ResolveSkillEffectDefinition(skillId)
+                    : null;
             if (def == null)
             {
                 var sharedDb = ConfigManager.GetInstance()?.GetSkillEffectDatabase();

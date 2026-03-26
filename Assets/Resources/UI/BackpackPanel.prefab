@@ -2732,7 +2732,7 @@ MonoBehaviour:
   m_Elasticity: 0.01
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 50
+  m_ScrollSensitivity: 200
   m_Viewport: {fileID: 3601599541449306398}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 6797055799082334220}
@@ -4137,6 +4137,7 @@ MonoBehaviour:
   previewTooltipText: {fileID: 5828332723182016568}
   previewContextMenuPanel: {fileID: 3589634972145389946}
   btnUnequip: {fileID: 2920607539902382474}
+  attackModeButton: {fileID: 5387863879149295757}
 --- !u!1 &7821269661653053332
 GameObject:
   m_ObjectHideFlags: 0
