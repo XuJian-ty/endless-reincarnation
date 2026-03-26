@@ -175,13 +175,13 @@ namespace Game.Editor
         private void DrawPassiveSkillFields(SerializedProperty entryProp)
         {
             DrawReadOnlyProperty(entryProp, nameof(SkillConfigEntry.actionId));
-            DrawProperty(entryProp, nameof(SkillConfigEntry.skillEffectDatabase));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.passiveSkillEffectDatabase));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillIcon));
             DrawProperty(entryProp, nameof(SkillConfigEntry.talentCost));
-            DrawProperty(entryProp, nameof(SkillConfigEntry.passiveStatModifier));
+            EditorGUILayout.HelpBox("被动属性加成改由“被动技能效果库”统一配置；当前条目只保留技能ID映射。旧版被动属性加成字段仍保留为兼容回退，但不建议继续填写。", MessageType.Info);
         }
 
         private void DrawProperty(SerializedProperty entryProp, string relativeName)
@@ -290,6 +290,15 @@ namespace Game.Editor
             _entriesProp.InsertArrayElementAtIndex(insertIndex);
             SerializedProperty entryProp = _entriesProp.GetArrayElementAtIndex(insertIndex);
             ResetEntry(entryProp, group, groupOrderIndex);
+
+            if (group != PlayerSkillEntryGroup.PassiveSkill)
+                return;
+
+            serializedObject.ApplyModifiedProperties();
+            PassiveSkillEffectDatabaseSOEditor.EnsurePassiveSkillGroups(target as SkillConfigDatabaseSO);
+            serializedObject.Update();
+            EditorUtility.SetDirty(target);
+            AssetDatabase.SaveAssetIfDirty(target);
         }
 
         private void AddActiveSkillEntry()
@@ -362,6 +371,10 @@ namespace Game.Editor
             SerializedProperty skillEffectDatabase = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.skillEffectDatabase));
             if (skillEffectDatabase != null)
                 skillEffectDatabase.objectReferenceValue = null;
+
+            SerializedProperty passiveSkillEffectDatabase = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.passiveSkillEffectDatabase));
+            if (passiveSkillEffectDatabase != null)
+                passiveSkillEffectDatabase.objectReferenceValue = null;
 
             SerializedProperty displayName = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.displayName));
             if (displayName != null)

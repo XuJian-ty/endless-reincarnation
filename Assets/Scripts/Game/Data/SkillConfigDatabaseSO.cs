@@ -44,7 +44,7 @@ namespace Game.Data
     /// <summary>
     /// 玩家单条动作/技能配置。
     ///
-    /// 被动技能：isPassive=true，仍需填写 actionId 作为身份标识；skillId 只负责映射被动效果定义。
+    /// 被动技能：isPassive=true，仍需填写 actionId 作为身份标识；skillId 只负责映射被动技能效果定义。
     /// 主动/基础技能：按 actionId 绑定身份与状态逻辑，按“技能效果库引用 + skillId”绑定技能效果定义。
     ///
     /// 触发链（主动/基础技能）：
@@ -68,6 +68,10 @@ namespace Game.Data
         [InspectorLabel("技能效果库引用")]
         [Tooltip("留空则使用默认的“技能效果库”。填写后会优先从该库中按 skillId 查找技能效果定义。")]
         public SkillEffectDatabaseSO skillEffectDatabase;
+
+        [InspectorLabel("被动技能效果库引用")]
+        [Tooltip("仅被动技能使用。留空则使用默认的“被动技能效果库”。填写后会优先从该库中按 skillId 查找被动属性效果定义。")]
+        public PassiveSkillEffectDatabaseSO passiveSkillEffectDatabase;
 
         [InspectorLabel("显示名称")]
         [Tooltip("技能树 UI 中展示的名称，不影响逻辑。")]
@@ -114,7 +118,7 @@ namespace Game.Data
 
         [Header("─ 被动技能参数（PassiveSkill 时填写）─")]
         [InspectorLabel("被动属性加成")]
-        [Tooltip("被动技能解锁后永久附加到玩家基础属性上的加成。")]
+        [Tooltip("兼容旧数据使用。若已配置“被动技能效果库引用 + 技能ID”，运行时会优先使用被动技能效果库中的属性加成。")]
         public StatModifier passiveStatModifier = new StatModifier();
 
         [Header("─ 状态规则（基础动作/主动技能）─")]
@@ -167,6 +171,56 @@ namespace Game.Data
 
             SkillEffectDatabaseSO database = GetResolvedSkillEffectDatabase();
             return database != null ? database.GetEntry(skillId.Trim()) : null;
+        }
+
+        public PassiveSkillEffectDatabaseSO GetResolvedPassiveSkillEffectDatabase()
+        {
+            return passiveSkillEffectDatabase != null
+                ? passiveSkillEffectDatabase
+                : global::Game.ConfigManager.GetInstance()?.GetPassiveSkillEffectDatabase();
+        }
+
+        public PassiveSkillEffectDefinition ResolvePassiveSkillEffectDefinition()
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return null;
+
+            PassiveSkillEffectDatabaseSO database = GetResolvedPassiveSkillEffectDatabase();
+            return database != null ? database.GetEntry(skillId.Trim()) : null;
+        }
+
+        public StatModifier ResolvePassiveStatModifier()
+        {
+            PassiveSkillEffectDefinition definition = ResolvePassiveSkillEffectDefinition();
+            if (definition?.statModifier != null)
+            {
+                if (HasAnyStatModifierValue(definition.statModifier) || !HasAnyStatModifierValue(passiveStatModifier))
+                    return definition.statModifier;
+            }
+
+            return passiveStatModifier;
+        }
+
+        private static bool HasAnyStatModifierValue(StatModifier modifier)
+        {
+            if (modifier == null)
+                return false;
+
+            if (!Mathf.Approximately(modifier.hpAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.mpAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.attackAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.defenseAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.lifeStealAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.critRateAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.critDmgAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.attackSpeedAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.moveSpeedAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.hpRegenAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.mpRegenAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.damageBonusAdd, 0f)) return true;
+            if (!Mathf.Approximately(modifier.damageReduceAdd, 0f)) return true;
+
+            return false;
         }
 
         public bool IsPassiveSkill =>

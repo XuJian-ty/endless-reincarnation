@@ -712,6 +712,7 @@ namespace Game.Editor
             EnsureConfigFolder();
             CreateEnemyStatsDatabase();
             CreateSkillEffectDatabase();
+            CreatePassiveSkillEffectDatabase();
             CreateEnemyArchetypeDatabase();
             var enemySpawnTaskDatabase = CreateEnemySpawnTaskDatabase();
             var enemySpawnPlanLibrary = CreateEnemySpawnPlanLibrary(enemySpawnTaskDatabase);
@@ -838,6 +839,14 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
         }
 
+        private static void CreatePassiveSkillEffectDatabase()
+        {
+            EnsureConfigFolder();
+            var db = BuildDefaultPassiveSkillEffectDatabase();
+            CreateOrUpdateAsset(db, $"{ResourcesConfigDir}/被动技能效果库.asset");
+            AssetDatabase.SaveAssets();
+        }
+
         private static void CreateSkillConfigDatabase()
         {
             EnsureConfigFolder();
@@ -908,6 +917,41 @@ namespace Game.Editor
                 });
             }
 
+            return db;
+        }
+
+        private static PassiveSkillEffectDatabaseSO BuildDefaultPassiveSkillEffectDatabase()
+        {
+            var db = ScriptableObject.CreateInstance<PassiveSkillEffectDatabaseSO>();
+            db.groups = new List<PassiveSkillEffectGroupDefinition>
+            {
+                new PassiveSkillEffectGroupDefinition
+                {
+                    groupId = "player_passive",
+                    groupName = "玩家被动技能",
+                    skillGroups = new List<PassiveSkillEffectVariantGroupDefinition>(),
+                    entries = new List<PassiveSkillEffectDefinition>(),
+                }
+            };
+
+            List<PassiveSkillEffectVariantGroupDefinition> skillGroups = db.groups[0].skillGroups;
+            for (int i = 1; i <= 12; i++)
+            {
+                skillGroups.Add(new PassiveSkillEffectVariantGroupDefinition
+                {
+                    groupName = $"passive_{i}",
+                    entries = new List<PassiveSkillEffectDefinition>
+                    {
+                        new PassiveSkillEffectDefinition
+                        {
+                            skillId = $"passive_{i}",
+                            statModifier = new Game.Domain.StatModifier(),
+                        }
+                    }
+                });
+            }
+
+            db.Synchronize();
             return db;
         }
 
@@ -1035,6 +1079,7 @@ namespace Game.Editor
             {
                 actionId = source.actionId,
                 skillId = source.skillId,
+                passiveSkillEffectDatabase = source.passiveSkillEffectDatabase,
                 displayName = source.displayName,
                 description = source.description,
                 isPassive = source.isPassive,

@@ -584,10 +584,12 @@ namespace Game.Domain
                         continue;
 
                     SkillConfigEntry entry = config.GetEntryByActionId(actionId);
-                    if (entry == null || !entry.IsPassiveSkill || entry.passiveStatModifier == null)
+                    if (entry == null || !entry.IsPassiveSkill)
                         continue;
 
-                    snapshot.AddModifier(entry.passiveStatModifier.Clone());
+                    StatModifier passiveModifier = entry.ResolvePassiveStatModifier();
+                    if (passiveModifier != null)
+                        snapshot.AddModifier(passiveModifier.Clone());
                 }
             }
 
@@ -628,13 +630,17 @@ namespace Game.Domain
                 return;
 
             var entry = config.GetEntryByActionId(normalizedActionId);
-            if (entry == null || !entry.IsPassiveSkill || entry.passiveStatModifier == null)
+            if (entry == null || !entry.IsPassiveSkill)
                 return;
 
             if (_passiveSkillModifiers.ContainsKey(normalizedActionId))
                 return;
 
-            var modifier = entry.passiveStatModifier.Clone();
+            StatModifier sourceModifier = entry.ResolvePassiveStatModifier();
+            if (sourceModifier == null)
+                return;
+
+            var modifier = sourceModifier.Clone();
             _passiveSkillModifiers[normalizedActionId] = modifier;
             Stats.AddModifier(modifier);
         }
