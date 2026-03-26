@@ -16,6 +16,7 @@ namespace Game
 
         private EnemyStatsDatabaseSO _enemyStatsDatabase;
         private SkillEffectDatabaseSO _skillEffectDatabase;
+        private PassiveSkillEffectDatabaseSO _passiveSkillEffectDatabase;
         private LevelConfigDatabaseSO _levelConfigDatabase;
         private WeaponDatabaseSO _weaponDatabase;
         private LevelGrowthSO _levelGrowth;
@@ -80,6 +81,13 @@ namespace Game
                     _skillEffectDatabase = SkillEffectDatabaseDefaults.CreateRuntimeDefault();
             }
             return _skillEffectDatabase;
+        }
+
+        public PassiveSkillEffectDatabaseSO GetPassiveSkillEffectDatabase()
+        {
+            if (_passiveSkillEffectDatabase == null)
+                _passiveSkillEffectDatabase = Resources.Load<PassiveSkillEffectDatabaseSO>(ConfigPathPrefix + "被动技能效果库");
+            return _passiveSkillEffectDatabase;
         }
 
         public LevelConfigDatabaseSO GetLevelConfigDatabase()
