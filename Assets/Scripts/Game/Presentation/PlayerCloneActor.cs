@@ -758,6 +758,26 @@ namespace Game.Presentation
                 : entry.ResolveSkillEffectDefinition();
         }
 
+        private string ResolveRuntimeAnimationTrigger(SkillConfigEntry entry, string fallbackActionId)
+        {
+            if (entry != null)
+            {
+                SharedSkillDefinition definition = ResolveRuntimeSkillDefinition(entry);
+                if (definition != null)
+                {
+                    string definitionTrigger = definition.GetResolvedAnimationTrigger(entry.GetResolvedAnimationTrigger());
+                    if (!string.IsNullOrWhiteSpace(definitionTrigger))
+                        return definitionTrigger;
+                }
+
+                string entryTrigger = entry.GetResolvedAnimationTrigger();
+                if (!string.IsNullOrWhiteSpace(entryTrigger))
+                    return entryTrigger;
+            }
+
+            return string.IsNullOrWhiteSpace(fallbackActionId) ? string.Empty : fallbackActionId.Trim();
+        }
+
         private static float ResolvePendingThreshold(SkillConfigEntry entry, GameAction action, float fallback)
         {
             if (entry != null && entry.TryGetPendingReleaseThreshold(action, out float configured))
@@ -1109,9 +1129,7 @@ namespace Game.Presentation
             if (entry == null)
                 return;
 
-            string triggerName = entry.GetResolvedAnimationTrigger();
-            if (string.IsNullOrWhiteSpace(triggerName))
-                triggerName = postureActionId;
+            string triggerName = ResolveRuntimeAnimationTrigger(entry, postureActionId);
 
             _animatorController.TriggerAction(triggerName);
             _activeRangedPostureActionId = postureActionId;
@@ -1335,7 +1353,7 @@ namespace Game.Presentation
             ExitFollowLocomotion();
             ExitCombatLocomotion();
             SnapFacingForAction(actionId);
-            string triggerName = entry.GetResolvedAnimationTrigger();
+            string triggerName = ResolveRuntimeAnimationTrigger(entry, actionId);
             ApplyActionPlaybackSpeed(actionId);
             _animatorController?.TriggerAction(triggerName);
             _activeActionId = actionId ?? string.Empty;

@@ -361,6 +361,7 @@ namespace Game.Data
             return new SharedSkillDefinition
             {
                 skillId = skillId,
+                animationTrigger = skillId,
                 damageEvents = new List<SkillDamageEvent>(),
                 physicsEvents = new List<SkillPhysicsEvent>(),
                 attributeEvents = new List<SkillAttributeEvent>(),

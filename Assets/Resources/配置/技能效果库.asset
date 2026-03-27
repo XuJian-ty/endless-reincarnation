@@ -22,6 +22,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -34,6 +35,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -59,6 +61,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -84,6 +87,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -96,6 +100,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -121,6 +126,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -146,6 +152,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Jump
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -158,6 +165,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Dodge
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -170,6 +178,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Land
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -182,6 +191,7 @@ MonoBehaviour:
         effectDescription: "\u8FD1\u6218\u666E\u653B1\u6BB5\uFF0C\u5FEB\u901F\u524D\u6325\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Attack0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: 70
@@ -420,6 +430,7 @@ MonoBehaviour:
         effectDescription: "\u8FD1\u6218\u666E\u653B2\u6BB5\uFF0C\u8FDE\u6BB5\u8FFD\u51FB\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Attack1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_2
@@ -664,6 +675,7 @@ MonoBehaviour:
         effectDescription: "\u8FD1\u6218\u666E\u653B3\u6BB5\uFF0C\u8FDB\u4E00\u6B65\u8FFD\u51FB\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Attack2
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_2
@@ -834,6 +846,7 @@ MonoBehaviour:
         effectDescription: "\u8FD1\u6218\u666E\u653B4\u6BB5\uFF0C\u7EC8\u7ED3\u4E00\u51FB\uFF0C\u9020\u6210\u66F4\u5F3A\u8FD1\u6218\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Attack3
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_2
@@ -1072,6 +1085,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: AirAttack
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_4
@@ -1197,6 +1211,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: ChargeStart
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -1209,6 +1224,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: ChargeLoop
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -1239,6 +1255,7 @@ MonoBehaviour:
         effectDescription: "\u8FD1\u6218\u84C4\u529B\u91CA\u653E\uFF0C\u5BF9\u524D\u65B9\u9020\u6210\u66F4\u9AD8\u8303\u56F4\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: ChargeRelease
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_2
@@ -1365,6 +1382,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: FallAttackStart
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -1377,6 +1395,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: FallAttackLoop
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -1389,6 +1408,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: FallAttackLand
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_2
@@ -1489,6 +1509,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Fall
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -1501,6 +1522,7 @@ MonoBehaviour:
         effectDescription: "\u8FDC\u7A0B\u666E\u653B(\u70B9\u5C04)\uFF0C\u671D\u524D\u65B9\u53D1\u5C04\u4E00\u6B21\u666E\u901A\u5B50\u5F39\u3002"
         mutationTalentCost: 0
         displayName: "\u666E\u901A\u70B9\u5C04"
+        animationTrigger: Shoot
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: shot
@@ -1648,6 +1670,7 @@ MonoBehaviour:
         effectDescription: "\u5411\u524D\u65B9\u53D1\u5C043\u679A\u7279\u6B8A\u5B50\u5F39\u3002"
         mutationTalentCost: 0
         displayName: "\u5C04\u51FB\u53D8\u5F021"
+        animationTrigger: Shoot
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: shot
@@ -1945,6 +1968,7 @@ MonoBehaviour:
         effectDescription: "\u5411\u524D\u65B9\u53D1\u5C046\u679A\u7BAD\u77E2\u3002"
         mutationTalentCost: 0
         displayName: "\u5C04\u51FB\u53D8\u5F022"
+        animationTrigger: Shoot
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: shot
@@ -2244,6 +2268,7 @@ MonoBehaviour:
         effectDescription: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\uFF0C\u6301\u7EED\u5411\u524D\u65B9\u5C04\u51FB\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Shoot_Charge
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: burst
@@ -2391,6 +2416,7 @@ MonoBehaviour:
         effectDescription: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\uFF0C\u6301\u7EED\u5411\u524D\u65B9\u53D1\u5C043\u679A\u7279\u6B8A\u5B50\u5F39\u3002"
         mutationTalentCost: 0
         displayName: "\u6301\u7EED\u5C04\u51FB\u53D8\u5F021"
+        animationTrigger: Shoot_Charge
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: burst
@@ -2688,6 +2714,7 @@ MonoBehaviour:
         effectDescription: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\uFF0C\u6301\u7EED\u5411\u524D\u65B9\u53D1\u5C046\u679A\u7BAD\u77E2\u3002"
         mutationTalentCost: 0
         displayName: ShootCharge_Variant2
+        animationTrigger: Shoot_Charge
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: shot
@@ -3137,6 +3164,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Aim
         ignoreAnimationDamageEvents: 1
         damageEvents: []
         physicsEvents: []
@@ -3149,6 +3177,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: HitStun
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -3161,6 +3190,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Dead
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -3173,6 +3203,7 @@ MonoBehaviour:
         effectDescription: "\u4E3B\u52A80\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_1
@@ -3335,6 +3366,7 @@ MonoBehaviour:
         effectDescription: "\u4E3B\u52A81\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_0
@@ -3442,6 +3474,7 @@ MonoBehaviour:
         effectDescription: "\u4E3B\u52A82\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_0
@@ -3543,6 +3576,7 @@ MonoBehaviour:
         effectDescription: "\u4E3B\u52A83\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
         mutationTalentCost: 0
         displayName: 
+        animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_0

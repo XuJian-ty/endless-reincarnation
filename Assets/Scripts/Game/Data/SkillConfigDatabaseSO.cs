@@ -49,7 +49,8 @@ namespace Game.Data
     ///
     /// 触发链（主动/基础技能）：
     ///   状态机根据输入和上下文得到动作ID → 先检查玩家动作及技能配置库中的条目是否可用/已解锁
-    ///   → 向 Animator 发送 animationTrigger
+    ///   → 优先按“技能效果库引用 + skillId”解析技能效果定义中的 animationTrigger，并向 Animator 发送
+    ///   → 若技能效果定义未填写 animationTrigger，则回退到当前条目的旧版 animationTrigger
     ///   → SkillTimelineRunner 按“技能效果库引用 + skillId”找到技能效果定义 → 逐帧触发事件
     ///   → SkillEffectExecutor 执行伤害/特效/属性效果
     /// </summary>
@@ -108,7 +109,7 @@ namespace Game.Data
         public int mpCost = 0;
 
         [InspectorLabel("动画 Trigger")]
-        [Tooltip("播放该技能/动作时发送给 Animator 的 Trigger 名。留空时默认使用 actionId。")]
+        [Tooltip("旧版兼容字段。现优先从“技能效果库”对应 skillId 的默认技能效果项读取动画 Trigger；这里只在未迁移旧数据时作为回退。")]
         public string animationTrigger = "";
 
         [InspectorLabel("冷却(秒)")]
@@ -140,6 +141,11 @@ namespace Game.Data
 
         public string GetResolvedAnimationTrigger()
         {
+            SharedSkillDefinition definition = ResolveSkillEffectDefinition();
+            string sharedTrigger = definition != null ? definition.GetAnimationTriggerOrEmpty() : string.Empty;
+            if (!string.IsNullOrWhiteSpace(sharedTrigger))
+                return sharedTrigger;
+
             if (!string.IsNullOrWhiteSpace(animationTrigger))
                 return animationTrigger.Trim();
 

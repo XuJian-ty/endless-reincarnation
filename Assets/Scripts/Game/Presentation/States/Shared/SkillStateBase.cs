@@ -31,7 +31,7 @@ namespace Game.Presentation
             Ctx.PlayerModel.SpendMp(entry.mpCost);
             Ctx.StateMachine.StartActiveSkillCooldown(SkillSlotIndex, entry);
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
-            TriggerConfiguredActionByActionId(ActionId, entry.GetResolvedAnimationTrigger());
+            TriggerConfiguredActionByActionId(ActionId);
 
             // 启动共享技能时间轴（若有配置）
             TryStartTimeline(entry);

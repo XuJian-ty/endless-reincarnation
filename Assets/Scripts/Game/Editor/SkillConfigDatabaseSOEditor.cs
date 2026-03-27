@@ -151,7 +151,7 @@ namespace Game.Editor
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
-            DrawProperty(entryProp, nameof(SkillConfigEntry.animationTrigger));
+            EditorGUILayout.HelpBox("动画 Trigger 已移至“技能效果库”对应 skillId 的默认技能效果项中维护；当前条目的旧版动画 Trigger 仅作为兼容回退，不建议继续在这里编辑。", MessageType.Info);
             DrawProperty(entryProp, nameof(SkillConfigEntry.supportedAttackModes));
             DrawActionRuleFields(entryProp);
         }
@@ -164,7 +164,7 @@ namespace Game.Editor
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillIcon));
-            DrawProperty(entryProp, nameof(SkillConfigEntry.animationTrigger));
+            EditorGUILayout.HelpBox("动画 Trigger 已移至“技能效果库”对应 skillId 的默认技能效果项中维护；当前条目的旧版动画 Trigger 仅作为兼容回退，不建议继续在这里编辑。", MessageType.Info);
             DrawProperty(entryProp, nameof(SkillConfigEntry.supportedAttackModes));
             DrawProperty(entryProp, nameof(SkillConfigEntry.talentCost));
             DrawProperty(entryProp, nameof(SkillConfigEntry.mpCost));
@@ -405,7 +405,7 @@ namespace Game.Editor
 
             SerializedProperty animationTrigger = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.animationTrigger));
             if (animationTrigger != null)
-                animationTrigger.stringValue = group == PlayerSkillEntryGroup.ActiveSkill ? defaultActionId : string.Empty;
+                animationTrigger.stringValue = string.Empty;
 
             SerializedProperty cooldown = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.cooldownSeconds));
             if (cooldown != null)

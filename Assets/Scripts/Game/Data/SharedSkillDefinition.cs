@@ -693,6 +693,10 @@ namespace Game.Data
         [FormerlySerializedAs("displayName")]
         public string displayName = "";
 
+        [InspectorLabel("动画 Trigger")]
+        [Tooltip("该技能效果对应发送给 Animator 的 Trigger 名。留空时回退到外部配置或技能ID。")]
+        public string animationTrigger = "";
+
         [Header("行为控制")]
         [InspectorLabel("忽略动画帧伤害事件")]
         [Tooltip("开启后仅使用时间轴事件结算技能效果。")]
@@ -728,6 +732,28 @@ namespace Game.Data
             maxTime = Mathf.Max(maxTime, GetMaxVfxEndTime(vfxEvents));
             maxTime = Mathf.Max(maxTime, GetMaxSfxEndTime(sfxEvents));
             return maxTime;
+        }
+
+        public string GetAnimationTriggerOrEmpty()
+        {
+            return string.IsNullOrWhiteSpace(animationTrigger)
+                ? string.Empty
+                : animationTrigger.Trim();
+        }
+
+        public string GetResolvedAnimationTrigger(string fallbackTrigger = null)
+        {
+            string resolvedTrigger = GetAnimationTriggerOrEmpty();
+            if (!string.IsNullOrWhiteSpace(resolvedTrigger))
+                return resolvedTrigger;
+
+            if (!string.IsNullOrWhiteSpace(fallbackTrigger))
+                return fallbackTrigger.Trim();
+
+            if (!string.IsNullOrWhiteSpace(skillId))
+                return skillId.Trim();
+
+            return string.Empty;
         }
 
         public bool HasUntilStateExitEvents()
