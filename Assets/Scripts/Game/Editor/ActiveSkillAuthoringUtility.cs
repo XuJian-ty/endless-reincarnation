@@ -27,6 +27,7 @@ namespace Game.Editor
         private const string GameplayActionMapName = "Gameplay";
         private const string PlayerGroupId = "player";
         private const string PlayerGroupName = "玩家";
+        private const string PlayerAnimatorControllerFileName = "PlayerAnimator";
 
         public static bool TryAppendActiveSkill(SkillConfigDatabaseSO skillConfig, out int createdSkillIndex, out string errorMessage)
         {
@@ -239,7 +240,7 @@ namespace Game.Editor
                 return false;
             }
 
-            animatorController = AssetDatabase.LoadAssetAtPath<AnimatorController>(PlayerAnimatorControllerPath);
+            animatorController = LoadPlayerAnimatorController(out _);
             if (animatorController == null)
             {
                 errorMessage = $"未找到玩家 AnimatorController：{PlayerAnimatorControllerPath}";
@@ -264,6 +265,34 @@ namespace Game.Editor
             }
 
             return true;
+        }
+
+        private static AnimatorController LoadPlayerAnimatorController(out string resolvedPath)
+        {
+            resolvedPath = PlayerAnimatorControllerPath;
+            AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(PlayerAnimatorControllerPath);
+            if (controller != null)
+                return controller;
+
+            string[] guids = AssetDatabase.FindAssets($"{PlayerAnimatorControllerFileName} t:AnimatorController", new[] { "Assets" });
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string candidatePath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                if (string.IsNullOrWhiteSpace(candidatePath))
+                    continue;
+
+                if (!string.Equals(Path.GetFileNameWithoutExtension(candidatePath), PlayerAnimatorControllerFileName, System.StringComparison.Ordinal))
+                    continue;
+
+                controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(candidatePath);
+                if (controller == null)
+                    continue;
+
+                resolvedPath = candidatePath;
+                return controller;
+            }
+
+            return null;
         }
 
         private static int ResolveNextSkillIndex(
@@ -369,7 +398,7 @@ namespace Game.Editor
             created.skillId = actionId;
             created.skillEffectDatabase = sharedSkillDatabase;
             created.displayName = displayName;
-            created.animationTrigger = actionId;
+            created.animationTrigger = string.Empty;
             created.isPassive = false;
             created.entryGroup = PlayerSkillEntryGroup.ActiveSkill;
 
@@ -411,6 +440,8 @@ namespace Game.Editor
             {
                 existing.skillId = actionId;
                 existing.displayName = displayName;
+                if (string.IsNullOrWhiteSpace(existing.animationTrigger))
+                    existing.animationTrigger = actionId;
                 existingVariantGroup.groupName = actionId;
                 NormalizePlayerSkillDefinitions(group);
                 RebuildSharedSkillFlatEntries(sharedSkillDatabase);
@@ -424,6 +455,7 @@ namespace Game.Editor
 
             created.skillId = actionId;
             created.displayName = displayName;
+            created.animationTrigger = actionId;
             group.skillGroups.Add(new SkillEffectVariantGroupDefinition
             {
                 groupName = actionId,

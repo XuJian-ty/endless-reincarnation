@@ -1179,6 +1179,7 @@ namespace Game.Editor
             string newSkillId;
             using (new EditorGUI.DisabledScope(isDefaultVariant))
                 newSkillId = EditorGUILayout.TextField("技能ID", skill.skillId ?? string.Empty);
+            string newAnimationTrigger = EditorGUILayout.TextField("动画 Trigger", skill.animationTrigger ?? string.Empty);
             bool newIgnoreAnimationDamageEvents = EditorGUILayout.Toggle("忽略动画帧伤害事件", skill.ignoreAnimationDamageEvents);
             if (!EditorGUI.EndChangeCheck())
                 return;
@@ -1186,6 +1187,7 @@ namespace Game.Editor
             Undo.RecordObject(_database, "Edit Skill");
             if (!isDefaultVariant)
                 skill.skillId = newSkillId;
+            skill.animationTrigger = newAnimationTrigger;
             skill.ignoreAnimationDamageEvents = newIgnoreAnimationDamageEvents;
             MarkDatabaseDirty();
         }

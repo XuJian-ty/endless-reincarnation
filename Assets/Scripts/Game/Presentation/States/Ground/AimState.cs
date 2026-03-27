@@ -8,15 +8,26 @@ namespace Game.Presentation
     /// </summary>
     public class AimState : PlayerStateBase
     {
+        private bool _hasTriggeredUpperBodyAim;
+
         protected override string ActionId => "Aim";
 
         protected override void OnEnter()
         {
             Ctx.Anim.SetGrounded(true);
             Ctx.Anim.TriggerAimLocomotion();
-            TriggerConfiguredBaseAction(ActionId, "Aim");
+            bool hasMovementInput = HasMovementInput(Ctx.CurrentMoveInput);
+            Ctx.Anim.SetAimLayerActive(!hasMovementInput);
+            if (!hasMovementInput)
+                TriggerConfiguredBaseAction(ActionId, "Aim");
+            _hasTriggeredUpperBodyAim = !hasMovementInput;
             StartConfiguredBaseActionTimeline(ActionId);
             UpdateConfiguredAuxiliaryBaseActionTimeline("AimIdle");
+        }
+
+        protected override void OnExit()
+        {
+            Ctx.Anim.SetAimLayerActive(true);
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
@@ -45,6 +56,12 @@ namespace Game.Presentation
 
             if (input.MoveInput.sqrMagnitude <= 0.01f)
             {
+                Ctx.Anim.SetAimLayerActive(true);
+                if (!_hasTriggeredUpperBodyAim)
+                {
+                    TriggerConfiguredBaseAction(ActionId, "Aim");
+                    _hasTriggeredUpperBodyAim = true;
+                }
                 Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
                 Ctx.Anim.SetLocomotionSpeed(0f);
                 Ctx.Anim.SetLocomotionBlend(Vector2.zero);
@@ -52,6 +69,7 @@ namespace Game.Presentation
                 return;
             }
 
+            Ctx.Anim.SetAimLayerActive(false);
             Vector3 moveDirection = Ctx.GetMoveDirection(input.MoveInput);
             bool isRunning = input.IsRunRequested;
             float moveSpeed = isRunning ? Ctx.RunSpeed : Ctx.WalkSpeed;
@@ -92,6 +110,11 @@ namespace Game.Presentation
             }
 
             GoTo<IdleState>();
+        }
+
+        private static bool HasMovementInput(Vector2 moveInput)
+        {
+            return moveInput.sqrMagnitude > 0.01f;
         }
     }
 }

@@ -314,7 +314,17 @@ namespace Game.UI
         {
             SkillConfigEntry entry = ResolveAttackEntry(comboIndex);
             if (entry != null)
+            {
+                SharedSkillDefinition definition = GetSharedSkillDefinition(entry, comboIndex);
+                if (definition != null)
+                {
+                    string definitionTrigger = definition.GetResolvedAnimationTrigger(entry.GetResolvedAnimationTrigger());
+                    if (!string.IsNullOrWhiteSpace(definitionTrigger))
+                        return definitionTrigger;
+                }
+
                 return entry.GetResolvedAnimationTrigger();
+            }
 
             return ResolveAttackActionId(comboIndex);
         }

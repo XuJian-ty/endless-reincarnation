@@ -45,12 +45,12 @@ namespace Game.Data
                 PlayerSkill("Skill1", "主动技能1"),
                 PlayerSkill("Skill2", "主动技能2"),
                 PlayerSkill("Skill3", "主动技能3"),
-                PlayerSkill("NormalIdle", "正常待机"),
-                PlayerSkill("NormalWalk", "正常走路"),
-                PlayerSkill("NormalRun", "正常跑步"),
-                PlayerSkill("AimIdle", "射击待机"),
-                PlayerSkill("AimWalk", "射击走路"),
-                PlayerSkill("AimRun", "射击跑步"),
+                PlayerSkill("NormalIdle", "正常待机", "NormalLocomotion"),
+                PlayerSkill("NormalWalk", "正常走路", "NormalLocomotion"),
+                PlayerSkill("NormalRun", "正常跑步", "NormalLocomotion"),
+                PlayerSkill("AimIdle", "射击待机", "AimLocomotion"),
+                PlayerSkill("AimWalk", "射击走路", "AimLocomotion"),
+                PlayerSkill("AimRun", "射击跑步", "AimLocomotion"),
                 PlayerSkill("Aim", "瞄准循环"),
                 PlayerSkill("ChargeStart", "蓄力开始"),
                 PlayerSkill("ChargeLoop", "蓄力循环"),
@@ -60,7 +60,7 @@ namespace Game.Data
                 PlayerSkill("FallAttackLoop", "下落攻击循环"),
                 CreatePlayerFallAttackLand(),
                 PlayerSkill("HitStun", "受击"),
-                PlayerSkill("PlayerDeath", "死亡"),
+                PlayerSkill("PlayerDeath", "死亡", "Dead"),
                 PlayerSkill("EnemyLocomotion", "敌人机动循环"),
                 CreatePlayerAttack0(),
                 CreatePlayerAttack1(),
@@ -352,12 +352,13 @@ namespace Game.Data
             return result;
         }
 
-        private static SharedSkillDefinition PlayerSkill(string skillId, string displayName)
+        private static SharedSkillDefinition PlayerSkill(string skillId, string displayName, string animationTrigger = null)
         {
             return new SharedSkillDefinition
             {
                 skillId = skillId,
                 displayName = displayName,
+                animationTrigger = string.IsNullOrWhiteSpace(animationTrigger) ? skillId : animationTrigger,
                 ignoreAnimationDamageEvents = false,
                 damageEvents = new List<SkillDamageEvent>(),
                 physicsEvents = new List<SkillPhysicsEvent>(),
@@ -373,6 +374,7 @@ namespace Game.Data
             {
                 skillId = skillId,
                 displayName = displayName,
+                animationTrigger = skillId,
                 ignoreAnimationDamageEvents = true,
                 damageEvents = new List<SkillDamageEvent>(),
                 physicsEvents = new List<SkillPhysicsEvent>(),
@@ -407,10 +409,16 @@ namespace Game.Data
 
         private static SharedSkillDefinition PlayerAttackSkill(string skillId, string displayName, params DefaultEventSpec[] events)
         {
+            return PlayerAttackSkill(skillId, displayName, null, events);
+        }
+
+        private static SharedSkillDefinition PlayerAttackSkill(string skillId, string displayName, string animationTrigger, params DefaultEventSpec[] events)
+        {
             var definition = new SharedSkillDefinition
             {
                 skillId = skillId,
                 displayName = displayName,
+                animationTrigger = string.IsNullOrWhiteSpace(animationTrigger) ? skillId : animationTrigger,
                 ignoreAnimationDamageEvents = false,
                 damageEvents = new List<SkillDamageEvent>(),
                 physicsEvents = new List<SkillPhysicsEvent>(),
@@ -791,6 +799,7 @@ namespace Game.Data
             return PlayerAttackSkill(
                 "ShootCharge",
                 "玩家持续射击",
+                "Shoot_Charge",
                 RepeatedUntilStateExit("burst", 0f, 0.1f, damageEffects: new[] { Damage("ShootCharge", 1f) }));
         }
 

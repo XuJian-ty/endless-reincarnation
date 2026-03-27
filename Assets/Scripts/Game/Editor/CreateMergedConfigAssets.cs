@@ -1213,7 +1213,7 @@ namespace Game.Editor
                 talentCost = 0,
                 mpCost = 0,
                 cooldownSeconds = 0f,
-                animationTrigger = string.IsNullOrWhiteSpace(animationTrigger) ? actionId : animationTrigger,
+                animationTrigger = string.Empty,
             };
 
             ApplyDefaultActionRules(entry);
@@ -1233,7 +1233,7 @@ namespace Game.Editor
                 talentCost = 2,
                 mpCost = 10,
                 cooldownSeconds = 3f,
-                animationTrigger = actionId,
+                animationTrigger = string.Empty,
             };
 
             ApplyDefaultActionRules(entry);

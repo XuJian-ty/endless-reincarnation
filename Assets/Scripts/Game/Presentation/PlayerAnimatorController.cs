@@ -35,8 +35,13 @@ namespace Game.Presentation
         private static readonly string[] AttackTriggerNames = { "Attack0", "Attack1", "Attack2", "Attack3" };
 
         private Animator _animator;
+        private int _aimLayerIndex = -1;
         private readonly HashSet<string> _parameterNames = new HashSet<string>();
-        private void Awake() => _animator = GetComponent<Animator>();
+        private void Awake()
+        {
+            _animator = GetComponent<Animator>();
+            _aimLayerIndex = _animator != null ? _animator.GetLayerIndex("Aim Layer") : -1;
+        }
 
         // ── 参数设置与查询 ───────────────────────────────────────────────
         public void SetLocomotionSpeed(float speed)
@@ -80,6 +85,14 @@ namespace Game.Presentation
                 return;
 
             _animator.SetFloat(UpperBodyPlaybackSpeedHash, Mathf.Max(0.1f, speed));
+        }
+
+        public void SetAimLayerActive(bool active)
+        {
+            if (_animator == null || _aimLayerIndex < 0)
+                return;
+
+            _animator.SetLayerWeight(_aimLayerIndex, active ? 1f : 0f);
         }
 
         // ── 触发方法 ──────────────────────────────────────────────────────

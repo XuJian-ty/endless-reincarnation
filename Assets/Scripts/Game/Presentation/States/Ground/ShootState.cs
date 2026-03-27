@@ -9,6 +9,7 @@ namespace Game.Presentation
     public class ShootState : PlayerStateBase
     {
         private const int AimLayerIndex = 1;
+        private bool _playsUpperBodyShootAnimation;
 
         protected override string ActionId => "Shoot";
         public override GameAction CurrentActionId => GameAction.Shoot;
@@ -17,9 +18,16 @@ namespace Game.Presentation
         {
             Ctx.Anim.TriggerAimLocomotion();
             SnapFacingToCameraForwardForHipFire();
+            _playsUpperBodyShootAnimation = Ctx.CurrentMoveInput.sqrMagnitude <= 0.01f;
+            Ctx.Anim.SetAimLayerActive(_playsUpperBodyShootAnimation);
             TriggerConfiguredBaseAction(ActionId, "Shoot");
             StartConfiguredBaseActionTimeline(ActionId);
             UpdateConfiguredAuxiliaryBaseActionTimeline("AimIdle");
+        }
+
+        protected override void OnExit()
+        {
+            Ctx.Anim.SetAimLayerActive(true);
         }
 
         protected override void OnTick(float dt, in PlayerInputData input)
@@ -98,6 +106,7 @@ namespace Game.Presentation
 
             if (input.MoveInput.sqrMagnitude <= 0.01f)
             {
+                Ctx.Anim.SetAimLayerActive(_playsUpperBodyShootAnimation);
                 Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
                 Ctx.Anim.SetLocomotionSpeed(0f);
                 Ctx.Anim.SetLocomotionBlend(Vector2.zero);
@@ -105,6 +114,7 @@ namespace Game.Presentation
                 return;
             }
 
+            Ctx.Anim.SetAimLayerActive(false);
             Vector3 moveDirection = Ctx.GetMoveDirection(input.MoveInput);
             bool isRunning = input.IsRunRequested;
             float moveSpeed = isRunning ? Ctx.RunSpeed : Ctx.WalkSpeed;

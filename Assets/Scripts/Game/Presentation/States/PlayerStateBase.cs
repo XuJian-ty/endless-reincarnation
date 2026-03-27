@@ -160,9 +160,7 @@ namespace Game.Presentation
         {
             string resolvedActionId = string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim();
             SkillConfigEntry entry = ResolvePlayerActionEntry(resolvedActionId);
-            string triggerName = entry != null ? entry.GetResolvedAnimationTrigger() : fallbackTrigger;
-            if (string.IsNullOrWhiteSpace(triggerName))
-                triggerName = resolvedActionId;
+            string triggerName = ResolveConfiguredAnimationTrigger(entry, resolvedActionId, fallbackTrigger);
             return Ctx.Anim.TriggerAction(triggerName);
         }
 
@@ -170,9 +168,7 @@ namespace Game.Presentation
         {
             string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
             SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
-            string triggerName = entry != null ? entry.GetResolvedAnimationTrigger() : fallbackTrigger;
-            if (string.IsNullOrWhiteSpace(triggerName))
-                triggerName = resolvedActionId;
+            string triggerName = ResolveConfiguredAnimationTrigger(entry, resolvedActionId, fallbackTrigger);
             return Ctx.Anim.TriggerAction(triggerName);
         }
 
@@ -290,6 +286,32 @@ namespace Game.Presentation
                     GoTo<FallAttackLoopState>();
                     break;
             }
+        }
+
+        private string ResolveConfiguredAnimationTrigger(SkillConfigEntry entry, string resolvedActionId, string fallbackTrigger)
+        {
+            if (entry != null)
+            {
+                SharedSkillDefinition definition = Ctx?.PlayerModel != null
+                    ? Ctx.PlayerModel.ResolveSkillEffectDefinition(entry)
+                    : entry.ResolveSkillEffectDefinition();
+
+                if (definition != null)
+                {
+                    string definitionTrigger = definition.GetResolvedAnimationTrigger(entry.GetResolvedAnimationTrigger());
+                    if (!string.IsNullOrWhiteSpace(definitionTrigger))
+                        return definitionTrigger;
+                }
+
+                string entryTrigger = entry.GetResolvedAnimationTrigger();
+                if (!string.IsNullOrWhiteSpace(entryTrigger))
+                    return entryTrigger;
+            }
+
+            if (!string.IsNullOrWhiteSpace(fallbackTrigger))
+                return fallbackTrigger.Trim();
+
+            return string.IsNullOrWhiteSpace(resolvedActionId) ? string.Empty : resolvedActionId;
         }
 
         private void StartConfiguredBaseActionTimelineInternal(string resolvedActionId, float overrideDuration, bool forceRestart)
