@@ -482,11 +482,11 @@ namespace Game.Presentation
             {
                 case DamageDetectionType.RangeOverlap:
                     position = motionFrame.OriginPosition + motionFrame.OriginRotation * (effect.centerOffset + motionOffset);
-                    rotation = UnityEngine.Quaternion.Euler(effect.rotationEuler);
+                    rotation = motionFrame.OriginRotation * UnityEngine.Quaternion.Euler(effect.rotationEuler);
                     return true;
                 case DamageDetectionType.Raycast:
                     position = motionFrame.OriginPosition + motionFrame.OriginRotation * (effect.rayOriginOffset + motionOffset);
-                    rotation = UnityEngine.Quaternion.Euler(effect.rotationEuler);
+                    rotation = motionFrame.OriginRotation * UnityEngine.Quaternion.Euler(effect.rotationEuler);
                     return true;
                 default:
                     return false;
