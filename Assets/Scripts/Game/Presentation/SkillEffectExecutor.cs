@@ -62,6 +62,8 @@ namespace Game.Presentation
 
     public static class SkillEffectExecutor
     {
+        private const float SkillSfxMinDistance = 6f;
+        private const float SkillSfxMaxDistance = 30f;
         private static readonly List<Transform> DetectedTargetsScratch = new List<Transform>(16);
         private static readonly HashSet<Transform> DetectedTargetSet = new HashSet<Transform>();
         private static readonly List<Transform> DamageTargetsScratch = new List<Transform>(16);
@@ -893,6 +895,9 @@ namespace Game.Presentation
             var audioSource = go.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 1f;
+            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            audioSource.minDistance = SkillSfxMinDistance;
+            audioSource.maxDistance = SkillSfxMaxDistance;
             audioSource.clip = effect.audioClip;
             audioSource.loop = effect.loop;
 

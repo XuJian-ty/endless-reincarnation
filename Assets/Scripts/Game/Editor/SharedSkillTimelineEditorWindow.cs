@@ -3649,6 +3649,7 @@ namespace Game.Editor
 
             UpdateTimelinePreviewVfxInstances();
             ApplyPreviewPhysicsTransforms();
+            UpdateScenePreviewCueInstance();
         }
 
         private float GetPreviewTotalDuration()
@@ -4180,16 +4181,6 @@ namespace Game.Editor
                 if (activeKeys.Contains(playback.key))
                     continue;
 
-                if (playback.trackType == TimelineTrackType.Damage && playback.effect != null)
-                {
-                    float playbackDuration = playback.followsDamageWindow && playback.damageEffect != null
-                        ? Mathf.Max(0f, playback.damageEffect.detectionDuration)
-                        : GetVfxPlaybackDuration(playback.effect, playback.triggerTime);
-                    if (_previewTime + 0.0001f >= playback.triggerTime
-                        && _previewTime <= playback.triggerTime + playbackDuration + 0.0001f)
-                        continue;
-                }
-
                 DestroyTimelinePreviewVfxInstance(playback);
                 _timelinePreviewVfxInstances.RemoveAt(i);
             }
@@ -4352,23 +4343,25 @@ namespace Game.Editor
 
             float elapsed = Mathf.Max(0f, sampleTime - triggerTime);
             Vector3 motionOffset = Vector3.zero;
+            Vector3 basisPosition = preview.position;
+            Quaternion basisRotation = preview.rotation;
             if (damageEffect.motion != null && damageEffect.motion.IsActive)
             {
                 Vector3 motionDirection = damageEffect.motion.direction.sqrMagnitude > 0.0001f
                     ? damageEffect.motion.direction.normalized
                     : Vector3.forward;
-                motionOffset = preview.rotation * motionDirection * (damageEffect.motion.speed * elapsed);
+                motionOffset = basisRotation * motionDirection * (damageEffect.motion.speed * elapsed);
             }
 
             switch (damageEffect.detectionType)
             {
                 case DamageDetectionType.RangeOverlap:
-                    position = preview.TransformPoint(damageEffect.centerOffset) + motionOffset;
-                    rotation = Quaternion.Euler(damageEffect.rotationEuler);
+                    position = basisPosition + basisRotation * damageEffect.centerOffset + motionOffset;
+                    rotation = basisRotation * Quaternion.Euler(damageEffect.rotationEuler);
                     return true;
                 case DamageDetectionType.Raycast:
-                    position = preview.TransformPoint(damageEffect.rayOriginOffset) + motionOffset;
-                    rotation = Quaternion.Euler(damageEffect.rotationEuler);
+                    position = basisPosition + basisRotation * damageEffect.rayOriginOffset + motionOffset;
+                    rotation = basisRotation * Quaternion.Euler(damageEffect.rotationEuler);
                     return true;
                 default:
                     return false;
@@ -7812,6 +7805,13 @@ namespace Game.Editor
                 cue.rotationEuler = (Quaternion.Inverse(basisRotation) * newWorldRotation).eulerAngles;
                 cue.scale = ClampVector3(newScale, 0.01f);
                 MarkDatabaseDirty();
+                InvalidateScenePreviewCueWorldOrigin();
+                DestroyScenePreviewCueInstance();
+                if (!_isPlaying)
+                    SampleAnimationAtTime(_previewTime);
+                else
+                    UpdateScenePreviewCueInstance();
+                Repaint();
                 SceneView.RepaintAll();
             }
 
@@ -7849,6 +7849,10 @@ namespace Game.Editor
                 cue.rotationEuler = (Quaternion.Inverse(bodyRotation) * newWorldRotation).eulerAngles;
                 cue.scale = ClampVector3(newScale, 0.01f);
                 MarkDatabaseDirty();
+                InvalidateScenePreviewCueWorldOrigin();
+                DestroyScenePreviewCueInstance();
+                UpdateScenePreviewCueInstance();
+                Repaint();
                 SceneView.RepaintAll();
             }
 
@@ -7879,7 +7883,8 @@ namespace Game.Editor
         private void DrawRangeDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
         {
             Transform preview = _previewTarget.transform;
-            Vector3 origin = preview.TransformPoint(effect.centerOffset);
+            Vector3 basisPosition = preview.position;
+            Quaternion basisRotation = preview.rotation;
             Vector3 motionOffset = Vector3.zero;
             float resolvedTriggerTime;
             bool hasTriggerTime = triggerTime.HasValue;
@@ -7897,14 +7902,17 @@ namespace Game.Editor
                 SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(effect, resolvedTriggerTime, _previewTime);
                 if (motionFrame.HasValue)
                 {
+                    basisPosition = motionFrame.Value.OriginPosition;
+                    basisRotation = motionFrame.Value.OriginRotation;
                     Vector3 motionDirection = effect.motion.direction.sqrMagnitude > 0.0001f
                         ? effect.motion.direction.normalized
                         : Vector3.forward;
-                    motionOffset = motionFrame.Value.OriginRotation * motionDirection * (effect.motion.speed * motionFrame.Value.Elapsed);
-                    origin += motionOffset;
+                    motionOffset = basisRotation * motionDirection * (effect.motion.speed * motionFrame.Value.Elapsed);
                 }
             }
-            Quaternion rotation = Quaternion.Euler(effect.rotationEuler);
+
+            Vector3 origin = basisPosition + basisRotation * effect.centerOffset + motionOffset;
+            Quaternion rotation = basisRotation * Quaternion.Euler(effect.rotationEuler);
             float handleSize = HandleUtility.GetHandleSize(origin);
             bool changed = false;
 
@@ -7920,9 +7928,9 @@ namespace Game.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(_database, "Edit Damage Scene Handle");
-                effect.centerOffset = preview.InverseTransformPoint(newOrigin - motionOffset);
+                effect.centerOffset = Quaternion.Inverse(basisRotation) * ((newOrigin - motionOffset) - basisPosition);
                 if (effect.shape == AttackShapeType.Sector || effect.shape == AttackShapeType.Box)
-                    effect.rotationEuler = newRotation.eulerAngles;
+                    effect.rotationEuler = (Quaternion.Inverse(basisRotation) * newRotation).eulerAngles;
                 origin = newOrigin;
                 rotation = newRotation;
                 changed = true;
@@ -7978,7 +7986,8 @@ namespace Game.Editor
         private void DrawRaycastDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
         {
             Transform preview = _previewTarget.transform;
-            Vector3 origin = preview.TransformPoint(effect.rayOriginOffset);
+            Vector3 basisPosition = preview.position;
+            Quaternion basisRotation = preview.rotation;
             Vector3 motionOffset = Vector3.zero;
             float resolvedTriggerTime;
             bool hasTriggerTime = triggerTime.HasValue;
@@ -7996,14 +8005,17 @@ namespace Game.Editor
                 SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(effect, resolvedTriggerTime, _previewTime);
                 if (motionFrame.HasValue)
                 {
+                    basisPosition = motionFrame.Value.OriginPosition;
+                    basisRotation = motionFrame.Value.OriginRotation;
                     Vector3 motionDirection = effect.motion.direction.sqrMagnitude > 0.0001f
                         ? effect.motion.direction.normalized
                         : Vector3.forward;
-                    motionOffset = motionFrame.Value.OriginRotation * motionDirection * (effect.motion.speed * motionFrame.Value.Elapsed);
-                    origin += motionOffset;
+                    motionOffset = basisRotation * motionDirection * (effect.motion.speed * motionFrame.Value.Elapsed);
                 }
             }
-            Quaternion rotation = Quaternion.Euler(effect.rotationEuler);
+
+            Vector3 origin = basisPosition + basisRotation * effect.rayOriginOffset + motionOffset;
+            Quaternion rotation = basisRotation * Quaternion.Euler(effect.rotationEuler);
             Vector3 direction = (rotation * Vector3.forward).normalized;
             float handleSize = HandleUtility.GetHandleSize(origin);
             bool changed = false;
@@ -8018,8 +8030,8 @@ namespace Game.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(_database, "Edit Damage Scene Handle");
-                effect.rayOriginOffset = preview.InverseTransformPoint(newOrigin - motionOffset);
-                effect.rotationEuler = newRotation.eulerAngles;
+                effect.rayOriginOffset = Quaternion.Inverse(basisRotation) * ((newOrigin - motionOffset) - basisPosition);
+                effect.rotationEuler = (Quaternion.Inverse(basisRotation) * newRotation).eulerAngles;
                 origin = newOrigin;
                 rotation = newRotation;
                 direction = (rotation * Vector3.forward).normalized;
@@ -8217,17 +8229,17 @@ namespace Game.Editor
                 return false;
 
             if (_selectedEventTrackType == TimelineTrackType.Damage
-                && _activeSceneDamageIndex >= 0
+                && _activeSceneHitVfxEventIndex == _selectedEventIndex
+                && _activeSceneHitVfxDamageIndex >= 0
                 && evt.damageEffects != null
-                && _activeSceneDamageIndex < evt.damageEffects.Count)
+                && _activeSceneHitVfxDamageIndex < evt.damageEffects.Count)
             {
-                SkillDamageEffect damageEffect = evt.damageEffects[_activeSceneDamageIndex];
+                SkillDamageEffect damageEffect = evt.damageEffects[_activeSceneHitVfxDamageIndex];
                 if (damageEffect?.onHitVfxEffects != null
-                    && _activeSceneHitVfxDamageIndex == _activeSceneDamageIndex
                     && _activeSceneHitVfxIndex >= 0
                     && _activeSceneHitVfxIndex < damageEffect.onHitVfxEffects.Count)
                 {
-                    if (!IsOnHitCueVisible(_selectedEventIndex, _activeSceneDamageIndex, _activeSceneHitVfxIndex))
+                    if (!IsOnHitCueVisible(_selectedEventIndex, _activeSceneHitVfxDamageIndex, _activeSceneHitVfxIndex))
                         return false;
 
                     cue = damageEffect.onHitVfxEffects[_activeSceneHitVfxIndex];
@@ -8764,6 +8776,12 @@ namespace Game.Editor
 
             _scenePreviewCueHasWorldOrigin = true;
             _scenePreviewCueWorldOriginTriggerTime = triggerTime;
+        }
+
+        private void InvalidateScenePreviewCueWorldOrigin()
+        {
+            _scenePreviewCueHasWorldOrigin = false;
+            _scenePreviewCueWorldOriginTriggerTime = -1f;
         }
 
         private bool TryCapturePreviewCueWorldOrigin(SkillVfxEffect cue, out Vector3 originPosition, out Quaternion originRotation)

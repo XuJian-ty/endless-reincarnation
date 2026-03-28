@@ -51,7 +51,7 @@ namespace Game.Presentation
         private static int RunRangeOverlap(Transform attacker, SkillDamageEffect effect, int layerMask, Collider[] outBuffer, SkillDetectionMotionFrame? motionFrame)
         {
             ResolveDetectionPose(attacker, effect, motionFrame, out Vector3 basePosition, out Quaternion baseRotation, out Vector3 motionOffset);
-            Quaternion detectionRotation = Quaternion.Euler(effect.rotationEuler);
+            Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
             Vector3 origin = basePosition + baseRotation * (effect.centerOffset + motionOffset);
             float rangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker);
             int count;
@@ -100,7 +100,7 @@ namespace Game.Presentation
         private static int RunRaycast(Transform attacker, SkillDamageEffect effect, int layerMask, Collider[] outBuffer, SkillDetectionMotionFrame? motionFrame)
         {
             ResolveDetectionPose(attacker, effect, motionFrame, out Vector3 basePosition, out Quaternion baseRotation, out Vector3 motionOffset);
-            Quaternion detectionRotation = Quaternion.Euler(effect.rotationEuler);
+            Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
             Vector3 origin = basePosition + baseRotation * (effect.rayOriginOffset + motionOffset);
             Vector3 direction = detectionRotation * Vector3.forward;
             float rangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker);

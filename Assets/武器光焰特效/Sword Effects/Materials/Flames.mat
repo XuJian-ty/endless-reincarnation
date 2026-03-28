@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5826360137412319603
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 9
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Flames
+  m_Shader: {fileID: -6465566751694194690, guid: 0da09546e2687eb41b3d37b5eca2c715,
+    type: 3}
+  m_Parent: {fileID: 2100000, guid: e606d9ab6ec6a834493da53ed8582de1, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - Texture2D_156b7ec5476f4190889e2a6cd6ff4007:
+        m_Texture: {fileID: 2800000, guid: 141428254f0a404469e0edf204a4c455, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Texture2D_29ce5db269ba4d4fb45253f41577afdb:
+        m_Texture: {fileID: 2800000, guid: d1ef7d29c99780c4bbf8018548708cab, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Texture2D_78c51f5ca5b546e98209239e54bfb36c:
+        m_Texture: {fileID: 2800000, guid: 141428254f0a404469e0edf204a4c455, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Texture2D_cd8b16d8006a45eea76712967116f5fb:
+        m_Texture: {fileID: 2800000, guid: f995d0854f27e9d4fb1123521b8f3cf1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats: []
+    m_Colors:
+    - Color_607f5569b9154aa08a8d1f63dff6a86b: {r: 33.89676, g: 3.549399, b: 7.098798,
+        a: 1}
+    - Color_71f4ccb0b61d458a9dd1370bf1511db3: {r: 1, g: 1, b: 1, a: 1}
+    - Color_7fd9fcac161c4065bbf49388eee649c3: {r: 13.449706, g: 10.759765, b: 102.75575,
+        a: 1}
+    - Vector2_03a6df3ef0694a4f97c15798379a80fd: {r: -0.5, g: 0, b: 0, a: 0}
+    - Vector2_fbf222d3fd6644bf897bb82da3b766b9: {r: -0.89, g: 0, b: 0, a: 0}
+    - _Tiling: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
