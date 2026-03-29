@@ -270,13 +270,7 @@ namespace Game.Domain
                 return null;
 
             PassiveSkillEffectDefinition definition = ResolvePassiveSkillEffectDefinition(entry);
-            if (definition?.statModifier != null)
-            {
-                if (HasAnyStatModifierValue(definition.statModifier) || !HasAnyStatModifierValue(entry.passiveStatModifier))
-                    return definition.statModifier;
-            }
-
-            return entry.passiveStatModifier;
+            return definition?.statModifier;
         }
 
         public string ResolveSkillEffectDescription(SkillConfigEntry entry)
@@ -1061,28 +1055,6 @@ namespace Game.Domain
         private void NotifyLoadoutChanged()
         {
             LoadoutChanged?.Invoke();
-        }
-
-        private static bool HasAnyStatModifierValue(StatModifier modifier)
-        {
-            if (modifier == null)
-                return false;
-
-            if (!Mathf.Approximately(modifier.hpAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.mpAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.attackAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.defenseAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.lifeStealAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.critRateAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.critDmgAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.attackSpeedAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.moveSpeedAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.hpRegenAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.mpRegenAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.damageBonusAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.damageReduceAdd, 0f)) return true;
-
-            return false;
         }
 
         private static string NormalizeId(string value)

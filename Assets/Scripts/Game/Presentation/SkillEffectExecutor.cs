@@ -79,7 +79,6 @@ namespace Game.Presentation
             if (evt == null || ctx == null)
                 return;
 
-            evt.TryMigrateLegacyHitStopSettings();
             if (evt.damageEffects != null)
             {
                 for (int damageIndex = 0; damageIndex < evt.damageEffects.Count; damageIndex++)
@@ -129,8 +128,6 @@ namespace Game.Presentation
         {
             if (damageEffect == null || ctx == null)
                 return false;
-
-            damageEffect.TryMigrateLegacySubEffects();
 
             DetectedTargetsScratch.Clear();
             DetectedTargetSet.Clear();
@@ -978,15 +975,14 @@ namespace Game.Presentation
             if (instance == null || caster == null || motion == null || !useWorldMotion || !motion.IsActive)
                 return;
 
-            Vector3 worldVelocity = caster.TransformDirection(motion.direction.normalized) * motion.speed;
-            bool useLocalSpace = false;
-            Vector3 velocity = worldVelocity;
+            Vector3 originPosition = instance.transform.position;
+            Quaternion originRotation = caster.rotation;
             Quaternion lockedRotation = instance.transform.rotation;
 
             SkillCueMover mover = instance.GetComponent<SkillCueMover>();
             if (mover == null)
                 mover = instance.AddComponent<SkillCueMover>();
-            mover.Initialize(velocity, useLocalSpace, false, true, lockedRotation);
+            mover.Initialize(originPosition, originRotation, motion, false, true, lockedRotation);
         }
 
         private static void EnsureCuePauseProxy(GameObject instance)

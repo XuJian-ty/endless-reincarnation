@@ -38,6 +38,37 @@ namespace Game.Presentation
             public readonly HashSet<UnityEngine.Transform> hitTargets = new HashSet<UnityEngine.Transform>();
         }
 
+        [Serializable]
+        private sealed class CameraEventState
+        {
+            public bool wasActive;
+            public bool snapshotCaptured;
+            public UnityEngine.Vector3 snapshotPosition;
+            public UnityEngine.Quaternion snapshotRotation = UnityEngine.Quaternion.identity;
+        }
+
+        public struct CameraOverrideRequest
+        {
+            public UnityEngine.Vector3 DesiredPosition;
+            public UnityEngine.Vector3 LookAtPosition;
+            public float BlendWeight;
+            public bool LockLookInput;
+
+            public CameraOverrideRequest(
+                UnityEngine.Vector3 desiredPosition,
+                UnityEngine.Vector3 lookAtPosition,
+                float blendWeight,
+                bool lockLookInput)
+            {
+                DesiredPosition = desiredPosition;
+                LookAtPosition = lookAtPosition;
+                BlendWeight = blendWeight;
+                LockLookInput = lockLookInput;
+            }
+
+            public bool IsActive => BlendWeight > 0.0001f;
+        }
+
         private SharedSkillDefinition _definition;
         private ISkillExecutionContext _context;
         private float _elapsed;
@@ -47,6 +78,7 @@ namespace Game.Presentation
         private EventState[] _attributeStates;
         private EventState[] _vfxStates;
         private EventState[] _sfxStates;
+        private CameraEventState[] _cameraStates;
         private readonly List<ActiveDamageWindow> _activeDamageWindows = new List<ActiveDamageWindow>();
         private readonly SkillCueRuntimeScope _cueRuntime = new SkillCueRuntimeScope();
         private bool _started;
@@ -124,10 +156,12 @@ namespace Game.Presentation
             _attributeStates = BuildStates(_definition?.attributeEvents);
             _vfxStates = BuildStates(_definition?.vfxEvents);
             _sfxStates = BuildStates(_definition?.sfxEvents);
+            _cameraStates = BuildCameraStates(_definition?.cameraEvents);
             ClearActiveDamageWindows();
 
             // 立即评估 t=0 的事件
             EvaluateEvents();
+            UpdateCameraStates();
         }
 
         /// <summary>
@@ -139,6 +173,7 @@ namespace Game.Presentation
             if (!_started || IsComplete || _definition == null) return;
 
             _elapsed += UnityEngine.Mathf.Max(0f, deltaTime) * ResolveEffectiveCastSpeedMultiplier(_elapsed);
+            UpdateCameraStates();
             EvaluateEvents();
             RefreshCompletion();
         }
@@ -151,6 +186,7 @@ namespace Game.Presentation
             ClearActiveDamageWindows();
             _cueRuntime.Stop();
             _externalCastSpeedMultiplierProvider = null;
+            _cameraStates = null;
         }
 
         /// <summary>
@@ -162,7 +198,39 @@ namespace Game.Presentation
         {
             _stateScopeEnded = true;
             _cueRuntime.Stop();
+            UpdateCameraStates();
             RefreshCompletion();
+        }
+
+        public bool TryGetCurrentCameraOverride(float lookTargetHeight, out CameraOverrideRequest request)
+        {
+            request = default;
+            if (!_started || _definition?.cameraEvents == null || _cameraStates == null)
+                return false;
+
+            UpdateCameraStates();
+
+            int count = UnityEngine.Mathf.Min(_definition.cameraEvents.Count, _cameraStates.Length);
+            for (int i = count - 1; i >= 0; i--)
+            {
+                SkillCameraEvent evt = _definition.cameraEvents[i];
+                CameraEventState state = _cameraStates[i];
+                if (evt == null || state == null || !state.snapshotCaptured || !evt.IsActive(_elapsed, _stateScopeEnded))
+                    continue;
+
+                float blendWeight = EvaluateCameraBlendWeight(evt, _elapsed);
+                if (blendWeight <= 0.0001f)
+                    continue;
+
+                request = new CameraOverrideRequest(
+                    EvaluateCameraWorldPosition(evt, state, _elapsed),
+                    ResolveCameraLookAtPosition(lookTargetHeight, state),
+                    blendWeight,
+                    evt.lockLookInput);
+                return request.IsActive;
+            }
+
+            return false;
         }
 
         // ── 内部评估 ──────────────────────────────────────────────────────────
@@ -220,15 +288,11 @@ namespace Game.Presentation
             if (evt?.damageEffects == null || _context == null)
                 return;
 
-            evt.TryMigrateLegacyHitStopSettings();
-
             for (int i = 0; i < evt.damageEffects.Count; i++)
             {
                 SkillDamageEffect effect = evt.damageEffects[i];
                 if (effect == null)
                     continue;
-
-                effect.TryMigrateLegacySubEffects();
 
                 if (effect.detectionType == DamageDetectionType.Collision)
                 {
@@ -331,6 +395,132 @@ namespace Game.Presentation
             }
 
             _activeDamageWindows.Clear();
+        }
+
+        private static CameraEventState[] BuildCameraStates(List<SkillCameraEvent> events)
+        {
+            if (events == null || events.Count == 0)
+                return null;
+
+            var states = new CameraEventState[events.Count];
+            for (int i = 0; i < events.Count; i++)
+                states[i] = new CameraEventState();
+            return states;
+        }
+
+        private void UpdateCameraStates()
+        {
+            if (_definition?.cameraEvents == null || _cameraStates == null)
+                return;
+
+            int count = UnityEngine.Mathf.Min(_definition.cameraEvents.Count, _cameraStates.Length);
+            for (int i = 0; i < count; i++)
+            {
+                SkillCameraEvent evt = _definition.cameraEvents[i];
+                CameraEventState state = _cameraStates[i];
+                if (evt == null || state == null)
+                    continue;
+
+                bool isActive = evt.IsActive(_elapsed, _stateScopeEnded);
+                if (isActive && !state.wasActive)
+                    CaptureCameraSnapshot(state);
+
+                state.wasActive = isActive;
+            }
+        }
+
+        private void CaptureCameraSnapshot(CameraEventState state)
+        {
+            if (state == null)
+                return;
+
+            UnityEngine.Transform caster = _context?.CasterTransform;
+            if (caster == null)
+            {
+                state.snapshotPosition = UnityEngine.Vector3.zero;
+                state.snapshotRotation = UnityEngine.Quaternion.identity;
+                state.snapshotCaptured = true;
+                return;
+            }
+
+            state.snapshotPosition = caster.position;
+            state.snapshotRotation = UnityEngine.Quaternion.Euler(0f, caster.eulerAngles.y, 0f);
+            state.snapshotCaptured = true;
+        }
+
+        private static float EvaluateCameraBlendWeight(SkillCameraEvent evt, float timelineTime)
+        {
+            if (evt == null)
+                return 0f;
+
+            float weight = 1f;
+            if (evt.blendInDuration > 0f)
+                weight = UnityEngine.Mathf.Min(weight, UnityEngine.Mathf.Clamp01((timelineTime - evt.startTime) / evt.blendInDuration));
+
+            if (evt.durationMode == SkillEffectDurationMode.FixedTime && evt.blendOutDuration > 0f)
+            {
+                float endTime = evt.startTime + UnityEngine.Mathf.Max(0f, evt.duration);
+                weight = UnityEngine.Mathf.Min(weight, UnityEngine.Mathf.Clamp01((endTime - timelineTime) / evt.blendOutDuration));
+            }
+
+            return UnityEngine.Mathf.Clamp01(weight);
+        }
+
+        private UnityEngine.Vector3 EvaluateCameraWorldPosition(SkillCameraEvent evt, CameraEventState state, float timelineTime)
+        {
+            UnityEngine.Vector3 localPosition = evt.positionMode == SkillCameraPositionMode.BezierPath
+                ? EvaluateCameraBezierLocalPosition(evt, timelineTime)
+                : evt.holdLocalOffset;
+
+            return state.snapshotPosition + state.snapshotRotation * localPosition;
+        }
+
+        private static UnityEngine.Vector3 EvaluateCameraBezierLocalPosition(SkillCameraEvent evt, float timelineTime)
+        {
+            if (evt == null)
+                return UnityEngine.Vector3.zero;
+
+            float normalizedTime = evt.durationMode == SkillEffectDurationMode.FixedTime && evt.duration > 0f
+                ? UnityEngine.Mathf.Clamp01((timelineTime - evt.startTime) / evt.duration)
+                : 0f;
+
+            float progress = EvaluateProgressCurve(evt.pathProgressCurve, normalizedTime);
+            return EvaluateCubicBezier(
+                evt.pathStartLocalOffset,
+                evt.pathControlPointA,
+                evt.pathControlPointB,
+                evt.pathEndLocalOffset,
+                progress);
+        }
+
+        private UnityEngine.Vector3 ResolveCameraLookAtPosition(float lookTargetHeight, CameraEventState state)
+        {
+            UnityEngine.Transform caster = _context?.CasterTransform;
+            UnityEngine.Vector3 basePosition = caster != null ? caster.position : state.snapshotPosition;
+            return basePosition + UnityEngine.Vector3.up * lookTargetHeight;
+        }
+
+        private static float EvaluateProgressCurve(UnityEngine.AnimationCurve curve, float normalizedTime)
+        {
+            if (curve == null || curve.length == 0)
+                return normalizedTime;
+
+            return UnityEngine.Mathf.Clamp01(curve.Evaluate(normalizedTime));
+        }
+
+        private static UnityEngine.Vector3 EvaluateCubicBezier(
+            UnityEngine.Vector3 p0,
+            UnityEngine.Vector3 p1,
+            UnityEngine.Vector3 p2,
+            UnityEngine.Vector3 p3,
+            float t)
+        {
+            float clampedT = UnityEngine.Mathf.Clamp01(t);
+            float oneMinusT = 1f - clampedT;
+            return oneMinusT * oneMinusT * oneMinusT * p0
+                   + 3f * oneMinusT * oneMinusT * clampedT * p1
+                   + 3f * oneMinusT * clampedT * clampedT * p2
+                   + clampedT * clampedT * clampedT * p3;
         }
 
         private static void CloseCollisionWindow(ActiveDamageWindow window)
@@ -487,7 +677,7 @@ namespace Game.Presentation
             SkillDamageEffect effect = window.effect;
             SkillDetectionMotionFrame motionFrame = CreateMotionFrame(window, elapsed);
             UnityEngine.Vector3 motionOffset = effect.motion != null && effect.motion.IsActive
-                ? effect.motion.direction.normalized * effect.motion.speed * motionFrame.Elapsed
+                ? effect.motion.EvaluateLocalDisplacement(motionFrame.Elapsed)
                 : UnityEngine.Vector3.zero;
 
             switch (effect.detectionType)

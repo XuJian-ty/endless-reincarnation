@@ -138,7 +138,7 @@ namespace Game.Presentation
             {
                 basePosition = motionFrame.Value.OriginPosition;
                 baseRotation = motionFrame.Value.OriginRotation;
-                motionOffset = effect.motion.direction.normalized * effect.motion.speed * motionFrame.Value.Elapsed;
+                motionOffset = effect.motion.EvaluateLocalDisplacement(motionFrame.Value.Elapsed);
                 return;
             }
 

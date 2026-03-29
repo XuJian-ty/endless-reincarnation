@@ -50,7 +50,7 @@ namespace Game.Data
     /// 触发链（主动/基础技能）：
     ///   状态机根据输入和上下文得到动作ID → 先检查玩家动作及技能配置库中的条目是否可用/已解锁
     ///   → 优先按“技能效果库引用 + skillId”解析技能效果定义中的 animationTrigger，并向 Animator 发送
-    ///   → 若技能效果定义未填写 animationTrigger，则回退到当前条目的旧版 animationTrigger
+    ///   → 若技能效果定义未填写 animationTrigger，则回退到当前动作ID
     ///   → SkillTimelineRunner 按“技能效果库引用 + skillId”找到技能效果定义 → 逐帧触发事件
     ///   → SkillEffectExecutor 执行伤害/特效/属性效果
     /// </summary>
@@ -108,20 +108,12 @@ namespace Game.Data
         [Tooltip("释放技能时消耗的 MP 量。若 MP 不足则无法进入技能状态。")]
         public int mpCost = 0;
 
-        [InspectorLabel("动画 Trigger")]
-        [Tooltip("旧版兼容字段。现优先从“技能效果库”对应 skillId 的默认技能效果项读取动画 Trigger；这里只在未迁移旧数据时作为回退。")]
-        public string animationTrigger = "";
-
         [InspectorLabel("冷却(秒)")]
         [Tooltip("仅主动技能使用。释放成功后进入冷却，冷却未结束时不能再次释放。")]
         [Min(0f)]
         public float cooldownSeconds = 0f;
 
         [Header("─ 被动技能参数（PassiveSkill 时填写）─")]
-        [InspectorLabel("被动属性加成")]
-        [Tooltip("兼容旧数据使用。若已配置“被动技能效果库引用 + 技能ID”，运行时会优先使用被动技能效果库中的属性加成。")]
-        public StatModifier passiveStatModifier = new StatModifier();
-
         [Header("─ 状态规则（基础动作/主动技能）─")]
         [InspectorLabel("动作策略表")]
         public List<PlayerStateActionPolicyRule> actionPolicies = new List<PlayerStateActionPolicyRule>();
@@ -145,9 +137,6 @@ namespace Game.Data
             string sharedTrigger = definition != null ? definition.GetAnimationTriggerOrEmpty() : string.Empty;
             if (!string.IsNullOrWhiteSpace(sharedTrigger))
                 return sharedTrigger;
-
-            if (!string.IsNullOrWhiteSpace(animationTrigger))
-                return animationTrigger.Trim();
 
             if (!string.IsNullOrWhiteSpace(actionId))
                 return actionId.Trim();
@@ -211,18 +200,6 @@ namespace Game.Data
 
             PassiveSkillEffectDatabaseSO database = GetResolvedPassiveSkillEffectDatabase();
             return database != null ? database.GetEntry(resolvedSkillId.Trim()) : null;
-        }
-
-        public StatModifier ResolvePassiveStatModifier()
-        {
-            PassiveSkillEffectDefinition definition = ResolvePassiveSkillEffectDefinition();
-            if (definition?.statModifier != null)
-            {
-                if (HasAnyStatModifierValue(definition.statModifier) || !HasAnyStatModifierValue(passiveStatModifier))
-                    return definition.statModifier;
-            }
-
-            return passiveStatModifier;
         }
 
         public SkillEffectVariantGroupDefinition ResolveSkillEffectVariantGroup()
@@ -302,28 +279,6 @@ namespace Game.Data
                 if (entry != null && string.Equals(entry.skillId, normalizedSkillId, StringComparison.Ordinal))
                     return true;
             }
-
-            return false;
-        }
-
-        private static bool HasAnyStatModifierValue(StatModifier modifier)
-        {
-            if (modifier == null)
-                return false;
-
-            if (!Mathf.Approximately(modifier.hpAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.mpAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.attackAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.defenseAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.lifeStealAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.critRateAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.critDmgAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.attackSpeedAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.moveSpeedAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.hpRegenAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.mpRegenAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.damageBonusAdd, 0f)) return true;
-            if (!Mathf.Approximately(modifier.damageReduceAdd, 0f)) return true;
 
             return false;
         }

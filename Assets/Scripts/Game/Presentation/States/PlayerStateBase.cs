@@ -73,6 +73,17 @@ namespace Game.Presentation
         /// <summary>当前状态对应的动作 ID，供 HUD/调试用；默认 None。</summary>
         public virtual GameAction CurrentActionId => GameAction.None;
 
+        public bool TryGetCurrentCameraOverride(float lookTargetHeight, out SkillTimelineRunner.CameraOverrideRequest request)
+        {
+            request = default;
+
+            if (_timelineRunner != null && _timelineRunner.TryGetCurrentCameraOverride(lookTargetHeight, out request))
+                return true;
+
+            return _auxiliaryTimelineRunner != null
+                   && _auxiliaryTimelineRunner.TryGetCurrentCameraOverride(lookTargetHeight, out request);
+        }
+
         // ── 策略表（Strategy Pattern）────────────────────────────────────
         public virtual TransitionPolicy GetPolicyFor(GameAction action)
             => ResolveConfiguredPolicy(action, action switch
@@ -309,7 +320,7 @@ namespace Game.Presentation
 
                 if (definition != null)
                 {
-                    string definitionTrigger = definition.GetResolvedAnimationTrigger(entry.GetResolvedAnimationTrigger());
+                    string definitionTrigger = definition.GetResolvedAnimationTrigger();
                     if (!string.IsNullOrWhiteSpace(definitionTrigger))
                         return definitionTrigger;
                 }
@@ -500,7 +511,7 @@ namespace Game.Presentation
             if (_timelineRunner != null)
                 return _timelineRunner.CurrentCastSpeedMultiplier;
 
-            float baseSpeed = PlayerBuffRuntimeUtility.GetActionAnimatorPlaybackSpeed(Ctx?.PlayerModel, ActionId);
+            float baseSpeed = PlayerBuffRuntimeUtility.GetActionCastSpeedMultiplier(Ctx?.PlayerModel, ActionId);
             return baseSpeed * ResolveExternalLocalCastSpeedMultiplier(Ctx?.Transform);
         }
 
