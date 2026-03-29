@@ -496,15 +496,16 @@ namespace Game.Presentation
             if (_animatorController == null)
                 return;
 
+            float playbackSpeed = ResolveActionPlaybackSpeed(actionId);
             if (IsUpperBodyAttackAction(actionId))
             {
                 _animatorController.SetPlaybackSpeed(1f);
-                _animatorController.SetUpperBodyPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionPlaybackSpeed(_combatStats, actionId));
+                _animatorController.SetUpperBodyPlaybackSpeed(playbackSpeed);
                 return;
             }
 
             _animatorController.SetUpperBodyPlaybackSpeed(1f);
-            _animatorController.SetPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionAnimatorPlaybackSpeed(_combatStats, actionId));
+            _animatorController.SetPlaybackSpeed(playbackSpeed);
         }
 
         private void ResetActionPlaybackSpeed()
@@ -528,6 +529,7 @@ namespace Game.Presentation
             if (_timelineRunner == null)
                 return;
 
+            ApplyActionPlaybackSpeed(_activeActionId);
             _timelineRunner.Tick(dt);
             if (TryResolveActionTimelineExit())
                 return;
@@ -1414,7 +1416,23 @@ namespace Game.Presentation
                 : timelineDuration / Mathf.Max(0.1f, playbackSpeed);
             float actionCommitDuration = Mathf.Max(0.12f, effectiveDuration * 0.7f);
             _actionLockTimer = Mathf.Clamp(actionCommitDuration, 0.12f, 0.9f);
-            _timelineRunner.Begin(runtimeDefinition, new CloneSkillExecutionContext(this), overrideDuration);
+            _timelineRunner.Begin(
+                runtimeDefinition,
+                new CloneSkillExecutionContext(this),
+                overrideDuration,
+                PlayerBuffRuntimeUtility.GetActionCastSpeedMultiplier(_combatStats, actionId));
+        }
+
+        private float ResolveActionPlaybackSpeed(string actionId)
+        {
+            if (_timelineRunner != null
+                && !string.IsNullOrWhiteSpace(_activeActionId)
+                && string.Equals(_activeActionId, actionId, System.StringComparison.Ordinal))
+            {
+                return _timelineRunner.CurrentCastSpeedMultiplier;
+            }
+
+            return PlayerBuffRuntimeUtility.GetActionAnimatorPlaybackSpeed(_combatStats, actionId);
         }
 
         private Vector3 ResolveCombatAnchor(Vector3 targetPosition, float distanceToTarget, PlayerCloneTacticalMode tacticalMode, bool usingRangedAttackMode)

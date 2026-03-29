@@ -42,6 +42,7 @@ namespace Game.Presentation
             Ctx       = ctx;
             _stateAge = 0f;
             ApplyActionPlaybackSpeed();
+            ApplyActionMovementSpeed();
             OnEnter();
         }
 
@@ -50,6 +51,7 @@ namespace Game.Presentation
             StopAuxiliaryTimelineSkill();
             StopTimelineSkill();
             ResetActionPlaybackSpeed();
+            ResetActionMovementSpeed();
             OnExit();
             Ctx = null;
         }
@@ -57,6 +59,8 @@ namespace Game.Presentation
         internal void Tick(float dt, in PlayerInputData input)
         {
             _stateAge += dt;
+            ApplyActionPlaybackSpeed();
+            ApplyActionMovementSpeed();
             TickTimelines(dt);
             OnTick(dt, in input);
         }
@@ -232,6 +236,13 @@ namespace Game.Presentation
             StopTimelineSkill(ref _auxiliaryTimelineRunner, ref _auxiliaryTimelineActionId);
         }
 
+        protected float GetCurrentMovementSpeedMultiplier()
+        {
+            return _timelineRunner != null
+                ? _timelineRunner.CurrentMovementSpeedMultiplier
+                : 1f;
+        }
+
         protected TransitionPolicy ResolveConfiguredPolicy(GameAction action, TransitionPolicy fallback)
         {
             SkillConfigEntry entry = ResolveCurrentActionEntry();
@@ -391,8 +402,15 @@ namespace Game.Presentation
             def = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(player.transform, def, actionId);
             var ctx = new PlayerSkillExecutionContext(player);
             runner = new SkillTimelineRunner();
-            runner.Begin(def, ctx, overrideDuration);
+            runner.Begin(
+                def,
+                ctx,
+                overrideDuration,
+                PlayerBuffRuntimeUtility.GetActionCastSpeedMultiplier(Ctx?.PlayerModel, actionId),
+                () => ResolveExternalLocalCastSpeedMultiplier(player.transform));
             runningActionId = actionId;
+            ApplyActionPlaybackSpeed();
+            ApplyActionMovementSpeed();
         }
 
         private void StopTimelineSkill(ref SkillTimelineRunner runner, ref string runningActionId)
@@ -437,18 +455,19 @@ namespace Game.Presentation
 
         private void ApplyActionPlaybackSpeed()
         {
-            if (Ctx?.PlayerModel == null || Ctx?.Anim == null)
+            if (Ctx?.Anim == null)
                 return;
 
+            float playbackSpeed = ResolveCurrentActionCastSpeedMultiplier();
             if (IsUpperBodyAttackAction(ActionId))
             {
                 Ctx.Anim.SetPlaybackSpeed(1f);
-                Ctx.Anim.SetUpperBodyPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionPlaybackSpeed(Ctx.PlayerModel, ActionId));
+                Ctx.Anim.SetUpperBodyPlaybackSpeed(playbackSpeed);
                 return;
             }
 
             Ctx.Anim.SetUpperBodyPlaybackSpeed(1f);
-            Ctx.Anim.SetPlaybackSpeed(PlayerBuffRuntimeUtility.GetActionAnimatorPlaybackSpeed(Ctx.PlayerModel, ActionId));
+            Ctx.Anim.SetPlaybackSpeed(playbackSpeed);
         }
 
         private void ResetActionPlaybackSpeed()
@@ -458,6 +477,40 @@ namespace Game.Presentation
 
             Ctx.Anim.SetPlaybackSpeed(1f);
             Ctx.Anim.SetUpperBodyPlaybackSpeed(1f);
+        }
+
+        private void ApplyActionMovementSpeed()
+        {
+            if (Ctx?.Mover == null)
+                return;
+
+            Ctx.Mover.SetMotionSpeedMultiplier(GetCurrentMovementSpeedMultiplier());
+        }
+
+        private void ResetActionMovementSpeed()
+        {
+            if (Ctx?.Mover == null)
+                return;
+
+            Ctx.Mover.SetMotionSpeedMultiplier(1f);
+        }
+
+        private float ResolveCurrentActionCastSpeedMultiplier()
+        {
+            if (_timelineRunner != null)
+                return _timelineRunner.CurrentCastSpeedMultiplier;
+
+            float baseSpeed = PlayerBuffRuntimeUtility.GetActionAnimatorPlaybackSpeed(Ctx?.PlayerModel, ActionId);
+            return baseSpeed * ResolveExternalLocalCastSpeedMultiplier(Ctx?.Transform);
+        }
+
+        private static float ResolveExternalLocalCastSpeedMultiplier(Transform actorTransform)
+        {
+            if (actorTransform == null)
+                return 1f;
+
+            PlayerController player = actorTransform.GetComponent<PlayerController>();
+            return player != null ? player.LocalCastSpeedMultiplier : 1f;
         }
 
         private static bool IsUpperBodyAttackAction(string actionId)

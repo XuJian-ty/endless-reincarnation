@@ -15,6 +15,7 @@ namespace Game.Presentation
         private Vector3 _velocity;
         private bool    _isDodging;
         private Vector3 _dodgeVelocity;
+        private float _motionSpeedMultiplier = 1f;
 
         public bool    IsGrounded       => _cc.isGrounded;
         public Vector3 Velocity         => _velocity;
@@ -29,13 +30,16 @@ namespace Game.Presentation
             else
                 _velocity.y += _gravity * dt;
 
+            Vector3 moveVelocity = _velocity;
             if (_isDodging)
             {
                 _velocity.x = _dodgeVelocity.x;
                 _velocity.z = _dodgeVelocity.z;
+                moveVelocity.x = _dodgeVelocity.x;
+                moveVelocity.z = _dodgeVelocity.z;
             }
 
-            _cc.Move(_velocity * dt);
+            _cc.Move(moveVelocity * dt * Mathf.Max(0f, _motionSpeedMultiplier));
         }
 
         public void SetHorizontalVelocity(Vector3 horizontal)
@@ -69,6 +73,7 @@ namespace Game.Presentation
         }
 
         public void SetVerticalVelocity(float vy) => _velocity.y = vy;
+        public void SetMotionSpeedMultiplier(float multiplier) => _motionSpeedMultiplier = Mathf.Max(0f, multiplier);
 
         /// <summary>
         /// 检测角色是否在距地面 threshold 米以内。

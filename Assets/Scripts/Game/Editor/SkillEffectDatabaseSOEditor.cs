@@ -190,6 +190,7 @@ namespace Game.Editor
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("attributeEvents"), new GUIContent("属性事件列表"), true);
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("vfxEvents"), new GUIContent("特效事件列表"), true);
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("sfxEvents"), new GUIContent("音效事件列表"), true);
+                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("speedEvents"), new GUIContent("速度区间列表"), true);
                 }
             }
         }
@@ -262,6 +263,7 @@ namespace Game.Editor
             definition.attributeEvents ??= new List<SkillAttributeEvent>();
             definition.vfxEvents ??= new List<SkillVfxEvent>();
             definition.sfxEvents ??= new List<SkillSfxEvent>();
+            definition.speedEvents ??= new List<SkillSpeedEvent>();
         }
 
         private static string BuildNewVariantSkillId(SkillEffectDatabaseSO database, SkillEffectVariantGroupDefinition variantGroup)

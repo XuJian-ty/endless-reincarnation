@@ -179,6 +179,7 @@ namespace Game.Presentation
             if (SkillDamageEffect.HasConfiguredHitStopEffect(hitStopEffect))
             {
                 RequestHitStop(
+                    ctx,
                     hitStopEffect.hitStopDuration,
                     hitStopEffect.hitStopTimeScale,
                     hitStopEffect.pauseCameraLookDuringHitStop);
@@ -327,7 +328,7 @@ namespace Game.Presentation
             return finalDamage;
         }
 
-        private static void RequestHitStop(float duration, float timeScale, bool pauseCameraLookDuringHitStop)
+        private static void RequestHitStop(ISkillExecutionContext ctx, float duration, float timeScale, bool pauseCameraLookDuringHitStop)
         {
             if (duration <= 0f)
                 return;
@@ -335,6 +336,14 @@ namespace Game.Presentation
             float clampedScale = Mathf.Clamp01(timeScale);
             if (clampedScale >= 0.999f)
                 return;
+
+            PlayerController player = ctx?.CasterTransform != null
+                ? ctx.CasterTransform.GetComponent<PlayerController>()
+                : null;
+            if (player == null)
+                return;
+
+            player.ApplyLocalHitStop(duration, clampedScale);
 
             if (_hitStopRunner == null)
             {
@@ -344,10 +353,7 @@ namespace Game.Presentation
                 _hitStopRunner = go.AddComponent<HitStopRunner>();
             }
 
-            if (Time.timeScale <= 0f && !_hitStopRunner.IsActive)
-                return;
-
-            _hitStopRunner.Apply(duration, clampedScale, pauseCameraLookDuringHitStop);
+            _hitStopRunner.Apply(duration, pauseCameraLookDuringHitStop);
         }
 
         private static void ApplyOnHitEffects(
@@ -1196,34 +1202,26 @@ namespace Game.Presentation
         {
             private bool _active;
             private float _remainingUnscaled;
-            private float _restoreScale = 1f;
-            private float _appliedScale = 1f;
             private bool _pauseCameraLookDuringHitStop;
 
             public bool IsActive => _active;
             public bool IsCameraLookBlocked => _active && _pauseCameraLookDuringHitStop;
 
-            public void Apply(float duration, float timeScale, bool pauseCameraLookDuringHitStop)
+            public void Apply(float duration, bool pauseCameraLookDuringHitStop)
             {
-                if (duration <= 0f || (Time.timeScale <= 0f && !_active))
+                if (duration <= 0f)
                     return;
 
-                float clampedScale = Mathf.Clamp01(timeScale);
                 if (!_active)
                 {
-                    _restoreScale = Time.timeScale;
                     _remainingUnscaled = duration;
-                    _appliedScale = clampedScale;
                     _pauseCameraLookDuringHitStop = pauseCameraLookDuringHitStop;
-                    Time.timeScale = _appliedScale;
                     _active = true;
                     return;
                 }
 
                 _remainingUnscaled = Mathf.Max(_remainingUnscaled, duration);
-                _appliedScale = Mathf.Min(_appliedScale, clampedScale);
                 _pauseCameraLookDuringHitStop |= pauseCameraLookDuringHitStop;
-                Time.timeScale = _appliedScale;
             }
 
             private void Update()
@@ -1231,18 +1229,10 @@ namespace Game.Presentation
                 if (!_active)
                     return;
 
-                if (!Mathf.Approximately(Time.timeScale, _appliedScale))
-                {
-                    _active = false;
-                    _pauseCameraLookDuringHitStop = false;
-                    return;
-                }
-
                 _remainingUnscaled -= Time.unscaledDeltaTime;
                 if (_remainingUnscaled > 0f)
                     return;
 
-                Time.timeScale = _restoreScale;
                 _active = false;
                 _pauseCameraLookDuringHitStop = false;
             }

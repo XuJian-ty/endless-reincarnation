@@ -52,6 +52,8 @@ namespace Game.Presentation
         private bool _started;
         private bool _stateScopeEnded;
         private float _dynamicCompletionTime;
+        private float _baseCastSpeedMultiplier = 1f;
+        private Func<float> _externalCastSpeedMultiplierProvider;
 
         // ── 公开属性 ──────────────────────────────────────────────────────────
 
@@ -59,6 +61,8 @@ namespace Game.Presentation
         public bool IsComplete { get; private set; }
         public bool HasActiveDamageWindows => _activeDamageWindows.Count > 0;
         public bool HasPendingWork => _started && !IsComplete;
+        public float CurrentCastSpeedMultiplier => ResolveEffectiveCastSpeedMultiplier(_elapsed);
+        public float CurrentMovementSpeedMultiplier => ResolveMovementSpeedMultiplier(_elapsed);
 
         /// <summary>当前已播放时长（秒）。</summary>
         public float Elapsed => _elapsed;
@@ -96,11 +100,18 @@ namespace Game.Presentation
         /// 但这只是时间轴自身的持续时间参考，不代表动画或状态必须等到 Duration 结束后才能退出。
         /// 玩家状态机可传入 -1（忽略此参数）。
         /// </param>
-        public void Begin(SharedSkillDefinition definition, ISkillExecutionContext context, float castDuration = -1f)
+        public void Begin(
+            SharedSkillDefinition definition,
+            ISkillExecutionContext context,
+            float castDuration = -1f,
+            float baseCastSpeedMultiplier = 1f,
+            Func<float> externalCastSpeedMultiplierProvider = null)
         {
             _definition   = definition;
             _context      = context;
             _castDuration = castDuration;
+            _baseCastSpeedMultiplier = UnityEngine.Mathf.Max(0.01f, baseCastSpeedMultiplier);
+            _externalCastSpeedMultiplierProvider = externalCastSpeedMultiplierProvider;
             _elapsed      = 0f;
             _started      = true;
             _stateScopeEnded = false;
@@ -127,7 +138,7 @@ namespace Game.Presentation
         {
             if (!_started || IsComplete || _definition == null) return;
 
-            _elapsed += deltaTime;
+            _elapsed += UnityEngine.Mathf.Max(0f, deltaTime) * ResolveEffectiveCastSpeedMultiplier(_elapsed);
             EvaluateEvents();
             RefreshCompletion();
         }
@@ -139,6 +150,7 @@ namespace Game.Presentation
             IsComplete = true;
             ClearActiveDamageWindows();
             _cueRuntime.Stop();
+            _externalCastSpeedMultiplierProvider = null;
         }
 
         /// <summary>
@@ -551,6 +563,24 @@ namespace Game.Presentation
         private void UpdateDynamicCompletionTime(float endTime)
         {
             _dynamicCompletionTime = UnityEngine.Mathf.Max(_dynamicCompletionTime, endTime);
+        }
+
+        private float ResolveEffectiveCastSpeedMultiplier(float timelineTime)
+        {
+            float definitionMultiplier = _definition != null
+                ? _definition.EvaluateCastSpeedMultiplier(timelineTime, _stateScopeEnded)
+                : 1f;
+            float externalMultiplier = _externalCastSpeedMultiplierProvider != null
+                ? UnityEngine.Mathf.Max(0f, _externalCastSpeedMultiplierProvider.Invoke())
+                : 1f;
+            return UnityEngine.Mathf.Max(0f, definitionMultiplier * _baseCastSpeedMultiplier * externalMultiplier);
+        }
+
+        private float ResolveMovementSpeedMultiplier(float timelineTime)
+        {
+            return _definition != null
+                ? UnityEngine.Mathf.Max(0f, _definition.EvaluateMovementSpeedMultiplier(timelineTime, _stateScopeEnded))
+                : 1f;
         }
 
         private static float GetEventOccurrenceLifetime<T>(T evt) where T : SkillTimedEventBase

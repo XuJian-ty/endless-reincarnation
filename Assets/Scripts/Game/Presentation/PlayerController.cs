@@ -69,6 +69,8 @@ namespace Game.Presentation
         private float              _temporaryInvincibleTimer;
         private int                _stateScopedSuperArmorCount;
         private int                _stateScopedInvincibleCount;
+        private float              _localCastSpeedOverrideTimer;
+        private float              _localCastSpeedOverrideMultiplier = 1f;
         private float              _healthPotionRemainingTime;
         private float              _manaPotionRemainingTime;
         private float              _hpRegenTickAccumulator;
@@ -87,6 +89,9 @@ namespace Game.Presentation
         public event Action OnPlayerDied;
         public bool IsDead => _deathSequenceStarted;
         public Vector2 CurrentMoveInput => _inputHandler != null ? _inputHandler.CurrentInput.MoveInput : Vector2.zero;
+        public float LocalCastSpeedMultiplier => _localCastSpeedOverrideTimer > 0f
+            ? Mathf.Clamp(_localCastSpeedOverrideMultiplier, 0f, 1f)
+            : 1f;
         public bool IsAimModeActive => _isAimModeActive
                                        && PlayerModel != null
                                        && PlayerModel.CurrentAttackMode == PlayerAttackMode.Ranged;
@@ -119,6 +124,8 @@ namespace Game.Presentation
             _temporaryInvincibleTimer = 0f;
             _stateScopedSuperArmorCount = 0;
             _stateScopedInvincibleCount = 0;
+            _localCastSpeedOverrideTimer = 0f;
+            _localCastSpeedOverrideMultiplier = 1f;
             _healthPotionRemainingTime = 0f;
             _manaPotionRemainingTime = 0f;
             _hpRegenTickAccumulator = 0f;
@@ -336,6 +343,16 @@ namespace Game.Presentation
             _temporaryInvincibleTimer = Mathf.Max(_temporaryInvincibleTimer, duration);
         }
 
+        public void ApplyLocalHitStop(float duration, float castSpeedMultiplier)
+        {
+            if (duration <= 0f)
+                return;
+
+            _localCastSpeedOverrideTimer = Mathf.Max(_localCastSpeedOverrideTimer, duration);
+            _localCastSpeedOverrideMultiplier = Mathf.Clamp01(
+                Mathf.Min(_localCastSpeedOverrideMultiplier, castSpeedMultiplier));
+        }
+
         public void AddStateScopedSuperArmor()
         {
             _stateScopedSuperArmorCount++;
@@ -441,6 +458,13 @@ namespace Game.Presentation
 
             if (_temporaryInvincibleTimer > 0f)
                 _temporaryInvincibleTimer = Mathf.Max(0f, _temporaryInvincibleTimer - dt);
+
+            if (_localCastSpeedOverrideTimer > 0f)
+            {
+                _localCastSpeedOverrideTimer = Mathf.Max(0f, _localCastSpeedOverrideTimer - dt);
+                if (_localCastSpeedOverrideTimer <= 0f)
+                    _localCastSpeedOverrideMultiplier = 1f;
+            }
         }
 
         private void TickAttributeRegeneration(float dt)

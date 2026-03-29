@@ -23,9 +23,9 @@ namespace Game.Presentation
             "ChargeStart",
             "ChargeLoop",
             "ChargeRelease",
-            "FallAttackStart",
-            "FallAttackLoop",
-            "FallAttackLand"
+            "Shoot",
+            "ShootCharge",
+            "Shoot_Charge"
         };
 
         private static readonly HashSet<string> AfterimageAffectedActions = new HashSet<string>
@@ -117,9 +117,8 @@ namespace Game.Presentation
                 return source;
 
             int afterimageStackCount = player.PlayerModel.GetBuffStackCount(BuffIds.Afterimage);
-            if (afterimageStackCount <= 0)
-                return source;
-            if (!IsAfterimageAffectedAction(actionId))
+            bool shouldAppendAfterimage = afterimageStackCount > 0 && IsAfterimageAffectedAction(actionId);
+            if (!shouldAppendAfterimage)
                 return source;
 
             BuffConfigSO buffConfig = ConfigManager.GetInstance()?.GetBuffConfig();
@@ -136,7 +135,6 @@ namespace Game.Presentation
             if (cloned == null)
                 return source;
 
-            ApplyAttackSpeed(ResolveCombatStats(caster), cloned, actionId);
             AppendAfterimageEvents(cloned.damageEvents, 1, delay, damageMultiplier);
             AppendAfterimageEvents(cloned.vfxEvents, 1, delay);
             SortTimedEvents(cloned.damageEvents);
@@ -144,17 +142,12 @@ namespace Game.Presentation
             return cloned;
         }
 
-        public static float GetActionPlaybackSpeed(PlayerModel player, string actionId)
+        public static float GetActionCastSpeedMultiplier(PlayerModel player, string actionId)
         {
-            return GetActionPlaybackSpeed(player?.Stats, actionId);
+            return GetActionCastSpeedMultiplier(player?.Stats, actionId);
         }
 
-        public static float GetActionAnimatorPlaybackSpeed(PlayerModel player, string actionId)
-        {
-            return GetActionAnimatorPlaybackSpeed(player?.Stats, actionId);
-        }
-
-        public static float GetActionPlaybackSpeed(Stats stats, string actionId)
+        public static float GetActionCastSpeedMultiplier(Stats stats, string actionId)
         {
             if (stats == null || string.IsNullOrWhiteSpace(actionId))
                 return 1f;
@@ -164,35 +157,24 @@ namespace Game.Presentation
                 : 1f;
         }
 
-        public static float GetActionAnimatorPlaybackSpeed(Stats stats, string actionId)
+        public static float GetActionPlaybackSpeed(PlayerModel player, string actionId)
         {
-            if (stats == null || string.IsNullOrWhiteSpace(actionId))
-                return 1f;
-
-            string normalizedActionId = actionId.Trim();
-            if (string.Equals(normalizedActionId, "Shoot")
-                || string.Equals(normalizedActionId, "ShootCharge")
-                || string.Equals(normalizedActionId, "Shoot_Charge"))
-            {
-                return 1f;
-            }
-
-            return GetActionPlaybackSpeed(stats, normalizedActionId);
+            return GetActionCastSpeedMultiplier(player?.Stats, actionId);
         }
 
-        private static void ApplyAttackSpeed(Stats stats, SharedSkillDefinition definition, string actionId)
+        public static float GetActionAnimatorPlaybackSpeed(PlayerModel player, string actionId)
         {
-            if (stats == null || definition == null)
-                return;
+            return GetActionAnimatorPlaybackSpeed(player?.Stats, actionId);
+        }
 
-            float playbackSpeed = GetActionPlaybackSpeed(stats, actionId);
-            if (Mathf.Approximately(playbackSpeed, 1f))
-                return;
+        public static float GetActionPlaybackSpeed(Stats stats, string actionId)
+        {
+            return GetActionCastSpeedMultiplier(stats, actionId);
+        }
 
-            float timeScale = 1f / playbackSpeed;
-            ScaleTimedEvents(definition.damageEvents, timeScale);
-            ScaleTimedEvents(definition.vfxEvents, timeScale);
-            ScaleTimedEvents(definition.sfxEvents, timeScale);
+        public static float GetActionAnimatorPlaybackSpeed(Stats stats, string actionId)
+        {
+            return GetActionCastSpeedMultiplier(stats, actionId);
         }
 
         private static bool IsAttackSpeedAffectedAction(string actionId)
@@ -317,22 +299,5 @@ namespace Game.Presentation
             });
         }
 
-        private static void ScaleTimedEvents<TEvent>(List<TEvent> events, float timeScale)
-            where TEvent : SkillTimedEventBase
-        {
-            if (events == null || Mathf.Approximately(timeScale, 1f))
-                return;
-
-            for (int i = 0; i < events.Count; i++)
-            {
-                TEvent evt = events[i];
-                if (evt == null)
-                    continue;
-
-                evt.startTime *= timeScale;
-                evt.activeDuration *= timeScale;
-                evt.repeatInterval = Mathf.Max(0.01f, evt.repeatInterval * timeScale);
-            }
-        }
     }
 }
