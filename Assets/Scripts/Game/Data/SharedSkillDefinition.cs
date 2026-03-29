@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Game.Data
 {
@@ -105,21 +104,117 @@ namespace Game.Data
     }
 
     [Serializable]
+    public enum SkillMotionMode
+    {
+        [InspectorName("直线")]
+        Linear = 0,
+        [InspectorName("路径")]
+        BezierPath = 1,
+    }
+
+    [Serializable]
     public class SkillMotionSettings
     {
         [InspectorLabel("随时间移动")]
-        [Tooltip("开启后，会在生成后按“移动速度”和“移动方向”持续移动。关闭则保持原本位置/跟随行为。")]
+        [Tooltip("开启后，会在生成后按当前运动模式持续移动。关闭则保持原本位置/跟随行为。")]
         public bool enabled = false;
 
+        [InspectorLabel("运动模式")]
+        [Tooltip("直线=按速度和方向持续移动；路径=按局部 Bezier 路径和进度曲线移动。")]
+        public SkillMotionMode mode = SkillMotionMode.Linear;
+
         [InspectorLabel("移动速度(米/秒)")]
-        [Tooltip("仅“随时间移动”开启时使用。")]
+        [Tooltip("仅直线模式使用。")]
         [Min(0f)] public float speed = 0f;
 
         [InspectorLabel("移动方向")]
-        [Tooltip("相对施法者朝向的本地方向。(0,0,1) 表示朝前方移动。")]
+        [Tooltip("仅直线模式使用。相对施法者朝向的本地方向。(0,0,1) 表示朝前方移动。")]
         public Vector3 direction = Vector3.forward;
 
-        public bool IsActive => enabled && speed > 0.0001f && direction.sqrMagnitude > 0.0001f;
+        [InspectorLabel("路径时长(秒)")]
+        [Tooltip("仅路径模式使用。达到该时长后会停在路径终点。")]
+        [Min(0f)] public float duration = 0.3f;
+
+        [InspectorLabel("路径控制点 A")]
+        [Tooltip("仅路径模式使用。相对运动起点的局部控制点偏移。")]
+        public Vector3 pathControlPointA = new Vector3(0f, 0f, 0.4f);
+
+        [InspectorLabel("路径控制点 B")]
+        [Tooltip("仅路径模式使用。相对运动起点的局部控制点偏移。")]
+        public Vector3 pathControlPointB = new Vector3(0f, 0f, 0.8f);
+
+        [InspectorLabel("路径终点偏移")]
+        [Tooltip("仅路径模式使用。相对运动起点的局部终点偏移。")]
+        public Vector3 pathEndOffset = new Vector3(0f, 0f, 1.2f);
+
+        [InspectorLabel("路径进度曲线")]
+        [Tooltip("仅路径模式使用。输入为归一化时间 0~1，输出为路径归一化进度 0~1。")]
+        public AnimationCurve pathProgressCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+
+        public bool IsActive => enabled && (mode switch
+        {
+            SkillMotionMode.BezierPath => duration > 0.0001f && HasPathDisplacement,
+            _ => speed > 0.0001f && direction.sqrMagnitude > 0.0001f,
+        });
+
+        public bool HasPathDisplacement =>
+            pathControlPointA.sqrMagnitude > 0.0001f
+            || pathControlPointB.sqrMagnitude > 0.0001f
+            || pathEndOffset.sqrMagnitude > 0.0001f;
+
+        public Vector3 EvaluateLocalDisplacement(float elapsed)
+        {
+            if (!enabled)
+                return Vector3.zero;
+
+            float resolvedElapsed = Mathf.Max(0f, elapsed);
+            return mode switch
+            {
+                SkillMotionMode.BezierPath => EvaluateBezierLocalDisplacement(resolvedElapsed),
+                _ => EvaluateLinearLocalDisplacement(resolvedElapsed),
+            };
+        }
+
+        public Vector3 EvaluateWorldDisplacement(Quaternion basisRotation, float elapsed)
+        {
+            return basisRotation * EvaluateLocalDisplacement(elapsed);
+        }
+
+        private Vector3 EvaluateLinearLocalDisplacement(float elapsed)
+        {
+            if (speed <= 0.0001f || direction.sqrMagnitude <= 0.0001f)
+                return Vector3.zero;
+
+            return direction.normalized * (speed * elapsed);
+        }
+
+        private Vector3 EvaluateBezierLocalDisplacement(float elapsed)
+        {
+            if (duration <= 0.0001f || !HasPathDisplacement)
+                return Vector3.zero;
+
+            float normalizedTime = Mathf.Clamp01(elapsed / duration);
+            float progress = EvaluateProgressCurve(pathProgressCurve, normalizedTime);
+            return EvaluateCubicBezier(Vector3.zero, pathControlPointA, pathControlPointB, pathEndOffset, progress);
+        }
+
+        private static float EvaluateProgressCurve(AnimationCurve curve, float normalizedTime)
+        {
+            if (curve == null || curve.length == 0)
+                return Mathf.Clamp01(normalizedTime);
+
+            return Mathf.Clamp01(curve.Evaluate(Mathf.Clamp01(normalizedTime)));
+        }
+
+        private static Vector3 EvaluateCubicBezier(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
+        {
+            float clampedT = Mathf.Clamp01(t);
+            float oneMinusT = 1f - clampedT;
+            return oneMinusT * oneMinusT * oneMinusT * p0
+                   + 3f * oneMinusT * oneMinusT * clampedT * p1
+                   + 3f * oneMinusT * clampedT * clampedT * p2
+                   + clampedT * clampedT * clampedT * p3;
+        }
     }
 
     [Serializable]
@@ -268,10 +363,6 @@ namespace Game.Data
         [Tooltip("用于实现向前推进的扇形、剑气判定等。碰撞检测模式暂不使用这组设置。")]
         public SkillMotionSettings motion = new SkillMotionSettings();
 
-        [HideInInspector]
-        [FormerlySerializedAs("companionVfxEffect")]
-        public SkillVfxEffect legacyCompanionVfxEffect;
-
         [InspectorLabel("伴随特效效果(VFX)")]
         [Tooltip("仅非碰撞检测使用。检测窗口创建时生成，检测窗口销毁时销毁，并随检测体一起移动。")]
         public List<SkillVfxEffect> companionVfxEffects = new List<SkillVfxEffect>();
@@ -283,16 +374,6 @@ namespace Game.Data
         [InspectorLabel("命中停顿效果")]
         [Tooltip("命中成功后触发的命中停顿子效果。")]
         public SkillHitStopEffect onHitStopEffect = new SkillHitStopEffect();
-
-        [HideInInspector]
-        [FormerlySerializedAs("onHitStopEffects")]
-        public List<SkillHitStopEffect> legacyOnHitStopEffects = new List<SkillHitStopEffect>();
-
-        [HideInInspector] public float hitStopDuration = 0f;
-        [HideInInspector] public float hitStopTimeScale = 0f;
-        [HideInInspector] public bool pauseCameraLookDuringHitStop = false;
-        [HideInInspector] public float damageMagnitude = 0f;
-        [HideInInspector] public bool nestedSubEffectsOwnedByLists = false;
 
         [InspectorLabel("命中物理效果")]
         [Tooltip("仅在这条伤害效果命中目标后触发。")]
@@ -310,116 +391,16 @@ namespace Game.Data
         [Tooltip("仅在这条伤害效果命中目标后触发。")]
         public List<SkillSfxEffect> onHitSfxEffects = new List<SkillSfxEffect>();
 
-        public bool TryMigrateLegacySubEffects()
-        {
-            bool migrated = false;
-            companionVfxEffects ??= new List<SkillVfxEffect>();
-            onHitDamageEffects ??= new List<SkillHitDamageEffect>();
-            onHitStopEffect ??= new SkillHitStopEffect();
-            legacyOnHitStopEffects ??= new List<SkillHitStopEffect>();
-            bool listOwnedByCurrentFields = nestedSubEffectsOwnedByLists;
-            bool hasLegacyHitDamage = !listOwnedByCurrentFields && damageMagnitude > 0f;
-            bool hasLegacyHitStop =
-                hitStopDuration > 0f
-                || hitStopTimeScale > 0f
-                || pauseCameraLookDuringHitStop;
-
-            if (legacyCompanionVfxEffect != null)
-            {
-                if (!listOwnedByCurrentFields && companionVfxEffects.Count == 0)
-                    companionVfxEffects.Add(legacyCompanionVfxEffect);
-
-                legacyCompanionVfxEffect = null;
-                migrated = true;
-            }
-
-            if (hasLegacyHitDamage && onHitDamageEffects.Count == 0)
-            {
-                onHitDamageEffects.Add(new SkillHitDamageEffect
-                {
-                    damageMagnitude = Mathf.Max(0f, damageMagnitude)
-                });
-                migrated = true;
-            }
-            if (legacyOnHitStopEffects.Count > 0)
-            {
-                SkillHitStopEffect primaryLegacyHitStopEffect = null;
-                for (int i = 0; i < legacyOnHitStopEffects.Count; i++)
-                {
-                    SkillHitStopEffect effect = legacyOnHitStopEffects[i];
-                    if (effect != null)
-                    {
-                        primaryLegacyHitStopEffect = effect;
-                        break;
-                    }
-                }
-
-                if (primaryLegacyHitStopEffect != null
-                    && !HasConfiguredHitStopEffect(onHitStopEffect))
-                {
-                    onHitStopEffect = new SkillHitStopEffect
-                    {
-                        hitStopDuration = Mathf.Max(0f, primaryLegacyHitStopEffect.hitStopDuration),
-                        hitStopTimeScale = Mathf.Clamp01(primaryLegacyHitStopEffect.hitStopTimeScale),
-                        pauseCameraLookDuringHitStop = primaryLegacyHitStopEffect.pauseCameraLookDuringHitStop
-                    };
-                    migrated = true;
-                }
-            }
-
-            if (hasLegacyHitStop && !HasConfiguredHitStopEffect(onHitStopEffect))
-            {
-                onHitStopEffect = new SkillHitStopEffect
-                {
-                    hitStopDuration = Mathf.Max(0f, hitStopDuration),
-                    hitStopTimeScale = Mathf.Clamp01(hitStopTimeScale),
-                    pauseCameraLookDuringHitStop = pauseCameraLookDuringHitStop
-                };
-                migrated = true;
-            }
-
-            if (!migrated && listOwnedByCurrentFields)
-                return false;
-
-            damageMagnitude = 0f;
-            hitStopDuration = 0f;
-            hitStopTimeScale = 0f;
-            pauseCameraLookDuringHitStop = false;
-            legacyOnHitStopEffects.Clear();
-            nestedSubEffectsOwnedByLists = true;
-            return true;
-        }
-
         public List<SkillHitDamageEffect> GetEffectiveHitDamageEffects()
         {
-            TryMigrateLegacySubEffects();
             onHitDamageEffects ??= new List<SkillHitDamageEffect>();
             return onHitDamageEffects;
         }
 
         public SkillHitStopEffect GetEffectiveHitStopEffect()
         {
-            TryMigrateLegacySubEffects();
             onHitStopEffect ??= new SkillHitStopEffect();
             return onHitStopEffect;
-        }
-
-        public SkillHitDamageEffect GetPrimaryHitDamageEffect()
-        {
-            List<SkillHitDamageEffect> effects = GetEffectiveHitDamageEffects();
-            for (int i = 0; i < effects.Count; i++)
-            {
-                SkillHitDamageEffect effect = effects[i];
-                if (effect != null)
-                    return effect;
-            }
-
-            return null;
-        }
-
-        public SkillHitStopEffect GetPrimaryHitStopEffect()
-        {
-            return GetEffectiveHitStopEffect();
         }
 
         public static bool HasConfiguredHitStopEffect(SkillHitStopEffect effect)
@@ -556,11 +537,6 @@ namespace Game.Data
     [Serializable]
     public class SkillDamageEvent : SkillTimedEventBase
     {
-        [HideInInspector] public float hitStopDuration = 0f;
-        [HideInInspector] public float hitStopTimeScale = 0f;
-        [HideInInspector] public bool pauseCameraLookDuringHitStop = false;
-        [HideInInspector] public bool hitStopSettingsOwnedByEvent = false;
-
         [InspectorLabel("命中效果")]
         [Tooltip("一条命中事件可以配置多条命中效果，用于同一帧多段命中。")]
         public List<SkillDamageEffect> damageEffects = new List<SkillDamageEffect>();
@@ -589,9 +565,7 @@ namespace Game.Data
 
         public SkillDamageEffect GetPrimaryDamageEffect()
         {
-            SkillDamageEffect primaryEffect = FindPrimaryDamageEffect();
-            primaryEffect?.TryMigrateLegacySubEffects();
-            return primaryEffect;
+            return FindPrimaryDamageEffect();
         }
 
         private SkillDamageEffect FindPrimaryDamageEffect()
@@ -607,34 +581,6 @@ namespace Game.Data
             }
 
             return null;
-        }
-
-        public bool TryMigrateLegacyHitStopSettings()
-        {
-            if (!hitStopSettingsOwnedByEvent || damageEffects == null || damageEffects.Count == 0)
-                return false;
-
-            SkillDamageEffect primaryEffect = FindPrimaryDamageEffect();
-            if (primaryEffect == null)
-                return false;
-
-            primaryEffect.TryMigrateLegacySubEffects();
-            SkillHitStopEffect hitStopEffect = primaryEffect.GetEffectiveHitStopEffect();
-            if (!SkillDamageEffect.HasConfiguredHitStopEffect(hitStopEffect))
-            {
-                primaryEffect.onHitStopEffect = new SkillHitStopEffect
-                {
-                    hitStopDuration = Mathf.Max(0f, hitStopDuration),
-                    hitStopTimeScale = Mathf.Clamp01(hitStopTimeScale),
-                    pauseCameraLookDuringHitStop = pauseCameraLookDuringHitStop
-                };
-            }
-
-            hitStopDuration = 0f;
-            hitStopTimeScale = 0f;
-            pauseCameraLookDuringHitStop = false;
-            hitStopSettingsOwnedByEvent = false;
-            return true;
         }
     }
 
@@ -716,6 +662,92 @@ namespace Game.Data
         }
     }
 
+    public enum SkillCameraPositionMode
+    {
+        [InspectorName("固定")]
+        Hold = 0,
+        [InspectorName("路径")]
+        BezierPath = 1,
+    }
+
+    [Serializable]
+    public class SkillCameraEvent
+    {
+        [InspectorLabel("事件标识 ID")]
+        [Tooltip("可选，仅用于区间命名、调试和日志定位。留空时编辑器会自动使用默认标签。")]
+        public string eventId = "";
+
+        [InspectorLabel("开始时间(原始时间轴秒数)")]
+        [Tooltip("基于技能默认原始时间轴的起点秒数。运行时会换算到对应的动画进度区间，而不是按真实经过时间判定。")]
+        [Min(0f)] public float startTime = 0f;
+
+        [InspectorLabel("持续方式")]
+        [Tooltip("指定时长=持续固定秒数；状态退出=持续到当前状态退出。")]
+        public SkillEffectDurationMode durationMode = SkillEffectDurationMode.FixedTime;
+
+        [InspectorLabel("持续时长(原始时间轴秒数)")]
+        [Tooltip("仅“指定时长”模式使用。该时长同样基于技能默认原始时间轴，而不是基于真实经过时间。")]
+        [Min(0f)] public float duration = 0f;
+
+        [InspectorLabel("位置模式")]
+        [Tooltip("固定=始终停在快照锚点的某个局部偏移位置；路径=沿 Bezier 曲线路径运动。")]
+        public SkillCameraPositionMode positionMode = SkillCameraPositionMode.Hold;
+
+        [InspectorLabel("固定位置局部偏移")]
+        [Tooltip("相对于区间开始时玩家快照位置与朝向的局部偏移。仅“固定”模式使用。")]
+        public Vector3 holdLocalOffset = new Vector3(0f, 1.6f, -4.8f);
+
+        [InspectorLabel("路径起点局部偏移")]
+        [Tooltip("相对于区间开始时玩家快照位置与朝向的局部偏移。仅“路径”模式使用。")]
+        public Vector3 pathStartLocalOffset = new Vector3(0f, 1.6f, -4.8f);
+
+        [InspectorLabel("路径控制点 A")]
+        [Tooltip("三次 Bezier 路径的第一个控制点，使用快照锚点局部空间。")]
+        public Vector3 pathControlPointA = new Vector3(0.4f, 1.9f, -4.2f);
+
+        [InspectorLabel("路径控制点 B")]
+        [Tooltip("三次 Bezier 路径的第二个控制点，使用快照锚点局部空间。")]
+        public Vector3 pathControlPointB = new Vector3(1.1f, 1.4f, -3.2f);
+
+        [InspectorLabel("路径终点局部偏移")]
+        [Tooltip("三次 Bezier 路径的终点，使用快照锚点局部空间。")]
+        public Vector3 pathEndLocalOffset = new Vector3(1.6f, 1.2f, -2.6f);
+
+        [InspectorLabel("路径进度曲线")]
+        [Tooltip("控制路径归一化进度 0~1 随区间归一化时间 0~1 的变化，从而影响镜头沿路径的快慢。")]
+        public AnimationCurve pathProgressCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+
+        [InspectorLabel("混入时长(原始时间轴秒数)")]
+        [Tooltip("镜头区间开始时从基础跟随镜头平滑混入的时长。")]
+        [Min(0f)] public float blendInDuration = 0.08f;
+
+        [InspectorLabel("混出时长(原始时间轴秒数)")]
+        [Tooltip("镜头区间结束前回到基础跟随镜头的平滑混出时长。")]
+        [Min(0f)] public float blendOutDuration = 0.10f;
+
+        [InspectorLabel("锁定镜头输入")]
+        [Tooltip("开启后，区间生效时会屏蔽鼠标/右摇杆的镜头转向输入，避免与运镜冲突。")]
+        public bool lockLookInput = true;
+
+        public float GetEndTime()
+        {
+            return durationMode == SkillEffectDurationMode.UntilStateExit
+                ? startTime
+                : startTime + Mathf.Max(0f, duration);
+        }
+
+        public bool IsActive(float time, bool stateScopeEnded)
+        {
+            if (time < startTime)
+                return false;
+
+            if (durationMode == SkillEffectDurationMode.UntilStateExit)
+                return !stateScopeEnded;
+
+            return time <= startTime + Mathf.Max(0f, duration) + 0.0001f;
+        }
+    }
+
     [Serializable]
     public class SharedSkillDefinition
     {
@@ -736,11 +768,10 @@ namespace Game.Data
 
         [InspectorLabel("显示名称")]
         [Tooltip("用于技能树变异面板展示该技能效果的名称。留空时回退为技能ID。")]
-        [FormerlySerializedAs("displayName")]
         public string displayName = "";
 
         [InspectorLabel("动画 Trigger")]
-        [Tooltip("该技能效果对应发送给 Animator 的 Trigger 名。留空时回退到外部配置或技能ID。")]
+        [Tooltip("该技能效果对应发送给 Animator 的 Trigger 名。留空时回退为技能ID。")]
         public string animationTrigger = "";
 
         [Header("行为控制")]
@@ -773,6 +804,10 @@ namespace Game.Data
         [Tooltip("按原始时间轴顺序定义局部施法速度倍率和角色运动速度倍率。区间起止以技能默认原始时间轴为基准。")]
         public List<SkillSpeedEvent> speedEvents = new List<SkillSpeedEvent>();
 
+        [InspectorLabel("镜头区间列表")]
+        [Tooltip("按原始时间轴顺序定义技能/动作过程中的局部镜头运镜区间。区间起止以技能默认原始时间轴为基准。")]
+        public List<SkillCameraEvent> cameraEvents = new List<SkillCameraEvent>();
+
         public float GetTimelineDuration()
         {
             float maxTime = 0f;
@@ -782,6 +817,7 @@ namespace Game.Data
             maxTime = Mathf.Max(maxTime, GetMaxVfxEndTime(vfxEvents));
             maxTime = Mathf.Max(maxTime, GetMaxSfxEndTime(sfxEvents));
             maxTime = Mathf.Max(maxTime, GetMaxSpeedEndTime(speedEvents));
+            maxTime = Mathf.Max(maxTime, GetMaxCameraEndTime(cameraEvents));
             return maxTime;
         }
 
@@ -792,14 +828,11 @@ namespace Game.Data
                 : animationTrigger.Trim();
         }
 
-        public string GetResolvedAnimationTrigger(string fallbackTrigger = null)
+        public string GetResolvedAnimationTrigger()
         {
             string resolvedTrigger = GetAnimationTriggerOrEmpty();
             if (!string.IsNullOrWhiteSpace(resolvedTrigger))
                 return resolvedTrigger;
-
-            if (!string.IsNullOrWhiteSpace(fallbackTrigger))
-                return fallbackTrigger.Trim();
 
             if (!string.IsNullOrWhiteSpace(skillId))
                 return skillId.Trim();
@@ -816,7 +849,8 @@ namespace Game.Data
                 || HasUntilStateExitTopLevelEffects(attributeEvents)
                 || HasUntilStateExitEvent(vfxEvents)
                 || HasUntilStateExitEvent(sfxEvents)
-                || HasUntilStateExitSpeedEvents(speedEvents);
+                || HasUntilStateExitSpeedEvents(speedEvents)
+                || HasUntilStateExitCameraEvents(cameraEvents);
         }
 
         public float EvaluateCastSpeedMultiplier(float time, bool stateScopeEnded)
@@ -899,6 +933,22 @@ namespace Game.Data
             return maxTime;
         }
 
+        private static float GetMaxCameraEndTime(List<SkillCameraEvent> list)
+        {
+            float maxTime = 0f;
+            if (list == null)
+                return maxTime;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                SkillCameraEvent evt = list[i];
+                if (evt != null)
+                    maxTime = Mathf.Max(maxTime, evt.GetEndTime());
+            }
+
+            return maxTime;
+        }
+
         private static float GetMaxTimedEventEndTime<T>(List<T> list, Func<T, float> getTailDuration)
             where T : SkillTimedEventBase
         {
@@ -941,6 +991,21 @@ namespace Game.Data
             for (int i = 0; i < list.Count; i++)
             {
                 SkillSpeedEvent evt = list[i];
+                if (evt != null && evt.durationMode == SkillEffectDurationMode.UntilStateExit)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool HasUntilStateExitCameraEvents(List<SkillCameraEvent> list)
+        {
+            if (list == null)
+                return false;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                SkillCameraEvent evt = list[i];
                 if (evt != null && evt.durationMode == SkillEffectDurationMode.UntilStateExit)
                     return true;
             }

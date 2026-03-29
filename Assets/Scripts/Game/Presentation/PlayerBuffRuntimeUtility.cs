@@ -157,26 +157,6 @@ namespace Game.Presentation
                 : 1f;
         }
 
-        public static float GetActionPlaybackSpeed(PlayerModel player, string actionId)
-        {
-            return GetActionCastSpeedMultiplier(player?.Stats, actionId);
-        }
-
-        public static float GetActionAnimatorPlaybackSpeed(PlayerModel player, string actionId)
-        {
-            return GetActionAnimatorPlaybackSpeed(player?.Stats, actionId);
-        }
-
-        public static float GetActionPlaybackSpeed(Stats stats, string actionId)
-        {
-            return GetActionCastSpeedMultiplier(stats, actionId);
-        }
-
-        public static float GetActionAnimatorPlaybackSpeed(Stats stats, string actionId)
-        {
-            return GetActionCastSpeedMultiplier(stats, actionId);
-        }
-
         private static bool IsAttackSpeedAffectedAction(string actionId)
         {
             if (string.IsNullOrWhiteSpace(actionId))

@@ -48,6 +48,12 @@ namespace Game.Editor
         private static readonly Color VfxColor = new Color(0.92f, 0.80f, 0.18f, 0.88f);
         private static readonly Color SfxColor = new Color(0.92f, 0.55f, 0.18f, 0.88f);
         private static readonly Color SpeedColor = new Color(0.62f, 0.46f, 0.92f, 0.88f);
+        private static readonly Color CameraColor = new Color(0.24f, 0.82f, 0.92f, 0.88f);
+        private static readonly Color PathStartColor = new Color(0.25f, 0.95f, 0.35f, 0.95f);
+        private static readonly Color PathControlAColor = new Color(1f, 0.9f, 0.2f, 0.95f);
+        private static readonly Color PathControlBColor = new Color(1f, 0.55f, 0.18f, 0.95f);
+        private static readonly Color PathEndColor = new Color(1f, 0.28f, 0.28f, 0.95f);
+        private static readonly Color PathSampleColor = new Color(0.2f, 0.92f, 1f, 0.95f);
         private static readonly Color DefaultColor = new Color(0.55f, 0.55f, 0.55f, 0.88f);
         private static readonly Color SelectedOverlay = new Color(1f, 1f, 1f, 0.30f);
         private static readonly Color PlayheadColor = new Color(1f, 0.25f, 0.25f, 1f);
@@ -97,6 +103,7 @@ namespace Game.Editor
         private bool _showVfxEvents = true;
         private bool _showSfxEvents = true;
         private bool _showSpeedEvents = true;
+        private bool _showCameraEvents = true;
         private bool _filterDamageWithOnHitPhysics;
         private bool _filterDamageWithOnHitAttribute;
         private bool _filterDamageWithOnHitVfx;
@@ -190,6 +197,8 @@ namespace Game.Editor
             Sfx,
             [InspectorName("速度")]
             Speed,
+            [InspectorName("镜头")]
+            Camera,
         }
 
         private sealed class TimelineTrackLayout
@@ -206,6 +215,7 @@ namespace Game.Editor
             public int eventIndex;
             public SkillTimedEventBase timedEvent;
             public SkillSpeedEvent speedEvent;
+            public SkillCameraEvent cameraEvent;
         }
 
         private sealed class TimelinePreviewVfxInstance
@@ -347,7 +357,6 @@ namespace Game.Editor
                 && _activeSceneCompanionVfxDamageIndex < activeCompanionVfxDamageEvent.damageEffects.Count)
             {
                 SkillDamageEffect damageEffect = activeCompanionVfxDamageEvent.damageEffects[_activeSceneCompanionVfxDamageIndex];
-                damageEffect?.TryMigrateLegacySubEffects();
                 if (damageEffect?.companionVfxEffects != null
                     && _activeSceneCompanionVfxIndex >= 0
                     && _activeSceneCompanionVfxIndex < damageEffect.companionVfxEffects.Count
@@ -368,6 +377,9 @@ namespace Game.Editor
                 else
                     DrawDamageSceneHandle(damageEffect);
             }
+
+            if (_selectedEventTrackType == TimelineTrackType.Camera && GetSelectedCameraEvent() is SkillCameraEvent selectedCameraEvent)
+                DrawCameraSceneHandle(selectedCameraEvent);
         }
 
         private void DrawTimelinePreviewVfxBounds()
@@ -838,6 +850,7 @@ namespace Game.Editor
                             _showVfxEvents = true;
                             _showSfxEvents = true;
                             _showSpeedEvents = true;
+                            _showCameraEvents = true;
                             _filterDamageWithOnHitPhysics = false;
                             _filterDamageWithOnHitAttribute = false;
                             _filterDamageWithOnHitVfx = false;
@@ -850,7 +863,8 @@ namespace Game.Editor
                         _showAttributeEvents = GUILayout.Toggle(_showAttributeEvents, "属性", compactMidButtonStyle, GUILayout.Width(38f));
                         _showVfxEvents = GUILayout.Toggle(_showVfxEvents, "特效", compactMidButtonStyle, GUILayout.Width(38f));
                         _showSfxEvents = GUILayout.Toggle(_showSfxEvents, "音效", compactMidButtonStyle, GUILayout.Width(38f));
-                        _showSpeedEvents = GUILayout.Toggle(_showSpeedEvents, "速度", compactRightButtonStyle, GUILayout.Width(38f));
+                        _showSpeedEvents = GUILayout.Toggle(_showSpeedEvents, "速度", compactMidButtonStyle, GUILayout.Width(38f));
+                        _showCameraEvents = GUILayout.Toggle(_showCameraEvents, "镜头", compactRightButtonStyle, GUILayout.Width(38f));
 
                         GUILayout.Space(6f);
                         GUILayout.Label($"吸附: {GetSnapModeLabel()}", compactLabelStyle, GUILayout.Width(64f));
@@ -1882,6 +1896,12 @@ namespace Game.Editor
                 return;
             }
 
+            if (_selectedEventTrackType == TimelineTrackType.Camera)
+            {
+                DrawSelectedCameraEventInspector();
+                return;
+            }
+
             SkillTimedEventBase timedEvent = GetSelectedTimedEvent();
             if (timedEvent == null)
                 return;
@@ -1996,16 +2016,96 @@ namespace Game.Editor
             MarkDatabaseDirty();
         }
 
+        private void DrawSelectedCameraEventInspector()
+        {
+            SkillCameraEvent cameraEvent = GetSelectedCameraEvent();
+            if (cameraEvent == null)
+                return;
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("选中事件", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("事件摘要", GetCameraEventSummary(cameraEvent), EditorStyles.miniLabel);
+            EditorGUILayout.HelpBox("镜头位置始终相对于区间开始时玩家的快照位置与朝向来计算，镜头注视点则始终跟随玩家实时枢轴。", MessageType.None);
+
+            EditorGUI.BeginChangeCheck();
+            string newEventId = EditorGUILayout.TextField("事件标识 ID", cameraEvent.eventId ?? string.Empty);
+            float newStartTime = Mathf.Max(0f, EditorGUILayout.FloatField("开始时间(原始时间轴秒数)", cameraEvent.startTime));
+            EditorGUILayout.LabelField("开始时间(帧)", FormatFrameOnly(newStartTime), EditorStyles.miniLabel);
+            SkillEffectDurationMode newDurationMode = (SkillEffectDurationMode)EditorGUILayout.EnumPopup("持续方式", cameraEvent.durationMode);
+            float newDuration = cameraEvent.duration;
+            if (newDurationMode == SkillEffectDurationMode.FixedTime)
+            {
+                newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(原始时间轴秒数)", cameraEvent.duration));
+                EditorGUILayout.LabelField("持续时长(帧)", FormatFrameOnly(newDuration), EditorStyles.miniLabel);
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("该镜头区间会持续到当前状态退出。", MessageType.None);
+            }
+
+            SkillCameraPositionMode newPositionMode = (SkillCameraPositionMode)EditorGUILayout.EnumPopup("位置模式", cameraEvent.positionMode);
+            Vector3 newHoldLocalOffset = cameraEvent.holdLocalOffset;
+            Vector3 newPathStart = cameraEvent.pathStartLocalOffset;
+            Vector3 newControlA = cameraEvent.pathControlPointA;
+            Vector3 newControlB = cameraEvent.pathControlPointB;
+            Vector3 newPathEnd = cameraEvent.pathEndLocalOffset;
+            AnimationCurve newProgressCurve = cameraEvent.pathProgressCurve;
+            bool forceCameraPathApply = false;
+
+            if (newPositionMode == SkillCameraPositionMode.Hold)
+            {
+                newHoldLocalOffset = EditorGUILayout.Vector3Field("固定位置局部偏移", cameraEvent.holdLocalOffset);
+            }
+            else
+            {
+                newPathStart = EditorGUILayout.Vector3Field("路径起点局部偏移 [绿色方块]", cameraEvent.pathStartLocalOffset);
+                newControlA = EditorGUILayout.Vector3Field("路径控制点 A [黄色小球]", cameraEvent.pathControlPointA);
+                newControlB = EditorGUILayout.Vector3Field("路径控制点 B [橙色小球]", cameraEvent.pathControlPointB);
+                newPathEnd = EditorGUILayout.Vector3Field("路径终点局部偏移 [红色方块]", cameraEvent.pathEndLocalOffset);
+                newProgressCurve = EditorGUILayout.CurveField("路径进度曲线", cameraEvent.pathProgressCurve);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("一键均匀拉直", GUILayout.Width(108f)))
+                    {
+                        ApplyLinearBezierSegment(newPathStart, newPathEnd, out newControlA, out newControlB);
+                        newProgressCurve = CreateLinearProgressCurve();
+                        forceCameraPathApply = true;
+                    }
+                }
+            }
+
+            float newBlendInDuration = Mathf.Max(0f, EditorGUILayout.FloatField("混入时长(原始时间轴秒数)", cameraEvent.blendInDuration));
+            float newBlendOutDuration = Mathf.Max(0f, EditorGUILayout.FloatField("混出时长(原始时间轴秒数)", cameraEvent.blendOutDuration));
+            bool newLockLookInput = EditorGUILayout.Toggle("锁定镜头输入", cameraEvent.lockLookInput);
+
+            bool cameraInspectorChanged = EditorGUI.EndChangeCheck();
+            if (!cameraInspectorChanged && !forceCameraPathApply)
+                return;
+
+            Undo.RecordObject(_database, "Edit Camera Event");
+            cameraEvent.eventId = newEventId;
+            cameraEvent.startTime = SnapTime(newStartTime);
+            cameraEvent.durationMode = newDurationMode;
+            cameraEvent.duration = newDurationMode == SkillEffectDurationMode.FixedTime
+                ? SnapDuration(newDuration)
+                : 0f;
+            cameraEvent.positionMode = newPositionMode;
+            cameraEvent.holdLocalOffset = newHoldLocalOffset;
+            cameraEvent.pathStartLocalOffset = newPathStart;
+            cameraEvent.pathControlPointA = newControlA;
+            cameraEvent.pathControlPointB = newControlB;
+            cameraEvent.pathEndLocalOffset = newPathEnd;
+            cameraEvent.pathProgressCurve = newProgressCurve ?? AnimationCurve.Linear(0f, 0f, 1f, 1f);
+            cameraEvent.blendInDuration = SnapDuration(newBlendInDuration);
+            cameraEvent.blendOutDuration = SnapDuration(newBlendOutDuration);
+            cameraEvent.lockLookInput = newLockLookInput;
+            MarkDatabaseDirty();
+        }
+
         private void DrawDamageEffectsEditor(SkillTimelineEvent evt, SkillDamageEvent damageEvent)
         {
             EnsureDamageEffects(evt);
-
-            if (damageEvent != null && damageEvent.hitStopSettingsOwnedByEvent)
-            {
-                Undo.RecordObject(_database, "Migrate Damage Event Hit Stop");
-                if (damageEvent.TryMigrateLegacyHitStopSettings())
-                    MarkDatabaseDirty();
-            }
 
             EditorGUILayout.Space(8f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -2014,9 +2114,7 @@ namespace Game.Editor
             if (GUILayout.Button("添加", GUILayout.Width(48f)))
             {
                 Undo.RecordObject(_database, "Add Hit Effect");
-                SkillDamageEffect newEffect = new SkillDamageEffect();
-                newEffect.TryMigrateLegacySubEffects();
-                evt.damageEffects.Add(newEffect);
+                evt.damageEffects.Add(new SkillDamageEffect());
                 MarkDatabaseDirty();
             }
             GUILayout.EndHorizontal();
@@ -2025,7 +2123,6 @@ namespace Game.Editor
             for (int i = 0; i < evt.damageEffects.Count; i++)
             {
                 SkillDamageEffect effect = evt.damageEffects[i] ?? (evt.damageEffects[i] = new SkillDamageEffect());
-                effect.TryMigrateLegacySubEffects();
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal();
                 string effectSummary = GetDamageDetectionDisplayName(effect);
@@ -2098,10 +2195,11 @@ namespace Game.Editor
                             break;
                     }
 
+                    bool forceMotionApply = false;
                     if (newDetectionType != DamageDetectionType.Collision)
-                        DrawMotionSettingsEditor("移动设置", newMotion);
+                        forceMotionApply = DrawMotionSettingsEditor("移动设置", newMotion);
 
-                    if (EditorGUI.EndChangeCheck())
+                    if (EditorGUI.EndChangeCheck() || forceMotionApply)
                     {
                         Undo.RecordObject(_database, "Edit Hit Effect");
                         effect.detectionDuration = SnapDuration(newDetectionDuration);
@@ -2406,13 +2504,14 @@ namespace Game.Editor
                     Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", cue.rotationEuler);
                     Vector3 newScale = EditorGUILayout.Vector3Field("缩放", cue.scale);
                     SkillMotionSettings newMotion = CopyMotionSettings(cue.motion);
+                    bool forceMotionApply = false;
                     if (ShouldShowCueMotionSettings(newAnchor))
-                        DrawMotionSettingsEditor("移动设置", newMotion);
+                        forceMotionApply = DrawMotionSettingsEditor("移动设置", newMotion);
                     SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", cue.destroyMode);
                     float newDuration = cue.duration;
                     if (newDestroyMode == SkillCueDestroyMode.Timed)
                         newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", cue.duration));
-                    if (EditorGUI.EndChangeCheck())
+                    if (EditorGUI.EndChangeCheck() || forceMotionApply)
                     {
                         Undo.RecordObject(_database, "Edit VFX Effect");
                         cue.particlePrefab = newParticlePrefab;
@@ -2550,14 +2649,12 @@ namespace Game.Editor
 
         private static void EnsureHitDamageEffects(SkillDamageEffect effect)
         {
-            effect?.TryMigrateLegacySubEffects();
             if (effect != null && effect.onHitDamageEffects == null)
                 effect.onHitDamageEffects = new List<SkillHitDamageEffect>();
         }
 
         private static void EnsureHitStopEffect(SkillDamageEffect effect)
         {
-            effect?.TryMigrateLegacySubEffects();
             if (effect != null && effect.onHitStopEffect == null)
                 effect.onHitStopEffect = new SkillHitStopEffect();
         }
@@ -2808,15 +2905,23 @@ namespace Game.Editor
             return new SkillMotionSettings
             {
                 enabled = source.enabled,
+                mode = source.mode,
                 speed = source.speed,
                 direction = source.direction,
+                duration = source.duration,
+                pathControlPointA = source.pathControlPointA,
+                pathControlPointB = source.pathControlPointB,
+                pathEndOffset = source.pathEndOffset,
+                pathProgressCurve = CloneAnimationCurve(source.pathProgressCurve),
             };
         }
 
-        private static void DrawMotionSettingsEditor(string title, SkillMotionSettings motion)
+        private static bool DrawMotionSettingsEditor(string title, SkillMotionSettings motion)
         {
             if (motion == null)
-                return;
+                return false;
+
+            bool forceApply = false;
 
             EditorGUILayout.Space(2f);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -2824,10 +2929,66 @@ namespace Game.Editor
             motion.enabled = EditorGUILayout.Toggle("随时间移动", motion.enabled);
             if (motion.enabled)
             {
-                motion.speed = Mathf.Max(0f, EditorGUILayout.FloatField("移动速度(米/秒)", motion.speed));
-                motion.direction = EditorGUILayout.Vector3Field("移动方向", motion.direction);
+                motion.mode = (SkillMotionMode)EditorGUILayout.EnumPopup("运动模式", motion.mode);
+                if (motion.mode == SkillMotionMode.BezierPath)
+                {
+                    motion.duration = Mathf.Max(0f, EditorGUILayout.FloatField("路径时长(秒)", motion.duration));
+                    EditorGUILayout.HelpBox("路径起点 = 当前生成点/检测原点 [绿色方块]。", MessageType.None);
+                    motion.pathControlPointA = EditorGUILayout.Vector3Field("路径控制点 A [黄色小球]", motion.pathControlPointA);
+                    motion.pathControlPointB = EditorGUILayout.Vector3Field("路径控制点 B [橙色小球]", motion.pathControlPointB);
+                    motion.pathEndOffset = EditorGUILayout.Vector3Field("路径终点偏移 [红色方块]", motion.pathEndOffset);
+                    motion.pathProgressCurve = EditorGUILayout.CurveField("路径进度曲线", motion.pathProgressCurve ?? AnimationCurve.Linear(0f, 0f, 1f, 1f));
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        GUILayout.FlexibleSpace();
+                        if (GUILayout.Button("一键均匀拉直", GUILayout.Width(108f)))
+                        {
+                            StraightenMotionBezierPath(motion);
+                            forceApply = true;
+                        }
+                    }
+                }
+                else
+                {
+                    motion.speed = Mathf.Max(0f, EditorGUILayout.FloatField("移动速度(米/秒)", motion.speed));
+                    motion.direction = EditorGUILayout.Vector3Field("移动方向", motion.direction);
+                }
             }
             EditorGUILayout.EndVertical();
+            return forceApply;
+        }
+
+        private static void StraightenMotionBezierPath(SkillMotionSettings motion)
+        {
+            if (motion == null)
+                return;
+
+            ApplyLinearBezierSegment(Vector3.zero, motion.pathEndOffset, out motion.pathControlPointA, out motion.pathControlPointB);
+            motion.pathProgressCurve = CreateLinearProgressCurve();
+        }
+
+        private static void ApplyLinearBezierSegment(Vector3 start, Vector3 end, out Vector3 controlA, out Vector3 controlB)
+        {
+            controlA = Vector3.Lerp(start, end, 1f / 3f);
+            controlB = Vector3.Lerp(start, end, 2f / 3f);
+        }
+
+        private static AnimationCurve CreateLinearProgressCurve()
+        {
+            return AnimationCurve.Linear(0f, 0f, 1f, 1f);
+        }
+
+        private static AnimationCurve CloneAnimationCurve(AnimationCurve source)
+        {
+            if (source == null)
+                return AnimationCurve.Linear(0f, 0f, 1f, 1f);
+
+            AnimationCurve clone = new AnimationCurve(source.keys)
+            {
+                preWrapMode = source.preWrapMode,
+                postWrapMode = source.postWrapMode
+            };
+            return clone;
         }
 
         private static bool ShouldShowCueMotionSettings(CueAnchor anchor)
@@ -3043,7 +3204,6 @@ namespace Game.Editor
             if (damageEffect == null)
                 return;
 
-            damageEffect.TryMigrateLegacySubEffects();
             if (damageEffect.companionVfxEffects == null)
                 damageEffect.companionVfxEffects = new List<SkillVfxEffect>();
         }
@@ -3126,13 +3286,14 @@ namespace Game.Editor
                     Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                     Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
                     SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
+                    bool forceMotionApply = false;
                     if (ShouldShowCueMotionSettings(newAnchor))
-                        DrawMotionSettingsEditor("移动设置", newMotion);
+                        forceMotionApply = DrawMotionSettingsEditor("移动设置", newMotion);
                     SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
                     float newDuration = effect.duration;
                     if (newDestroyMode == SkillCueDestroyMode.Timed)
                         newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("销毁时间(秒)", effect.duration));
-                    if (EditorGUI.EndChangeCheck())
+                    if (EditorGUI.EndChangeCheck() || forceMotionApply)
                     {
                         Undo.RecordObject(_database, "Edit Nested VFX Effect");
                         effect.particlePrefab = newParticlePrefab;
@@ -3275,7 +3436,6 @@ namespace Game.Editor
             {
                 case TimelineTrackType.Damage:
                     var hitEffect = new SkillDamageEffect();
-                    hitEffect.TryMigrateLegacySubEffects();
                     var damageEvent = new SkillDamageEvent
                     {
                         eventId = eventId,
@@ -3343,6 +3503,20 @@ namespace Game.Editor
                     GetSpeedEventList(skill).Add(speedEvent);
                     newIndex = GetSpeedEventList(skill).Count - 1;
                     break;
+
+                case TimelineTrackType.Camera:
+                    var cameraEvent = new SkillCameraEvent
+                    {
+                        eventId = eventId,
+                        startTime = startTime,
+                        durationMode = SkillEffectDurationMode.FixedTime,
+                        duration = SnapDuration(Mathf.Max(0.2f, GetActiveSnapStep() * 4f)),
+                        positionMode = SkillCameraPositionMode.Hold,
+                        pathProgressCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f),
+                    };
+                    GetCameraEventList(skill).Add(cameraEvent);
+                    newIndex = GetCameraEventList(skill).Count - 1;
+                    break;
             }
 
             if (newIndex >= 0)
@@ -3362,6 +3536,13 @@ namespace Game.Editor
                 if (speedEvent == null)
                     return;
                 s_eventClipboardJson = JsonUtility.ToJson(speedEvent);
+            }
+            else if (_selectedEventTrackType == TimelineTrackType.Camera)
+            {
+                SkillCameraEvent cameraEvent = GetSelectedCameraEvent();
+                if (cameraEvent == null)
+                    return;
+                s_eventClipboardJson = JsonUtility.ToJson(cameraEvent);
             }
             else
             {
@@ -3436,6 +3617,16 @@ namespace Game.Editor
                     GetSpeedEventList(skill).Add(speedEvent);
                     newIndex = GetSpeedEventList(skill).Count - 1;
                     break;
+
+                case TimelineTrackType.Camera:
+                    SkillCameraEvent cameraEvent = JsonUtility.FromJson<SkillCameraEvent>(s_eventClipboardJson);
+                    if (cameraEvent == null)
+                        return;
+                    cameraEvent.startTime = SnapTime(_previewTime);
+                    cameraEvent.pathProgressCurve ??= AnimationCurve.Linear(0f, 0f, 1f, 1f);
+                    GetCameraEventList(skill).Add(cameraEvent);
+                    newIndex = GetCameraEventList(skill).Count - 1;
+                    break;
             }
 
             if (newIndex >= 0)
@@ -3449,8 +3640,12 @@ namespace Game.Editor
                 return;
 
             float offset = Mathf.Max(GetSelectedEventDisplayDuration(), Mathf.Max(0.1f, GetActiveSnapStep()));
-            SkillTimedEventBase source = _selectedEventTrackType == TimelineTrackType.Speed ? null : GetSelectedTimedEvent();
-            if (_selectedEventTrackType != TimelineTrackType.Speed && source == null)
+            SkillTimedEventBase source = (_selectedEventTrackType == TimelineTrackType.Speed || _selectedEventTrackType == TimelineTrackType.Camera)
+                ? null
+                : GetSelectedTimedEvent();
+            if (_selectedEventTrackType != TimelineTrackType.Speed
+                && _selectedEventTrackType != TimelineTrackType.Camera
+                && source == null)
                 return;
 
             Undo.RecordObject(_database, "Duplicate Skill Event");
@@ -3512,6 +3707,19 @@ namespace Game.Editor
                     clonedSpeedEvent.startTime = SnapTime(sourceSpeedEvent.startTime + offset);
                     GetSpeedEventList(skill).Add(clonedSpeedEvent);
                     newIndex = GetSpeedEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Camera:
+                    SkillCameraEvent sourceCameraEvent = GetSelectedCameraEvent();
+                    if (sourceCameraEvent == null)
+                        return;
+                    SkillCameraEvent clonedCameraEvent = JsonUtility.FromJson<SkillCameraEvent>(JsonUtility.ToJson(sourceCameraEvent));
+                    if (clonedCameraEvent == null)
+                        return;
+                    clonedCameraEvent.startTime = SnapTime(sourceCameraEvent.startTime + offset);
+                    clonedCameraEvent.pathProgressCurve ??= AnimationCurve.Linear(0f, 0f, 1f, 1f);
+                    GetCameraEventList(skill).Add(clonedCameraEvent);
+                    newIndex = GetCameraEventList(skill).Count - 1;
                     break;
             }
 
@@ -3592,6 +3800,10 @@ namespace Game.Editor
                     GetSpeedEventList(skill).RemoveAt(_selectedEventIndex);
                     _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetSpeedEventList(skill).Count - 1);
                     break;
+                case TimelineTrackType.Camera:
+                    GetCameraEventList(skill).RemoveAt(_selectedEventIndex);
+                    _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetCameraEventList(skill).Count - 1);
+                    break;
             }
             DestroyScenePreviewCueInstance();
             MarkDatabaseDirty();
@@ -3609,6 +3821,7 @@ namespace Game.Editor
             GetVfxEventList(skill).Clear();
             GetSfxEventList(skill).Clear();
             GetSpeedEventList(skill).Clear();
+            GetCameraEventList(skill).Clear();
 
             _selectedEventIndex = -1;
             _activeSceneDamageEventIndex = -1;
@@ -3644,12 +3857,14 @@ namespace Game.Editor
             Undo.RecordObject(_database, "Sort Skill Events");
             SkillTimedEventBase selectedEvent = GetSelectedTimedEvent();
             SkillSpeedEvent selectedSpeedEvent = GetSelectedSpeedEvent();
+            SkillCameraEvent selectedCameraEvent = GetSelectedCameraEvent();
             SortTimedEventList(GetDamageEventList(skill));
             SortTimedEventList(GetPhysicsEventList(skill));
             SortTimedEventList(GetAttributeEventList(skill));
             SortTimedEventList(GetVfxEventList(skill));
             SortTimedEventList(GetSfxEventList(skill));
             SortSpeedEventList(GetSpeedEventList(skill));
+            SortCameraEventList(GetCameraEventList(skill));
 
             if (selectedEvent != null)
             {
@@ -3660,6 +3875,12 @@ namespace Game.Editor
             else if (selectedSpeedEvent != null)
             {
                 int newIndex = FindTrackSpeedEventIndex(skill, selectedSpeedEvent);
+                if (newIndex >= 0)
+                    _selectedEventIndex = newIndex;
+            }
+            else if (selectedCameraEvent != null)
+            {
+                int newIndex = FindTrackCameraEventIndex(skill, selectedCameraEvent);
                 if (newIndex >= 0)
                     _selectedEventIndex = newIndex;
             }
@@ -3700,6 +3921,23 @@ namespace Game.Editor
             });
         }
 
+        private static void SortCameraEventList(List<SkillCameraEvent> events)
+        {
+            if (events == null)
+                return;
+
+            events.Sort((left, right) =>
+            {
+                if (ReferenceEquals(left, right))
+                    return 0;
+                if (left == null)
+                    return 1;
+                if (right == null)
+                    return -1;
+                return left.startTime.CompareTo(right.startTime);
+            });
+        }
+
         private int FindTrackEventIndex(SharedSkillDefinition skill, TimelineTrackType trackType, SkillTimedEventBase target)
         {
             if (skill == null || target == null)
@@ -3724,6 +3962,21 @@ namespace Game.Editor
             for (int i = 0; i < speedEvents.Count; i++)
             {
                 if (ReferenceEquals(speedEvents[i], target))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private int FindTrackCameraEventIndex(SharedSkillDefinition skill, SkillCameraEvent target)
+        {
+            if (skill == null || target == null)
+                return -1;
+
+            List<SkillCameraEvent> cameraEvents = GetCameraEventList(skill);
+            for (int i = 0; i < cameraEvents.Count; i++)
+            {
+                if (ReferenceEquals(cameraEvents[i], target))
                     return i;
             }
 
@@ -4230,7 +4483,6 @@ namespace Game.Editor
                         for (int damageEffectIndex = 0; damageEffectIndex < evt.damageEffects.Count; damageEffectIndex++)
                         {
                             SkillDamageEffect damageEffect = evt.damageEffects[damageEffectIndex];
-                            damageEffect?.TryMigrateLegacySubEffects();
                             if (damageEffect == null
                                 || damageEffect.detectionType == DamageDetectionType.Collision
                                 || damageEffect.detectionDuration <= 0f
@@ -4494,12 +4746,7 @@ namespace Game.Editor
             Vector3 basisPosition = preview.position;
             Quaternion basisRotation = preview.rotation;
             if (damageEffect.motion != null && damageEffect.motion.IsActive)
-            {
-                Vector3 motionDirection = damageEffect.motion.direction.sqrMagnitude > 0.0001f
-                    ? damageEffect.motion.direction.normalized
-                    : Vector3.forward;
-                motionOffset = basisRotation * motionDirection * (damageEffect.motion.speed * elapsed);
-            }
+                motionOffset = damageEffect.motion.EvaluateLocalDisplacement(elapsed);
 
             switch (damageEffect.detectionType)
             {
@@ -5600,8 +5847,6 @@ namespace Game.Editor
                                 if (effect == null)
                                     continue;
 
-                                effect.TryMigrateLegacySubEffects();
-
                                 string detectionLabel = effect.detectionType switch
                                 {
                                     DamageDetectionType.RangeOverlap => effect.shape switch
@@ -5938,7 +6183,6 @@ namespace Game.Editor
             if (effect == null)
                 return string.Empty;
 
-            effect.TryMigrateLegacySubEffects();
             var parts = new List<string>();
             if (effect.onHitDamageEffects != null && effect.onHitDamageEffects.Count > 0)
                 parts.Add($"命中伤害:{JoinHitDamageEffectValues(effect.onHitDamageEffects)}");
@@ -6097,6 +6341,15 @@ namespace Game.Editor
             return skill.speedEvents;
         }
 
+        private List<SkillCameraEvent> GetCameraEventList(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return null;
+            if (skill.cameraEvents == null)
+                skill.cameraEvents = new List<SkillCameraEvent>();
+            return skill.cameraEvents;
+        }
+
         private int GetTrackEventCount(SharedSkillDefinition skill, TimelineTrackType trackType)
         {
             return trackType switch
@@ -6107,6 +6360,7 @@ namespace Game.Editor
                 TimelineTrackType.Vfx => GetVfxEventList(skill)?.Count ?? 0,
                 TimelineTrackType.Sfx => GetSfxEventList(skill)?.Count ?? 0,
                 TimelineTrackType.Speed => GetSpeedEventList(skill)?.Count ?? 0,
+                TimelineTrackType.Camera => GetCameraEventList(skill)?.Count ?? 0,
                 _ => 0,
             };
         }
@@ -6121,7 +6375,8 @@ namespace Game.Editor
                 + GetTrackEventCount(skill, TimelineTrackType.Attribute)
                 + GetTrackEventCount(skill, TimelineTrackType.Vfx)
                 + GetTrackEventCount(skill, TimelineTrackType.Sfx)
-                + GetTrackEventCount(skill, TimelineTrackType.Speed);
+                + GetTrackEventCount(skill, TimelineTrackType.Speed)
+                + GetTrackEventCount(skill, TimelineTrackType.Camera);
         }
 
         private SkillTimedEventBase GetTrackEvent(SharedSkillDefinition skill, TimelineTrackType trackType, int eventIndex)
@@ -6165,6 +6420,23 @@ namespace Game.Editor
             return GetTrackSpeedEvent(skill, _selectedEventTrackType, _selectedEventIndex);
         }
 
+        private SkillCameraEvent GetTrackCameraEvent(SharedSkillDefinition skill, TimelineTrackType trackType, int eventIndex)
+        {
+            if (trackType != TimelineTrackType.Camera || skill == null || eventIndex < 0)
+                return null;
+
+            List<SkillCameraEvent> cameraEvents = GetCameraEventList(skill);
+            return eventIndex < cameraEvents.Count ? cameraEvents[eventIndex] : null;
+        }
+
+        private SkillCameraEvent GetSelectedCameraEvent()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return null;
+            return GetTrackCameraEvent(skill, _selectedEventTrackType, _selectedEventIndex);
+        }
+
         private float? GetSelectedEventStartTime()
         {
             if (!HasSelectedEvent())
@@ -6172,6 +6444,9 @@ namespace Game.Editor
 
             if (_selectedEventTrackType == TimelineTrackType.Speed)
                 return GetSelectedSpeedEvent()?.startTime;
+
+            if (_selectedEventTrackType == TimelineTrackType.Camera)
+                return GetSelectedCameraEvent()?.startTime;
 
             return GetSelectedTimedEvent()?.startTime;
         }
@@ -6184,14 +6459,20 @@ namespace Game.Editor
             if (_selectedEventTrackType == TimelineTrackType.Speed)
                 return GetTrackDisplayDuration(GetSelectedSpeedEvent(), _selectedEventTrackType);
 
+            if (_selectedEventTrackType == TimelineTrackType.Camera)
+                return GetTrackDisplayDuration(GetSelectedCameraEvent(), _selectedEventTrackType);
+
             return GetTrackDisplayDuration(GetSelectedTimedEvent(), _selectedEventTrackType);
         }
 
         private object GetTrackEventObject(SharedSkillDefinition skill, TimelineTrackType trackType, int eventIndex)
         {
-            return trackType == TimelineTrackType.Speed
-                ? (object)GetTrackSpeedEvent(skill, trackType, eventIndex)
-                : GetTrackEvent(skill, trackType, eventIndex);
+            return trackType switch
+            {
+                TimelineTrackType.Speed => GetTrackSpeedEvent(skill, trackType, eventIndex),
+                TimelineTrackType.Camera => GetTrackCameraEvent(skill, trackType, eventIndex),
+                _ => GetTrackEvent(skill, trackType, eventIndex),
+            };
         }
 
         private List<TimelineEventHandle> GetTrackEventHandles(SharedSkillDefinition skill, TimelineTrackType trackType)
@@ -6214,6 +6495,26 @@ namespace Game.Editor
                         trackType = trackType,
                         eventIndex = i,
                         speedEvent = speedEvent,
+                    });
+                }
+
+                return handles;
+            }
+
+            if (trackType == TimelineTrackType.Camera)
+            {
+                List<SkillCameraEvent> cameraEvents = GetCameraEventList(skill);
+                for (int i = 0; i < cameraEvents.Count; i++)
+                {
+                    SkillCameraEvent cameraEvent = cameraEvents[i];
+                    if (cameraEvent == null)
+                        continue;
+
+                    handles.Add(new TimelineEventHandle
+                    {
+                        trackType = trackType,
+                        eventIndex = i,
+                        cameraEvent = cameraEvent,
                     });
                 }
 
@@ -7120,13 +7421,18 @@ namespace Game.Editor
             if (handle == null)
                 return null;
 
-            return handle.speedEvent != null ? handle.speedEvent : (object)handle.timedEvent;
+            if (handle.cameraEvent != null)
+                return handle.cameraEvent;
+            if (handle.speedEvent != null)
+                return handle.speedEvent;
+            return handle.timedEvent;
         }
 
         private static float GetTrackEventStartTime(object evt)
         {
             return evt switch
             {
+                SkillCameraEvent cameraEvent => cameraEvent.startTime,
                 SkillSpeedEvent speedEvent => speedEvent.startTime,
                 SkillTimedEventBase timedEvent => timedEvent.startTime,
                 _ => 0f,
@@ -7137,6 +7443,9 @@ namespace Game.Editor
         {
             switch (evt)
             {
+                case SkillCameraEvent cameraEvent:
+                    cameraEvent.startTime = startTime;
+                    break;
                 case SkillSpeedEvent speedEvent:
                     speedEvent.startTime = startTime;
                     break;
@@ -7150,6 +7459,15 @@ namespace Game.Editor
         {
             if (evt is SkillTimedEventBase timedEvent)
                 return GetEventDisplayWidth(timedEvent, trackType);
+
+            if (evt is SkillCameraEvent cameraEvent)
+            {
+                float duration = GetTrackDisplayDuration(cameraEvent, trackType);
+                if (duration > 0f)
+                    return Mathf.Max(MinEventWidth, duration * _zoom);
+
+                return Mathf.Max(MinEventWidth, 12f);
+            }
 
             if (evt is SkillSpeedEvent speedEvent)
             {
@@ -7179,6 +7497,9 @@ namespace Game.Editor
         {
             if (evt is SkillTimedEventBase timedEvent)
                 return GetTrackDisplayDuration(timedEvent, trackType);
+
+            if (evt is SkillCameraEvent cameraEvent)
+                return GetTrackDisplayDuration(cameraEvent, trackType);
 
             if (evt is SkillSpeedEvent speedEvent)
                 return GetTrackDisplayDuration(speedEvent, trackType);
@@ -7216,11 +7537,28 @@ namespace Game.Editor
             return Mathf.Max(0f, evt.duration);
         }
 
+        private float GetTrackDisplayDuration(SkillCameraEvent evt, TimelineTrackType trackType)
+        {
+            if (evt == null)
+                return 0f;
+
+            if (evt.durationMode == SkillEffectDurationMode.UntilStateExit)
+                return Mathf.Max(0f, GetPreviewStateExitTime() - evt.startTime);
+
+            return Mathf.Max(0f, evt.duration);
+        }
+
         private void SetTrackDisplayDuration(object evt, TimelineTrackType trackType, float duration)
         {
             if (evt is SkillTimedEventBase timedEvent)
             {
                 SetTrackDisplayDuration(timedEvent, trackType, duration);
+                return;
+            }
+
+            if (evt is SkillCameraEvent cameraEvent)
+            {
+                SetTrackDisplayDuration(cameraEvent, duration);
                 return;
             }
 
@@ -7357,6 +7695,15 @@ namespace Game.Editor
             evt.duration = Mathf.Max(0.01f, duration);
         }
 
+        private static void SetTrackDisplayDuration(SkillCameraEvent evt, float duration)
+        {
+            if (evt == null)
+                return;
+
+            evt.durationMode = SkillEffectDurationMode.FixedTime;
+            evt.duration = Mathf.Max(0.01f, duration);
+        }
+
         private static float GetMaxDamageDetectionDuration(SkillDamageEvent evt)
         {
             if (evt?.damageEffects == null)
@@ -7389,6 +7736,7 @@ namespace Game.Editor
                 TimelineTrackType.Vfx => VfxColor,
                 TimelineTrackType.Sfx => SfxColor,
                 TimelineTrackType.Speed => SpeedColor,
+                TimelineTrackType.Camera => CameraColor,
                 _ => DefaultColor,
             };
         }
@@ -7403,6 +7751,7 @@ namespace Game.Editor
                 TimelineTrackType.Vfx => "特效轨",
                 TimelineTrackType.Sfx => "音效轨",
                 TimelineTrackType.Speed => "速度轨",
+                TimelineTrackType.Camera => "镜头轨",
                 _ => "轨道",
             };
         }
@@ -7411,6 +7760,9 @@ namespace Game.Editor
         {
             if (evt is SkillTimedEventBase timedEvent)
                 return GetTrackEventLabel(timedEvent, trackType);
+
+            if (evt is SkillCameraEvent cameraEvent)
+                return GetTrackEventLabel(cameraEvent, trackType);
 
             if (evt is SkillSpeedEvent speedEvent)
                 return GetTrackEventLabel(speedEvent, trackType);
@@ -7460,6 +7812,16 @@ namespace Game.Editor
             return string.IsNullOrEmpty(detail) ? prefix : $"{prefix} {detail}";
         }
 
+        private string GetTrackEventLabel(SkillCameraEvent evt, TimelineTrackType trackType)
+        {
+            if (evt == null)
+                return "evt";
+
+            string prefix = !string.IsNullOrEmpty(evt.eventId) ? evt.eventId : "镜头";
+            string detail = GetCameraEventSummary(evt);
+            return string.IsNullOrEmpty(detail) ? prefix : $"{prefix} {detail}";
+        }
+
         private static string GetEventSummary(SkillTimelineEvent evt)
         {
             if (evt == null)
@@ -7479,6 +7841,15 @@ namespace Game.Editor
                 return string.Empty;
 
             return $"[施法x{evt.castSpeedMultiplier:0.##}/运动x{evt.movementSpeedMultiplier:0.##}]";
+        }
+
+        private static string GetCameraEventSummary(SkillCameraEvent evt)
+        {
+            if (evt == null)
+                return string.Empty;
+
+            string modeLabel = evt.positionMode == SkillCameraPositionMode.BezierPath ? "路径" : "固定";
+            return $"[{modeLabel}/混入{evt.blendInDuration:0.##}/混出{evt.blendOutDuration:0.##}]";
         }
 
         private static int GetDamageEffectCount(SkillTimelineEvent evt)
@@ -7688,8 +8059,6 @@ namespace Game.Editor
                         continue;
                     }
 
-                    effect.TryMigrateLegacySubEffects();
-
                     if (string.IsNullOrWhiteSpace(effect.hitLayerName))
                         warnings.Add($"命中效果 {i + 1} 没有填写命中层级名。");
 
@@ -7728,6 +8097,26 @@ namespace Game.Editor
                             SkillVfxEffect companionVfx = effect.companionVfxEffects[j];
                             if (companionVfx != null && companionVfx.particlePrefab == null)
                                 warnings.Add($"命中效果 {i + 1} 的伴随特效效果 {j + 1} 没有粒子特效 Prefab。");
+                        }
+                    }
+
+                    if (effect.onHitVfxEffects != null)
+                    {
+                        for (int j = 0; j < effect.onHitVfxEffects.Count; j++)
+                        {
+                            SkillVfxEffect onHitVfx = effect.onHitVfxEffects[j];
+                            if (onHitVfx == null)
+                            {
+                                warnings.Add($"命中效果 {i + 1} 的命中特效效果 {j + 1} 为空引用。");
+                                continue;
+                            }
+
+                            if (onHitVfx.particlePrefab == null)
+                                warnings.Add($"命中效果 {i + 1} 的命中特效效果 {j + 1} 没有粒子特效 Prefab。");
+                            if (onHitVfx.destroyMode == SkillCueDestroyMode.Timed && onHitVfx.duration <= 0f)
+                                warnings.Add($"命中效果 {i + 1} 的命中特效效果 {j + 1} 选择了“指定秒数销毁”，但销毁时间未大于 0。");
+                            if (UsesUnmanagedWorldMotion(onHitVfx))
+                                warnings.Add($"命中效果 {i + 1} 的命中特效效果 {j + 1} 使用了“World 挂点 + 随时间移动 + 等待自然销毁”；若 Prefab 不会自行销毁，运行时会一直留在场景中。");
                         }
                     }
 
@@ -7806,6 +8195,8 @@ namespace Game.Editor
                         warnings.Add($"特效效果 {i + 1} 没有粒子特效 Prefab。");
                     if (cue.destroyMode == SkillCueDestroyMode.Timed && cue.duration <= 0f)
                         warnings.Add($"特效效果 {i + 1} 选择了“指定秒数销毁”，但销毁时间未大于 0。");
+                    if (UsesUnmanagedWorldMotion(cue))
+                        warnings.Add($"特效效果 {i + 1} 使用了“World 挂点 + 随时间移动 + 等待自然销毁”；若 Prefab 不会自行销毁，运行时会一直留在场景中。");
                 }
             }
 
@@ -7851,6 +8242,7 @@ namespace Game.Editor
             CollectEventIdWarnings(eventIds, GetVfxEventList(skill), TimelineTrackType.Vfx);
             CollectEventIdWarnings(eventIds, GetSfxEventList(skill), TimelineTrackType.Sfx);
             CollectSpeedEventIdWarnings(eventIds, GetSpeedEventList(skill));
+            CollectCameraEventIdWarnings(eventIds, GetCameraEventList(skill));
 
             foreach (var pair in eventIds)
             {
@@ -7868,6 +8260,15 @@ namespace Game.Editor
                 CollectPreviewTargetWarnings(warnings, skill);
 
             return warnings;
+        }
+
+        private static bool UsesUnmanagedWorldMotion(SkillVfxEffect effect)
+        {
+            return effect != null
+                   && effect.anchor == CueAnchor.World
+                   && effect.motion != null
+                   && effect.motion.IsActive
+                   && effect.destroyMode == SkillCueDestroyMode.NaturalDestroy;
         }
 
         private void CollectEventIdWarnings<T>(Dictionary<string, List<string>> map, List<T> events, TimelineTrackType trackType) where T : SkillTimedEventBase
@@ -7909,6 +8310,27 @@ namespace Game.Editor
                 }
 
                 uses.Add($"{GetTrackHeaderLabel(TimelineTrackType.Speed)}#{i + 1}");
+            }
+        }
+
+        private void CollectCameraEventIdWarnings(Dictionary<string, List<string>> map, List<SkillCameraEvent> events)
+        {
+            if (events == null)
+                return;
+
+            for (int i = 0; i < events.Count; i++)
+            {
+                SkillCameraEvent evt = events[i];
+                if (evt == null || string.IsNullOrWhiteSpace(evt.eventId))
+                    continue;
+
+                if (!map.TryGetValue(evt.eventId, out var uses))
+                {
+                    uses = new List<string>();
+                    map.Add(evt.eventId, uses);
+                }
+
+                uses.Add($"{GetTrackHeaderLabel(TimelineTrackType.Camera)}#{i + 1}");
             }
         }
 
@@ -7990,6 +8412,7 @@ namespace Game.Editor
                 TimelineTrackType.Vfx,
                 TimelineTrackType.Sfx,
                 TimelineTrackType.Speed,
+                TimelineTrackType.Camera,
             };
 
             float currentY = y;
@@ -8106,6 +8529,7 @@ namespace Game.Editor
                 TimelineTrackType.Vfx => _showVfxEvents,
                 TimelineTrackType.Sfx => _showSfxEvents,
                 TimelineTrackType.Speed => _showSpeedEvents,
+                TimelineTrackType.Camera => _showCameraEvents,
                 _ => true,
             };
         }
@@ -8141,16 +8565,14 @@ namespace Game.Editor
                 return;
 
             Vector3 motionOffset = Vector3.zero;
+            float motionElapsed = 0f;
             if (CueUsesWorldMotion(cue))
             {
-                float elapsed = Mathf.Max(0f, _previewTime - triggerTime);
+                motionElapsed = Mathf.Max(0f, _previewTime - triggerTime);
                 Quaternion motionBasisRotation = cue.anchor == CueAnchor.World && _scenePreviewCueHasWorldOrigin
                     ? _scenePreviewCueWorldOriginRotation
                     : anchor.rotation;
-                Vector3 direction = cue.motion.direction.sqrMagnitude > 0.0001f
-                    ? cue.motion.direction.normalized
-                    : Vector3.forward;
-                motionOffset = motionBasisRotation * direction * (cue.motion.speed * elapsed);
+                motionOffset = EvaluateEditorMotionOffset(cue.motion, motionBasisRotation, motionElapsed);
             }
 
             Vector3 scale = cue.scale;
@@ -8188,6 +8610,28 @@ namespace Game.Editor
             }
 
             DrawSceneCueBounds(cue, worldPosition, worldRotation);
+
+            if (cue.anchor == CueAnchor.World
+                && cue.motion != null
+                && cue.motion.enabled
+                && cue.motion.mode == SkillMotionMode.BezierPath)
+            {
+                Quaternion motionBasisRotation = _scenePreviewCueHasWorldOrigin
+                    ? _scenePreviewCueWorldOriginRotation
+                    : anchor.rotation;
+                Vector3 motionOriginPosition = _scenePreviewCueHasWorldOrigin
+                    ? _scenePreviewCueWorldOriginPosition
+                    : anchor.TransformPoint(cue.offset);
+                bool motionPathChanged = DrawBezierMotionSceneHandles(cue.motion, motionOriginPosition, motionBasisRotation, motionElapsed);
+                if (motionPathChanged)
+                {
+                    MarkDatabaseDirty();
+                    DestroyScenePreviewCueInstance();
+                    UpdateScenePreviewCueInstance();
+                    Repaint();
+                    SceneView.RepaintAll();
+                }
+            }
 
             Handles.color = oldColor;
         }
@@ -8258,6 +8702,7 @@ namespace Game.Editor
             Vector3 basisPosition = preview.position;
             Quaternion basisRotation = preview.rotation;
             Vector3 motionOffset = Vector3.zero;
+            float motionElapsed = 0f;
             float resolvedTriggerTime;
             bool hasTriggerTime = triggerTime.HasValue;
             if (hasTriggerTime)
@@ -8276,10 +8721,8 @@ namespace Game.Editor
                 {
                     basisPosition = motionFrame.Value.OriginPosition;
                     basisRotation = motionFrame.Value.OriginRotation;
-                    Vector3 motionDirection = effect.motion.direction.sqrMagnitude > 0.0001f
-                        ? effect.motion.direction.normalized
-                        : Vector3.forward;
-                    motionOffset = basisRotation * motionDirection * (effect.motion.speed * motionFrame.Value.Elapsed);
+                    motionElapsed = motionFrame.Value.Elapsed;
+                    motionOffset = effect.motion.EvaluateLocalDisplacement(motionElapsed);
                 }
             }
 
@@ -8349,8 +8792,22 @@ namespace Game.Editor
                     break;
             }
 
+            if (effect.motion != null
+                && effect.motion.enabled
+                && effect.motion.mode == SkillMotionMode.BezierPath)
+            {
+                Vector3 motionOriginPosition = origin - motionOffset;
+                if (DrawBezierMotionSceneHandles(effect.motion, motionOriginPosition, basisRotation, motionElapsed))
+                    changed = true;
+            }
+
             if (changed)
+            {
                 MarkDatabaseDirty();
+                UpdateScenePreviewCueInstance();
+                Repaint();
+                SceneView.RepaintAll();
+            }
 
             Handles.color = oldColor;
         }
@@ -8361,6 +8818,7 @@ namespace Game.Editor
             Vector3 basisPosition = preview.position;
             Quaternion basisRotation = preview.rotation;
             Vector3 motionOffset = Vector3.zero;
+            float motionElapsed = 0f;
             float resolvedTriggerTime;
             bool hasTriggerTime = triggerTime.HasValue;
             if (hasTriggerTime)
@@ -8379,10 +8837,8 @@ namespace Game.Editor
                 {
                     basisPosition = motionFrame.Value.OriginPosition;
                     basisRotation = motionFrame.Value.OriginRotation;
-                    Vector3 motionDirection = effect.motion.direction.sqrMagnitude > 0.0001f
-                        ? effect.motion.direction.normalized
-                        : Vector3.forward;
-                    motionOffset = basisRotation * motionDirection * (effect.motion.speed * motionFrame.Value.Elapsed);
+                    motionElapsed = motionFrame.Value.Elapsed;
+                    motionOffset = effect.motion.EvaluateLocalDisplacement(motionElapsed);
                 }
             }
 
@@ -8444,10 +8900,88 @@ namespace Game.Editor
                 changed = true;
             }
 
+            if (effect.motion != null
+                && effect.motion.enabled
+                && effect.motion.mode == SkillMotionMode.BezierPath)
+            {
+                Vector3 motionOriginPosition = origin - motionOffset;
+                if (DrawBezierMotionSceneHandles(effect.motion, motionOriginPosition, basisRotation, motionElapsed))
+                    changed = true;
+            }
+
             if (changed)
+            {
                 MarkDatabaseDirty();
+                UpdateScenePreviewCueInstance();
+                Repaint();
+                SceneView.RepaintAll();
+            }
 
             Handles.color = oldColor;
+        }
+
+        private bool DrawBezierMotionSceneHandles(SkillMotionSettings motion, Vector3 originPosition, Quaternion basisRotation, float elapsed)
+        {
+            if (motion == null || !motion.enabled || motion.mode != SkillMotionMode.BezierPath)
+                return false;
+
+            float handleSize = HandleUtility.GetHandleSize(originPosition);
+            Vector3 start = originPosition;
+            Vector3 controlA = originPosition + basisRotation * motion.pathControlPointA;
+            Vector3 controlB = originPosition + basisRotation * motion.pathControlPointB;
+            Vector3 end = originPosition + basisRotation * motion.pathEndOffset;
+            Vector3 samplePosition = originPosition + motion.EvaluateWorldDisplacement(basisRotation, Mathf.Max(0f, elapsed));
+
+            Color oldColor = Handles.color;
+            Color pathColor = Handles.color;
+            pathColor.a = 0.92f;
+            Handles.color = pathColor;
+            Handles.DrawLine(start, controlA);
+            Handles.DrawLine(controlB, end);
+            Handles.DrawBezier(start, end, controlA, controlB, Handles.color, null, 3f);
+
+            DrawSceneTextLabel(samplePosition + Vector3.up * handleSize * 0.15f, "当前路径点");
+            DrawSceneTextLabel(start + Vector3.up * handleSize * 0.06f, "路径起点");
+            DrawSceneTextLabel(controlA + Vector3.up * handleSize * 0.06f, "控制A");
+            DrawSceneTextLabel(controlB + Vector3.up * handleSize * 0.06f, "控制B");
+            DrawSceneTextLabel(end + Vector3.up * handleSize * 0.06f, "路径终点");
+            DrawBezierPointMarkers(start, controlA, controlB, end, samplePosition, handleSize);
+
+            bool changed = false;
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newControlA = Handles.PositionHandle(controlA, basisRotation);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Motion Path Scene Handle");
+                motion.pathControlPointA = Quaternion.Inverse(basisRotation) * (newControlA - originPosition);
+                controlA = newControlA;
+                changed = true;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newControlB = Handles.PositionHandle(controlB, basisRotation);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Motion Path Scene Handle");
+                motion.pathControlPointB = Quaternion.Inverse(basisRotation) * (newControlB - originPosition);
+                controlB = newControlB;
+                changed = true;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newEnd = Handles.PositionHandle(end, basisRotation);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Motion Path Scene Handle");
+                motion.pathEndOffset = Quaternion.Inverse(basisRotation) * (newEnd - originPosition);
+                end = newEnd;
+                changed = true;
+            }
+
+            DrawWireSphere(samplePosition, handleSize * 0.08f, _previewTarget.transform);
+            Handles.color = oldColor;
+            return changed;
         }
 
         private void DrawCollisionDamageSceneHandle(SkillDamageEffect effect)
@@ -8499,6 +9033,163 @@ namespace Game.Editor
             }
 
             Handles.color = oldColor;
+        }
+
+        private void DrawCameraSceneHandle(SkillCameraEvent cameraEvent)
+        {
+            if (cameraEvent == null || _previewTarget == null)
+                return;
+
+            Vector3 basisPosition = _previewTarget.transform.position;
+            Quaternion basisRotation = Quaternion.Euler(0f, _previewTarget.transform.eulerAngles.y, 0f);
+            Vector3 lookAtPosition = ResolveCameraPreviewLookAtPosition();
+            float handleSize = HandleUtility.GetHandleSize(lookAtPosition);
+            Color oldColor = Handles.color;
+            Handles.color = GetTrackColor(TimelineTrackType.Camera);
+
+            if (cameraEvent.positionMode == SkillCameraPositionMode.Hold)
+            {
+                Vector3 worldPosition = basisPosition + basisRotation * cameraEvent.holdLocalOffset;
+                DrawSceneTextLabel(worldPosition + Vector3.up * handleSize * 0.15f, "镜头固定点");
+                DrawCameraPreviewLookLine(worldPosition, lookAtPosition);
+
+                EditorGUI.BeginChangeCheck();
+                Vector3 newWorldPosition = Handles.PositionHandle(worldPosition, basisRotation);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(_database, "Edit Camera Scene Handle");
+                    cameraEvent.holdLocalOffset = Quaternion.Inverse(basisRotation) * (newWorldPosition - basisPosition);
+                    MarkDatabaseDirty();
+                    SceneView.RepaintAll();
+                }
+
+                DrawWireSphere(worldPosition, handleSize * 0.12f, _previewTarget.transform);
+                Handles.color = oldColor;
+                return;
+            }
+
+            Vector3 start = basisPosition + basisRotation * cameraEvent.pathStartLocalOffset;
+            Vector3 controlA = basisPosition + basisRotation * cameraEvent.pathControlPointA;
+            Vector3 controlB = basisPosition + basisRotation * cameraEvent.pathControlPointB;
+            Vector3 end = basisPosition + basisRotation * cameraEvent.pathEndLocalOffset;
+
+            Handles.DrawLine(start, controlA);
+            Handles.DrawLine(controlB, end);
+            Handles.DrawBezier(start, end, controlA, controlB, Handles.color, null, 3f);
+
+            float sampleNormalizedTime = GetCameraPreviewNormalizedTime(cameraEvent);
+            float sampleProgress = EvaluateCameraPreviewProgress(cameraEvent.pathProgressCurve, sampleNormalizedTime);
+            Vector3 samplePosition = EvaluateEditorCubicBezier(start, controlA, controlB, end, sampleProgress);
+
+            DrawCameraPreviewLookLine(samplePosition, lookAtPosition);
+            DrawSceneTextLabel(samplePosition + Vector3.up * handleSize * 0.15f, "当前镜头");
+            DrawSceneTextLabel(start + Vector3.up * handleSize * 0.06f, "镜头起点");
+            DrawSceneTextLabel(controlA + Vector3.up * handleSize * 0.06f, "控制A");
+            DrawSceneTextLabel(controlB + Vector3.up * handleSize * 0.06f, "控制B");
+            DrawSceneTextLabel(end + Vector3.up * handleSize * 0.06f, "镜头终点");
+            DrawBezierPointMarkers(start, controlA, controlB, end, samplePosition, handleSize);
+
+            bool changed = false;
+            EditorGUI.BeginChangeCheck();
+            Vector3 newStart = Handles.PositionHandle(start, basisRotation);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Camera Scene Handle");
+                cameraEvent.pathStartLocalOffset = Quaternion.Inverse(basisRotation) * (newStart - basisPosition);
+                start = newStart;
+                changed = true;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newControlA = Handles.PositionHandle(controlA, basisRotation);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Camera Scene Handle");
+                cameraEvent.pathControlPointA = Quaternion.Inverse(basisRotation) * (newControlA - basisPosition);
+                controlA = newControlA;
+                changed = true;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newControlB = Handles.PositionHandle(controlB, basisRotation);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Camera Scene Handle");
+                cameraEvent.pathControlPointB = Quaternion.Inverse(basisRotation) * (newControlB - basisPosition);
+                controlB = newControlB;
+                changed = true;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            Vector3 newEnd = Handles.PositionHandle(end, basisRotation);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_database, "Edit Camera Scene Handle");
+                cameraEvent.pathEndLocalOffset = Quaternion.Inverse(basisRotation) * (newEnd - basisPosition);
+                end = newEnd;
+                changed = true;
+            }
+
+            DrawWireSphere(samplePosition, handleSize * 0.09f, _previewTarget.transform);
+
+            if (changed)
+            {
+                MarkDatabaseDirty();
+                SceneView.RepaintAll();
+            }
+
+            Handles.color = oldColor;
+        }
+
+        private Vector3 ResolveCameraPreviewLookAtPosition()
+        {
+            return _previewTarget != null
+                ? _previewTarget.transform.position + Vector3.up * 1.5f
+                : Vector3.zero;
+        }
+
+        private void DrawCameraPreviewLookLine(Vector3 cameraPosition, Vector3 lookAtPosition)
+        {
+            Color oldColor = Handles.color;
+            Color lineColor = Handles.color;
+            lineColor.a = 0.75f;
+            Handles.color = lineColor;
+            Handles.DrawDottedLine(cameraPosition, lookAtPosition, 4f);
+            DrawSceneTextLabel(lookAtPosition + Vector3.up * HandleUtility.GetHandleSize(lookAtPosition) * 0.08f, "注视玩家");
+            Handles.color = oldColor;
+        }
+
+        private float GetCameraPreviewNormalizedTime(SkillCameraEvent cameraEvent)
+        {
+            if (cameraEvent == null)
+                return 0f;
+
+            float endTime = cameraEvent.durationMode == SkillEffectDurationMode.FixedTime
+                ? cameraEvent.startTime + Mathf.Max(0f, cameraEvent.duration)
+                : Mathf.Max(cameraEvent.startTime, GetPreviewStateExitTime());
+
+            if (endTime <= cameraEvent.startTime + 0.0001f)
+                return 0f;
+
+            return Mathf.Clamp01((_previewTime - cameraEvent.startTime) / (endTime - cameraEvent.startTime));
+        }
+
+        private static float EvaluateCameraPreviewProgress(AnimationCurve curve, float normalizedTime)
+        {
+            if (curve == null || curve.length == 0)
+                return Mathf.Clamp01(normalizedTime);
+
+            return Mathf.Clamp01(curve.Evaluate(Mathf.Clamp01(normalizedTime)));
+        }
+
+        private static Vector3 EvaluateEditorCubicBezier(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
+        {
+            float clampedT = Mathf.Clamp01(t);
+            float oneMinusT = 1f - clampedT;
+            return oneMinusT * oneMinusT * oneMinusT * p0
+                   + 3f * oneMinusT * oneMinusT * clampedT * p1
+                   + 3f * oneMinusT * clampedT * clampedT * p2
+                   + clampedT * clampedT * clampedT * p3;
         }
 
         private void UpdateScenePreviewCueInstance()
@@ -8656,7 +9347,6 @@ namespace Game.Editor
             }
 
             damageEffect = evt.damageEffects[_activeSceneCompanionVfxDamageIndex];
-            damageEffect?.TryMigrateLegacySubEffects();
             if (damageEffect?.companionVfxEffects == null
                 || _activeSceneCompanionVfxIndex >= damageEffect.companionVfxEffects.Count)
             {
@@ -9180,10 +9870,7 @@ namespace Game.Editor
             if (!CueUsesWorldMotion(cue))
                 return;
 
-            Vector3 direction = cue.motion.direction.sqrMagnitude > 0.0001f
-                ? cue.motion.direction.normalized
-                : Vector3.forward;
-            position += originRotation * direction * (cue.motion.speed * Mathf.Max(0f, elapsed));
+            position += EvaluateEditorMotionOffset(cue.motion, originRotation, Mathf.Max(0f, elapsed));
         }
 
         private static bool CueUsesWorldMotion(SkillVfxEffect cue)
@@ -9192,6 +9879,14 @@ namespace Game.Editor
                 && cue.anchor == CueAnchor.World
                 && cue.motion != null
                 && cue.motion.IsActive;
+        }
+
+        private static Vector3 EvaluateEditorMotionOffset(SkillMotionSettings motion, Quaternion basisRotation, float elapsed)
+        {
+            if (motion == null || !motion.IsActive)
+                return Vector3.zero;
+
+            return motion.EvaluateWorldDisplacement(basisRotation, Mathf.Max(0f, elapsed));
         }
 
         private void DrawSceneCueBounds(SkillVfxEffect cue, Vector3 worldPosition, Quaternion worldRotation)
@@ -9303,6 +9998,31 @@ namespace Game.Editor
             Handles.DrawWireDisc(center, preview.forward, radius);
         }
 
+        private static void DrawBezierPointMarkers(Vector3 start, Vector3 controlA, Vector3 controlB, Vector3 end, Vector3 samplePosition, float handleSize)
+        {
+            DrawPathPointMarker(start, handleSize * 0.12f, PathStartColor, PathPointMarkerShape.Cube);
+            DrawPathPointMarker(controlA, handleSize * 0.1f, PathControlAColor, PathPointMarkerShape.Sphere);
+            DrawPathPointMarker(controlB, handleSize * 0.1f, PathControlBColor, PathPointMarkerShape.Sphere);
+            DrawPathPointMarker(end, handleSize * 0.12f, PathEndColor, PathPointMarkerShape.Cube);
+            DrawPathPointMarker(samplePosition, handleSize * 0.08f, PathSampleColor, PathPointMarkerShape.Sphere);
+        }
+
+        private static void DrawPathPointMarker(Vector3 position, float size, Color color, PathPointMarkerShape shape)
+        {
+            Color oldColor = Handles.color;
+            Handles.color = color;
+            switch (shape)
+            {
+                case PathPointMarkerShape.Sphere:
+                    Handles.SphereHandleCap(0, position, Quaternion.identity, size, EventType.Repaint);
+                    break;
+                default:
+                    Handles.CubeHandleCap(0, position, Quaternion.identity, size, EventType.Repaint);
+                    break;
+            }
+            Handles.color = oldColor;
+        }
+
         private static void DrawWireSector(Vector3 center, Vector3 forward, Vector3 up, float radius, float angle)
         {
             Vector3 planarForward = Vector3.ProjectOnPlane(forward, up).normalized;
@@ -9322,6 +10042,12 @@ namespace Game.Editor
             Handles.matrix = Matrix4x4.TRS(center, rotation, Vector3.one);
             Handles.DrawWireCube(Vector3.zero, size);
             Handles.matrix = oldMatrix;
+        }
+
+        private enum PathPointMarkerShape
+        {
+            Cube,
+            Sphere,
         }
 
         private static void ApplyHideFlagsRecursively(GameObject root, HideFlags flags)

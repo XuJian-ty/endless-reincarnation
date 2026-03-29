@@ -767,7 +767,7 @@ namespace Game.Presentation
                 SharedSkillDefinition definition = ResolveRuntimeSkillDefinition(entry);
                 if (definition != null)
                 {
-                    string definitionTrigger = definition.GetResolvedAnimationTrigger(entry.GetResolvedAnimationTrigger());
+                    string definitionTrigger = definition.GetResolvedAnimationTrigger();
                     if (!string.IsNullOrWhiteSpace(definitionTrigger))
                         return definitionTrigger;
                 }
@@ -1409,7 +1409,7 @@ namespace Game.Presentation
             _timelineRunner?.Stop();
             _timelineRunner = new SkillTimelineRunner();
             SharedSkillDefinition runtimeDefinition = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(transform, definition, actionId);
-            float playbackSpeed = PlayerBuffRuntimeUtility.GetActionPlaybackSpeed(_combatStats, actionId);
+            float playbackSpeed = PlayerBuffRuntimeUtility.GetActionCastSpeedMultiplier(_combatStats, actionId);
             float timelineDuration = runtimeDefinition.GetTimelineDuration();
             float effectiveDuration = overrideDuration > 0f
                 ? overrideDuration
@@ -1432,7 +1432,7 @@ namespace Game.Presentation
                 return _timelineRunner.CurrentCastSpeedMultiplier;
             }
 
-            return PlayerBuffRuntimeUtility.GetActionAnimatorPlaybackSpeed(_combatStats, actionId);
+            return PlayerBuffRuntimeUtility.GetActionCastSpeedMultiplier(_combatStats, actionId);
         }
 
         private Vector3 ResolveCombatAnchor(Vector3 targetPosition, float distanceToTarget, PlayerCloneTacticalMode tacticalMode, bool usingRangedAttackMode)

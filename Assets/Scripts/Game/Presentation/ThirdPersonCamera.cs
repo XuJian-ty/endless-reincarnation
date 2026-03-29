@@ -38,7 +38,9 @@ namespace Game.Presentation
         public float GetMovementYaw()
         {
             float yaw = _yaw;
-            if (_inputHandler != null && !IsLookInputBlocked())
+            bool lockLookInput = TryGetActiveCameraOverride(out SkillTimelineRunner.CameraOverrideRequest cameraOverride)
+                                 && cameraOverride.LockLookInput;
+            if (_inputHandler != null && !IsLookInputBlocked(lockLookInput))
                 yaw += _inputHandler.CurrentInput.LookDelta.x * _sensitivityX;
             return yaw;
         }
@@ -80,7 +82,9 @@ namespace Game.Presentation
             if (_target == null || _inputHandler == null)
                 return;
 
-            if (!IsLookInputBlocked())
+            bool hasCameraOverride = TryGetActiveCameraOverride(out SkillTimelineRunner.CameraOverrideRequest cameraOverride);
+            bool lockLookInput = hasCameraOverride && cameraOverride.LockLookInput;
+            if (!IsLookInputBlocked(lockLookInput))
             {
                 var input = _inputHandler.CurrentInput;
                 _yaw += input.LookDelta.x * _sensitivityX;
@@ -91,22 +95,71 @@ namespace Game.Presentation
             Vector3 pivotPos = _target.position + Vector3.up * _targetHeight;
             Quaternion rotation = Quaternion.Euler(_pitch, _yaw, 0f);
             Vector3 desiredPos = pivotPos + rotation * (Vector3.back * _distance);
+            Vector3 resolvedBasePosition = ResolveCameraCollision(pivotPos, desiredPos);
 
-            Vector3 dir = (desiredPos - pivotPos).normalized;
-            float dist = _distance;
-            if (Physics.SphereCast(pivotPos, _collisionRadius, dir, out var hit, _distance, _collisionMask))
-                dist = Mathf.Max(hit.distance - _collisionRadius, 0.5f);
+            if (hasCameraOverride && cameraOverride.IsActive)
+            {
+                Vector3 overridePosition = ResolveCameraCollision(cameraOverride.LookAtPosition, cameraOverride.DesiredPosition);
+                float blendWeight = Mathf.Clamp01(cameraOverride.BlendWeight);
+                Vector3 finalPosition = Vector3.Lerp(resolvedBasePosition, overridePosition, blendWeight);
+                Vector3 finalLookAt = Vector3.Lerp(pivotPos, cameraOverride.LookAtPosition, blendWeight);
+                transform.position = finalPosition;
+                transform.LookAt(finalLookAt);
+                SyncAnglesFromCameraPose(finalPosition, finalLookAt);
+                return;
+            }
 
-            transform.position = pivotPos + dir * dist;
+            transform.position = resolvedBasePosition;
             transform.LookAt(pivotPos);
         }
 
-        private static bool IsLookInputBlocked()
+        private bool TryGetActiveCameraOverride(out SkillTimelineRunner.CameraOverrideRequest request)
+        {
+            request = default;
+            if (_target == null)
+                return false;
+
+            PlayerController player = _target.GetComponent<PlayerController>();
+            PlayerStateBase currentState = player?.StateMachine?.CurrentState;
+            return currentState != null && currentState.TryGetCurrentCameraOverride(_targetHeight, out request);
+        }
+
+        private Vector3 ResolveCameraCollision(Vector3 lookAtPosition, Vector3 desiredPosition)
+        {
+            Vector3 offset = desiredPosition - lookAtPosition;
+            float desiredDistance = offset.magnitude;
+            if (desiredDistance <= 0.0001f)
+                return desiredPosition;
+
+            Vector3 dir = offset / desiredDistance;
+            float resolvedDistance = desiredDistance;
+            if (Physics.SphereCast(lookAtPosition, _collisionRadius, dir, out var hit, desiredDistance, _collisionMask))
+                resolvedDistance = Mathf.Clamp(hit.distance - _collisionRadius, 0.05f, desiredDistance);
+
+            return lookAtPosition + dir * resolvedDistance;
+        }
+
+        private void SyncAnglesFromCameraPose(Vector3 cameraPosition, Vector3 lookAtPosition)
+        {
+            Vector3 toTarget = lookAtPosition - cameraPosition;
+            Vector3 fromTarget = cameraPosition - lookAtPosition;
+            float planarDistance = new Vector2(toTarget.x, toTarget.z).magnitude;
+            if (planarDistance <= 0.0001f && Mathf.Abs(fromTarget.y) <= 0.0001f)
+                return;
+
+            _yaw = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+            _pitch = Mathf.Atan2(fromTarget.y, Mathf.Max(0.0001f, new Vector2(fromTarget.x, fromTarget.z).magnitude)) * Mathf.Rad2Deg;
+            _pitch = Mathf.Clamp(_pitch, _minPitch, _maxPitch);
+            _anglesInitialized = true;
+        }
+
+        private static bool IsLookInputBlocked(bool cameraLookLocked)
         {
             var gsm = GameStateMachine.GetInstance();
             return gsm?.IsGameplayPaused == true
                    || GameplayUIInputBridge.IsAnyGameplayPanelOpen()
-                   || SkillEffectExecutor.IsCameraLookBlockedByHitStop;
+                   || SkillEffectExecutor.IsCameraLookBlockedByHitStop
+                   || cameraLookLocked;
         }
 
         private void EnsureReferences()

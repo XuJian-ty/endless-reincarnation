@@ -318,7 +318,7 @@ namespace Game.UI
                 SharedSkillDefinition definition = GetSharedSkillDefinition(entry, comboIndex);
                 if (definition != null)
                 {
-                    string definitionTrigger = definition.GetResolvedAnimationTrigger(entry.GetResolvedAnimationTrigger());
+                    string definitionTrigger = definition.GetResolvedAnimationTrigger();
                     if (!string.IsNullOrWhiteSpace(definitionTrigger))
                         return definitionTrigger;
                 }
@@ -588,7 +588,10 @@ namespace Game.UI
                 if (effect == null || effect.particlePrefab == null)
                     return null;
 
-                bool detachFromAnchor = effect.motion != null && effect.motion.IsActive;
+                bool useWorldMotion = effect.anchor == CueAnchor.World
+                    && effect.motion != null
+                    && effect.motion.IsActive;
+                bool detachFromAnchor = useWorldMotion;
                 GameObject instance;
                 if (anchor != null && !detachFromAnchor)
                 {
@@ -607,8 +610,8 @@ namespace Game.UI
 
                 instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale);
                 SetLayerRecursively(instance.transform, _previewLayer);
-                ConfigurePreviewParticleSystems(instance, effect.motion);
-                ApplyCueMotion(instance, effect.motion, caster, anchor);
+                ConfigurePreviewParticleSystems(instance, effect.motion, useWorldMotion);
+                ApplyCueMotion(instance, effect.motion, caster, useWorldMotion);
                 return instance;
             }
 
@@ -631,12 +634,12 @@ namespace Game.UI
                     SetLayerRecursively(root.GetChild(i), layer);
             }
 
-            private static void ConfigurePreviewParticleSystems(GameObject instance, SkillMotionSettings motion)
+            private static void ConfigurePreviewParticleSystems(GameObject instance, SkillMotionSettings motion, bool useWorldMotion)
             {
                 if (instance == null)
                     return;
 
-                bool useMotion = motion != null && motion.IsActive;
+                bool useMotion = motion != null && motion.IsActive && useWorldMotion;
                 ParticleSystem[] particleSystems = instance.GetComponentsInChildren<ParticleSystem>(true);
                 for (int i = 0; i < particleSystems.Length; i++)
                 {
@@ -652,17 +655,18 @@ namespace Game.UI
                 }
             }
 
-            private static void ApplyCueMotion(GameObject instance, SkillMotionSettings motion, Transform caster, Transform anchor)
+            private static void ApplyCueMotion(GameObject instance, SkillMotionSettings motion, Transform caster, bool useWorldMotion)
             {
-                if (instance == null || caster == null || motion == null || !motion.IsActive)
+                if (instance == null || caster == null || motion == null || !motion.IsActive || !useWorldMotion)
                     return;
 
-                Vector3 worldVelocity = caster.TransformDirection(motion.direction.normalized) * motion.speed;
+                Vector3 originPosition = instance.transform.position;
+                Quaternion originRotation = caster.rotation;
                 Quaternion lockedRotation = instance.transform.rotation;
                 SkillCueMover mover = instance.GetComponent<SkillCueMover>();
                 if (mover == null)
                     mover = instance.AddComponent<SkillCueMover>();
-                mover.Initialize(worldVelocity, false, true, true, lockedRotation);
+                mover.Initialize(originPosition, originRotation, motion, true, true, lockedRotation);
             }
 
             private static EventState[] BuildStates<T>(List<T> events) where T : SkillTimedEventBase

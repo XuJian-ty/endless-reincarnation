@@ -398,7 +398,6 @@ namespace Game.Editor
             created.skillId = actionId;
             created.skillEffectDatabase = sharedSkillDatabase;
             created.displayName = displayName;
-            created.animationTrigger = string.Empty;
             created.isPassive = false;
             created.entryGroup = PlayerSkillEntryGroup.ActiveSkill;
 
@@ -571,7 +570,6 @@ namespace Game.Editor
                 talentCost = 2,
                 mpCost = 10,
                 cooldownSeconds = 3f,
-                passiveStatModifier = new StatModifier(),
                 actionPolicies = new List<PlayerStateActionPolicyRule>
                 {
                     new PlayerStateActionPolicyRule { action = GameAction.Dodge, policy = TransitionPolicy.Interrupt },

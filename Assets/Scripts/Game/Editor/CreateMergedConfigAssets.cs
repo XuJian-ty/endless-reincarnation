@@ -860,12 +860,12 @@ namespace Game.Editor
             var db = ScriptableObject.CreateInstance<SkillConfigDatabaseSO>();
             db.entries = new List<SkillConfigEntry>
             {
-                CreateBaseActionEntry("NormalIdle", "正常待机", "NormalLocomotion"),
-                CreateBaseActionEntry("NormalWalk", "正常走路", "NormalLocomotion"),
-                CreateBaseActionEntry("NormalRun", "正常跑步", "NormalLocomotion"),
-                CreateBaseActionEntry("AimIdle", "射击待机", "AimLocomotion", supportedAttackModes: PlayerAttackModeMask.Ranged),
-                CreateBaseActionEntry("AimWalk", "射击走路", "AimLocomotion", supportedAttackModes: PlayerAttackModeMask.Ranged),
-                CreateBaseActionEntry("AimRun", "射击跑步", "AimLocomotion", supportedAttackModes: PlayerAttackModeMask.Ranged),
+                CreateBaseActionEntry("NormalIdle", "正常待机"),
+                CreateBaseActionEntry("NormalWalk", "正常走路"),
+                CreateBaseActionEntry("NormalRun", "正常跑步"),
+                CreateBaseActionEntry("AimIdle", "射击待机", supportedAttackModes: PlayerAttackModeMask.Ranged),
+                CreateBaseActionEntry("AimWalk", "射击走路", supportedAttackModes: PlayerAttackModeMask.Ranged),
+                CreateBaseActionEntry("AimRun", "射击跑步", supportedAttackModes: PlayerAttackModeMask.Ranged),
                 CreateBaseActionEntry("Jump", "跳跃"),
                 CreateBaseActionEntry("Dodge", "闪避"),
                 CreateBaseActionEntry("Fall", "坠落"),
@@ -882,9 +882,9 @@ namespace Game.Editor
                 CreateBaseActionEntry("FallAttackLoop", "下落攻击循环"),
                 CreateBaseActionEntry("FallAttackLand", "下落攻击着陆"),
                 CreateBaseActionEntry("HitStun", "受击"),
-                CreateBaseActionEntry("PlayerDeath", "死亡", "Dead"),
+                CreateBaseActionEntry("PlayerDeath", "死亡"),
                 CreateBaseActionEntry("Shoot", "射击", supportedAttackModes: PlayerAttackModeMask.Ranged),
-                CreateBaseActionEntry("ShootCharge", "持续射击", "Shoot_Charge", supportedAttackModes: PlayerAttackModeMask.Ranged),
+                CreateBaseActionEntry("ShootCharge", "持续射击", supportedAttackModes: PlayerAttackModeMask.Ranged),
                 CreateBaseActionEntry("Aim", "瞄准", supportedAttackModes: PlayerAttackModeMask.Ranged),
             };
 
@@ -1038,9 +1038,6 @@ namespace Game.Editor
                 existing.displayName = defaults.displayName;
             if (string.IsNullOrWhiteSpace(existing.description))
                 existing.description = defaults.description;
-            if (string.IsNullOrWhiteSpace(existing.animationTrigger))
-                existing.animationTrigger = defaults.animationTrigger;
-
             existing.isPassive = defaults.isPassive;
             existing.entryGroup = defaults.entryGroup;
 
@@ -1087,9 +1084,7 @@ namespace Game.Editor
                 supportedAttackModes = source.supportedAttackModes,
                 talentCost = source.talentCost,
                 mpCost = source.mpCost,
-                animationTrigger = source.animationTrigger,
                 cooldownSeconds = source.cooldownSeconds,
-                passiveStatModifier = source.passiveStatModifier,
                 actionPolicies = CloneActionPolicies(source.actionPolicies),
                 pendingReleaseRules = ClonePendingReleaseRules(source.pendingReleaseRules),
                 overrideNaturalExitNormalizedTime = source.overrideNaturalExitNormalizedTime,
@@ -1198,7 +1193,6 @@ namespace Game.Editor
         private static SkillConfigEntry CreateBaseActionEntry(
             string actionId,
             string displayName,
-            string animationTrigger = null,
             PlayerAttackModeMask supportedAttackModes = PlayerAttackModeMask.All)
         {
             SkillConfigEntry entry = new SkillConfigEntry
@@ -1213,7 +1207,6 @@ namespace Game.Editor
                 talentCost = 0,
                 mpCost = 0,
                 cooldownSeconds = 0f,
-                animationTrigger = string.Empty,
             };
 
             ApplyDefaultActionRules(entry);
@@ -1233,7 +1226,6 @@ namespace Game.Editor
                 talentCost = 2,
                 mpCost = 10,
                 cooldownSeconds = 3f,
-                animationTrigger = string.Empty,
             };
 
             ApplyDefaultActionRules(entry);

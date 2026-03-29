@@ -151,7 +151,7 @@ namespace Game.Editor
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
-            EditorGUILayout.HelpBox("动画 Trigger 已移至“技能效果库”对应 skillId 的默认技能效果项中维护；当前条目的旧版动画 Trigger 仅作为兼容回退，不建议继续在这里编辑。", MessageType.Info);
+            EditorGUILayout.HelpBox("动画 Trigger 统一在“技能效果库”对应 skillId 的默认技能效果项中维护。", MessageType.Info);
             DrawProperty(entryProp, nameof(SkillConfigEntry.supportedAttackModes));
             DrawActionRuleFields(entryProp);
         }
@@ -164,7 +164,7 @@ namespace Game.Editor
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillIcon));
-            EditorGUILayout.HelpBox("动画 Trigger 已移至“技能效果库”对应 skillId 的默认技能效果项中维护；当前条目的旧版动画 Trigger 仅作为兼容回退，不建议继续在这里编辑。", MessageType.Info);
+            EditorGUILayout.HelpBox("动画 Trigger 统一在“技能效果库”对应 skillId 的默认技能效果项中维护。", MessageType.Info);
             DrawProperty(entryProp, nameof(SkillConfigEntry.supportedAttackModes));
             DrawProperty(entryProp, nameof(SkillConfigEntry.talentCost));
             DrawProperty(entryProp, nameof(SkillConfigEntry.mpCost));
@@ -181,7 +181,7 @@ namespace Game.Editor
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillIcon));
             DrawProperty(entryProp, nameof(SkillConfigEntry.talentCost));
-            EditorGUILayout.HelpBox("被动属性加成改由“被动技能效果库”统一配置；当前条目只保留技能ID映射。旧版被动属性加成字段仍保留为兼容回退，但不建议继续填写。", MessageType.Info);
+            EditorGUILayout.HelpBox("被动属性加成统一在“被动技能效果库”中配置；当前条目只保留技能ID映射。", MessageType.Info);
         }
 
         private void DrawProperty(SerializedProperty entryProp, string relativeName)
@@ -403,10 +403,6 @@ namespace Game.Editor
             if (mpCost != null)
                 mpCost.intValue = group == PlayerSkillEntryGroup.ActiveSkill ? 10 : 0;
 
-            SerializedProperty animationTrigger = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.animationTrigger));
-            if (animationTrigger != null)
-                animationTrigger.stringValue = string.Empty;
-
             SerializedProperty cooldown = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.cooldownSeconds));
             if (cooldown != null)
                 cooldown.floatValue = group == PlayerSkillEntryGroup.ActiveSkill ? 3f : 0f;
@@ -414,10 +410,6 @@ namespace Game.Editor
             SerializedProperty supportedAttackModes = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.supportedAttackModes));
             if (supportedAttackModes != null)
                 supportedAttackModes.intValue = (int)PlayerAttackModeMask.All;
-
-            SerializedProperty passiveStatModifier = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.passiveStatModifier));
-            if (passiveStatModifier != null)
-                ResetStatModifier(passiveStatModifier);
 
             SerializedProperty actionPolicies = entryProp.FindPropertyRelative(nameof(SkillConfigEntry.actionPolicies));
             if (actionPolicies != null)
@@ -471,30 +463,5 @@ namespace Game.Editor
             AddActionPolicy(actionPolicies, (int)actionValue, (int)policyValue);
         }
 
-        private static void ResetStatModifier(SerializedProperty prop)
-        {
-            if (prop == null)
-                return;
-
-            SerializedProperty iterator = prop.Copy();
-            SerializedProperty end = iterator.GetEndProperty();
-            bool enterChildren = true;
-            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
-            {
-                enterChildren = false;
-                switch (iterator.propertyType)
-                {
-                    case SerializedPropertyType.Float:
-                        iterator.floatValue = 0f;
-                        break;
-                    case SerializedPropertyType.Integer:
-                        iterator.intValue = 0;
-                        break;
-                    case SerializedPropertyType.Boolean:
-                        iterator.boolValue = false;
-                        break;
-                }
-            }
-        }
     }
 }
