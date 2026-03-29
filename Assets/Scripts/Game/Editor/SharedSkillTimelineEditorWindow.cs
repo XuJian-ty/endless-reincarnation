@@ -47,6 +47,7 @@ namespace Game.Editor
         private static readonly Color AttributeColor = new Color(0.28f, 0.78f, 0.38f, 0.88f);
         private static readonly Color VfxColor = new Color(0.92f, 0.80f, 0.18f, 0.88f);
         private static readonly Color SfxColor = new Color(0.92f, 0.55f, 0.18f, 0.88f);
+        private static readonly Color SpeedColor = new Color(0.62f, 0.46f, 0.92f, 0.88f);
         private static readonly Color DefaultColor = new Color(0.55f, 0.55f, 0.55f, 0.88f);
         private static readonly Color SelectedOverlay = new Color(1f, 1f, 1f, 0.30f);
         private static readonly Color PlayheadColor = new Color(1f, 0.25f, 0.25f, 1f);
@@ -95,6 +96,7 @@ namespace Game.Editor
         private bool _showAttributeEvents = true;
         private bool _showVfxEvents = true;
         private bool _showSfxEvents = true;
+        private bool _showSpeedEvents = true;
         private bool _filterDamageWithOnHitPhysics;
         private bool _filterDamageWithOnHitAttribute;
         private bool _filterDamageWithOnHitVfx;
@@ -186,6 +188,8 @@ namespace Game.Editor
             Vfx,
             [InspectorName("音效")]
             Sfx,
+            [InspectorName("速度")]
+            Speed,
         }
 
         private sealed class TimelineTrackLayout
@@ -201,6 +205,7 @@ namespace Game.Editor
             public TimelineTrackType trackType;
             public int eventIndex;
             public SkillTimedEventBase timedEvent;
+            public SkillSpeedEvent speedEvent;
         }
 
         private sealed class TimelinePreviewVfxInstance
@@ -832,6 +837,7 @@ namespace Game.Editor
                             _showAttributeEvents = true;
                             _showVfxEvents = true;
                             _showSfxEvents = true;
+                            _showSpeedEvents = true;
                             _filterDamageWithOnHitPhysics = false;
                             _filterDamageWithOnHitAttribute = false;
                             _filterDamageWithOnHitVfx = false;
@@ -843,7 +849,8 @@ namespace Game.Editor
                         _showPhysicsEvents = GUILayout.Toggle(_showPhysicsEvents, "物理", compactMidButtonStyle, GUILayout.Width(38f));
                         _showAttributeEvents = GUILayout.Toggle(_showAttributeEvents, "属性", compactMidButtonStyle, GUILayout.Width(38f));
                         _showVfxEvents = GUILayout.Toggle(_showVfxEvents, "特效", compactMidButtonStyle, GUILayout.Width(38f));
-                        _showSfxEvents = GUILayout.Toggle(_showSfxEvents, "音效", compactRightButtonStyle, GUILayout.Width(38f));
+                        _showSfxEvents = GUILayout.Toggle(_showSfxEvents, "音效", compactMidButtonStyle, GUILayout.Width(38f));
+                        _showSpeedEvents = GUILayout.Toggle(_showSpeedEvents, "速度", compactRightButtonStyle, GUILayout.Width(38f));
 
                         GUILayout.Space(6f);
                         GUILayout.Label($"吸附: {GetSnapModeLabel()}", compactLabelStyle, GUILayout.Width(64f));
@@ -931,11 +938,11 @@ namespace Game.Editor
                     float rowY = layout.bodyRect.y + rowIndex * EventRowHeight;
                     foreach (TimelineEventHandle handle in layout.rows[rowIndex])
                     {
-                        SkillTimedEventBase evt = handle?.timedEvent;
+                        object evt = GetHandleEventObject(handle);
                         if (evt == null)
                             continue;
 
-                        float x = layout.bodyRect.x + TimeToX(evt.startTime);
+                        float x = layout.bodyRect.x + TimeToX(GetTrackEventStartTime(evt));
                         float width = GetEventDisplayWidth(evt, layout.trackType);
                         Rect blockRect = new Rect(x, rowY + 2f, width, EventRowHeight - 4f);
                         if (blockRect.xMax < layout.bodyRect.x || blockRect.x > layout.bodyRect.xMax)
@@ -944,7 +951,7 @@ namespace Game.Editor
                         EditorGUI.DrawRect(blockRect, GetTrackColor(layout.trackType));
                         if (handle.trackType == _selectedEventTrackType && handle.eventIndex == _selectedEventIndex)
                             EditorGUI.DrawRect(blockRect, SelectedOverlay);
-                        if (IsCurrentPreviewEvent(evt, layout.trackType))
+                        if (evt is SkillTimedEventBase timedEvent && IsCurrentPreviewEvent(timedEvent, layout.trackType))
                             DrawCurrentEventOutline(blockRect);
 
                         if (blockRect.width > 18f)
@@ -977,12 +984,13 @@ namespace Game.Editor
                 TimelineEventHandle hitHandle = HitTestEvent(evt.mousePosition, skill, trackLayouts, out hitEdge);
                 if (hitHandle != null)
                 {
+                    object selectedEvent = GetHandleEventObject(hitHandle);
                     SelectEvent(hitHandle.trackType, hitHandle.eventIndex);
                     _dragEventIndex = hitHandle.eventIndex;
                     _dragTrackType = hitHandle.trackType;
                     _dragStartMouseX = evt.mousePosition.x;
-                    _dragStartTime = hitHandle.timedEvent.startTime;
-                    _dragStartDuration = GetTrackDisplayDuration(hitHandle.timedEvent, hitHandle.trackType);
+                    _dragStartTime = GetTrackEventStartTime(selectedEvent);
+                    _dragStartDuration = GetTrackDisplayDuration(selectedEvent, hitHandle.trackType);
                     _isDraggingEvent = true;
                     _isResizingEvent = hitEdge;
                     GUI.FocusControl(null);
@@ -997,7 +1005,7 @@ namespace Game.Editor
             }
             else if (evt.type == EventType.MouseDrag && _isDraggingEvent && evt.button == 0)
             {
-                SkillTimedEventBase draggedEvent = GetTrackEvent(skill, _dragTrackType, _dragEventIndex);
+                object draggedEvent = GetTrackEventObject(skill, _dragTrackType, _dragEventIndex);
                 if (draggedEvent == null)
                     return;
 
@@ -1006,7 +1014,7 @@ namespace Game.Editor
                 if (_isResizingEvent)
                     SetTrackDisplayDuration(draggedEvent, _dragTrackType, SnapDuration(Mathf.Max(0.01f, _dragStartDuration + deltaTime)));
                 else
-                    draggedEvent.startTime = SnapTime(Mathf.Max(0f, _dragStartTime + deltaTime));
+                    SetTrackEventStartTime(draggedEvent, SnapTime(Mathf.Max(0f, _dragStartTime + deltaTime)));
 
                 MarkDatabaseDirty();
                 evt.Use();
@@ -1034,11 +1042,11 @@ namespace Game.Editor
                     float rowY = layout.bodyRect.y + rowIndex * EventRowHeight;
                     foreach (TimelineEventHandle handle in layout.rows[rowIndex])
                     {
-                        SkillTimedEventBase evt = handle?.timedEvent;
+                        object evt = GetHandleEventObject(handle);
                         if (evt == null)
                             continue;
 
-                        float x = layout.bodyRect.x + TimeToX(evt.startTime);
+                        float x = layout.bodyRect.x + TimeToX(GetTrackEventStartTime(evt));
                         float width = GetEventDisplayWidth(evt, layout.trackType);
                         Rect blockRect = new Rect(x, rowY + 2f, width, EventRowHeight - 4f);
                         if (!blockRect.Contains(mousePosition))
@@ -1868,6 +1876,12 @@ namespace Game.Editor
 
         private void DrawSelectedEventInspector()
         {
+            if (_selectedEventTrackType == TimelineTrackType.Speed)
+            {
+                DrawSelectedSpeedEventInspector();
+                return;
+            }
+
             SkillTimedEventBase timedEvent = GetSelectedTimedEvent();
             if (timedEvent == null)
                 return;
@@ -1935,6 +1949,51 @@ namespace Game.Editor
 
             if (_selectedEventTrackType == TimelineTrackType.Sfx)
                 DrawSfxEffectsEditor(view);
+        }
+
+        private void DrawSelectedSpeedEventInspector()
+        {
+            SkillSpeedEvent speedEvent = GetSelectedSpeedEvent();
+            if (speedEvent == null)
+                return;
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("选中事件", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("事件摘要", GetSpeedEventSummary(speedEvent), EditorStyles.miniLabel);
+            EditorGUILayout.HelpBox("该区间锚定在技能默认原始时间轴上。运行时会自动映射到对应的动画进度区间，而不是按真实经过时间判定。", MessageType.None);
+
+            EditorGUI.BeginChangeCheck();
+            string newEventId = EditorGUILayout.TextField("事件标识 ID", speedEvent.eventId ?? string.Empty);
+            float newStartTime = Mathf.Max(0f, EditorGUILayout.FloatField("开始时间(原始时间轴秒数)", speedEvent.startTime));
+            EditorGUILayout.LabelField("开始时间(帧)", FormatFrameOnly(newStartTime), EditorStyles.miniLabel);
+            SkillEffectDurationMode newDurationMode = (SkillEffectDurationMode)EditorGUILayout.EnumPopup("持续方式", speedEvent.durationMode);
+            float newDuration = speedEvent.duration;
+            if (newDurationMode == SkillEffectDurationMode.FixedTime)
+            {
+                newDuration = Mathf.Max(0f, EditorGUILayout.FloatField("持续时长(原始时间轴秒数)", speedEvent.duration));
+                EditorGUILayout.LabelField("持续时长(帧)", FormatFrameOnly(newDuration), EditorStyles.miniLabel);
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("该区间会持续到当前状态退出。时间轴上显示的长度会参考当前预览时长。", MessageType.None);
+            }
+
+            float newCastSpeedMultiplier = Mathf.Max(0.01f, EditorGUILayout.FloatField("施法速度倍率", speedEvent.castSpeedMultiplier));
+            float newMovementSpeedMultiplier = Mathf.Max(0f, EditorGUILayout.FloatField("运动速度倍率", speedEvent.movementSpeedMultiplier));
+
+            if (!EditorGUI.EndChangeCheck())
+                return;
+
+            Undo.RecordObject(_database, "Edit Speed Event");
+            speedEvent.eventId = newEventId;
+            speedEvent.startTime = SnapTime(newStartTime);
+            speedEvent.durationMode = newDurationMode;
+            speedEvent.duration = newDurationMode == SkillEffectDurationMode.FixedTime
+                ? SnapDuration(newDuration)
+                : 0f;
+            speedEvent.castSpeedMultiplier = newCastSpeedMultiplier;
+            speedEvent.movementSpeedMultiplier = newMovementSpeedMultiplier;
+            MarkDatabaseDirty();
         }
 
         private void DrawDamageEffectsEditor(SkillTimelineEvent evt, SkillDamageEvent damageEvent)
@@ -3204,9 +3263,9 @@ namespace Game.Editor
                 return;
 
             Undo.RecordObject(_database, "Add Skill Event");
-            SkillTimedEventBase selectedEvent = GetSelectedTimedEvent();
-            float startTime = explicitStartTime ?? (selectedEvent != null
-                ? selectedEvent.startTime + Mathf.Max(0.1f, GetActiveSnapStep())
+            float? selectedEventStartTime = GetSelectedEventStartTime();
+            float startTime = explicitStartTime ?? (selectedEventStartTime.HasValue
+                ? selectedEventStartTime.Value + Mathf.Max(0.1f, GetActiveSnapStep())
                 : _previewTime);
             startTime = SnapTime(startTime);
 
@@ -3270,6 +3329,20 @@ namespace Game.Editor
                     GetSfxEventList(skill).Add(sfxEvent);
                     newIndex = GetSfxEventList(skill).Count - 1;
                     break;
+
+                case TimelineTrackType.Speed:
+                    var speedEvent = new SkillSpeedEvent
+                    {
+                        eventId = eventId,
+                        startTime = startTime,
+                        durationMode = SkillEffectDurationMode.FixedTime,
+                        duration = SnapDuration(Mathf.Max(0.1f, GetActiveSnapStep())),
+                        castSpeedMultiplier = 1f,
+                        movementSpeedMultiplier = 1f,
+                    };
+                    GetSpeedEventList(skill).Add(speedEvent);
+                    newIndex = GetSpeedEventList(skill).Count - 1;
+                    break;
             }
 
             if (newIndex >= 0)
@@ -3283,11 +3356,21 @@ namespace Game.Editor
             if (skill == null || !HasSelectedEvent())
                 return;
 
-            SkillTimedEventBase evt = GetSelectedTimedEvent();
-            if (evt == null)
-                return;
+            if (_selectedEventTrackType == TimelineTrackType.Speed)
+            {
+                SkillSpeedEvent speedEvent = GetSelectedSpeedEvent();
+                if (speedEvent == null)
+                    return;
+                s_eventClipboardJson = JsonUtility.ToJson(speedEvent);
+            }
+            else
+            {
+                SkillTimedEventBase evt = GetSelectedTimedEvent();
+                if (evt == null)
+                    return;
+                s_eventClipboardJson = JsonUtility.ToJson(evt);
+            }
 
-            s_eventClipboardJson = JsonUtility.ToJson(evt);
             s_eventClipboardTrackType = _selectedEventTrackType;
         }
 
@@ -3344,6 +3427,15 @@ namespace Game.Editor
                     GetSfxEventList(skill).Add(sfxEvent);
                     newIndex = GetSfxEventList(skill).Count - 1;
                     break;
+
+                case TimelineTrackType.Speed:
+                    SkillSpeedEvent speedEvent = JsonUtility.FromJson<SkillSpeedEvent>(s_eventClipboardJson);
+                    if (speedEvent == null)
+                        return;
+                    speedEvent.startTime = SnapTime(_previewTime);
+                    GetSpeedEventList(skill).Add(speedEvent);
+                    newIndex = GetSpeedEventList(skill).Count - 1;
+                    break;
             }
 
             if (newIndex >= 0)
@@ -3356,11 +3448,10 @@ namespace Game.Editor
             if (skill == null || !HasSelectedEvent())
                 return;
 
-            SkillTimedEventBase source = GetSelectedTimedEvent();
-            if (source == null)
+            float offset = Mathf.Max(GetSelectedEventDisplayDuration(), Mathf.Max(0.1f, GetActiveSnapStep()));
+            SkillTimedEventBase source = _selectedEventTrackType == TimelineTrackType.Speed ? null : GetSelectedTimedEvent();
+            if (_selectedEventTrackType != TimelineTrackType.Speed && source == null)
                 return;
-
-            float offset = Mathf.Max(GetTrackDisplayDuration(source, _selectedEventTrackType), Mathf.Max(0.1f, GetActiveSnapStep()));
 
             Undo.RecordObject(_database, "Duplicate Skill Event");
             int newIndex = -1;
@@ -3409,6 +3500,18 @@ namespace Game.Editor
                     clonedSfx.startTime = SnapTime(source.startTime + offset);
                     GetSfxEventList(skill).Add(clonedSfx);
                     newIndex = GetSfxEventList(skill).Count - 1;
+                    break;
+
+                case TimelineTrackType.Speed:
+                    SkillSpeedEvent sourceSpeedEvent = GetSelectedSpeedEvent();
+                    if (sourceSpeedEvent == null)
+                        return;
+                    SkillSpeedEvent clonedSpeedEvent = JsonUtility.FromJson<SkillSpeedEvent>(JsonUtility.ToJson(sourceSpeedEvent));
+                    if (clonedSpeedEvent == null)
+                        return;
+                    clonedSpeedEvent.startTime = SnapTime(sourceSpeedEvent.startTime + offset);
+                    GetSpeedEventList(skill).Add(clonedSpeedEvent);
+                    newIndex = GetSpeedEventList(skill).Count - 1;
                     break;
             }
 
@@ -3485,6 +3588,10 @@ namespace Game.Editor
                     GetSfxEventList(skill).RemoveAt(_selectedEventIndex);
                     _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetSfxEventList(skill).Count - 1);
                     break;
+                case TimelineTrackType.Speed:
+                    GetSpeedEventList(skill).RemoveAt(_selectedEventIndex);
+                    _selectedEventIndex = Mathf.Clamp(_selectedEventIndex - 1, -1, GetSpeedEventList(skill).Count - 1);
+                    break;
             }
             DestroyScenePreviewCueInstance();
             MarkDatabaseDirty();
@@ -3501,6 +3608,7 @@ namespace Game.Editor
             GetAttributeEventList(skill).Clear();
             GetVfxEventList(skill).Clear();
             GetSfxEventList(skill).Clear();
+            GetSpeedEventList(skill).Clear();
 
             _selectedEventIndex = -1;
             _activeSceneDamageEventIndex = -1;
@@ -3535,11 +3643,13 @@ namespace Game.Editor
 
             Undo.RecordObject(_database, "Sort Skill Events");
             SkillTimedEventBase selectedEvent = GetSelectedTimedEvent();
+            SkillSpeedEvent selectedSpeedEvent = GetSelectedSpeedEvent();
             SortTimedEventList(GetDamageEventList(skill));
             SortTimedEventList(GetPhysicsEventList(skill));
             SortTimedEventList(GetAttributeEventList(skill));
             SortTimedEventList(GetVfxEventList(skill));
             SortTimedEventList(GetSfxEventList(skill));
+            SortSpeedEventList(GetSpeedEventList(skill));
 
             if (selectedEvent != null)
             {
@@ -3547,10 +3657,33 @@ namespace Game.Editor
                 if (newIndex >= 0)
                     _selectedEventIndex = newIndex;
             }
+            else if (selectedSpeedEvent != null)
+            {
+                int newIndex = FindTrackSpeedEventIndex(skill, selectedSpeedEvent);
+                if (newIndex >= 0)
+                    _selectedEventIndex = newIndex;
+            }
             MarkDatabaseDirty();
         }
 
         private static void SortTimedEventList<T>(List<T> events) where T : SkillTimedEventBase
+        {
+            if (events == null)
+                return;
+
+            events.Sort((left, right) =>
+            {
+                if (ReferenceEquals(left, right))
+                    return 0;
+                if (left == null)
+                    return 1;
+                if (right == null)
+                    return -1;
+                return left.startTime.CompareTo(right.startTime);
+            });
+        }
+
+        private static void SortSpeedEventList(List<SkillSpeedEvent> events)
         {
             if (events == null)
                 return;
@@ -3576,6 +3709,21 @@ namespace Game.Editor
             for (int i = 0; i < count; i++)
             {
                 if (ReferenceEquals(GetTrackEvent(skill, trackType, i), target))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private int FindTrackSpeedEventIndex(SharedSkillDefinition skill, SkillSpeedEvent target)
+        {
+            if (skill == null || target == null)
+                return -1;
+
+            List<SkillSpeedEvent> speedEvents = GetSpeedEventList(skill);
+            for (int i = 0; i < speedEvents.Count; i++)
+            {
+                if (ReferenceEquals(speedEvents[i], target))
                     return i;
             }
 
@@ -5940,6 +6088,15 @@ namespace Game.Editor
             return skill.sfxEvents;
         }
 
+        private List<SkillSpeedEvent> GetSpeedEventList(SharedSkillDefinition skill)
+        {
+            if (skill == null)
+                return null;
+            if (skill.speedEvents == null)
+                skill.speedEvents = new List<SkillSpeedEvent>();
+            return skill.speedEvents;
+        }
+
         private int GetTrackEventCount(SharedSkillDefinition skill, TimelineTrackType trackType)
         {
             return trackType switch
@@ -5949,6 +6106,7 @@ namespace Game.Editor
                 TimelineTrackType.Attribute => GetAttributeEventList(skill)?.Count ?? 0,
                 TimelineTrackType.Vfx => GetVfxEventList(skill)?.Count ?? 0,
                 TimelineTrackType.Sfx => GetSfxEventList(skill)?.Count ?? 0,
+                TimelineTrackType.Speed => GetSpeedEventList(skill)?.Count ?? 0,
                 _ => 0,
             };
         }
@@ -5962,7 +6120,8 @@ namespace Game.Editor
                 + GetTrackEventCount(skill, TimelineTrackType.Physics)
                 + GetTrackEventCount(skill, TimelineTrackType.Attribute)
                 + GetTrackEventCount(skill, TimelineTrackType.Vfx)
-                + GetTrackEventCount(skill, TimelineTrackType.Sfx);
+                + GetTrackEventCount(skill, TimelineTrackType.Sfx)
+                + GetTrackEventCount(skill, TimelineTrackType.Speed);
         }
 
         private SkillTimedEventBase GetTrackEvent(SharedSkillDefinition skill, TimelineTrackType trackType, int eventIndex)
@@ -5989,11 +6148,77 @@ namespace Game.Editor
             return GetTrackEvent(skill, _selectedEventTrackType, _selectedEventIndex);
         }
 
+        private SkillSpeedEvent GetTrackSpeedEvent(SharedSkillDefinition skill, TimelineTrackType trackType, int eventIndex)
+        {
+            if (trackType != TimelineTrackType.Speed || skill == null || eventIndex < 0)
+                return null;
+
+            List<SkillSpeedEvent> speedEvents = GetSpeedEventList(skill);
+            return eventIndex < speedEvents.Count ? speedEvents[eventIndex] : null;
+        }
+
+        private SkillSpeedEvent GetSelectedSpeedEvent()
+        {
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill == null)
+                return null;
+            return GetTrackSpeedEvent(skill, _selectedEventTrackType, _selectedEventIndex);
+        }
+
+        private float? GetSelectedEventStartTime()
+        {
+            if (!HasSelectedEvent())
+                return null;
+
+            if (_selectedEventTrackType == TimelineTrackType.Speed)
+                return GetSelectedSpeedEvent()?.startTime;
+
+            return GetSelectedTimedEvent()?.startTime;
+        }
+
+        private float GetSelectedEventDisplayDuration()
+        {
+            if (!HasSelectedEvent())
+                return 0f;
+
+            if (_selectedEventTrackType == TimelineTrackType.Speed)
+                return GetTrackDisplayDuration(GetSelectedSpeedEvent(), _selectedEventTrackType);
+
+            return GetTrackDisplayDuration(GetSelectedTimedEvent(), _selectedEventTrackType);
+        }
+
+        private object GetTrackEventObject(SharedSkillDefinition skill, TimelineTrackType trackType, int eventIndex)
+        {
+            return trackType == TimelineTrackType.Speed
+                ? (object)GetTrackSpeedEvent(skill, trackType, eventIndex)
+                : GetTrackEvent(skill, trackType, eventIndex);
+        }
+
         private List<TimelineEventHandle> GetTrackEventHandles(SharedSkillDefinition skill, TimelineTrackType trackType)
         {
             var handles = new List<TimelineEventHandle>();
             if (skill == null)
                 return handles;
+
+            if (trackType == TimelineTrackType.Speed)
+            {
+                List<SkillSpeedEvent> speedEvents = GetSpeedEventList(skill);
+                for (int i = 0; i < speedEvents.Count; i++)
+                {
+                    SkillSpeedEvent speedEvent = speedEvents[i];
+                    if (speedEvent == null)
+                        continue;
+
+                    handles.Add(new TimelineEventHandle
+                    {
+                        trackType = trackType,
+                        eventIndex = i,
+                        speedEvent = speedEvent,
+                    });
+                }
+
+                return handles;
+            }
 
             int count = GetTrackEventCount(skill, trackType);
             for (int i = 0; i < count; i++)
@@ -6890,6 +7115,54 @@ namespace Game.Editor
             return (mouseX - panelX + _timelineScrollX) / _zoom;
         }
 
+        private static object GetHandleEventObject(TimelineEventHandle handle)
+        {
+            if (handle == null)
+                return null;
+
+            return handle.speedEvent != null ? handle.speedEvent : (object)handle.timedEvent;
+        }
+
+        private static float GetTrackEventStartTime(object evt)
+        {
+            return evt switch
+            {
+                SkillSpeedEvent speedEvent => speedEvent.startTime,
+                SkillTimedEventBase timedEvent => timedEvent.startTime,
+                _ => 0f,
+            };
+        }
+
+        private static void SetTrackEventStartTime(object evt, float startTime)
+        {
+            switch (evt)
+            {
+                case SkillSpeedEvent speedEvent:
+                    speedEvent.startTime = startTime;
+                    break;
+                case SkillTimedEventBase timedEvent:
+                    timedEvent.startTime = startTime;
+                    break;
+            }
+        }
+
+        private float GetEventDisplayWidth(object evt, TimelineTrackType trackType)
+        {
+            if (evt is SkillTimedEventBase timedEvent)
+                return GetEventDisplayWidth(timedEvent, trackType);
+
+            if (evt is SkillSpeedEvent speedEvent)
+            {
+                float duration = GetTrackDisplayDuration(speedEvent, trackType);
+                if (duration > 0f)
+                    return Mathf.Max(MinEventWidth, duration * _zoom);
+
+                return Mathf.Max(MinEventWidth, 12f);
+            }
+
+            return MinEventWidth;
+        }
+
         private float GetEventDisplayWidth(SkillTimedEventBase evt, TimelineTrackType trackType)
         {
             if (evt == null)
@@ -6900,6 +7173,17 @@ namespace Game.Editor
                 return Mathf.Max(MinEventWidth, duration * _zoom);
 
             return Mathf.Max(MinEventWidth, 12f);
+        }
+
+        private float GetTrackDisplayDuration(object evt, TimelineTrackType trackType)
+        {
+            if (evt is SkillTimedEventBase timedEvent)
+                return GetTrackDisplayDuration(timedEvent, trackType);
+
+            if (evt is SkillSpeedEvent speedEvent)
+                return GetTrackDisplayDuration(speedEvent, trackType);
+
+            return 0f;
         }
 
         private float GetTrackDisplayDuration(SkillTimedEventBase evt, TimelineTrackType trackType)
@@ -6919,6 +7203,29 @@ namespace Game.Editor
                 return Mathf.Max(0f, repeatedDuration + tailDuration);
             }
             return tailDuration;
+        }
+
+        private float GetTrackDisplayDuration(SkillSpeedEvent evt, TimelineTrackType trackType)
+        {
+            if (evt == null)
+                return 0f;
+
+            if (evt.durationMode == SkillEffectDurationMode.UntilStateExit)
+                return Mathf.Max(0f, GetPreviewStateExitTime() - evt.startTime);
+
+            return Mathf.Max(0f, evt.duration);
+        }
+
+        private void SetTrackDisplayDuration(object evt, TimelineTrackType trackType, float duration)
+        {
+            if (evt is SkillTimedEventBase timedEvent)
+            {
+                SetTrackDisplayDuration(timedEvent, trackType, duration);
+                return;
+            }
+
+            if (evt is SkillSpeedEvent speedEvent)
+                SetTrackDisplayDuration(speedEvent, duration);
         }
 
         private static void SetTrackDisplayDuration(SkillTimedEventBase evt, TimelineTrackType trackType, float duration)
@@ -7041,6 +7348,15 @@ namespace Game.Editor
             }
         }
 
+        private static void SetTrackDisplayDuration(SkillSpeedEvent evt, float duration)
+        {
+            if (evt == null)
+                return;
+
+            evt.durationMode = SkillEffectDurationMode.FixedTime;
+            evt.duration = Mathf.Max(0.01f, duration);
+        }
+
         private static float GetMaxDamageDetectionDuration(SkillDamageEvent evt)
         {
             if (evt?.damageEffects == null)
@@ -7072,6 +7388,7 @@ namespace Game.Editor
                 TimelineTrackType.Attribute => AttributeColor,
                 TimelineTrackType.Vfx => VfxColor,
                 TimelineTrackType.Sfx => SfxColor,
+                TimelineTrackType.Speed => SpeedColor,
                 _ => DefaultColor,
             };
         }
@@ -7085,8 +7402,20 @@ namespace Game.Editor
                 TimelineTrackType.Attribute => "属性轨",
                 TimelineTrackType.Vfx => "特效轨",
                 TimelineTrackType.Sfx => "音效轨",
+                TimelineTrackType.Speed => "速度轨",
                 _ => "轨道",
             };
+        }
+
+        private string GetTrackEventLabel(object evt, TimelineTrackType trackType)
+        {
+            if (evt is SkillTimedEventBase timedEvent)
+                return GetTrackEventLabel(timedEvent, trackType);
+
+            if (evt is SkillSpeedEvent speedEvent)
+                return GetTrackEventLabel(speedEvent, trackType);
+
+            return "evt";
         }
 
         private string GetTrackEventLabel(SkillTimedEventBase evt, TimelineTrackType trackType)
@@ -7121,6 +7450,16 @@ namespace Game.Editor
             return string.IsNullOrEmpty(detail) ? prefix : $"{prefix} {detail}";
         }
 
+        private string GetTrackEventLabel(SkillSpeedEvent evt, TimelineTrackType trackType)
+        {
+            if (evt == null)
+                return "evt";
+
+            string prefix = !string.IsNullOrEmpty(evt.eventId) ? evt.eventId : "速度";
+            string detail = GetSpeedEventSummary(evt);
+            return string.IsNullOrEmpty(detail) ? prefix : $"{prefix} {detail}";
+        }
+
         private static string GetEventSummary(SkillTimelineEvent evt)
         {
             if (evt == null)
@@ -7132,6 +7471,14 @@ namespace Game.Editor
             int vfxCount = evt.vfxEffects != null ? evt.vfxEffects.Count : 0;
             int sfxCount = evt.sfxEffects != null ? evt.sfxEffects.Count : 0;
             return $"[D{damageCount}/P{physicsCount}/A{attributeCount}/V{vfxCount}/S{sfxCount}]";
+        }
+
+        private static string GetSpeedEventSummary(SkillSpeedEvent evt)
+        {
+            if (evt == null)
+                return string.Empty;
+
+            return $"[施法x{evt.castSpeedMultiplier:0.##}/运动x{evt.movementSpeedMultiplier:0.##}]";
         }
 
         private static int GetDamageEffectCount(SkillTimelineEvent evt)
@@ -7503,6 +7850,7 @@ namespace Game.Editor
             CollectEventIdWarnings(eventIds, GetAttributeEventList(skill), TimelineTrackType.Attribute);
             CollectEventIdWarnings(eventIds, GetVfxEventList(skill), TimelineTrackType.Vfx);
             CollectEventIdWarnings(eventIds, GetSfxEventList(skill), TimelineTrackType.Sfx);
+            CollectSpeedEventIdWarnings(eventIds, GetSpeedEventList(skill));
 
             foreach (var pair in eventIds)
             {
@@ -7540,6 +7888,27 @@ namespace Game.Editor
                 }
 
                 uses.Add($"{GetTrackHeaderLabel(trackType)}#{i + 1}");
+            }
+        }
+
+        private void CollectSpeedEventIdWarnings(Dictionary<string, List<string>> map, List<SkillSpeedEvent> events)
+        {
+            if (events == null)
+                return;
+
+            for (int i = 0; i < events.Count; i++)
+            {
+                SkillSpeedEvent evt = events[i];
+                if (evt == null || string.IsNullOrWhiteSpace(evt.eventId))
+                    continue;
+
+                if (!map.TryGetValue(evt.eventId, out var uses))
+                {
+                    uses = new List<string>();
+                    map.Add(evt.eventId, uses);
+                }
+
+                uses.Add($"{GetTrackHeaderLabel(TimelineTrackType.Speed)}#{i + 1}");
             }
         }
 
@@ -7620,6 +7989,7 @@ namespace Game.Editor
                 TimelineTrackType.Attribute,
                 TimelineTrackType.Vfx,
                 TimelineTrackType.Sfx,
+                TimelineTrackType.Speed,
             };
 
             float currentY = y;
@@ -7692,19 +8062,20 @@ namespace Game.Editor
             for (int i = 0; i < handles.Count; i++)
             {
                 TimelineEventHandle handle = handles[i];
-                SkillTimedEventBase evt = handle?.timedEvent;
+                object evt = GetHandleEventObject(handle);
                 if (evt == null)
                     continue;
 
+                float startTime = GetTrackEventStartTime(evt);
                 float displayDuration = GetTrackDisplayDuration(evt, trackType);
-                float endTime = evt.startTime + (displayDuration > 0f
+                float endTime = startTime + (displayDuration > 0f
                     ? Mathf.Max(0.01f, displayDuration)
                     : MinEventWidth / _zoom);
 
                 int assignedRow = -1;
                 for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
                 {
-                    if (rowEnds[rowIndex] <= evt.startTime + 0.005f)
+                    if (rowEnds[rowIndex] <= startTime + 0.005f)
                     {
                         assignedRow = rowIndex;
                         break;
@@ -7734,6 +8105,7 @@ namespace Game.Editor
                 TimelineTrackType.Attribute => _showAttributeEvents,
                 TimelineTrackType.Vfx => _showVfxEvents,
                 TimelineTrackType.Sfx => _showSfxEvents,
+                TimelineTrackType.Speed => _showSpeedEvents,
                 _ => true,
             };
         }

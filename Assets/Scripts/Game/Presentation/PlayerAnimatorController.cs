@@ -76,7 +76,7 @@ namespace Game.Presentation
         public void SetPlaybackSpeed(float speed)
         {
             if (_animator != null)
-                _animator.speed = Mathf.Max(0.1f, speed);
+                _animator.speed = Mathf.Max(0f, speed);
         }
 
         public void SetUpperBodyPlaybackSpeed(float speed)
@@ -84,7 +84,7 @@ namespace Game.Presentation
             if (_animator == null || !HasParameter("UpperBodyPlaybackSpeed"))
                 return;
 
-            _animator.SetFloat(UpperBodyPlaybackSpeedHash, Mathf.Max(0.1f, speed));
+            _animator.SetFloat(UpperBodyPlaybackSpeedHash, Mathf.Max(0f, speed));
         }
 
         public void SetAimLayerActive(bool active)

@@ -671,6 +671,52 @@ namespace Game.Data
     }
 
     [Serializable]
+    public class SkillSpeedEvent
+    {
+        [InspectorLabel("事件标识 ID")]
+        [Tooltip("可选，仅用于区间命名、调试和日志定位。留空时编辑器会自动使用默认标签。")]
+        public string eventId = "";
+
+        [InspectorLabel("开始时间(原始时间轴秒数)")]
+        [Tooltip("基于技能默认原始时间轴的起点秒数。运行时会换算到对应的动画进度区间，而不是按真实经过时间判定。")]
+        [Min(0f)] public float startTime = 0f;
+
+        [InspectorLabel("持续方式")]
+        [Tooltip("指定时长=持续固定秒数；状态退出=持续到当前状态退出。")]
+        public SkillEffectDurationMode durationMode = SkillEffectDurationMode.FixedTime;
+
+        [InspectorLabel("持续时长(原始时间轴秒数)")]
+        [Tooltip("仅“指定时长”模式使用。该时长同样基于技能默认原始时间轴，而不是基于真实经过时间。")]
+        [Min(0f)] public float duration = 0f;
+
+        [InspectorLabel("施法速度倍率")]
+        [Tooltip("同时影响自身动画播放速度与技能时间轴推进速度。1=正常，2=加速一倍。")]
+        [Min(0.01f)] public float castSpeedMultiplier = 1f;
+
+        [InspectorLabel("运动速度倍率")]
+        [Tooltip("影响角色自身物理运动速度，如走路、跑步、坠落等。1=正常，2=加速一倍。")]
+        [Min(0f)] public float movementSpeedMultiplier = 1f;
+
+        public float GetEndTime()
+        {
+            return durationMode == SkillEffectDurationMode.UntilStateExit
+                ? startTime
+                : startTime + Mathf.Max(0f, duration);
+        }
+
+        public bool IsActive(float time, bool stateScopeEnded)
+        {
+            if (time < startTime)
+                return false;
+
+            if (durationMode == SkillEffectDurationMode.UntilStateExit)
+                return !stateScopeEnded;
+
+            return time <= startTime + Mathf.Max(0f, duration) + 0.0001f;
+        }
+    }
+
+    [Serializable]
     public class SharedSkillDefinition
     {
         [Header("标识")]
@@ -723,6 +769,10 @@ namespace Game.Data
         [Tooltip("按时间顺序触发的顶层音效事件节点。")]
         public List<SkillSfxEvent> sfxEvents = new List<SkillSfxEvent>();
 
+        [InspectorLabel("速度区间列表")]
+        [Tooltip("按原始时间轴顺序定义局部施法速度倍率和角色运动速度倍率。区间起止以技能默认原始时间轴为基准。")]
+        public List<SkillSpeedEvent> speedEvents = new List<SkillSpeedEvent>();
+
         public float GetTimelineDuration()
         {
             float maxTime = 0f;
@@ -731,6 +781,7 @@ namespace Game.Data
             maxTime = Mathf.Max(maxTime, GetMaxAttributeEndTime(attributeEvents));
             maxTime = Mathf.Max(maxTime, GetMaxVfxEndTime(vfxEvents));
             maxTime = Mathf.Max(maxTime, GetMaxSfxEndTime(sfxEvents));
+            maxTime = Mathf.Max(maxTime, GetMaxSpeedEndTime(speedEvents));
             return maxTime;
         }
 
@@ -764,7 +815,18 @@ namespace Game.Data
                 || HasUntilStateExitTopLevelEffects(physicsEvents)
                 || HasUntilStateExitTopLevelEffects(attributeEvents)
                 || HasUntilStateExitEvent(vfxEvents)
-                || HasUntilStateExitEvent(sfxEvents);
+                || HasUntilStateExitEvent(sfxEvents)
+                || HasUntilStateExitSpeedEvents(speedEvents);
+        }
+
+        public float EvaluateCastSpeedMultiplier(float time, bool stateScopeEnded)
+        {
+            return EvaluateSpeedMultiplier(time, stateScopeEnded, true);
+        }
+
+        public float EvaluateMovementSpeedMultiplier(float time, bool stateScopeEnded)
+        {
+            return EvaluateSpeedMultiplier(time, stateScopeEnded, false);
         }
 
         public SkillDamageEffect GetPrimaryDamageEffect()
@@ -821,6 +883,22 @@ namespace Game.Data
             return GetMaxTimedEventEndTime(list, GetSfxEventTailDuration);
         }
 
+        private static float GetMaxSpeedEndTime(List<SkillSpeedEvent> list)
+        {
+            float maxTime = 0f;
+            if (list == null)
+                return maxTime;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                SkillSpeedEvent evt = list[i];
+                if (evt != null)
+                    maxTime = Mathf.Max(maxTime, evt.GetEndTime());
+            }
+
+            return maxTime;
+        }
+
         private static float GetMaxTimedEventEndTime<T>(List<T> list, Func<T, float> getTailDuration)
             where T : SkillTimedEventBase
         {
@@ -849,6 +927,21 @@ namespace Game.Data
             {
                 T evt = list[i];
                 if (evt != null && evt.RepeatsUntilStateExit)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool HasUntilStateExitSpeedEvents(List<SkillSpeedEvent> list)
+        {
+            if (list == null)
+                return false;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                SkillSpeedEvent evt = list[i];
+                if (evt != null && evt.durationMode == SkillEffectDurationMode.UntilStateExit)
                     return true;
             }
 
@@ -1096,6 +1189,28 @@ namespace Game.Data
                 return effect.duration;
 
             return effect.audioClip != null ? effect.audioClip.length : 0f;
+        }
+
+        private float EvaluateSpeedMultiplier(float time, bool stateScopeEnded, bool castSpeed)
+        {
+            float multiplier = 1f;
+            if (speedEvents == null)
+                return multiplier;
+
+            for (int i = 0; i < speedEvents.Count; i++)
+            {
+                SkillSpeedEvent evt = speedEvents[i];
+                if (evt == null || !evt.IsActive(time, stateScopeEnded))
+                    continue;
+
+                float value = castSpeed ? evt.castSpeedMultiplier : evt.movementSpeedMultiplier;
+                if (castSpeed)
+                    multiplier *= Mathf.Max(0.01f, value);
+                else
+                    multiplier *= Mathf.Max(0f, value);
+            }
+
+            return multiplier;
         }
 
         private static float EstimateParticlePrefabDuration(GameObject prefab)
