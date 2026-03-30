@@ -374,7 +374,7 @@ namespace Game.Data
             {
                 skillId = skillId,
                 displayName = displayName,
-                animationTrigger = skillId,
+                animationTrigger = ResolveEnemyAnimationTrigger(skillId),
                 ignoreAnimationDamageEvents = true,
                 damageEvents = new List<SkillDamageEvent>(),
                 physicsEvents = new List<SkillPhysicsEvent>(),
@@ -384,6 +384,18 @@ namespace Game.Data
             };
             ApplySpecs(definition, events);
             return definition;
+        }
+
+        private static string ResolveEnemyAnimationTrigger(string skillId)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return string.Empty;
+
+            int markerIndex = skillId.LastIndexOf("Skill", StringComparison.Ordinal);
+            if (markerIndex >= 0)
+                return skillId.Substring(markerIndex);
+
+            return skillId;
         }
 
         private static DefaultEventSpec Event(

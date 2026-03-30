@@ -98,10 +98,6 @@ namespace Game.Data
         public bool rotateToTargetOnCast = true;
 
         [Header("动画")]
-        [InspectorLabel("动画 Trigger")]
-        [Tooltip("发送给 Animator 的 Trigger 名。留空时默认使用 Skill{槽位索引}。")]
-        public string animationTrigger = "";
-
         [InspectorLabel("自然退出进度")]
         [Tooltip("一次性施法动画播放到该进度后，立即触发自然退出默认目标。动画仅负责表现，不等待技能时间轴结束。")]
         [Range(0f, 1f)] public float naturalExitNormalizedTime = 0.9f;

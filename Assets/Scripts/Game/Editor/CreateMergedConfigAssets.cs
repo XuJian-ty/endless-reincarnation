@@ -183,7 +183,6 @@ namespace Game.Editor
             float castRange = 3f,
             float cooldown = 1f,
             float castDuration = 0.6f,
-            string animationTrigger = "",
             EnemySkillPhaseAvailability phaseAvailability = EnemySkillPhaseAvailability.Always,
             float postCastIdleDuration = 0f,
             bool enterIdleAfterCast = false,
@@ -211,7 +210,6 @@ namespace Game.Editor
                 canUseUnderThreat    = canUseUnderThreat,
                 cooldown             = cooldown,
                 castDuration         = castDuration,
-                animationTrigger     = string.IsNullOrWhiteSpace(animationTrigger) ? $"Skill{slotIndex}" : animationTrigger,
                 phaseAvailability    = phaseAvailability,
                 postCastIdleDuration = postCastIdleDuration,
                 enterIdleAfterCast   = enterIdleAfterCast,
@@ -1460,7 +1458,7 @@ namespace Game.Editor
 
             return new List<CharacterAnimationGroupDefinition>
             {
-                CreateAnimationGroup("player", "玩家", CreatePlayerAnimationEntries()),
+                CreateAnimationGroup("player", "玩家", CreatePlayerAnimationSkillGroups()),
                 CreateAnimationGroup("melee_minion", "近战小怪"),
                 CreateAnimationGroup("ranged_minion", "远程小怪"),
                 CreateAnimationGroup("elite_1", "精英1"),
@@ -1491,10 +1489,22 @@ namespace Game.Editor
                 {
                     groupId = group.groupId,
                     groupName = group.groupName,
+                    skillGroups = new List<CharacterAnimationVariantGroupDefinition>(),
                     entries = new List<CharacterAnimationEntry>(),
                 };
 
-                if (group.entries != null)
+                if (group.skillGroups != null && group.skillGroups.Count > 0)
+                {
+                    for (int variantGroupIndex = 0; variantGroupIndex < group.skillGroups.Count; variantGroupIndex++)
+                    {
+                        CharacterAnimationVariantGroupDefinition variantGroup = group.skillGroups[variantGroupIndex];
+                        if (variantGroup == null)
+                            continue;
+
+                        clonedGroup.skillGroups.Add(CloneAnimationVariantGroup(variantGroup));
+                    }
+                }
+                else if (group.entries != null)
                 {
                     for (int entryIndex = 0; entryIndex < group.entries.Count; entryIndex++)
                     {
@@ -1502,11 +1512,13 @@ namespace Game.Editor
                         if (entry == null)
                             continue;
 
-                        clonedGroup.entries.Add(new CharacterAnimationEntry
-                        {
-                            animationId = entry.animationId,
-                            clip = entry.clip,
-                        });
+                        clonedGroup.skillGroups.Add(CreateAnimationVariantGroup(
+                            entry.animationId,
+                            new CharacterAnimationEntry
+                            {
+                                animationId = entry.animationId,
+                                clip = entry.clip,
+                            }));
                     }
                 }
 
@@ -1519,42 +1531,81 @@ namespace Game.Editor
         private static CharacterAnimationGroupDefinition CreateAnimationGroup(
             string groupId,
             string groupName,
-            List<CharacterAnimationEntry> entries = null)
+            List<CharacterAnimationVariantGroupDefinition> skillGroups = null)
         {
             return new CharacterAnimationGroupDefinition
             {
                 groupId = groupId,
                 groupName = groupName,
-                entries = entries ?? new List<CharacterAnimationEntry>(),
+                skillGroups = skillGroups ?? new List<CharacterAnimationVariantGroupDefinition>(),
+                entries = new List<CharacterAnimationEntry>(),
             };
         }
 
-        private static List<CharacterAnimationEntry> CreatePlayerAnimationEntries()
+        private static CharacterAnimationVariantGroupDefinition CloneAnimationVariantGroup(CharacterAnimationVariantGroupDefinition variantGroup)
         {
-            return new List<CharacterAnimationEntry>
+            var clonedGroup = new CharacterAnimationVariantGroupDefinition
             {
-                CreateAnimationEntry("Attack0"),
-                CreateAnimationEntry("Attack1"),
-                CreateAnimationEntry("Attack2"),
-                CreateAnimationEntry("Attack3"),
-                CreateAnimationEntry("Skill0"),
-                CreateAnimationEntry("Skill1"),
-                CreateAnimationEntry("Skill2"),
-                CreateAnimationEntry("Skill3"),
-                CreateAnimationEntry("AirAttack"),
-                CreateAnimationEntry("FallAttack"),
-                CreateAnimationEntry("ChargeRelease"),
-                CreateAnimationEntry("Aim", "Assets/外部导入/人物动画/射击相关/AimAndShoot_Charge.anim"),
-                CreateAnimationEntry("Shoot", "Assets/外部导入/人物动画/射击相关/ShootOnce.anim"),
-                CreateAnimationEntry("ShootCharge", "Assets/外部导入/人物动画/射击相关/AimAndShoot_Charge.anim"),
-                CreateAnimationEntry("Rifle_WalkFwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_WalkFwdLoop.anim"),
-                CreateAnimationEntry("Rifle_WalkBwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_WalkBwdLoop.anim"),
-                CreateAnimationEntry("Rifle_StrafeWalkLeftLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeWalkLeftLoop.anim"),
-                CreateAnimationEntry("Rifle_StrafeWalkRightLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeWalkRightLoop.anim"),
-                CreateAnimationEntry("Rifle_RunFwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_RunFwdLoop.anim"),
-                CreateAnimationEntry("Rifle_RunBwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_RunBwdLoop.anim"),
-                CreateAnimationEntry("Rifle_StrafeRunLeftLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeRunLeftLoop.anim"),
-                CreateAnimationEntry("Rifle_StrafeRunRightLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeRunRightLoop.anim"),
+                groupName = variantGroup != null ? variantGroup.groupName : string.Empty,
+                entries = new List<CharacterAnimationEntry>(),
+            };
+
+            if (variantGroup?.entries == null)
+                return clonedGroup;
+
+            for (int entryIndex = 0; entryIndex < variantGroup.entries.Count; entryIndex++)
+            {
+                CharacterAnimationEntry entry = variantGroup.entries[entryIndex];
+                if (entry == null)
+                    continue;
+
+                clonedGroup.entries.Add(new CharacterAnimationEntry
+                {
+                    animationId = entry.animationId,
+                    clip = entry.clip,
+                });
+            }
+
+            return clonedGroup;
+        }
+
+        private static List<CharacterAnimationVariantGroupDefinition> CreatePlayerAnimationSkillGroups()
+        {
+            return new List<CharacterAnimationVariantGroupDefinition>
+            {
+                CreateAnimationVariantGroup("Attack0", CreateAnimationEntry("Attack0")),
+                CreateAnimationVariantGroup("Attack1", CreateAnimationEntry("Attack1")),
+                CreateAnimationVariantGroup("Attack2", CreateAnimationEntry("Attack2")),
+                CreateAnimationVariantGroup("Attack3", CreateAnimationEntry("Attack3")),
+                CreateAnimationVariantGroup("Skill0", CreateAnimationEntry("Skill0")),
+                CreateAnimationVariantGroup("Skill1", CreateAnimationEntry("Skill1")),
+                CreateAnimationVariantGroup("Skill2", CreateAnimationEntry("Skill2")),
+                CreateAnimationVariantGroup("Skill3", CreateAnimationEntry("Skill3")),
+                CreateAnimationVariantGroup("AirAttack", CreateAnimationEntry("AirAttack")),
+                CreateAnimationVariantGroup("FallAttack", CreateAnimationEntry("FallAttack")),
+                CreateAnimationVariantGroup("ChargeRelease", CreateAnimationEntry("ChargeRelease")),
+                CreateAnimationVariantGroup("Aim", CreateAnimationEntry("Aim", "Assets/外部导入/人物动画/射击相关/AimAndShoot_Charge.anim")),
+                CreateAnimationVariantGroup("Shoot", CreateAnimationEntry("Shoot", "Assets/外部导入/人物动画/射击相关/ShootOnce.anim")),
+                CreateAnimationVariantGroup("ShootCharge", CreateAnimationEntry("ShootCharge", "Assets/外部导入/人物动画/射击相关/AimAndShoot_Charge.anim")),
+                CreateAnimationVariantGroup("Rifle_WalkFwdLoop", CreateAnimationEntry("Rifle_WalkFwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_WalkFwdLoop.anim")),
+                CreateAnimationVariantGroup("Rifle_WalkBwdLoop", CreateAnimationEntry("Rifle_WalkBwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_WalkBwdLoop.anim")),
+                CreateAnimationVariantGroup("Rifle_StrafeWalkLeftLoop", CreateAnimationEntry("Rifle_StrafeWalkLeftLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeWalkLeftLoop.anim")),
+                CreateAnimationVariantGroup("Rifle_StrafeWalkRightLoop", CreateAnimationEntry("Rifle_StrafeWalkRightLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeWalkRightLoop.anim")),
+                CreateAnimationVariantGroup("Rifle_RunFwdLoop", CreateAnimationEntry("Rifle_RunFwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_RunFwdLoop.anim")),
+                CreateAnimationVariantGroup("Rifle_RunBwdLoop", CreateAnimationEntry("Rifle_RunBwdLoop", "Assets/外部导入/人物动画/射击相关/Rifle_RunBwdLoop.anim")),
+                CreateAnimationVariantGroup("Rifle_StrafeRunLeftLoop", CreateAnimationEntry("Rifle_StrafeRunLeftLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeRunLeftLoop.anim")),
+                CreateAnimationVariantGroup("Rifle_StrafeRunRightLoop", CreateAnimationEntry("Rifle_StrafeRunRightLoop", "Assets/外部导入/人物动画/射击相关/Rifle_StrafeRunRightLoop.anim")),
+            };
+        }
+
+        private static CharacterAnimationVariantGroupDefinition CreateAnimationVariantGroup(string groupName, CharacterAnimationEntry entry)
+        {
+            return new CharacterAnimationVariantGroupDefinition
+            {
+                groupName = groupName,
+                entries = entry != null
+                    ? new List<CharacterAnimationEntry> { entry }
+                    : new List<CharacterAnimationEntry>(),
             };
         }
 

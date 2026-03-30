@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3c73c8af58434a48bc6926cc13cc993, type: 3}
+  m_Name: "\u654C\u4EBA\u884C\u4E3A_"
+  m_EditorClassIdentifier: 
+  enemyId: 
+  displayName: 
+  enemyType: 0
+  sectorAngle: 120
+  sectorRange: 15
+  chaseBreakDistance: 25
+  patrolRadius: 10
+  patrolHealPercentPerSecond: 0.05
+  chaseInnerDistance: 6
+  chaseOuterDistance: 12
+  preferredSafetyDistanceOffset: 0.75
+  combatDistanceTolerance: 0.9
+  castRangeTolerance: 0.25
+  retreatStepDistance: 3.5
+  approachLeadTime: 0.2
+  losProbeInterval: 0.1
+  pathProbeInterval: 0.3
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  perceptionEyeHeight: 1.2
+  reactionMinSeconds: 0.08
+  reactionMaxSeconds: 0.18
+  decisionCommitSeconds: 0.22
+  searchMemoryDuration: 1.6
+  aggression: 0.55
+  caution: 0.45
+  dodgeBias: 0.5
+  punishBias: 0.55
+  strafeBias: 0.45
+  maxPressureAllies: 2
+  poiseMax: 24
+  poiseRecoveryPerSecond: 10
+  poiseBreakStunDuration: 0.35
+  allowLightHitFlinch: 1
+  superArmorWhileCasting: 0
+  hurtNaturalExitNormalizedTime: 0.9
+  hurtNaturalExitTarget: 0
+  locomotionSkillId: EnemyLocomotion
+  dedicatedAnimatorController: {fileID: 0}
+  skillSlots: []
