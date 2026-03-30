@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Game.Data;
 using UnityEditor;
@@ -9,11 +10,13 @@ namespace Game.Editor
     [CustomEditor(typeof(EnemyArchetypeSO))]
     public sealed class EnemyArchetypeSOEditor : UnityEditor.Editor
     {
+        private SerializedProperty _enemyIdProperty;
         private SerializedProperty _skillSlotsProperty;
         private bool _pendingExitGui;
 
         private void OnEnable()
         {
+            _enemyIdProperty = serializedObject.FindProperty(nameof(EnemyArchetypeSO.enemyId));
             _skillSlotsProperty = serializedObject.FindProperty(nameof(EnemyArchetypeSO.skillSlots));
         }
 
@@ -22,7 +25,13 @@ namespace Game.Editor
             serializedObject.Update();
             _pendingExitGui = false;
 
-            DrawPropertiesExcluding(serializedObject, "m_Script", nameof(EnemyArchetypeSO.dedicatedAnimatorController), nameof(EnemyArchetypeSO.skillSlots));
+            DrawIdentitySection();
+            DrawPropertiesExcluding(
+                serializedObject,
+                "m_Script",
+                nameof(EnemyArchetypeSO.enemyId),
+                nameof(EnemyArchetypeSO.dedicatedAnimatorController),
+                nameof(EnemyArchetypeSO.skillSlots));
             EditorGUILayout.Space(8f);
             DrawAuthoringToolbar();
             if (_pendingExitGui)
@@ -42,6 +51,26 @@ namespace Game.Editor
 
             if (_pendingExitGui)
                 GUIUtility.ExitGUI();
+        }
+
+        private void DrawIdentitySection()
+        {
+            EnemyArchetypeSO archetype = target as EnemyArchetypeSO;
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                EditorGUILayout.LabelField("基础标识", EditorStyles.boldLabel);
+
+                string currentEnemyId = _enemyIdProperty != null ? _enemyIdProperty.stringValue : string.Empty;
+                string nextEnemyId = EditorGUILayout.DelayedTextField(
+                    new GUIContent("敌人ID", "主键，必须唯一，例如：melee_minion / boss_1"),
+                    currentEnemyId);
+
+                if (_enemyIdProperty != null && !string.Equals(nextEnemyId, currentEnemyId, StringComparison.Ordinal))
+                    ApplyEnemyIdChange(archetype, nextEnemyId);
+
+                if (_enemyIdProperty != null && string.IsNullOrWhiteSpace(_enemyIdProperty.stringValue))
+                    EditorGUILayout.HelpBox("敌人ID建议保持非空且唯一。修改后会同步更新属性库、技能效果库、动画库以及相关引用。", MessageType.Info);
+            }
         }
 
         private void DrawAuthoringToolbar()
@@ -142,6 +171,45 @@ namespace Game.Editor
             return false;
         }
 
+        private void ApplyEnemyIdChange(EnemyArchetypeSO archetype, string newEnemyId)
+        {
+            if (archetype == null || _enemyIdProperty == null)
+                return;
+
+            string previousExplicitEnemyId = archetype.enemyId;
+            string previousEnemyId = archetype.GetResolvedEnemyId();
+            string trimmedNewEnemyId = string.IsNullOrWhiteSpace(newEnemyId) ? string.Empty : newEnemyId.Trim();
+            if (string.Equals(previousEnemyId, trimmedNewEnemyId, StringComparison.Ordinal))
+            {
+                _enemyIdProperty.stringValue = trimmedNewEnemyId;
+                serializedObject.ApplyModifiedProperties();
+                serializedObject.Update();
+                return;
+            }
+
+            if (!EnemySkillAuthoringUtility.TryValidateEnemyIdChange(archetype, trimmedNewEnemyId, out string errorMessage))
+            {
+                EditorUtility.DisplayDialog("敌人ID无效", errorMessage, "确定");
+                _enemyIdProperty.stringValue = archetype.enemyId;
+                serializedObject.ApplyModifiedProperties();
+                serializedObject.Update();
+                return;
+            }
+
+            _enemyIdProperty.stringValue = trimmedNewEnemyId;
+            serializedObject.ApplyModifiedProperties();
+
+            if (!EnemySkillAuthoringUtility.TryRenameEnemyId(archetype, previousEnemyId, trimmedNewEnemyId, out errorMessage))
+            {
+                EditorUtility.DisplayDialog("敌人ID同步失败", errorMessage, "确定");
+                archetype.enemyId = previousExplicitEnemyId;
+                EditorUtility.SetDirty(archetype);
+                AssetDatabase.SaveAssetIfDirty(archetype);
+            }
+
+            serializedObject.Update();
+        }
+
         private void DrawSlotFields(SerializedProperty slotProperty)
         {
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
@@ -150,7 +218,6 @@ namespace Game.Editor
                 DrawReadOnlyProperty(slotProperty, nameof(EnemySkillSlotBinding.slotIndex));
                 DrawReadOnlyProperty(slotProperty, nameof(EnemySkillSlotBinding.skillId));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.displayName));
-                DrawReadOnlyProperty(slotProperty, nameof(EnemySkillSlotBinding.animationTrigger));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.naturalExitNormalizedTime));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.naturalExitTarget));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.phaseAvailability));

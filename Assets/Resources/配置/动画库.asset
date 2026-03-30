@@ -15,57 +15,216 @@ MonoBehaviour:
   groups:
   - groupId: player
     groupName: "\u73A9\u5BB6"
+    skillGroups:
+    - groupName: NormalIdle
+      entries:
+      - animationId: NormalIdle
+        clip: {fileID: 7400000, guid: 979fd354997c06a46ad48ffd58abbb2f, type: 2}
+    - groupName: NormalWalk
+      entries:
+      - animationId: NormalWalk
+        clip: {fileID: 7400000, guid: 0709ae0220ed7f44b982fbf1bf1fdc02, type: 2}
+    - groupName: NormalRun
+      entries:
+      - animationId: NormalRun
+        clip: {fileID: 7400000, guid: 6df6f1940a4353641b0b014e2e7d15a2, type: 2}
+    - groupName: AimIdle
+      entries:
+      - animationId: AimIdle
+        clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+    - groupName: AimWalk
+      entries:
+      - animationId: AimWalk
+        clip: {fileID: 7400000, guid: da292e685f3e42f498ff374a07416443, type: 2}
+    - groupName: AimRun
+      entries:
+      - animationId: AimRun
+        clip: {fileID: 7400000, guid: dcb0e90ea2d6e6b4d8286cef343613a7, type: 2}
+    - groupName: Jump
+      entries:
+      - animationId: Jump
+        clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+    - groupName: Dodge
+      entries:
+      - animationId: Dodge
+        clip: {fileID: 7400000, guid: adb609935636eb5429339ef52f155e36, type: 2}
+    - groupName: Fall
+      entries:
+      - animationId: Fall
+        clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+    - groupName: Land
+      entries:
+      - animationId: Land
+        clip: {fileID: 7400000, guid: 3d31155f49c2b4545be703d137394cc7, type: 2}
+    - groupName: Attack0
+      entries:
+      - animationId: Attack0
+        clip: {fileID: 7400000, guid: 232d9c61ac5d4364fa9b521f12ecfc63, type: 2}
+      - animationId: Attack0_Variant1
+        clip: {fileID: 7400000, guid: 232d9c61ac5d4364fa9b521f12ecfc63, type: 2}
+    - groupName: Attack1
+      entries:
+      - animationId: Attack1
+        clip: {fileID: 7400000, guid: e49a1dbcc27de334da3aa6e2a7cdef33, type: 2}
+      - animationId: Attack1_Variant1
+        clip: {fileID: 7400000, guid: e49a1dbcc27de334da3aa6e2a7cdef33, type: 2}
+    - groupName: Attack2
+      entries:
+      - animationId: Attack2
+        clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+      - animationId: Attack2_Variant1
+        clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+      - animationId: Attack2_Variant2
+        clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+    - groupName: Attack3
+      entries:
+      - animationId: Attack3
+        clip: {fileID: 7400000, guid: 8c61509d4e3f9ab448b5de547fe2f96e, type: 2}
+      - animationId: Attack3_Variant1
+        clip: {fileID: 7400000, guid: 8c61509d4e3f9ab448b5de547fe2f96e, type: 2}
+    - groupName: AirAttack
+      entries:
+      - animationId: AirAttack
+        clip: {fileID: 7400000, guid: b0ae0baa716e5924b82d3a08aa751647, type: 2}
+    - groupName: ChargeStart
+      entries:
+      - animationId: ChargeStart
+        clip: {fileID: 7400000, guid: 472dc079d47fd8c4fa01eade1ca18d76, type: 2}
+    - groupName: ChargeLoop
+      entries:
+      - animationId: ChargeLoop
+        clip: {fileID: 7400000, guid: 6acbbbccbff6bc543bcbbf8e048550a7, type: 2}
+    - groupName: ChargeRelease
+      entries:
+      - animationId: ChargeRelease
+        clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
+    - groupName: FallAttackStart
+      entries:
+      - animationId: FallAttackStart
+        clip: {fileID: 7400000, guid: 94a31d07dd3054c4c89d9bf38b0d3c74, type: 2}
+    - groupName: FallAttackLoop
+      entries:
+      - animationId: FallAttackLoop
+        clip: {fileID: 7400000, guid: 4164e076c17d81a4ea4108422b125f3f, type: 2}
+    - groupName: FallAttackLand
+      entries:
+      - animationId: FallAttackLand
+        clip: {fileID: 7400000, guid: d2f96f562e7e1644f835f1afd7fc3ed0, type: 2}
+    - groupName: HitStun
+      entries:
+      - animationId: HitStun
+        clip: {fileID: 7400000, guid: 8cbaca70883b29f49837457917affb2f, type: 2}
+    - groupName: PlayerDeath
+      entries:
+      - animationId: PlayerDeath
+        clip: {fileID: 7400000, guid: c49a043c314d95c45ab7b2e3db6d047a, type: 2}
+    - groupName: Shoot
+      entries:
+      - animationId: Shoot
+        clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
+      - animationId: Shoot_Variant1
+        clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
+      - animationId: Shoot_Variant2
+        clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
+    - groupName: ShootCharge
+      entries:
+      - animationId: ShootCharge
+        clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+      - animationId: ShootCharge_Variant1
+        clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+      - animationId: ShootCharge_Variant2
+        clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+    - groupName: Aim
+      entries:
+      - animationId: Aim
+        clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+    - groupName: Skill0
+      entries:
+      - animationId: Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: Skill1
+      entries:
+      - animationId: Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - groupName: Skill2
+      entries:
+      - animationId: Skill2
+        clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - groupName: Skill3
+      entries:
+      - animationId: Skill3
+        clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     entries:
+    - animationId: NormalIdle
+      clip: {fileID: 7400000, guid: 979fd354997c06a46ad48ffd58abbb2f, type: 2}
+    - animationId: NormalWalk
+      clip: {fileID: 7400000, guid: 0709ae0220ed7f44b982fbf1bf1fdc02, type: 2}
+    - animationId: NormalRun
+      clip: {fileID: 7400000, guid: 6df6f1940a4353641b0b014e2e7d15a2, type: 2}
+    - animationId: AimIdle
+      clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+    - animationId: AimWalk
+      clip: {fileID: 7400000, guid: da292e685f3e42f498ff374a07416443, type: 2}
+    - animationId: AimRun
+      clip: {fileID: 7400000, guid: dcb0e90ea2d6e6b4d8286cef343613a7, type: 2}
+    - animationId: Jump
+      clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+    - animationId: Dodge
+      clip: {fileID: 7400000, guid: adb609935636eb5429339ef52f155e36, type: 2}
+    - animationId: Fall
+      clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+    - animationId: Land
+      clip: {fileID: 7400000, guid: 3d31155f49c2b4545be703d137394cc7, type: 2}
     - animationId: Attack0
+      clip: {fileID: 7400000, guid: 232d9c61ac5d4364fa9b521f12ecfc63, type: 2}
+    - animationId: Attack0_Variant1
       clip: {fileID: 7400000, guid: 232d9c61ac5d4364fa9b521f12ecfc63, type: 2}
     - animationId: Attack1
       clip: {fileID: 7400000, guid: e49a1dbcc27de334da3aa6e2a7cdef33, type: 2}
+    - animationId: Attack1_Variant1
+      clip: {fileID: 7400000, guid: e49a1dbcc27de334da3aa6e2a7cdef33, type: 2}
     - animationId: Attack2
+      clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+    - animationId: Attack2_Variant1
+      clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+    - animationId: Attack2_Variant2
       clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
     - animationId: Attack3
       clip: {fileID: 7400000, guid: 8c61509d4e3f9ab448b5de547fe2f96e, type: 2}
+    - animationId: Attack3_Variant1
+      clip: {fileID: 7400000, guid: 8c61509d4e3f9ab448b5de547fe2f96e, type: 2}
     - animationId: AirAttack
       clip: {fileID: 7400000, guid: b0ae0baa716e5924b82d3a08aa751647, type: 2}
-    - animationId: FallAttackEnd
-      clip: {fileID: 7400000, guid: d2f96f562e7e1644f835f1afd7fc3ed0, type: 2}
-    - animationId: ChargeIaieleaseEnd
-      clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
-    - animationId: Idle
-      clip: {fileID: 7400000, guid: 979fd354997c06a46ad48ffd58abbb2f, type: 2}
-    - animationId: Walk
-      clip: {fileID: 7400000, guid: 0709ae0220ed7f44b982fbf1bf1fdc02, type: 2}
-    - animationId: Run
-      clip: {fileID: 7400000, guid: 6df6f1940a4353641b0b014e2e7d15a2, type: 2}
-    - animationId: Run
-      clip: {fileID: 7400000, guid: 6df6f1940a4353641b0b014e2e7d15a2, type: 2}
-    - animationId: JumoLoop
-      clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
-    - animationId: FallAttackLoop
-      clip: {fileID: 7400000, guid: 4164e076c17d81a4ea4108422b125f3f, type: 2}
+    - animationId: ChargeStart
+      clip: {fileID: 7400000, guid: 472dc079d47fd8c4fa01eade1ca18d76, type: 2}
     - animationId: ChargeLoop
       clip: {fileID: 7400000, guid: 6acbbbccbff6bc543bcbbf8e048550a7, type: 2}
-    - animationId: Aim
-      clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+    - animationId: ChargeRelease
+      clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
+    - animationId: FallAttackStart
+      clip: {fileID: 7400000, guid: 94a31d07dd3054c4c89d9bf38b0d3c74, type: 2}
+    - animationId: FallAttackLoop
+      clip: {fileID: 7400000, guid: 4164e076c17d81a4ea4108422b125f3f, type: 2}
+    - animationId: FallAttackLand
+      clip: {fileID: 7400000, guid: d2f96f562e7e1644f835f1afd7fc3ed0, type: 2}
+    - animationId: HitStun
+      clip: {fileID: 7400000, guid: 8cbaca70883b29f49837457917affb2f, type: 2}
+    - animationId: PlayerDeath
+      clip: {fileID: 7400000, guid: c49a043c314d95c45ab7b2e3db6d047a, type: 2}
     - animationId: Shoot
+      clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
+    - animationId: Shoot_Variant1
+      clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
+    - animationId: Shoot_Variant2
       clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
     - animationId: ShootCharge
       clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
-    - animationId: Rifle_WalkFwdLoop
-      clip: {fileID: 7400000, guid: da292e685f3e42f498ff374a07416443, type: 2}
-    - animationId: Rifle_WalkBwdLoop
-      clip: {fileID: 7400000, guid: 9f9dac221f7fd9945b58ef89cebf7260, type: 2}
-    - animationId: Rifle_StrafeWalkLeftLoop
-      clip: {fileID: 7400000, guid: 06b57b0ee86dcf646ab86f4dfc394234, type: 2}
-    - animationId: Rifle_StrafeWalkRightLoop
-      clip: {fileID: 7400000, guid: 420587260c99e394f9554ef78a57dba6, type: 2}
-    - animationId: Rifle_RunFwdLoop
-      clip: {fileID: 7400000, guid: dcb0e90ea2d6e6b4d8286cef343613a7, type: 2}
-    - animationId: Rifle_RunBwdLoop
-      clip: {fileID: 7400000, guid: 02a0b6590f89251439cc146adf33260d, type: 2}
-    - animationId: Rifle_StrafeRunLeftLoop
-      clip: {fileID: 7400000, guid: e928a95fba46820479190d06e392f42a, type: 2}
-    - animationId: Rifle_StrafeRunRightLoop
-      clip: {fileID: 7400000, guid: 95d64de455b727a40a18f733d9998484, type: 2}
+    - animationId: ShootCharge_Variant1
+      clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+    - animationId: ShootCharge_Variant2
+      clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+    - animationId: Aim
+      clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
     - animationId: Skill0
       clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
     - animationId: Skill1
@@ -76,94 +235,364 @@ MonoBehaviour:
       clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
   - groupId: melee_minion
     groupName: "\u8FD1\u6218\u5C0F\u602A"
+    skillGroups:
+    - groupName: melee_minionSkill0
+      entries:
+      - animationId: melee_minionSkill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
+    - animationId: melee_minionSkill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
   - groupId: ranged_minion
     groupName: "\u8FDC\u7A0B\u5C0F\u602A"
+    skillGroups:
+    - groupName: ranged_minionSkill0
+      entries:
+      - animationId: ranged_minionSkill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
+    - animationId: ranged_minionSkill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
   - groupId: elite_1
     groupName: "\u7CBE\u82F11"
+    skillGroups:
+    - groupName: elite_1Skill0
+      entries:
+      - animationId: elite_1Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: elite_1Skill1
+      entries:
+      - animationId: elite_1Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
+    - animationId: elite_1Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: elite_1Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
   - groupId: elite_2
     groupName: "\u7CBE\u82F12"
+    skillGroups:
+    - groupName: elite_2Skill0
+      entries:
+      - animationId: elite_2Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: elite_2Skill1
+      entries:
+      - animationId: elite_2Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
+    - animationId: elite_2Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: elite_2Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
   - groupId: guardian_1
     groupName: "\u5B88\u536B\u80051"
+    skillGroups:
+    - groupName: guardian_1Skill0
+      entries:
+      - animationId: guardian_1Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: guardian_1Skill1
+      entries:
+      - animationId: guardian_1Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
+    - animationId: guardian_1Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: guardian_1Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
   - groupId: guardian_2
     groupName: "\u5B88\u536B\u80052"
+    skillGroups:
+    - groupName: guardian_2Skill0
+      entries:
+      - animationId: guardian_2Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: guardian_2Skill1
+      entries:
+      - animationId: guardian_2Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
+    - animationId: guardian_2Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: guardian_2Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
   - groupId: boss_1
     groupName: Boss1
+    skillGroups:
+    - groupName: boss_1Skill0
+      entries:
+      - animationId: boss_1Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: boss_1Skill1
+      entries:
+      - animationId: boss_1Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - groupName: boss_1Skill2
+      entries:
+      - animationId: boss_1Skill2
+        clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - groupName: boss_1Skill3
+      entries:
+      - animationId: boss_1Skill3
+        clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
-    - animationId: Skill2
-      clip: {fileID: 0}
-    - animationId: Skill3
-      clip: {fileID: 0}
+    - animationId: boss_1Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: boss_1Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - animationId: boss_1Skill2
+      clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - animationId: boss_1Skill3
+      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
   - groupId: boss_2
     groupName: Boss2
+    skillGroups:
+    - groupName: boss_2Skill0
+      entries:
+      - animationId: boss_2Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: boss_2Skill1
+      entries:
+      - animationId: boss_2Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - groupName: boss_2Skill2
+      entries:
+      - animationId: boss_2Skill2
+        clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - groupName: boss_2Skill3
+      entries:
+      - animationId: boss_2Skill3
+        clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
-    - animationId: Skill2
-      clip: {fileID: 0}
-    - animationId: Skill3
-      clip: {fileID: 0}
+    - animationId: boss_2Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: boss_2Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - animationId: boss_2Skill2
+      clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - animationId: boss_2Skill3
+      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
   - groupId: boss_3
     groupName: Boss3
+    skillGroups:
+    - groupName: boss_3Skill0
+      entries:
+      - animationId: boss_3Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: boss_3Skill1
+      entries:
+      - animationId: boss_3Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - groupName: boss_3Skill2
+      entries:
+      - animationId: boss_3Skill2
+        clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - groupName: boss_3Skill3
+      entries:
+      - animationId: boss_3Skill3
+        clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
-    - animationId: Skill2
-      clip: {fileID: 0}
-    - animationId: Skill3
-      clip: {fileID: 0}
+    - animationId: boss_3Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: boss_3Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - animationId: boss_3Skill2
+      clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - animationId: boss_3Skill3
+      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
   - groupId: boss_4
     groupName: Boss4
+    skillGroups:
+    - groupName: boss_4Skill0
+      entries:
+      - animationId: boss_4Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: boss_4Skill1
+      entries:
+      - animationId: boss_4Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - groupName: boss_4Skill2
+      entries:
+      - animationId: boss_4Skill2
+        clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - groupName: boss_4Skill3
+      entries:
+      - animationId: boss_4Skill3
+        clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
-    - animationId: Skill2
-      clip: {fileID: 0}
-    - animationId: Skill3
-      clip: {fileID: 0}
+    - animationId: boss_4Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: boss_4Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - animationId: boss_4Skill2
+      clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - animationId: boss_4Skill3
+      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
   - groupId: boss_5
     groupName: Boss5
+    skillGroups:
+    - groupName: boss_5Skill0
+      entries:
+      - animationId: boss_5Skill0
+        clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - groupName: boss_5Skill1
+      entries:
+      - animationId: boss_5Skill1
+        clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - groupName: boss_5Skill2
+      entries:
+      - animationId: boss_5Skill2
+        clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - groupName: boss_5Skill3
+      entries:
+      - animationId: boss_5Skill3
+        clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     entries:
-    - animationId: Skill0
-      clip: {fileID: 0}
-    - animationId: Skill1
-      clip: {fileID: 0}
-    - animationId: Skill2
-      clip: {fileID: 0}
-    - animationId: Skill3
-      clip: {fileID: 0}
+    - animationId: boss_5Skill0
+      clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+    - animationId: boss_5Skill1
+      clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+    - animationId: boss_5Skill2
+      clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+    - animationId: boss_5Skill3
+      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  entries:
+  - animationId: NormalIdle
+    clip: {fileID: 7400000, guid: 979fd354997c06a46ad48ffd58abbb2f, type: 2}
+  - animationId: NormalWalk
+    clip: {fileID: 7400000, guid: 0709ae0220ed7f44b982fbf1bf1fdc02, type: 2}
+  - animationId: NormalRun
+    clip: {fileID: 7400000, guid: 6df6f1940a4353641b0b014e2e7d15a2, type: 2}
+  - animationId: AimIdle
+    clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+  - animationId: AimWalk
+    clip: {fileID: 7400000, guid: da292e685f3e42f498ff374a07416443, type: 2}
+  - animationId: AimRun
+    clip: {fileID: 7400000, guid: dcb0e90ea2d6e6b4d8286cef343613a7, type: 2}
+  - animationId: Jump
+    clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+  - animationId: Dodge
+    clip: {fileID: 7400000, guid: adb609935636eb5429339ef52f155e36, type: 2}
+  - animationId: Fall
+    clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+  - animationId: Land
+    clip: {fileID: 7400000, guid: 3d31155f49c2b4545be703d137394cc7, type: 2}
+  - animationId: Attack0
+    clip: {fileID: 7400000, guid: 232d9c61ac5d4364fa9b521f12ecfc63, type: 2}
+  - animationId: Attack0_Variant1
+    clip: {fileID: 7400000, guid: 232d9c61ac5d4364fa9b521f12ecfc63, type: 2}
+  - animationId: Attack1
+    clip: {fileID: 7400000, guid: e49a1dbcc27de334da3aa6e2a7cdef33, type: 2}
+  - animationId: Attack1_Variant1
+    clip: {fileID: 7400000, guid: e49a1dbcc27de334da3aa6e2a7cdef33, type: 2}
+  - animationId: Attack2
+    clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+  - animationId: Attack2_Variant1
+    clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+  - animationId: Attack2_Variant2
+    clip: {fileID: 7400000, guid: bd93d40beec89554da41e34327ec5c24, type: 2}
+  - animationId: Attack3
+    clip: {fileID: 7400000, guid: 8c61509d4e3f9ab448b5de547fe2f96e, type: 2}
+  - animationId: Attack3_Variant1
+    clip: {fileID: 7400000, guid: 8c61509d4e3f9ab448b5de547fe2f96e, type: 2}
+  - animationId: AirAttack
+    clip: {fileID: 7400000, guid: b0ae0baa716e5924b82d3a08aa751647, type: 2}
+  - animationId: ChargeStart
+    clip: {fileID: 7400000, guid: 472dc079d47fd8c4fa01eade1ca18d76, type: 2}
+  - animationId: ChargeLoop
+    clip: {fileID: 7400000, guid: 6acbbbccbff6bc543bcbbf8e048550a7, type: 2}
+  - animationId: ChargeRelease
+    clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
+  - animationId: FallAttackStart
+    clip: {fileID: 7400000, guid: 94a31d07dd3054c4c89d9bf38b0d3c74, type: 2}
+  - animationId: FallAttackLoop
+    clip: {fileID: 7400000, guid: 4164e076c17d81a4ea4108422b125f3f, type: 2}
+  - animationId: FallAttackLand
+    clip: {fileID: 7400000, guid: d2f96f562e7e1644f835f1afd7fc3ed0, type: 2}
+  - animationId: HitStun
+    clip: {fileID: 7400000, guid: 8cbaca70883b29f49837457917affb2f, type: 2}
+  - animationId: PlayerDeath
+    clip: {fileID: 7400000, guid: c49a043c314d95c45ab7b2e3db6d047a, type: 2}
+  - animationId: Shoot
+    clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
+  - animationId: Shoot_Variant1
+    clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
+  - animationId: Shoot_Variant2
+    clip: {fileID: 7400000, guid: dffc209e593523840a974c6771596186, type: 2}
+  - animationId: ShootCharge
+    clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+  - animationId: ShootCharge_Variant1
+    clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+  - animationId: ShootCharge_Variant2
+    clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+  - animationId: Aim
+    clip: {fileID: 7400000, guid: e1989940591d9864194c23e57b1be512, type: 2}
+  - animationId: Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: Skill2
+    clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+  - animationId: Skill3
+    clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  - animationId: melee_minionSkill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: ranged_minionSkill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: elite_1Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: elite_1Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: elite_2Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: elite_2Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: guardian_1Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: guardian_1Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: guardian_2Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: guardian_2Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: boss_1Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: boss_1Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: boss_1Skill2
+    clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+  - animationId: boss_1Skill3
+    clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  - animationId: boss_2Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: boss_2Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: boss_2Skill2
+    clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+  - animationId: boss_2Skill3
+    clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  - animationId: boss_3Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: boss_3Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: boss_3Skill2
+    clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+  - animationId: boss_3Skill3
+    clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  - animationId: boss_4Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: boss_4Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: boss_4Skill2
+    clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+  - animationId: boss_4Skill3
+    clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  - animationId: boss_5Skill0
+    clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}
+  - animationId: boss_5Skill1
+    clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
+  - animationId: boss_5Skill2
+    clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
+  - animationId: boss_5Skill3
+    clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}

@@ -468,25 +468,34 @@ namespace Game.Editor
         private static CharacterAnimationEntry AppendAnimationEntry(CharacterAnimationLibrarySO animationLibrary, string actionId)
         {
             CharacterAnimationGroupDefinition group = FindOrCreateAnimationGroup(animationLibrary);
-            group.entries ??= new List<CharacterAnimationEntry>();
+            group.skillGroups ??= new List<CharacterAnimationVariantGroupDefinition>();
 
-            CharacterAnimationEntry existing = FindAnimationEntry(group.entries, actionId);
+            CharacterAnimationVariantGroupDefinition existingVariantGroup = FindAnimationVariantGroup(group, actionId);
+            CharacterAnimationEntry existing = CharacterAnimationLibrarySO.GetPrimaryEntry(existingVariantGroup);
             if (existing != null)
             {
-                NormalizePlayerAnimationEntries(group);
-                return existing;
+                existing.animationId = actionId;
+                existingVariantGroup.groupName = actionId;
+                NormalizePlayerAnimationGroups(group);
+                animationLibrary.Synchronize();
+                return CharacterAnimationLibrarySO.GetPrimaryEntry(FindAnimationVariantGroup(group, actionId));
             }
 
-            CharacterAnimationEntry template = FindHighestAnimationEntry(group.entries);
+            CharacterAnimationEntry template = FindHighestAnimationEntry(GetPrimaryAnimationEntries(group));
             CharacterAnimationEntry created = template != null
                 ? CloneManaged(template)
                 : new CharacterAnimationEntry();
 
             created.animationId = actionId;
-            group.entries.Add(created);
+            group.skillGroups.Add(new CharacterAnimationVariantGroupDefinition
+            {
+                groupName = actionId,
+                entries = new List<CharacterAnimationEntry> { created },
+            });
 
-            NormalizePlayerAnimationEntries(group);
-            return FindAnimationEntry(group.entries, actionId);
+            NormalizePlayerAnimationGroups(group);
+            animationLibrary.Synchronize();
+            return CharacterAnimationLibrarySO.GetPrimaryEntry(FindAnimationVariantGroup(group, actionId));
         }
 
         private static SkillConfigEntry FindHighestSkillConfigEntry(List<SkillConfigEntry> entries)
@@ -637,19 +646,24 @@ namespace Game.Editor
 
         private static CharacterAnimationGroupDefinition FindOrCreateAnimationGroup(CharacterAnimationLibrarySO animationLibrary)
         {
+            animationLibrary.Synchronize();
             animationLibrary.groups ??= new List<CharacterAnimationGroupDefinition>();
 
             for (int i = 0; i < animationLibrary.groups.Count; i++)
             {
                 CharacterAnimationGroupDefinition group = animationLibrary.groups[i];
                 if (group != null && (group.groupId == PlayerGroupId || group.groupName == PlayerGroupName))
+                {
+                    group.skillGroups ??= new List<CharacterAnimationVariantGroupDefinition>();
                     return group;
+                }
             }
 
             CharacterAnimationGroupDefinition created = new CharacterAnimationGroupDefinition
             {
                 groupId = PlayerGroupId,
                 groupName = PlayerGroupName,
+                skillGroups = new List<CharacterAnimationVariantGroupDefinition>(),
                 entries = new List<CharacterAnimationEntry>(),
             };
             animationLibrary.groups.Add(created);
@@ -684,6 +698,11 @@ namespace Game.Editor
             }
 
             return null;
+        }
+
+        private static CharacterAnimationVariantGroupDefinition FindAnimationVariantGroup(CharacterAnimationGroupDefinition group, string animationId)
+        {
+            return CharacterAnimationLibrarySO.FindVariantGroup(group, animationId);
         }
 
         private static SkillEffectVariantGroupDefinition FindSharedSkillVariantGroup(SkillGroupDefinition group, string skillId)
@@ -737,6 +756,22 @@ namespace Game.Editor
             return null;
         }
 
+        private static List<CharacterAnimationEntry> GetPrimaryAnimationEntries(CharacterAnimationGroupDefinition group)
+        {
+            List<CharacterAnimationEntry> result = new List<CharacterAnimationEntry>();
+            if (group?.skillGroups == null)
+                return result;
+
+            for (int i = 0; i < group.skillGroups.Count; i++)
+            {
+                CharacterAnimationEntry primaryEntry = CharacterAnimationLibrarySO.GetPrimaryEntry(group.skillGroups[i]);
+                if (primaryEntry != null)
+                    result.Add(primaryEntry);
+            }
+
+            return result;
+        }
+
         private static void NormalizePlayerSkillDefinitions(SkillGroupDefinition group)
         {
             if (group?.skillGroups == null)
@@ -766,30 +801,33 @@ namespace Game.Editor
             group.skillGroups.AddRange(activeSkillEntries);
         }
 
-        private static void NormalizePlayerAnimationEntries(CharacterAnimationGroupDefinition group)
+        private static void NormalizePlayerAnimationGroups(CharacterAnimationGroupDefinition group)
         {
-            if (group?.entries == null)
+            if (group?.skillGroups == null)
                 return;
 
-            List<CharacterAnimationEntry> normalEntries = new List<CharacterAnimationEntry>();
-            List<CharacterAnimationEntry> activeSkillEntries = new List<CharacterAnimationEntry>();
-            for (int i = 0; i < group.entries.Count; i++)
+            List<CharacterAnimationVariantGroupDefinition> normalEntries = new List<CharacterAnimationVariantGroupDefinition>();
+            List<CharacterAnimationVariantGroupDefinition> activeSkillEntries = new List<CharacterAnimationVariantGroupDefinition>();
+            for (int i = 0; i < group.skillGroups.Count; i++)
             {
-                CharacterAnimationEntry entry = group.entries[i];
-                if (entry == null)
+                CharacterAnimationVariantGroupDefinition entryGroup = group.skillGroups[i];
+                CharacterAnimationEntry entry = CharacterAnimationLibrarySO.GetPrimaryEntry(entryGroup);
+                if (entryGroup == null || entry == null)
                     continue;
 
                 if (TryParseSkillName(entry.animationId, out _))
-                    activeSkillEntries.Add(entry);
+                    activeSkillEntries.Add(entryGroup);
                 else
-                    normalEntries.Add(entry);
+                    normalEntries.Add(entryGroup);
             }
 
-            activeSkillEntries.Sort((left, right) => CompareSkillNames(left?.animationId, right?.animationId));
+            activeSkillEntries.Sort((left, right) => CompareSkillNames(
+                CharacterAnimationLibrarySO.GetPrimaryEntry(left)?.animationId,
+                CharacterAnimationLibrarySO.GetPrimaryEntry(right)?.animationId));
 
-            group.entries.Clear();
-            group.entries.AddRange(normalEntries);
-            group.entries.AddRange(activeSkillEntries);
+            group.skillGroups.Clear();
+            group.skillGroups.AddRange(normalEntries);
+            group.skillGroups.AddRange(activeSkillEntries);
         }
 
         private static int CompareSkillNames(string left, string right)
@@ -875,17 +913,18 @@ namespace Game.Editor
         private static void RemoveAnimationEntry(CharacterAnimationLibrarySO animationLibrary, string actionId)
         {
             CharacterAnimationGroupDefinition group = FindAnimationGroup(animationLibrary);
-            if (group?.entries == null || string.IsNullOrWhiteSpace(actionId))
+            if (group?.skillGroups == null || string.IsNullOrWhiteSpace(actionId))
                 return;
 
-            for (int i = group.entries.Count - 1; i >= 0; i--)
+            for (int i = group.skillGroups.Count - 1; i >= 0; i--)
             {
-                CharacterAnimationEntry entry = group.entries[i];
-                if (entry != null && string.Equals(entry.animationId, actionId, StringComparison.Ordinal))
-                    group.entries.RemoveAt(i);
+                CharacterAnimationVariantGroupDefinition variantGroup = group.skillGroups[i];
+                if (variantGroup != null && string.Equals(CharacterAnimationLibrarySO.GetVariantGroupName(variantGroup), actionId, StringComparison.Ordinal))
+                    group.skillGroups.RemoveAt(i);
             }
 
-            NormalizePlayerAnimationEntries(group);
+            NormalizePlayerAnimationGroups(group);
+            animationLibrary.Synchronize();
         }
 
         private static void RemoveAnimatorSkillArtifacts(AnimatorController animatorController, string actionId)

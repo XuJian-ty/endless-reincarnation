@@ -8,13 +8,16 @@ namespace Game.Editor
     [CustomEditor(typeof(SkillEffectDatabaseSO))]
     public class SkillEffectDatabaseSOEditor : UnityEditor.Editor
     {
+        private const string SkillConfigDatabasePath = "Assets/Resources/配置/玩家动作及技能配置库.asset";
         private SerializedProperty _groupsProperty;
+        private SkillConfigDatabaseSO _skillConfigDatabase;
 
         private void OnEnable()
         {
             SkillEffectDatabaseSO database = target as SkillEffectDatabaseSO;
             database?.Synchronize();
             _groupsProperty = serializedObject.FindProperty("groups");
+            _skillConfigDatabase = AssetDatabase.LoadAssetAtPath<SkillConfigDatabaseSO>(SkillConfigDatabasePath);
         }
 
         public override void OnInspectorGUI()
@@ -32,7 +35,7 @@ namespace Game.Editor
             else
             {
                 EditorGUILayout.HelpBox("技能分组由玩家/敌人作者化流程同步维护。这里支持在每个技能小分组下增加多个技能效果变体；每个小分组的第一个技能效果为默认项，不可删除、不可改名。", MessageType.Info);
-                DrawGroups(database, _groupsProperty);
+                DrawGroups(database, _groupsProperty, _skillConfigDatabase);
             }
 
             if (serializedObject.ApplyModifiedProperties())
@@ -53,7 +56,10 @@ namespace Game.Editor
             }
         }
 
-        private static void DrawGroups(SkillEffectDatabaseSO database, SerializedProperty groupsProperty)
+        private static void DrawGroups(
+            SkillEffectDatabaseSO database,
+            SerializedProperty groupsProperty,
+            SkillConfigDatabaseSO skillConfigDatabase)
         {
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.IntField("分组数量", groupsProperty.arraySize);
@@ -90,7 +96,10 @@ namespace Game.Editor
                     }
                     EditorGUILayout.Space(4f);
 
-                    DrawVariantGroups(database, groupIndex, skillGroupsProperty);
+                    if (IsPlayerGroup(groupIdProperty))
+                        DrawConfiguredPlayerVariantGroups(database, groupIndex, skillGroupsProperty, skillConfigDatabase);
+                    else
+                        DrawVariantGroups(database, groupIndex, skillGroupsProperty);
                 }
             }
         }
@@ -106,38 +115,106 @@ namespace Game.Editor
                 if (variantGroupProperty == null)
                     continue;
 
-                SerializedProperty groupNameProperty = variantGroupProperty.FindPropertyRelative("groupName");
-                SerializedProperty entriesProperty = variantGroupProperty.FindPropertyRelative("entries");
-                string groupLabel = !string.IsNullOrWhiteSpace(groupNameProperty?.stringValue)
-                    ? groupNameProperty.stringValue
-                    : $"技能组 {variantGroupIndex}";
+                DrawVariantGroup(database, groupIndex, variantGroupIndex, variantGroupProperty);
+            }
+        }
 
-                using (new EditorGUILayout.VerticalScope("box"))
+        private static void DrawConfiguredPlayerVariantGroups(
+            SkillEffectDatabaseSO database,
+            int groupIndex,
+            SerializedProperty skillGroupsProperty,
+            SkillConfigDatabaseSO skillConfigDatabase)
+        {
+            if (skillGroupsProperty == null || skillConfigDatabase?.entries == null)
+            {
+                DrawVariantGroups(database, groupIndex, skillGroupsProperty);
+                return;
+            }
+
+            HashSet<int> drawnVariantIndices = new HashSet<int>();
+            PlayerSkillEntryGroup? currentSection = null;
+
+            for (int i = 0; i < skillConfigDatabase.entries.Count; i++)
+            {
+                SkillConfigEntry configEntry = skillConfigDatabase.entries[i];
+                if (configEntry == null || configEntry.IsPassiveSkill)
+                    continue;
+
+                int variantGroupIndex = FindVariantGroupIndex(skillGroupsProperty, configEntry.GetResolvedSkillId());
+                if (variantGroupIndex < 0 || drawnVariantIndices.Contains(variantGroupIndex))
+                    continue;
+
+                if (currentSection != configEntry.entryGroup)
                 {
-                    string foldoutLabel = entriesProperty != null
-                        ? $"{groupLabel} ({entriesProperty.arraySize})"
-                        : groupLabel;
-                    variantGroupProperty.isExpanded = EditorGUILayout.Foldout(variantGroupProperty.isExpanded, foldoutLabel, true);
-                    if (!variantGroupProperty.isExpanded)
-                        continue;
-
-                    using (new EditorGUI.DisabledScope(true))
-                        EditorGUILayout.TextField("组名", groupLabel);
-
-                    EditorGUILayout.HelpBox("首个技能效果为默认项，不可删除、不可改名。新增的技能效果变体可单独填写技能ID。", MessageType.None);
-
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        GUILayout.FlexibleSpace();
-                        if (GUILayout.Button("添加技能效果", GUILayout.Width(110f)))
-                        {
-                            AddVariantEntry(database, groupIndex, variantGroupIndex);
-                            GUIUtility.ExitGUI();
-                        }
-                    }
-
-                    DrawVariantEntries(database, groupIndex, variantGroupIndex, entriesProperty);
+                    currentSection = configEntry.entryGroup;
+                    DrawSectionHeader(GetEntryGroupLabel(configEntry.entryGroup));
                 }
+
+                SerializedProperty variantGroupProperty = skillGroupsProperty.GetArrayElementAtIndex(variantGroupIndex);
+                if (variantGroupProperty == null)
+                    continue;
+
+                DrawVariantGroup(database, groupIndex, variantGroupIndex, variantGroupProperty);
+                drawnVariantIndices.Add(variantGroupIndex);
+            }
+
+            bool hasOrphans = false;
+            for (int variantGroupIndex = 0; variantGroupIndex < skillGroupsProperty.arraySize; variantGroupIndex++)
+            {
+                if (drawnVariantIndices.Contains(variantGroupIndex))
+                    continue;
+
+                if (!hasOrphans)
+                {
+                    DrawSectionHeader("未绑定技能效果");
+                    hasOrphans = true;
+                }
+
+                SerializedProperty variantGroupProperty = skillGroupsProperty.GetArrayElementAtIndex(variantGroupIndex);
+                if (variantGroupProperty == null)
+                    continue;
+
+                DrawVariantGroup(database, groupIndex, variantGroupIndex, variantGroupProperty);
+            }
+        }
+
+        private static void DrawVariantGroup(
+            SkillEffectDatabaseSO database,
+            int groupIndex,
+            int variantGroupIndex,
+            SerializedProperty variantGroupProperty)
+        {
+            SerializedProperty groupNameProperty = variantGroupProperty.FindPropertyRelative("groupName");
+            SerializedProperty entriesProperty = variantGroupProperty.FindPropertyRelative("entries");
+            string groupLabel = !string.IsNullOrWhiteSpace(groupNameProperty?.stringValue)
+                ? groupNameProperty.stringValue
+                : $"技能组 {variantGroupIndex}";
+
+            using (new EditorGUILayout.VerticalScope("box"))
+            {
+                string foldoutLabel = entriesProperty != null
+                    ? $"{groupLabel} ({entriesProperty.arraySize})"
+                    : groupLabel;
+                variantGroupProperty.isExpanded = EditorGUILayout.Foldout(variantGroupProperty.isExpanded, foldoutLabel, true);
+                if (!variantGroupProperty.isExpanded)
+                    return;
+
+                using (new EditorGUI.DisabledScope(true))
+                    EditorGUILayout.TextField("组名", groupLabel);
+
+                EditorGUILayout.HelpBox("首个技能效果为默认项，不可删除、不可改名。新增的技能效果变体可单独填写技能ID。", MessageType.None);
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("添加技能效果", GUILayout.Width(110f)))
+                    {
+                        AddVariantEntry(database, groupIndex, variantGroupIndex);
+                        GUIUtility.ExitGUI();
+                    }
+                }
+
+                DrawVariantEntries(database, groupIndex, variantGroupIndex, entriesProperty);
             }
         }
 
@@ -222,6 +299,7 @@ namespace Game.Editor
             variantGroup.entries ??= new List<SharedSkillDefinition>();
             variantGroup.entries.Add(created);
             database.Synchronize();
+            SkillEffectAnimationLibrarySyncUtility.TrySyncVariantEntriesFromDatabase(database, groupIndex, variantGroupIndex);
             EditorUtility.SetDirty(database);
         }
 
@@ -241,6 +319,7 @@ namespace Game.Editor
             Undo.RecordObject(database, "删除技能效果");
             variantGroup.entries.RemoveAt(entryIndex);
             database.Synchronize();
+            SkillEffectAnimationLibrarySyncUtility.TrySyncVariantEntriesFromDatabase(database, groupIndex, variantGroupIndex);
             EditorUtility.SetDirty(database);
         }
 
@@ -283,6 +362,65 @@ namespace Game.Editor
             }
 
             return candidate;
+        }
+
+        private static bool IsPlayerGroup(SerializedProperty groupIdProperty)
+        {
+            return groupIdProperty != null
+                   && string.Equals(groupIdProperty.stringValue?.Trim(), "player", System.StringComparison.Ordinal);
+        }
+
+        private static int FindVariantGroupIndex(SerializedProperty skillGroupsProperty, string skillId)
+        {
+            if (skillGroupsProperty == null || string.IsNullOrWhiteSpace(skillId))
+                return -1;
+
+            string normalizedSkillId = skillId.Trim();
+            for (int i = 0; i < skillGroupsProperty.arraySize; i++)
+            {
+                SerializedProperty variantGroupProperty = skillGroupsProperty.GetArrayElementAtIndex(i);
+                if (variantGroupProperty == null)
+                    continue;
+
+                SerializedProperty groupNameProperty = variantGroupProperty.FindPropertyRelative("groupName");
+                if (groupNameProperty != null
+                    && string.Equals(groupNameProperty.stringValue?.Trim(), normalizedSkillId, System.StringComparison.Ordinal))
+                {
+                    return i;
+                }
+
+                SerializedProperty entriesProperty = variantGroupProperty.FindPropertyRelative("entries");
+                if (entriesProperty == null || entriesProperty.arraySize == 0)
+                    continue;
+
+                SerializedProperty firstEntryProperty = entriesProperty.GetArrayElementAtIndex(0);
+                SerializedProperty firstSkillIdProperty = firstEntryProperty?.FindPropertyRelative("skillId");
+                if (firstSkillIdProperty != null
+                    && string.Equals(firstSkillIdProperty.stringValue?.Trim(), normalizedSkillId, System.StringComparison.Ordinal))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static void DrawSectionHeader(string label)
+        {
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+        }
+
+        private static string GetEntryGroupLabel(PlayerSkillEntryGroup entryGroup)
+        {
+            switch (entryGroup)
+            {
+                case PlayerSkillEntryGroup.ActiveSkill:
+                    return "主动技能";
+                case PlayerSkillEntryGroup.BaseSkill:
+                default:
+                    return "基础动作";
+            }
         }
     }
 }

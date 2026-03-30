@@ -21,7 +21,7 @@ MonoBehaviour:
       - skillId: NormalIdle
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u6B63\u5E38\u5F85\u673A"
         animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -36,7 +36,7 @@ MonoBehaviour:
       - skillId: NormalWalk
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u6B63\u5E38\u8D70\u8DEF"
         animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -64,7 +64,7 @@ MonoBehaviour:
       - skillId: NormalRun
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u6B63\u5E38\u8DD1\u6B65"
         animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -92,7 +92,7 @@ MonoBehaviour:
       - skillId: AimIdle
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u5C04\u51FB\u5F85\u673A"
         animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -107,7 +107,7 @@ MonoBehaviour:
       - skillId: AimWalk
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u5C04\u51FB\u8D70\u8DEF"
         animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -135,7 +135,7 @@ MonoBehaviour:
       - skillId: AimRun
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u5C04\u51FB\u8DD1\u6B65"
         animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -163,7 +163,7 @@ MonoBehaviour:
       - skillId: Jump
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u8DF3\u8DC3"
         animationTrigger: Jump
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -190,8 +190,23 @@ MonoBehaviour:
       - skillId: Dodge
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u95EA\u907F"
         animationTrigger: Dodge
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+        speedEvents: []
+        cameraEvents: []
+    - groupName: Fall
+      entries:
+      - skillId: Fall
+        effectDescription: 
+        mutationTalentCost: 0
+        displayName: "\u5760\u843D"
+        animationTrigger: Fall
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -205,7 +220,7 @@ MonoBehaviour:
       - skillId: Land
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u7740\u9646"
         animationTrigger: Land
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -220,7 +235,7 @@ MonoBehaviour:
       - skillId: Attack0
         effectDescription: "\u8FD1\u6218\u666E\u653B1\u6BB5\uFF0C\u5FEB\u901F\u524D\u6325\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u8FD1\u6218\u666E\u653B1\u6BB5"
         animationTrigger: Attack0
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -896,7 +911,7 @@ MonoBehaviour:
       - skillId: Attack1
         effectDescription: "\u8FD1\u6218\u666E\u653B2\u6BB5\uFF0C\u8FDE\u6BB5\u6325\u780D\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u8FD1\u6218\u666E\u653B2\u6BB5"
         animationTrigger: Attack1
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -1589,7 +1604,7 @@ MonoBehaviour:
       - skillId: Attack2
         effectDescription: "\u8FD1\u6218\u666E\u653B3\u6BB5\uFF0C\u5411\u524D\u7A81\u523A\u8FFD\u51FB\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u8FD1\u6218\u666E\u653B3\u6BB5"
         animationTrigger: Attack2
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -1723,6 +1738,18 @@ MonoBehaviour:
             height: 1
             durationMode: 0
             duration: 6.5000005
+        - eventId: evt_9
+          startTime: 0.5666667
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 3
+            distance: 2
+            height: 1
+            durationMode: 0
+            duration: 0.2
         attributeEvents: []
         vfxEvents:
         - eventId: evt_3
@@ -2738,18 +2765,30 @@ MonoBehaviour:
             loop: 0
             destroyMode: 0
             duration: 0
-        speedEvents: []
+        speedEvents:
+        - eventId: evt_8
+          startTime: 0
+          durationMode: 0
+          duration: 1
+          castSpeedMultiplier: 0.5
+          movementSpeedMultiplier: 1
+        - eventId: evt_9
+          startTime: 5.2000003
+          durationMode: 1
+          duration: 0
+          castSpeedMultiplier: 0.5
+          movementSpeedMultiplier: 1
         cameraEvents:
         - eventId: evt_7
           startTime: 0.5666667
           durationMode: 1
           duration: 0
-          positionMode: 0
+          positionMode: 1
           holdLocalOffset: {x: 0, y: 1.6, z: 0}
           pathStartLocalOffset: {x: 0, y: 1.6, z: 0}
-          pathControlPointA: {x: 1, y: 1.4666667, z: 33.333336}
-          pathControlPointB: {x: 2, y: 1.3333334, z: 66.66667}
-          pathEndLocalOffset: {x: 3, y: 1.2, z: 100}
+          pathControlPointA: {x: 0, y: 1.6, z: 3.3333335}
+          pathControlPointB: {x: 0, y: 1.6, z: 6.666667}
+          pathEndLocalOffset: {x: 0, y: 1.6, z: 10}
           pathProgressCurve:
             serializedVersion: 2
             m_Curve:
@@ -2757,15 +2796,33 @@ MonoBehaviour:
               time: 0
               value: 0
               inSlope: 0
-              outSlope: 1
+              outSlope: 0
               tangentMode: 0
               weightedMode: 0
               inWeight: 0
               outWeight: 0
             - serializedVersion: 3
+              time: 0.7690342
+              value: 0.27382106
+              inSlope: 1.1032506
+              outSlope: 1.1032506
+              tangentMode: 0
+              weightedMode: 0
+              inWeight: 0.11143961
+              outWeight: 0.80891305
+            - serializedVersion: 3
+              time: 0.8630633
+              value: 0.9015439
+              inSlope: 2.306169
+              outSlope: 2.306169
+              tangentMode: 0
+              weightedMode: 0
+              inWeight: 0.33333334
+              outWeight: 0.33333334
+            - serializedVersion: 3
               time: 1
               value: 1
-              inSlope: 1
+              inSlope: 0
               outSlope: 0
               tangentMode: 0
               weightedMode: 0
@@ -2775,14 +2832,14 @@ MonoBehaviour:
             m_PostInfinity: 2
             m_RotationOrder: 4
           blendInDuration: 0.033333335
-          blendOutDuration: 0.033333335
+          blendOutDuration: 0.5
           lockLookInput: 1
     - groupName: Attack3
       entries:
       - skillId: Attack3
         effectDescription: "\u8FD1\u6218\u666E\u653B4\u6BB5\uFF0C\u7EC8\u7ED3\u4E00\u51FB\uFF0C\u9020\u6210\u66F4\u5F3A\u8FD1\u6218\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u8FD1\u6218\u666E\u653B4\u6BB5"
         animationTrigger: Attack3
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -3228,7 +3285,7 @@ MonoBehaviour:
       - skillId: AirAttack
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u7A7A\u4E2D\u666E\u653B"
         animationTrigger: AirAttack
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -3433,7 +3490,7 @@ MonoBehaviour:
       - skillId: ChargeStart
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u84C4\u529B\u5F00\u59CB"
         animationTrigger: ChargeStart
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -3448,7 +3505,7 @@ MonoBehaviour:
       - skillId: ChargeLoop
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u84C4\u529B\u5FAA\u73AF"
         animationTrigger: ChargeLoop
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -3510,7 +3567,7 @@ MonoBehaviour:
       - skillId: ChargeRelease
         effectDescription: "\u8FD1\u6218\u84C4\u529B\u91CA\u653E\uFF0C\u5BF9\u524D\u65B9\u9020\u6210\u66F4\u9AD8\u8303\u56F4\u4F24\u5BB3\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u8FD1\u6218\u84C4\u529B\u91CA\u653E"
         animationTrigger: ChargeRelease
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -3733,7 +3790,7 @@ MonoBehaviour:
       - skillId: FallAttackStart
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u4E0B\u843D\u653B\u51FB\u5F00\u59CB"
         animationTrigger: FallAttackStart
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -3760,7 +3817,7 @@ MonoBehaviour:
       - skillId: FallAttackLoop
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u4E0B\u843D\u653B\u51FB\u5FAA\u73AF"
         animationTrigger: FallAttackLoop
         ignoreAnimationDamageEvents: 0
         damageEvents: []
@@ -3793,7 +3850,7 @@ MonoBehaviour:
       - skillId: FallAttackLand
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u4E0B\u843D\u653B\u51FB\u7740\u9646"
         animationTrigger: FallAttackLand
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -3999,13 +4056,28 @@ MonoBehaviour:
           castSpeedMultiplier: 0
           movementSpeedMultiplier: 0
         cameraEvents: []
-    - groupName: Fall
+    - groupName: HitStun
       entries:
-      - skillId: Fall
+      - skillId: HitStun
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
-        animationTrigger: Fall
+        displayName: "\u53D7\u51FB"
+        animationTrigger: HitStun
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+        speedEvents: []
+        cameraEvents: []
+    - groupName: PlayerDeath
+      entries:
+      - skillId: PlayerDeath
+        effectDescription: 
+        mutationTalentCost: 0
+        displayName: "\u6B7B\u4EA1"
+        animationTrigger: Dead
         ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
@@ -5803,7 +5875,7 @@ MonoBehaviour:
       - skillId: ShootCharge
         effectDescription: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\uFF0C\u6301\u7EED\u5411\u524D\u65B9\u5C04\u51FB\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)"
         animationTrigger: Shoot_Charge
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -7875,39 +7947,9 @@ MonoBehaviour:
       - skillId: Aim
         effectDescription: 
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u7784\u51C6"
         animationTrigger: Aim
         ignoreAnimationDamageEvents: 1
-        damageEvents: []
-        physicsEvents: []
-        attributeEvents: []
-        vfxEvents: []
-        sfxEvents: []
-        speedEvents: []
-        cameraEvents: []
-    - groupName: HitStun
-      entries:
-      - skillId: HitStun
-        effectDescription: 
-        mutationTalentCost: 0
-        displayName: 
-        animationTrigger: HitStun
-        ignoreAnimationDamageEvents: 0
-        damageEvents: []
-        physicsEvents: []
-        attributeEvents: []
-        vfxEvents: []
-        sfxEvents: []
-        speedEvents: []
-        cameraEvents: []
-    - groupName: PlayerDeath
-      entries:
-      - skillId: PlayerDeath
-        effectDescription: 
-        mutationTalentCost: 0
-        displayName: 
-        animationTrigger: Dead
-        ignoreAnimationDamageEvents: 0
         damageEvents: []
         physicsEvents: []
         attributeEvents: []
@@ -7920,7 +7962,7 @@ MonoBehaviour:
       - skillId: Skill0
         effectDescription: "\u4E3B\u52A80\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u4E3B\u52A80"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -8150,7 +8192,7 @@ MonoBehaviour:
       - skillId: Skill1
         effectDescription: "\u4E3B\u52A81\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u4E3B\u52A81"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -8296,7 +8338,7 @@ MonoBehaviour:
       - skillId: Skill2
         effectDescription: "\u4E3B\u52A82\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u4E3B\u52A82"
         animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -8436,7 +8478,7 @@ MonoBehaviour:
       - skillId: Skill3
         effectDescription: "\u4E3B\u52A83\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
         mutationTalentCost: 0
-        displayName: 
+        displayName: "\u4E3B\u52A83"
         animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
         damageEvents:
@@ -8580,7 +8622,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: 
@@ -8662,7 +8704,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: shot
@@ -8744,7 +8786,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: hit_a
@@ -8899,7 +8941,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: slam
@@ -8993,7 +9035,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: burst
@@ -9072,7 +9114,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: hook
@@ -9166,7 +9208,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: crush
@@ -9359,7 +9401,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents: []
         physicsEvents: []
@@ -9396,7 +9438,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: impact
@@ -9494,7 +9536,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: chain
@@ -9588,7 +9630,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: slash
@@ -9726,7 +9768,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: shot
@@ -9805,7 +9847,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD2"
-        animationTrigger: 
+        animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: impact
@@ -9908,7 +9950,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD3"
-        animationTrigger: 
+        animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
         damageEvents: []
         physicsEvents: []
@@ -9951,7 +9993,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_4
@@ -10030,7 +10072,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: volley
@@ -10109,7 +10151,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD2"
-        animationTrigger: 
+        animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: crash
@@ -10212,7 +10254,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD3"
-        animationTrigger: 
+        animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
         damageEvents: []
         physicsEvents: []
@@ -10249,7 +10291,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: cleave
@@ -10352,7 +10394,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: barrage
@@ -10431,7 +10473,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD2"
-        animationTrigger: 
+        animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: impact
@@ -10534,7 +10576,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD3"
-        animationTrigger: 
+        animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: drain_hit
@@ -10647,7 +10689,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: spin
@@ -10738,7 +10780,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: pierce
@@ -10829,7 +10871,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD2"
-        animationTrigger: 
+        animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: finish
@@ -10932,7 +10974,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD3"
-        animationTrigger: 
+        animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
         damageEvents: []
         physicsEvents: []
@@ -10975,7 +11017,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD0"
-        animationTrigger: 
+        animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: cleave
@@ -11066,7 +11108,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD1"
-        animationTrigger: 
+        animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: storm
@@ -11145,7 +11187,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD2"
-        animationTrigger: 
+        animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: stomp
@@ -11248,7 +11290,7 @@ MonoBehaviour:
         effectDescription: 
         mutationTalentCost: 0
         displayName: "\u6280\u80FD3"
-        animationTrigger: 
+        animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: roar_hit

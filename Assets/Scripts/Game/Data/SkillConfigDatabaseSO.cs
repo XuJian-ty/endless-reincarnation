@@ -468,5 +468,12 @@ namespace Game.Data
 
             return Enum.TryParse(normalizedActionId, out actionSlot);
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            SkillEffectAnimationLibrarySyncUtility.TrySyncFromSkillConfig(this);
+        }
+#endif
     }
 }

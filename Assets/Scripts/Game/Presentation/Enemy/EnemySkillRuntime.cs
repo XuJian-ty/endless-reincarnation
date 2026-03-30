@@ -48,6 +48,7 @@ namespace Game.Presentation
     public static class EnemySkillResolver
     {
         private static readonly HashSet<string> MissingSkillWarnings = new HashSet<string>();
+        private static readonly HashSet<string> MissingAnimationTriggerWarnings = new HashSet<string>();
 
         /// <summary>
         /// 解析敌人技能槽位，只从技能库读取技能定义。
@@ -70,9 +71,13 @@ namespace Game.Presentation
                 return null;
             }
 
-            string animationTrigger = !string.IsNullOrEmpty(binding.animationTrigger)
-                ? binding.animationTrigger
-                : PlayerActionRouting.BuildSkillSlotActionName(slot);
+            string animationTrigger = sharedDef.GetAnimationTriggerOrEmpty();
+            if (string.IsNullOrWhiteSpace(animationTrigger))
+            {
+                if (MissingAnimationTriggerWarnings.Add(binding.skillId))
+                    Debug.LogWarning($"[EnemySkill] 技能未填写动画 Trigger: {binding.skillId}");
+                animationTrigger = string.Empty;
+            }
 
             return new EnemyResolvedSkill(slot, binding, sharedDef, animationTrigger);
         }

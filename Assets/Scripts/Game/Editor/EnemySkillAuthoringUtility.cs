@@ -69,11 +69,11 @@ namespace Game.Editor
             EnsureSharedSkillDefinition(sharedSkillDatabase, archetype, createdSlot, templateDefinition);
 
             CharacterAnimationEntry templateAnimationEntry = templateSlot != null
-                ? FindAnimationEntry(FindOrCreateAnimationGroup(animationLibrary, archetype), ResolveExpectedAnimationTrigger(templateSlot.slotIndex))
+                ? CharacterAnimationLibrarySO.GetPrimaryEntry(FindAnimationVariantGroup(FindOrCreateAnimationGroup(animationLibrary, archetype), templateSlot.skillId))
                 : null;
-            CharacterAnimationEntry animationEntry = EnsureAnimationEntry(animationLibrary, archetype, createdSlot.animationTrigger, templateAnimationEntry);
+            CharacterAnimationEntry animationEntry = EnsureAnimationEntry(animationLibrary, archetype, createdSlot.skillId, createdSlot.skillId, templateAnimationEntry);
 
-            EnsureAnimatorSkillState(animatorController, createdSlot.animationTrigger, animationEntry, out errorMessage);
+            EnsureAnimatorSkillState(animatorController, ResolveExpectedAnimationTrigger(createdSlot.slotIndex), animationEntry, out errorMessage);
             if (!string.IsNullOrEmpty(errorMessage))
                 return false;
 
@@ -125,7 +125,7 @@ namespace Game.Editor
 
             RemoveSkillSlot(archetype, slotIndex);
             RemoveSharedSkillDefinition(sharedSkillDatabase, archetype, BuildEnemySkillId(archetype, slotIndex));
-            RemoveAnimationEntry(animationLibrary, archetype, ResolveExpectedAnimationTrigger(slotIndex));
+            RemoveAnimationEntry(animationLibrary, archetype, BuildEnemySkillId(archetype, slotIndex));
             RemoveAnimatorSkillArtifacts(animatorController, ResolveExpectedAnimationTrigger(slotIndex));
 
             FinalizeChanges(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
@@ -178,7 +178,157 @@ namespace Game.Editor
             return true;
         }
 
-        public static bool TryCleanupDeletedEnemyArchetypeArtifacts(EnemyArchetypeSO archetype, out string errorMessage)
+        public static void SyncEnemyAnimationPresentationFromSharedSkillDatabase(SkillEffectDatabaseSO sharedSkillDatabase)
+        {
+            if (sharedSkillDatabase == null)
+                return;
+
+            EnemyStatsDatabaseSO enemyStatsDatabase = AssetDatabase.LoadAssetAtPath<EnemyStatsDatabaseSO>(EnemyStatsDatabasePath);
+            CharacterAnimationLibrarySO animationLibrary = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(AnimationLibraryPath);
+            if (enemyStatsDatabase == null || animationLibrary == null)
+                return;
+
+            EnemyArchetypeSO[] archetypes = LoadAssetsOfType<EnemyArchetypeSO>();
+            if (archetypes == null || archetypes.Length == 0)
+                return;
+
+            List<UnityEngine.Object> dirtyAssets = new List<UnityEngine.Object>();
+            AddDirtyAsset(dirtyAssets, enemyStatsDatabase);
+            AddDirtyAsset(dirtyAssets, sharedSkillDatabase);
+            AddDirtyAsset(dirtyAssets, animationLibrary);
+
+            for (int i = 0; i < archetypes.Length; i++)
+            {
+                EnemyArchetypeSO archetype = archetypes[i];
+                if (archetype == null)
+                    continue;
+
+                if (!TryGetOrCreateDedicatedAnimatorController(archetype, false, out AnimatorController animatorController, out string errorMessage))
+                {
+                    Debug.LogWarning($"[EnemySkillAuthoringUtility] 同步敌人动画表现失败：{ResolveEnemyId(archetype)} - {errorMessage}");
+                    continue;
+                }
+
+                NormalizeEnemySkillAuthoring(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
+                AddDirtyAsset(dirtyAssets, archetype);
+                AddDirtyAsset(dirtyAssets, animatorController);
+            }
+
+            FinalizeDirtyAssets(dirtyAssets);
+        }
+
+        public static bool TryValidateEnemyIdChange(EnemyArchetypeSO archetype, string newEnemyId, out string errorMessage)
+        {
+            errorMessage = null;
+            if (archetype == null)
+            {
+                errorMessage = "未找到敌人行为资产。";
+                return false;
+            }
+
+            string previousEnemyId = archetype.GetResolvedEnemyId();
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            string trimmedNewEnemyId = string.IsNullOrWhiteSpace(newEnemyId) ? string.Empty : newEnemyId.Trim();
+            string normalizedNewEnemyId = NormalizeIdentifier(trimmedNewEnemyId);
+            if (string.IsNullOrWhiteSpace(trimmedNewEnemyId))
+            {
+                errorMessage = "敌人ID不能为空。";
+                return false;
+            }
+
+            if (string.Equals(normalizedPreviousEnemyId, normalizedNewEnemyId, StringComparison.Ordinal))
+                return true;
+
+            if (HasOtherArchetypesWithSameEnemyId(archetype, trimmedNewEnemyId))
+            {
+                errorMessage = $"检测到重复 enemyId：{trimmedNewEnemyId}。";
+                return false;
+            }
+
+            EnemyStatsDatabaseSO enemyStatsDatabase = AssetDatabase.LoadAssetAtPath<EnemyStatsDatabaseSO>(EnemyStatsDatabasePath);
+            if (enemyStatsDatabase == null)
+            {
+                errorMessage = $"未找到敌人属性库：{EnemyStatsDatabasePath}";
+                return false;
+            }
+
+            SkillEffectDatabaseSO sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
+            if (sharedSkillDatabase == null)
+            {
+                errorMessage = $"未找到技能效果库：{SkillEffectDatabasePath}";
+                return false;
+            }
+
+            CharacterAnimationLibrarySO animationLibrary = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(AnimationLibraryPath);
+            if (animationLibrary == null)
+            {
+                errorMessage = $"未找到动画库：{AnimationLibraryPath}";
+                return false;
+            }
+
+            if (HasConflictingEnemyStatsResources(enemyStatsDatabase, previousEnemyId, trimmedNewEnemyId))
+            {
+                errorMessage = $"敌人属性库中已存在与新 enemyId 冲突的分组或条目：{trimmedNewEnemyId}";
+                return false;
+            }
+
+            if (HasConflictingSharedSkillResources(sharedSkillDatabase, previousEnemyId, trimmedNewEnemyId))
+            {
+                errorMessage = $"技能效果库中已存在与新 enemyId 冲突的敌人分组：{trimmedNewEnemyId}";
+                return false;
+            }
+
+            if (HasConflictingAnimationResources(animationLibrary, previousEnemyId, trimmedNewEnemyId))
+            {
+                errorMessage = $"动画库中已存在与新 enemyId 冲突的敌人分组：{trimmedNewEnemyId}";
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool TryRenameEnemyId(EnemyArchetypeSO archetype, string previousEnemyId, string newEnemyId, out string errorMessage)
+        {
+            errorMessage = null;
+            if (archetype == null)
+            {
+                errorMessage = "未找到敌人行为资产。";
+                return false;
+            }
+
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            string trimmedNewEnemyId = string.IsNullOrWhiteSpace(newEnemyId) ? string.Empty : newEnemyId.Trim();
+            string normalizedNewEnemyId = NormalizeIdentifier(trimmedNewEnemyId);
+            if (string.Equals(normalizedPreviousEnemyId, normalizedNewEnemyId, StringComparison.Ordinal))
+                return true;
+
+            if (!TryValidateEnemyIdChange(archetype, trimmedNewEnemyId, out errorMessage))
+                return false;
+
+            EnemyStatsDatabaseSO enemyStatsDatabase = AssetDatabase.LoadAssetAtPath<EnemyStatsDatabaseSO>(EnemyStatsDatabasePath);
+            SkillEffectDatabaseSO sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
+            CharacterAnimationLibrarySO animationLibrary = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(AnimationLibraryPath);
+            AnimatorController animatorController = archetype.dedicatedAnimatorController as AnimatorController;
+            EnemySpawnTaskDatabaseSO[] taskDatabases = LoadAssetsOfType<EnemySpawnTaskDatabaseSO>();
+
+            List<UnityEngine.Object> dirtyAssets = BuildDirtyAssetList(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
+            AddDirtyAssets(dirtyAssets, taskDatabases);
+            Undo.RecordObjects(dirtyAssets.ToArray(), "修改敌人ID");
+
+            string displayName = ResolveEnemyGroupName(archetype);
+            RenameEnemyStatsResources(enemyStatsDatabase, previousEnemyId, trimmedNewEnemyId, displayName, archetype.enemyType);
+            RenameEnemySharedSkillResources(sharedSkillDatabase, previousEnemyId, trimmedNewEnemyId, displayName);
+            RenameEnemyAnimationResources(animationLibrary, previousEnemyId, trimmedNewEnemyId, displayName);
+            RenameSpawnTaskReferences(taskDatabases, previousEnemyId, trimmedNewEnemyId);
+            RenameEnemyPrefabReferences(archetype, previousEnemyId, trimmedNewEnemyId);
+
+            NormalizeEnemySkillAuthoring(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
+            FinalizeDirtyAssets(dirtyAssets);
+            AssetDatabase.SaveAssetIfDirty(archetype);
+            return true;
+        }
+
+        public static bool TryPrecheckDeletedEnemyArchetypeArtifacts(EnemyArchetypeSO archetype, out string errorMessage)
         {
             errorMessage = null;
             if (archetype == null)
@@ -187,9 +337,54 @@ namespace Game.Editor
                 return false;
             }
 
+            string explicitEnemyId = archetype.enemyId != null ? archetype.enemyId.Trim() : string.Empty;
+            if (string.IsNullOrWhiteSpace(explicitEnemyId))
+            {
+                errorMessage = "敌人ID为空。删除前无法安全定位归属资源。请先填写唯一敌人ID，再执行删除。";
+                return false;
+            }
+
+            if (HasOtherArchetypesWithSameEnemyId(archetype, explicitEnemyId))
+            {
+                errorMessage = $"检测到重复 enemyId：{explicitEnemyId}。删除其中一个敌人行为资产会影响其他同 ID 资产，已阻止删除。";
+                return false;
+            }
+
+            EnemyStatsDatabaseSO enemyStatsDatabase = AssetDatabase.LoadAssetAtPath<EnemyStatsDatabaseSO>(EnemyStatsDatabasePath);
+            if (enemyStatsDatabase == null)
+            {
+                errorMessage = $"删除前预检查失败：未找到敌人属性库：{EnemyStatsDatabasePath}";
+                return false;
+            }
+
+            SkillEffectDatabaseSO sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
+            if (sharedSkillDatabase == null)
+            {
+                errorMessage = $"删除前预检查失败：未找到技能效果库：{SkillEffectDatabasePath}";
+                return false;
+            }
+
+            CharacterAnimationLibrarySO animationLibrary = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(AnimationLibraryPath);
+            if (animationLibrary == null)
+            {
+                errorMessage = $"删除前预检查失败：未找到动画库：{AnimationLibraryPath}";
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool TryCleanupDeletedEnemyArchetypeArtifacts(EnemyArchetypeSO archetype, out string errorMessage)
+        {
+            if (!TryPrecheckDeletedEnemyArchetypeArtifacts(archetype, out errorMessage))
+                return false;
+
             string enemyId = ResolveEnemyId(archetype);
             if (string.IsNullOrWhiteSpace(enemyId))
-                return true;
+            {
+                errorMessage = "敌人ID为空。删除前无法安全定位归属资源。";
+                return false;
+            }
 
             EnemyStatsDatabaseSO enemyStatsDatabase = AssetDatabase.LoadAssetAtPath<EnemyStatsDatabaseSO>(EnemyStatsDatabasePath);
             SkillEffectDatabaseSO sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
@@ -217,6 +412,319 @@ namespace Game.Editor
 
             DeleteDedicatedAnimatorControllerIfOwned(archetype, dedicatedAnimatorController);
             return true;
+        }
+
+        private static bool HasConflictingEnemyStatsResources(EnemyStatsDatabaseSO enemyStatsDatabase, string previousEnemyId, string newEnemyId)
+        {
+            if (enemyStatsDatabase?.groups == null)
+                return false;
+
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            string normalizedNewEnemyId = NormalizeIdentifier(newEnemyId);
+            for (int groupIndex = 0; groupIndex < enemyStatsDatabase.groups.Count; groupIndex++)
+            {
+                EnemyStatsGroupDefinition group = enemyStatsDatabase.groups[groupIndex];
+                if (group == null)
+                    continue;
+
+                if (IsConflictingIdentifier(group.groupId, normalizedPreviousEnemyId, normalizedNewEnemyId))
+                    return true;
+
+                if (group.entries == null)
+                    continue;
+
+                for (int entryIndex = 0; entryIndex < group.entries.Count; entryIndex++)
+                {
+                    EnemyStatsEntry entry = group.entries[entryIndex];
+                    if (entry != null && IsConflictingIdentifier(entry.enemyId, normalizedPreviousEnemyId, normalizedNewEnemyId))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasConflictingSharedSkillResources(SkillEffectDatabaseSO sharedSkillDatabase, string previousEnemyId, string newEnemyId)
+        {
+            if (sharedSkillDatabase?.groups == null)
+                return false;
+
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            string normalizedNewEnemyId = NormalizeIdentifier(newEnemyId);
+            for (int groupIndex = 0; groupIndex < sharedSkillDatabase.groups.Count; groupIndex++)
+            {
+                SkillGroupDefinition group = sharedSkillDatabase.groups[groupIndex];
+                if (group != null && IsConflictingIdentifier(group.groupId, normalizedPreviousEnemyId, normalizedNewEnemyId))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool HasConflictingAnimationResources(CharacterAnimationLibrarySO animationLibrary, string previousEnemyId, string newEnemyId)
+        {
+            if (animationLibrary?.groups == null)
+                return false;
+
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            string normalizedNewEnemyId = NormalizeIdentifier(newEnemyId);
+            for (int groupIndex = 0; groupIndex < animationLibrary.groups.Count; groupIndex++)
+            {
+                CharacterAnimationGroupDefinition group = animationLibrary.groups[groupIndex];
+                if (group != null && IsConflictingIdentifier(group.groupId, normalizedPreviousEnemyId, normalizedNewEnemyId))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsConflictingIdentifier(string value, string normalizedPreviousEnemyId, string normalizedNewEnemyId)
+        {
+            string normalizedValue = NormalizeIdentifier(value);
+            return !string.IsNullOrWhiteSpace(normalizedNewEnemyId)
+                   && string.Equals(normalizedValue, normalizedNewEnemyId, StringComparison.Ordinal)
+                   && !string.Equals(normalizedValue, normalizedPreviousEnemyId, StringComparison.Ordinal);
+        }
+
+        private static bool HasOtherArchetypesWithSameEnemyId(EnemyArchetypeSO deletingArchetype, string enemyId)
+        {
+            string normalizedEnemyId = NormalizeIdentifier(enemyId);
+            if (string.IsNullOrWhiteSpace(normalizedEnemyId))
+                return false;
+
+            string[] archetypeGuids = AssetDatabase.FindAssets("t:EnemyArchetypeSO", new[] { EnemyConfigFolder });
+            for (int i = 0; i < archetypeGuids.Length; i++)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(archetypeGuids[i]);
+                EnemyArchetypeSO archetype = AssetDatabase.LoadAssetAtPath<EnemyArchetypeSO>(assetPath);
+                if (archetype == null || archetype == deletingArchetype)
+                    continue;
+
+                if (string.Equals(NormalizeIdentifier(archetype.GetResolvedEnemyId()), normalizedEnemyId, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static void RenameEnemyStatsResources(
+            EnemyStatsDatabaseSO enemyStatsDatabase,
+            string previousEnemyId,
+            string newEnemyId,
+            string displayName,
+            EnemyType enemyType)
+        {
+            if (enemyStatsDatabase?.groups == null)
+                return;
+
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            for (int groupIndex = 0; groupIndex < enemyStatsDatabase.groups.Count; groupIndex++)
+            {
+                EnemyStatsGroupDefinition group = enemyStatsDatabase.groups[groupIndex];
+                if (group == null)
+                    continue;
+
+                if (string.Equals(NormalizeIdentifier(group.groupId), normalizedPreviousEnemyId, StringComparison.Ordinal))
+                {
+                    group.groupId = newEnemyId;
+                    group.groupName = displayName;
+                }
+
+                if (group.entries == null)
+                    continue;
+
+                for (int entryIndex = 0; entryIndex < group.entries.Count; entryIndex++)
+                {
+                    EnemyStatsEntry entry = group.entries[entryIndex];
+                    if (entry == null || !string.Equals(NormalizeIdentifier(entry.enemyId), normalizedPreviousEnemyId, StringComparison.Ordinal))
+                        continue;
+
+                    entry.enemyId = newEnemyId;
+                    entry.displayName = displayName;
+                    entry.type = enemyType;
+                }
+            }
+
+            enemyStatsDatabase.SyncFlatEntries();
+        }
+
+        private static void RenameEnemySharedSkillResources(
+            SkillEffectDatabaseSO sharedSkillDatabase,
+            string previousEnemyId,
+            string newEnemyId,
+            string displayName)
+        {
+            if (sharedSkillDatabase?.groups == null)
+                return;
+
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            for (int groupIndex = 0; groupIndex < sharedSkillDatabase.groups.Count; groupIndex++)
+            {
+                SkillGroupDefinition group = sharedSkillDatabase.groups[groupIndex];
+                if (group == null || !string.Equals(NormalizeIdentifier(group.groupId), normalizedPreviousEnemyId, StringComparison.Ordinal))
+                    continue;
+
+                group.groupId = newEnemyId;
+                group.groupName = displayName;
+                RenameSharedSkillVariantEntries(group.skillGroups, previousEnemyId, newEnemyId);
+            }
+
+            sharedSkillDatabase.Synchronize();
+        }
+
+        private static void RenameEnemyAnimationResources(
+            CharacterAnimationLibrarySO animationLibrary,
+            string previousEnemyId,
+            string newEnemyId,
+            string displayName)
+        {
+            if (animationLibrary?.groups == null)
+                return;
+
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            for (int groupIndex = 0; groupIndex < animationLibrary.groups.Count; groupIndex++)
+            {
+                CharacterAnimationGroupDefinition group = animationLibrary.groups[groupIndex];
+                if (group == null || !string.Equals(NormalizeIdentifier(group.groupId), normalizedPreviousEnemyId, StringComparison.Ordinal))
+                    continue;
+
+                group.groupId = newEnemyId;
+                group.groupName = displayName;
+                RenameAnimationVariantEntries(group.skillGroups, previousEnemyId, newEnemyId);
+            }
+
+            animationLibrary.Synchronize();
+        }
+
+        private static void RenameSharedSkillVariantEntries(
+            List<SkillEffectVariantGroupDefinition> skillGroups,
+            string previousEnemyId,
+            string newEnemyId)
+        {
+            if (skillGroups == null)
+                return;
+
+            for (int variantGroupIndex = 0; variantGroupIndex < skillGroups.Count; variantGroupIndex++)
+            {
+                SkillEffectVariantGroupDefinition variantGroup = skillGroups[variantGroupIndex];
+                if (variantGroup == null)
+                    continue;
+
+                variantGroup.groupName = ReplaceEnemySkillIdPrefix(variantGroup.groupName, previousEnemyId, newEnemyId);
+                if (variantGroup.entries == null)
+                    continue;
+
+                for (int entryIndex = 0; entryIndex < variantGroup.entries.Count; entryIndex++)
+                {
+                    SharedSkillDefinition entry = variantGroup.entries[entryIndex];
+                    if (entry != null)
+                        entry.skillId = ReplaceEnemySkillIdPrefix(entry.skillId, previousEnemyId, newEnemyId);
+                }
+            }
+        }
+
+        private static void RenameAnimationVariantEntries(
+            List<CharacterAnimationVariantGroupDefinition> skillGroups,
+            string previousEnemyId,
+            string newEnemyId)
+        {
+            if (skillGroups == null)
+                return;
+
+            for (int variantGroupIndex = 0; variantGroupIndex < skillGroups.Count; variantGroupIndex++)
+            {
+                CharacterAnimationVariantGroupDefinition variantGroup = skillGroups[variantGroupIndex];
+                if (variantGroup == null)
+                    continue;
+
+                variantGroup.groupName = ReplaceEnemySkillIdPrefix(variantGroup.groupName, previousEnemyId, newEnemyId);
+                if (variantGroup.entries == null)
+                    continue;
+
+                for (int entryIndex = 0; entryIndex < variantGroup.entries.Count; entryIndex++)
+                {
+                    CharacterAnimationEntry entry = variantGroup.entries[entryIndex];
+                    if (entry != null)
+                        entry.animationId = ReplaceEnemySkillIdPrefix(entry.animationId, previousEnemyId, newEnemyId);
+                }
+            }
+        }
+
+        private static string ReplaceEnemySkillIdPrefix(string value, string previousEnemyId, string newEnemyId)
+        {
+            if (string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(previousEnemyId) || string.IsNullOrWhiteSpace(newEnemyId))
+                return value;
+
+            string trimmedValue = value.Trim();
+            string trimmedPreviousEnemyId = previousEnemyId.Trim();
+            if (!trimmedValue.StartsWith(trimmedPreviousEnemyId, StringComparison.Ordinal))
+                return trimmedValue;
+
+            return $"{newEnemyId.Trim()}{trimmedValue.Substring(trimmedPreviousEnemyId.Length)}";
+        }
+
+        private static void RenameSpawnTaskReferences(
+            EnemySpawnTaskDatabaseSO[] taskDatabases,
+            string previousEnemyId,
+            string newEnemyId)
+        {
+            if (taskDatabases == null || string.IsNullOrWhiteSpace(previousEnemyId) || string.IsNullOrWhiteSpace(newEnemyId))
+                return;
+
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            for (int databaseIndex = 0; databaseIndex < taskDatabases.Length; databaseIndex++)
+            {
+                EnemySpawnTaskDatabaseSO taskDatabase = taskDatabases[databaseIndex];
+                if (taskDatabase?.tasks == null)
+                    continue;
+
+                for (int taskIndex = 0; taskIndex < taskDatabase.tasks.Count; taskIndex++)
+                {
+                    EnemySpawnTaskDefinition task = taskDatabase.tasks[taskIndex];
+                    if (task != null && string.Equals(NormalizeIdentifier(task.specificSpawnId), normalizedPreviousEnemyId, StringComparison.Ordinal))
+                        task.specificSpawnId = newEnemyId;
+                }
+            }
+        }
+
+        private static void RenameEnemyPrefabReferences(EnemyArchetypeSO archetype, string previousEnemyId, string newEnemyId)
+        {
+            if (archetype == null || string.IsNullOrWhiteSpace(previousEnemyId) || string.IsNullOrWhiteSpace(newEnemyId))
+                return;
+
+            string[] prefabGuids = AssetDatabase.FindAssets("t:Prefab", new[] { EnemyPrefabFolder });
+            string normalizedPreviousEnemyId = NormalizeIdentifier(previousEnemyId);
+            for (int i = 0; i < prefabGuids.Length; i++)
+            {
+                string prefabPath = AssetDatabase.GUIDToAssetPath(prefabGuids[i]);
+                if (string.IsNullOrWhiteSpace(prefabPath))
+                    continue;
+
+                GameObject prefabRoot = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                if (prefabRoot == null)
+                    continue;
+
+                EnemyController enemyController = prefabRoot.GetComponentInChildren<EnemyController>(true);
+                if (enemyController == null)
+                    continue;
+
+                SerializedObject enemySerializedObject = new SerializedObject(enemyController);
+                SerializedProperty archetypeOverrideProperty = enemySerializedObject.FindProperty("_archetypeOverride");
+                SerializedProperty enemyIdProperty = enemySerializedObject.FindProperty("_enemyId");
+                bool matchesArchetype = archetypeOverrideProperty != null && archetypeOverrideProperty.objectReferenceValue == archetype;
+                bool matchesEnemyId = enemyIdProperty != null &&
+                                     string.Equals(NormalizeIdentifier(enemyIdProperty.stringValue), normalizedPreviousEnemyId, StringComparison.Ordinal);
+                if (!matchesArchetype && !matchesEnemyId)
+                    continue;
+
+                if (enemyIdProperty != null && string.Equals(NormalizeIdentifier(enemyIdProperty.stringValue), normalizedPreviousEnemyId, StringComparison.Ordinal))
+                {
+                    enemyIdProperty.stringValue = newEnemyId;
+                    enemySerializedObject.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(enemyController);
+                    PrefabUtility.SavePrefabAsset(prefabRoot);
+                }
+            }
         }
 
         private static bool TryLoadDependencies(
@@ -443,19 +951,25 @@ namespace Game.Editor
 
                 int slotIndex = Mathf.Max(0, slot.slotIndex);
                 string expectedSkillId = BuildEnemySkillId(archetype, slotIndex);
-                string expectedTrigger = ResolveExpectedAnimationTrigger(slotIndex);
+                string currentTrigger = ResolveEnemySharedSkillAnimationTrigger(sharedSkillDatabase, slot.skillId, slotIndex);
 
-                MoveOrCreateSharedSkillDefinition(sharedSkillDatabase, skillGroup, slot.skillId, expectedSkillId, ResolveExpectedDisplayName(slot, slotIndex));
-                MoveOrCreateAnimationEntry(animationGroup, slot.animationTrigger, expectedTrigger);
+                MoveOrCreateSharedSkillDefinition(sharedSkillDatabase, skillGroup, slot.skillId, expectedSkillId, ResolveExpectedDisplayName(slot, slotIndex), currentTrigger);
+                CharacterAnimationEntry animationEntry = MoveOrCreateAnimationEntry(animationGroup, slot.skillId, slot.skillId, expectedSkillId, expectedSkillId);
+                if (animatorController != null)
+                {
+                    EnsureAnimatorSkillState(animatorController, ResolveExpectedAnimationTrigger(slotIndex), animationEntry, out string ensureErrorMessage);
+                    if (!string.IsNullOrEmpty(ensureErrorMessage))
+                        Debug.LogWarning($"[EnemySkillAuthoringUtility] 敌人技能动画状态同步失败：{ResolveEnemyId(archetype)} / {expectedSkillId} - {ensureErrorMessage}");
+                }
 
                 slot.slotIndex = slotIndex;
                 slot.skillId = expectedSkillId;
                 slot.displayName = ResolveExpectedDisplayName(slot, slotIndex);
-                slot.animationTrigger = expectedTrigger;
             }
 
             NormalizeSharedSkillGroupOrder(skillGroup);
             NormalizeAnimationGroupOrder(animationGroup);
+            animationLibrary?.Synchronize();
             enemyStatsDatabase?.SyncFlatEntries();
             RebuildSharedSkillFlatEntries(sharedSkillDatabase);
             SyncEnemyPrefabAnimatorControllers(archetype, animatorController);
@@ -948,7 +1462,6 @@ namespace Game.Editor
                 enterIdleAfterCast = template.enterIdleAfterCast,
                 postCastIdleDuration = template.postCastIdleDuration,
                 rotateToTargetOnCast = template.rotateToTargetOnCast,
-                animationTrigger = template.animationTrigger,
                 naturalExitNormalizedTime = template.naturalExitNormalizedTime,
                 naturalExitTarget = template.naturalExitTarget,
                 phaseAvailability = template.phaseAvailability,
@@ -963,7 +1476,6 @@ namespace Game.Editor
             slot.slotIndex = slotIndex;
             slot.skillId = BuildEnemySkillId(archetype, slotIndex);
             slot.displayName = $"技能{slotIndex}";
-            slot.animationTrigger = ResolveExpectedAnimationTrigger(slotIndex);
         }
 
         private static int ResolveNextSlotIndex(List<EnemySkillSlotBinding> skillSlots)
@@ -1035,6 +1547,7 @@ namespace Game.Editor
             {
                 existing.skillId = slot.skillId;
                 existing.displayName = slot.displayName;
+                EnsureEnemySharedSkillAnimationTrigger(existingGroup, ResolveExpectedAnimationTrigger(slot.slotIndex));
                 return;
             }
 
@@ -1047,6 +1560,7 @@ namespace Game.Editor
                 groupName = slot.skillId,
                 entries = new List<SharedSkillDefinition> { created },
             });
+            SetEnemySharedSkillAnimationTrigger(FindSharedSkillVariantGroup(group, slot.skillId), ResolveExpectedAnimationTrigger(slot.slotIndex));
             NormalizeSharedSkillGroupOrder(group);
             RebuildSharedSkillFlatEntries(sharedSkillDatabase);
         }
@@ -1056,7 +1570,8 @@ namespace Game.Editor
             SkillGroupDefinition targetGroup,
             string currentSkillId,
             string expectedSkillId,
-            string displayName)
+            string displayName,
+            string expectedAnimationTrigger)
         {
             if (sharedSkillDatabase == null || targetGroup == null || string.IsNullOrWhiteSpace(expectedSkillId))
                 return;
@@ -1066,6 +1581,7 @@ namespace Game.Editor
             if (variantGroup == null && !string.IsNullOrWhiteSpace(currentSkillId))
                 variantGroup = FindSharedSkillVariantGroup(sharedSkillDatabase, currentSkillId, out ownerGroup);
 
+            bool createdVariantGroup = false;
             SharedSkillDefinition entry = SkillEffectDatabaseSO.GetPrimaryEntry(variantGroup);
             if (entry == null)
             {
@@ -1078,6 +1594,7 @@ namespace Game.Editor
                 };
                 targetGroup.skillGroups ??= new List<SkillEffectVariantGroupDefinition>();
                 targetGroup.skillGroups.Add(variantGroup);
+                createdVariantGroup = true;
             }
             else
             {
@@ -1088,7 +1605,51 @@ namespace Game.Editor
             entry.skillId = expectedSkillId;
             entry.displayName = displayName;
             if (variantGroup != null)
+            {
                 variantGroup.groupName = expectedSkillId;
+                if (createdVariantGroup)
+                    SetEnemySharedSkillAnimationTrigger(variantGroup, expectedAnimationTrigger);
+                else
+                    EnsureEnemySharedSkillAnimationTrigger(variantGroup, expectedAnimationTrigger);
+            }
+        }
+
+        private static string ResolveEnemySharedSkillAnimationTrigger(
+            SkillEffectDatabaseSO sharedSkillDatabase,
+            string skillId,
+            int slotIndex)
+        {
+            SharedSkillDefinition definition = FindSharedSkillDefinition(sharedSkillDatabase, skillId);
+            string animationTrigger = definition != null ? definition.GetAnimationTriggerOrEmpty() : string.Empty;
+            if (!string.IsNullOrWhiteSpace(animationTrigger))
+                return animationTrigger;
+
+            return ResolveExpectedAnimationTrigger(slotIndex);
+        }
+
+        private static void EnsureEnemySharedSkillAnimationTrigger(
+            SkillEffectVariantGroupDefinition variantGroup,
+            string animationTrigger)
+        {
+            if (variantGroup?.entries == null || string.IsNullOrWhiteSpace(animationTrigger))
+                return;
+
+            string resolvedTrigger = animationTrigger.Trim();
+            SharedSkillDefinition entry = SkillEffectDatabaseSO.GetPrimaryEntry(variantGroup);
+            if (entry != null && string.IsNullOrWhiteSpace(entry.animationTrigger))
+                entry.animationTrigger = resolvedTrigger;
+        }
+
+        private static void SetEnemySharedSkillAnimationTrigger(
+            SkillEffectVariantGroupDefinition variantGroup,
+            string animationTrigger)
+        {
+            if (variantGroup?.entries == null || string.IsNullOrWhiteSpace(animationTrigger))
+                return;
+
+            SharedSkillDefinition entry = SkillEffectDatabaseSO.GetPrimaryEntry(variantGroup);
+            if (entry != null)
+                entry.animationTrigger = animationTrigger.Trim();
         }
 
         private static SharedSkillDefinition CloneSharedSkillDefinition(SharedSkillDefinition template)
@@ -1254,40 +1815,81 @@ namespace Game.Editor
         private static CharacterAnimationEntry EnsureAnimationEntry(
             CharacterAnimationLibrarySO animationLibrary,
             EnemyArchetypeSO archetype,
+            string skillId,
             string animationId,
             CharacterAnimationEntry templateEntry)
         {
             CharacterAnimationGroupDefinition group = FindOrCreateAnimationGroup(animationLibrary, archetype);
-            CharacterAnimationEntry existing = FindAnimationEntry(group, animationId);
+            CharacterAnimationVariantGroupDefinition existingVariantGroup = FindAnimationVariantGroup(group, skillId);
+            if (existingVariantGroup == null && !string.IsNullOrWhiteSpace(animationId))
+                existingVariantGroup = FindAnimationVariantGroup(group, animationId);
+
+            CharacterAnimationEntry existing = CharacterAnimationLibrarySO.GetPrimaryEntry(existingVariantGroup);
             if (existing != null)
+            {
+                existingVariantGroup.groupName = skillId;
+                existing.animationId = animationId;
+                NormalizeAnimationGroupOrder(group);
+                animationLibrary.Synchronize();
                 return existing;
+            }
 
             CharacterAnimationEntry created = CloneAnimationEntry(templateEntry);
             created.animationId = animationId;
-            group.entries ??= new List<CharacterAnimationEntry>();
-            group.entries.Add(created);
+            group.skillGroups ??= new List<CharacterAnimationVariantGroupDefinition>();
+            group.skillGroups.Add(new CharacterAnimationVariantGroupDefinition
+            {
+                groupName = skillId,
+                entries = new List<CharacterAnimationEntry> { created },
+            });
             NormalizeAnimationGroupOrder(group);
-            return created;
+            animationLibrary.Synchronize();
+            return CharacterAnimationLibrarySO.GetPrimaryEntry(FindAnimationVariantGroup(group, skillId));
         }
 
-        private static void MoveOrCreateAnimationEntry(CharacterAnimationGroupDefinition group, string currentAnimationId, string expectedAnimationId)
+        private static CharacterAnimationEntry MoveOrCreateAnimationEntry(
+            CharacterAnimationGroupDefinition group,
+            string currentSkillId,
+            string currentAnimationId,
+            string expectedSkillId,
+            string expectedAnimationId)
         {
-            if (group == null || string.IsNullOrWhiteSpace(expectedAnimationId))
-                return;
+            if (group == null || string.IsNullOrWhiteSpace(expectedSkillId) || string.IsNullOrWhiteSpace(expectedAnimationId))
+                return null;
 
-            CharacterAnimationEntry entry = FindAnimationEntry(group, expectedAnimationId);
-            if (entry == null && !string.IsNullOrWhiteSpace(currentAnimationId))
-                entry = FindAnimationEntry(group, currentAnimationId);
+            CharacterAnimationVariantGroupDefinition variantGroup = FindAnimationVariantGroup(group, expectedSkillId);
+            if (variantGroup == null && !string.IsNullOrWhiteSpace(currentSkillId))
+                variantGroup = FindAnimationVariantGroup(group, currentSkillId);
+            if (variantGroup == null && !string.IsNullOrWhiteSpace(currentAnimationId))
+                variantGroup = FindAnimationVariantGroup(group, currentAnimationId);
 
-            if (entry == null)
+            if (variantGroup == null)
             {
                 CharacterAnimationEntry template = GetLastAnimationEntry(group);
-                entry = CloneAnimationEntry(template);
-                group.entries ??= new List<CharacterAnimationEntry>();
-                group.entries.Add(entry);
+                CharacterAnimationEntry entry = CloneAnimationEntry(template);
+                variantGroup = new CharacterAnimationVariantGroupDefinition
+                {
+                    groupName = expectedSkillId,
+                    entries = new List<CharacterAnimationEntry> { entry },
+                };
+                group.skillGroups ??= new List<CharacterAnimationVariantGroupDefinition>();
+                group.skillGroups.Add(variantGroup);
             }
 
-            entry.animationId = expectedAnimationId;
+            variantGroup.groupName = expectedSkillId;
+            variantGroup.entries ??= new List<CharacterAnimationEntry>();
+            if (variantGroup.entries.Count == 0)
+                variantGroup.entries.Add(CloneAnimationEntry(GetLastAnimationEntry(group)));
+
+            CharacterAnimationEntry primaryEntry = variantGroup.entries[0];
+            if (primaryEntry == null)
+            {
+                primaryEntry = CloneAnimationEntry(GetLastAnimationEntry(group));
+                variantGroup.entries[0] = primaryEntry;
+            }
+
+            primaryEntry.animationId = expectedAnimationId;
+            return primaryEntry;
         }
 
         private static CharacterAnimationEntry CloneAnimationEntry(CharacterAnimationEntry template)
@@ -1301,13 +1903,22 @@ namespace Game.Editor
 
         private static CharacterAnimationEntry GetLastAnimationEntry(CharacterAnimationGroupDefinition group)
         {
-            if (group?.entries == null || group.entries.Count == 0)
+            if (group?.skillGroups == null || group.skillGroups.Count == 0)
                 return null;
-            return group.entries[group.entries.Count - 1];
+
+            for (int i = group.skillGroups.Count - 1; i >= 0; i--)
+            {
+                CharacterAnimationEntry entry = CharacterAnimationLibrarySO.GetPrimaryEntry(group.skillGroups[i]);
+                if (entry != null)
+                    return entry;
+            }
+
+            return null;
         }
 
         private static CharacterAnimationGroupDefinition FindOrCreateAnimationGroup(CharacterAnimationLibrarySO animationLibrary, EnemyArchetypeSO archetype)
         {
+            animationLibrary.Synchronize();
             animationLibrary.groups ??= new List<CharacterAnimationGroupDefinition>();
             string enemyId = ResolveEnemyId(archetype);
 
@@ -1317,7 +1928,7 @@ namespace Game.Editor
                 if (group != null && string.Equals(group.groupId, enemyId, StringComparison.Ordinal))
                 {
                     group.groupName = ResolveEnemyGroupName(archetype);
-                    group.entries ??= new List<CharacterAnimationEntry>();
+                    group.skillGroups ??= new List<CharacterAnimationVariantGroupDefinition>();
                     return group;
                 }
             }
@@ -1326,6 +1937,7 @@ namespace Game.Editor
             {
                 groupId = enemyId,
                 groupName = ResolveEnemyGroupName(archetype),
+                skillGroups = new List<CharacterAnimationVariantGroupDefinition>(),
                 entries = new List<CharacterAnimationEntry>(),
             };
             animationLibrary.groups.Add(created);
@@ -1334,31 +1946,45 @@ namespace Game.Editor
 
         private static CharacterAnimationEntry FindAnimationEntry(CharacterAnimationGroupDefinition group, string animationId)
         {
-            if (group?.entries == null || string.IsNullOrWhiteSpace(animationId))
+            if (group?.skillGroups == null || string.IsNullOrWhiteSpace(animationId))
                 return null;
 
-            for (int i = 0; i < group.entries.Count; i++)
+            for (int variantGroupIndex = 0; variantGroupIndex < group.skillGroups.Count; variantGroupIndex++)
             {
-                CharacterAnimationEntry entry = group.entries[i];
-                if (entry != null && string.Equals(entry.animationId, animationId, StringComparison.Ordinal))
-                    return entry;
+                CharacterAnimationVariantGroupDefinition variantGroup = group.skillGroups[variantGroupIndex];
+                if (variantGroup?.entries == null)
+                    continue;
+
+                for (int entryIndex = 0; entryIndex < variantGroup.entries.Count; entryIndex++)
+                {
+                    CharacterAnimationEntry entry = variantGroup.entries[entryIndex];
+                    if (entry != null && string.Equals(entry.animationId, animationId, StringComparison.Ordinal))
+                        return entry;
+                }
             }
 
             return null;
         }
 
+        private static CharacterAnimationVariantGroupDefinition FindAnimationVariantGroup(CharacterAnimationGroupDefinition group, string animationId)
+        {
+            return CharacterAnimationLibrarySO.FindVariantGroup(group, animationId);
+        }
+
         private static void RemoveAnimationEntry(CharacterAnimationLibrarySO animationLibrary, EnemyArchetypeSO archetype, string animationId)
         {
             CharacterAnimationGroupDefinition group = FindOrCreateAnimationGroup(animationLibrary, archetype);
-            if (group?.entries == null || string.IsNullOrWhiteSpace(animationId))
+            if (group?.skillGroups == null || string.IsNullOrWhiteSpace(animationId))
                 return;
 
-            for (int i = group.entries.Count - 1; i >= 0; i--)
+            for (int i = group.skillGroups.Count - 1; i >= 0; i--)
             {
-                CharacterAnimationEntry entry = group.entries[i];
-                if (entry != null && string.Equals(entry.animationId, animationId, StringComparison.Ordinal))
-                    group.entries.RemoveAt(i);
+                CharacterAnimationVariantGroupDefinition variantGroup = group.skillGroups[i];
+                if (variantGroup != null && string.Equals(CharacterAnimationLibrarySO.GetVariantGroupName(variantGroup), animationId, StringComparison.Ordinal))
+                    group.skillGroups.RemoveAt(i);
             }
+
+            animationLibrary.Synchronize();
         }
 
         private static void RemoveEnemyAnimationGroup(CharacterAnimationLibrarySO animationLibrary, string enemyId)
@@ -1906,10 +2532,12 @@ namespace Game.Editor
 
         private static void NormalizeAnimationGroupOrder(CharacterAnimationGroupDefinition group)
         {
-            if (group?.entries == null)
+            if (group?.skillGroups == null)
                 return;
 
-            group.entries.Sort((left, right) => CompareEnemySkillNames(left != null ? left.animationId : string.Empty, right != null ? right.animationId : string.Empty));
+            group.skillGroups.Sort((left, right) => CompareEnemySkillNames(
+                CharacterAnimationLibrarySO.GetVariantGroupName(left),
+                CharacterAnimationLibrarySO.GetVariantGroupName(right)));
         }
 
         private static int CompareEnemySkillNames(string left, string right)

@@ -33,7 +33,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967291
   perceptionEyeHeight: 1.2
-  headHealthBarHeightOffset: 2.3
   reactionMinSeconds: 0.07
   reactionMaxSeconds: 0.16
   decisionCommitSeconds: 0.22
@@ -71,7 +70,6 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: Skill0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
@@ -91,7 +89,6 @@ MonoBehaviour:
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
-    animationTrigger: Skill1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 0
@@ -111,7 +108,6 @@ MonoBehaviour:
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.5
     rotateToTargetOnCast: 1
-    animationTrigger: Skill2
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1
@@ -131,7 +127,6 @@ MonoBehaviour:
     enterIdleAfterCast: 1
     postCastIdleDuration: 0.55
     rotateToTargetOnCast: 0
-    animationTrigger: Skill3
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
     phaseAvailability: 1
