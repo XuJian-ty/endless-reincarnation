@@ -8200,7 +8200,7 @@ MonoBehaviour:
           activeDurationMode: 0
           repeatInterval: 0.1
           vfxEffects:
-          - particlePrefab: {fileID: 7953274726775274605, guid: 011e27cfead306647a07e1c09d1cfeb9,
+          - particlePrefab: {fileID: 401308839048019152, guid: bde7d55263124c0aab0fb6f076f17514,
               type: 3}
             anchor: 2
             offset: {x: 0, y: 0, z: 0}
@@ -8241,7 +8241,7 @@ MonoBehaviour:
                 m_RotationOrder: 4
             destroyMode: 0
             duration: 0
-          - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
+          - particlePrefab: {fileID: 119472137316233201, guid: 4e39d30528b14dfa8ca40be52f1c7b90,
               type: 3}
             anchor: 2
             offset: {x: 0, y: 0, z: 0}
