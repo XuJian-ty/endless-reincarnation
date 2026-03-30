@@ -23,6 +23,9 @@ namespace Game.Presentation
         {
             public bool hasTriggered;
             public float nextTriggerTime;
+            public bool hasFixedDamageAnchor;
+            public UnityEngine.Vector3 fixedDamageAnchorPosition;
+            public UnityEngine.Quaternion fixedDamageAnchorRotation = UnityEngine.Quaternion.identity;
         }
 
         [Serializable]
@@ -35,6 +38,7 @@ namespace Game.Presentation
             public float startTime;
             public UnityEngine.Vector3 originPosition;
             public UnityEngine.Quaternion originRotation;
+            public UnityEngine.Transform casterTransform;
             public readonly HashSet<UnityEngine.Transform> hitTargets = new HashSet<UnityEngine.Transform>();
         }
 
@@ -264,7 +268,7 @@ namespace Game.Presentation
                 {
                     if (!state.hasTriggered && _elapsed >= evt.startTime)
                     {
-                        TriggerDamageEvent(evt);
+                        TriggerDamageEvent(evt, state);
                         state.hasTriggered = true;
                     }
                     continue;
@@ -276,14 +280,14 @@ namespace Game.Presentation
                 while (_elapsed >= state.nextTriggerTime
                        && (repeatsUntilStateExit || state.nextTriggerTime <= endTime + 0.0001f))
                 {
-                    TriggerDamageEvent(evt);
+                    TriggerDamageEvent(evt, state);
                     state.hasTriggered = true;
                     state.nextTriggerTime += interval;
                 }
             }
         }
 
-        private void TriggerDamageEvent(SkillDamageEvent evt)
+        private void TriggerDamageEvent(SkillDamageEvent evt, EventState state)
         {
             if (evt?.damageEffects == null || _context == null)
                 return;
@@ -293,6 +297,8 @@ namespace Game.Presentation
                 SkillDamageEffect effect = evt.damageEffects[i];
                 if (effect == null)
                     continue;
+
+                ResolveDamageAnchorSnapshot(evt, state, effect, out UnityEngine.Vector3 anchorPosition, out UnityEngine.Quaternion anchorRotation);
 
                 if (effect.detectionType == DamageDetectionType.Collision)
                 {
@@ -305,8 +311,9 @@ namespace Game.Presentation
                         effect = effect,
                         endTime = _elapsed + detectionDuration,
                         startTime = _elapsed,
-                        originPosition = _context.CasterTransform != null ? _context.CasterTransform.position : UnityEngine.Vector3.zero,
-                        originRotation = _context.CasterTransform != null ? _context.CasterTransform.rotation : UnityEngine.Quaternion.identity,
+                        originPosition = anchorPosition,
+                        originRotation = anchorRotation,
+                        casterTransform = _context.CasterTransform,
                     };
                     collisionWindow.collisionHitbox = DamageDetectionRunner.BeginCollisionWindow(_context.CasterTransform, effect, collisionWindow);
                     if (collisionWindow.collisionHitbox != null)
@@ -324,7 +331,7 @@ namespace Game.Presentation
                         null,
                         null,
                         _cueRuntime,
-                        CreateMotionFrame(_context.CasterTransform, 0f));
+                        CreateMotionFrame(anchorPosition, anchorRotation, 0f));
                     continue;
                 }
 
@@ -333,8 +340,9 @@ namespace Game.Presentation
                     effect = effect,
                     endTime = _elapsed + effect.detectionDuration,
                     startTime = _elapsed,
-                    originPosition = _context.CasterTransform != null ? _context.CasterTransform.position : UnityEngine.Vector3.zero,
-                    originRotation = _context.CasterTransform != null ? _context.CasterTransform.rotation : UnityEngine.Quaternion.identity,
+                    originPosition = anchorPosition,
+                    originRotation = anchorRotation,
+                    casterTransform = _context.CasterTransform,
                 };
                 UpdateDynamicCompletionTime(_elapsed + SharedSkillDefinition.GetDamageEffectLifetime(effect));
                 CreateDamageWindowCompanionVfx(detectionWindow);
@@ -552,6 +560,11 @@ namespace Game.Presentation
             return states;
         }
 
+        private static SkillDetectionMotionFrame CreateMotionFrame(UnityEngine.Vector3 originPosition, UnityEngine.Quaternion originRotation, float elapsed)
+        {
+            return new SkillDetectionMotionFrame(originPosition, originRotation, elapsed);
+        }
+
         private static SkillDetectionMotionFrame? CreateMotionFrame(UnityEngine.Transform caster, float elapsed)
         {
             if (caster == null)
@@ -562,6 +575,13 @@ namespace Game.Presentation
 
         private static SkillDetectionMotionFrame CreateMotionFrame(ActiveDamageWindow window, float elapsed)
         {
+            if (window?.effect != null
+                && window.effect.anchor == SkillDamageAnchor.Self
+                && window.casterTransform != null)
+            {
+                return CreateMotionFrame(window.casterTransform.position, window.casterTransform.rotation, elapsed);
+            }
+
             return new SkillDetectionMotionFrame(window.originPosition, window.originRotation, elapsed);
         }
 
@@ -676,7 +696,10 @@ namespace Game.Presentation
 
             SkillDamageEffect effect = window.effect;
             SkillDetectionMotionFrame motionFrame = CreateMotionFrame(window, elapsed);
-            UnityEngine.Vector3 motionOffset = effect.motion != null && effect.motion.IsActive
+            bool useWorldMotion = effect.anchor == SkillDamageAnchor.World
+                && effect.motion != null
+                && effect.motion.IsActive;
+            UnityEngine.Vector3 motionOffset = useWorldMotion
                 ? effect.motion.EvaluateLocalDisplacement(motionFrame.Elapsed)
                 : UnityEngine.Vector3.zero;
 
@@ -693,6 +716,47 @@ namespace Game.Presentation
                 default:
                     return false;
             }
+        }
+
+        private void ResolveDamageAnchorSnapshot(
+            SkillDamageEvent evt,
+            EventState state,
+            SkillDamageEffect effect,
+            out UnityEngine.Vector3 anchorPosition,
+            out UnityEngine.Quaternion anchorRotation)
+        {
+            UnityEngine.Transform caster = _context?.CasterTransform;
+            UnityEngine.Vector3 currentPosition = caster != null ? caster.position : UnityEngine.Vector3.zero;
+            UnityEngine.Quaternion currentRotation = caster != null ? caster.rotation : UnityEngine.Quaternion.identity;
+
+            if (effect == null || effect.anchor != SkillDamageAnchor.World)
+            {
+                anchorPosition = currentPosition;
+                anchorRotation = currentRotation;
+                return;
+            }
+
+            if (evt != null
+                && evt.triggerMode == SkillEventTriggerMode.Repeated
+                && evt.repeatedAnchorMode == SkillDamageRepeatedAnchorMode.Fixed)
+            {
+                if (state != null && !state.hasFixedDamageAnchor)
+                {
+                    state.fixedDamageAnchorPosition = currentPosition;
+                    state.fixedDamageAnchorRotation = currentRotation;
+                    state.hasFixedDamageAnchor = true;
+                }
+
+                if (state != null && state.hasFixedDamageAnchor)
+                {
+                    anchorPosition = state.fixedDamageAnchorPosition;
+                    anchorRotation = state.fixedDamageAnchorRotation;
+                    return;
+                }
+            }
+
+            anchorPosition = currentPosition;
+            anchorRotation = currentRotation;
         }
 
         private void EvaluateTrack<T>(List<T> events, EventState[] states, Action<T, ISkillExecutionContext, SkillCueRuntimeScope> executor)

@@ -25,6 +25,7 @@ namespace Game.Editor
                 var detectionDuration = property.FindPropertyRelative("detectionDuration");
                 var detectionType = property.FindPropertyRelative("detectionType");
                 var hitLayerName = property.FindPropertyRelative("hitLayerName");
+                var anchor = property.FindPropertyRelative("anchor");
                 var shape = property.FindPropertyRelative("shape");
                 var centerOffset = property.FindPropertyRelative("centerOffset");
                 var rotationEuler = property.FindPropertyRelative("rotationEuler");
@@ -47,6 +48,9 @@ namespace Game.Editor
                 DamageDetectionType detection = detectionType != null
                     ? (DamageDetectionType)detectionType.enumValueIndex
                     : DamageDetectionType.RangeOverlap;
+                SkillDamageAnchor anchorValue = anchor != null
+                    ? (SkillDamageAnchor)anchor.enumValueIndex
+                    : SkillDamageAnchor.World;
                 AttackShapeType shapeValue = shape != null
                     ? (AttackShapeType)shape.enumValueIndex
                     : AttackShapeType.Sphere;
@@ -55,6 +59,9 @@ namespace Game.Editor
                 y = DrawProperty(y, position, detectionDuration);
                 y = DrawProperty(y, position, detectionType);
                 y = DrawProperty(y, position, hitLayerName);
+
+                if (detection != DamageDetectionType.Collision)
+                    y = DrawProperty(y, position, anchor);
 
                 if (detection == DamageDetectionType.RangeOverlap)
                 {
@@ -85,9 +92,13 @@ namespace Game.Editor
                     y = DrawProperty(y, position, rayRadius);
                 }
 
-                if (detection != DamageDetectionType.Collision)
+                if (detection != DamageDetectionType.Collision && anchorValue == SkillDamageAnchor.World)
                 {
                     y = DrawProperty(y, position, motion);
+                    y = DrawProperty(y, position, companionVfxEffects);
+                }
+                else if (detection != DamageDetectionType.Collision)
+                {
                     y = DrawProperty(y, position, companionVfxEffects);
                 }
                 y = DrawProperty(y, position, onHitStopEffect);
@@ -114,6 +125,10 @@ namespace Game.Editor
             DamageDetectionType detection = detectionType != null
                 ? (DamageDetectionType)detectionType.enumValueIndex
                 : DamageDetectionType.RangeOverlap;
+            SerializedProperty anchor = property.FindPropertyRelative("anchor");
+            SkillDamageAnchor anchorValue = anchor != null
+                ? (SkillDamageAnchor)anchor.enumValueIndex
+                : SkillDamageAnchor.World;
             AttackShapeType shapeValue = shape != null
                 ? (AttackShapeType)shape.enumValueIndex
                 : AttackShapeType.Sphere;
@@ -122,6 +137,8 @@ namespace Game.Editor
             height += GetChildHeight(property.FindPropertyRelative("detectionDuration"));
             height += GetChildHeight(detectionType);
             height += GetChildHeight(property.FindPropertyRelative("hitLayerName"));
+            if (detection != DamageDetectionType.Collision)
+                height += GetChildHeight(anchor);
 
             if (detection == DamageDetectionType.RangeOverlap)
             {
@@ -152,9 +169,13 @@ namespace Game.Editor
                 height += GetChildHeight(property.FindPropertyRelative("rayRadius"));
             }
 
-            if (detection != DamageDetectionType.Collision)
+            if (detection != DamageDetectionType.Collision && anchorValue == SkillDamageAnchor.World)
             {
                 height += GetChildHeight(property.FindPropertyRelative("motion"));
+                height += GetChildHeight(property.FindPropertyRelative("companionVfxEffects"));
+            }
+            else if (detection != DamageDetectionType.Collision)
+            {
                 height += GetChildHeight(property.FindPropertyRelative("companionVfxEffects"));
             }
             height += GetChildHeight(property.FindPropertyRelative("onHitStopEffect"));

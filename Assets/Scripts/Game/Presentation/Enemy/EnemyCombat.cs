@@ -67,6 +67,7 @@ namespace Game.Presentation
                     PlayAnimatorAction(TriggerDead);
                 _lastIntentType   = _controller.CurrentIntent.Type;
                 _wasHurtLastFrame = false;
+                UpdateAnimatorPlaybackSpeed();
                 return;
             }
 
@@ -93,6 +94,7 @@ namespace Game.Presentation
             }
 
             TickNaturalExit();
+            UpdateAnimatorPlaybackSpeed();
 
             _lastIntentType   = _controller.CurrentIntent.Type;
             _wasHurtLastFrame = _controller.IsHurt;
@@ -376,6 +378,18 @@ namespace Game.Presentation
 
             if (HasAnimatorParameter(ParamMoveX))      _anim.SetFloat(ParamMoveX,      _controller.AnimatorMoveStrafe);
             if (HasAnimatorParameter(ParamMoveY))      _anim.SetFloat(ParamMoveY,      _controller.AnimatorMoveForward);
+        }
+
+        private void UpdateAnimatorPlaybackSpeed()
+        {
+            if (_anim == null)
+                return;
+
+            float playbackSpeed = 1f;
+            if (_runningSkill != null && _timelineRunner != null)
+                playbackSpeed = Mathf.Max(0.01f, _timelineRunner.CurrentCastSpeedMultiplier);
+
+            _anim.speed = playbackSpeed;
         }
 
         private void RotateToward(Vector3 worldPos)

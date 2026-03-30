@@ -93,7 +93,24 @@ namespace Game.Presentation
 
             if (_navMeshAgent != null && _navMeshAgent.enabled && _navMeshAgent.isOnNavMesh)
             {
-                _navMeshAgent.Move(delta);
+                Vector3 horizontalDelta = new Vector3(delta.x, 0f, delta.z);
+                if (horizontalDelta.sqrMagnitude > 0.0001f)
+                {
+                    if (_navMeshAgent.updatePosition)
+                        _navMeshAgent.Move(horizontalDelta);
+                    else
+                        transform.position += horizontalDelta;
+                }
+
+                if (Mathf.Abs(delta.y) > 0.0001f)
+                {
+                    Vector3 position = transform.position;
+                    position.y += delta.y;
+                    transform.position = position;
+                }
+
+                if (!_navMeshAgent.updatePosition || Mathf.Abs(delta.y) > 0.0001f)
+                    _navMeshAgent.nextPosition = transform.position;
                 return;
             }
 

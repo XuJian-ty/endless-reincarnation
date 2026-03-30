@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyId: 
   displayName: 
-  enemyType: 0
+  enemyType: 4
   sectorAngle: 120
   sectorRange: 15
   chaseBreakDistance: 25

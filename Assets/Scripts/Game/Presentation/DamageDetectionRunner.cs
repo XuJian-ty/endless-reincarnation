@@ -133,12 +133,14 @@ namespace Game.Presentation
             out Quaternion baseRotation,
             out Vector3 motionOffset)
         {
-            bool useCapturedPose = motionFrame.HasValue && effect?.motion != null && effect.motion.IsActive;
-            if (useCapturedPose)
+            bool useWorldAnchor = effect != null && effect.anchor == SkillDamageAnchor.World;
+            if (useWorldAnchor && motionFrame.HasValue)
             {
                 basePosition = motionFrame.Value.OriginPosition;
                 baseRotation = motionFrame.Value.OriginRotation;
-                motionOffset = effect.motion.EvaluateLocalDisplacement(motionFrame.Value.Elapsed);
+                motionOffset = effect.motion != null && effect.motion.IsActive
+                    ? effect.motion.EvaluateLocalDisplacement(motionFrame.Value.Elapsed)
+                    : Vector3.zero;
                 return;
             }
 

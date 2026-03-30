@@ -710,8 +710,8 @@ MonoBehaviour:
     entryGroup: 1
     supportedAttackModes: 3
     talentCost: 2
-    mpCost: 10
-    cooldownSeconds: 3
+    mpCost: 0
+    cooldownSeconds: 0
     actionPolicies:
     - action: 9
       policy: 0
@@ -723,6 +723,8 @@ MonoBehaviour:
       policy: 2
     - action: 6
       policy: 2
+    - action: 8
+      policy: 0
     pendingReleaseRules: []
     overrideNaturalExitNormalizedTime: 1
     naturalExitNormalizedTime: 0.9
@@ -738,8 +740,8 @@ MonoBehaviour:
     entryGroup: 1
     supportedAttackModes: 3
     talentCost: 2
-    mpCost: 10
-    cooldownSeconds: 3
+    mpCost: 0
+    cooldownSeconds: 0
     actionPolicies:
     - action: 9
       policy: 0
@@ -765,8 +767,8 @@ MonoBehaviour:
     isPassive: 0
     entryGroup: 1
     supportedAttackModes: 3
-    talentCost: 2
-    mpCost: 10
+    talentCost: 0
+    mpCost: 0
     cooldownSeconds: 3
     actionPolicies:
     - action: 9
@@ -794,8 +796,8 @@ MonoBehaviour:
     entryGroup: 1
     supportedAttackModes: 3
     talentCost: 2
-    mpCost: 10
-    cooldownSeconds: 3
+    mpCost: 0
+    cooldownSeconds: 0
     actionPolicies:
     - action: 9
       policy: 0
