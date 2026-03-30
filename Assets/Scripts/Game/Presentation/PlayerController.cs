@@ -390,6 +390,22 @@ namespace Game.Presentation
             _detachedTimelineRunners.Add(runner);
         }
 
+        public bool TryGetDetachedCameraOverride(float lookTargetHeight, out SkillTimelineRunner.CameraOverrideRequest request)
+        {
+            request = default;
+            if (_detachedTimelineRunners.Count <= 0)
+                return false;
+
+            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
+            {
+                SkillTimelineRunner runner = _detachedTimelineRunners[i];
+                if (runner != null && !runner.IsComplete && runner.TryGetCurrentCameraOverride(lookTargetHeight, out request))
+                    return request.IsActive;
+            }
+
+            return false;
+        }
+
         private void TickDetachedTimelineRunners(float deltaTime)
         {
             if (_detachedTimelineRunners.Count <= 0)

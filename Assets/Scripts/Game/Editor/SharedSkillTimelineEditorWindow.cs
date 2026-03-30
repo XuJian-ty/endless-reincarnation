@@ -141,6 +141,7 @@ namespace Game.Editor
         private PreviewTargetFilter _previewVictimFilter = PreviewTargetFilter.Enemy;
         private readonly List<TimelinePreviewVfxInstance> _timelinePreviewVfxInstances = new List<TimelinePreviewVfxInstance>();
         private readonly HashSet<string> _timelinePreviewHitSfxKeys = new HashSet<string>();
+        private readonly Dictionary<string, PreviewDamageWorldOriginState> _previewDamageWorldOrigins = new Dictionary<string, PreviewDamageWorldOriginState>();
         private readonly Dictionary<Transform, Vector3> _previewPhysicsOriginalPositions = new Dictionary<Transform, Vector3>();
         private LevelGrowthSO _previewLevelGrowth;
         private EnemyStatsDatabaseSO _previewEnemyStatsDb;
@@ -255,6 +256,12 @@ namespace Game.Editor
             public List<Transform> hitTargets = new List<Transform>();
         }
 
+        private sealed class PreviewDamageWorldOriginState
+        {
+            public Vector3 position;
+            public Quaternion rotation = Quaternion.identity;
+        }
+
         [MenuItem("游戏/技能时间轴编辑器")]
         public static void Open()
         {
@@ -275,12 +282,14 @@ namespace Game.Editor
         {
             EditorApplication.update -= OnEditorUpdate;
             SceneView.duringSceneGui -= OnSceneGUI;
+            InvalidatePreviewDamageWorldOrigins();
             DestroyScenePreviewCueInstance();
             StopPreview();
         }
 
         private void OnDestroy()
         {
+            InvalidatePreviewDamageWorldOrigins();
             DestroyScenePreviewCueInstance();
             StopPreview();
         }
@@ -373,9 +382,9 @@ namespace Game.Editor
             {
                 SkillDamageEffect damageEffect = activeDamageEvent.damageEffects[_activeSceneDamageIndex];
                 if (TryGetActiveSceneDamageTriggerTime(out float activeDamageTriggerTime))
-                    DrawDamageSceneHandle(damageEffect, activeDamageTriggerTime);
+                    DrawDamageSceneHandle(activeDamageEvent, damageEffect, activeDamageTriggerTime);
                 else
-                    DrawDamageSceneHandle(damageEffect);
+                    DrawDamageSceneHandle(activeDamageEvent, damageEffect);
             }
 
             if (_selectedEventTrackType == TimelineTrackType.Camera && GetSelectedCameraEvent() is SkillCameraEvent selectedCameraEvent)
@@ -1906,6 +1915,8 @@ namespace Game.Editor
             if (timedEvent == null)
                 return;
 
+            SkillDamageEvent damageTimedEvent = timedEvent as SkillDamageEvent;
+
             SkillTimelineEvent view = CreateLegacyEventView(timedEvent, _selectedEventTrackType);
             if (view == null)
                 return;
@@ -1922,6 +1933,9 @@ namespace Game.Editor
             SkillEventActiveDurationMode newActiveDurationMode = timedEvent.activeDurationMode;
             float newActiveDuration = timedEvent.activeDuration;
             float newRepeatInterval = timedEvent.repeatInterval;
+            SkillDamageRepeatedAnchorMode newRepeatedAnchorMode = damageTimedEvent != null
+                ? damageTimedEvent.repeatedAnchorMode
+                : SkillDamageRepeatedAnchorMode.Follow;
             if (newTriggerMode == SkillEventTriggerMode.Repeated)
             {
                 newActiveDurationMode = (SkillEventActiveDurationMode)EditorGUILayout.EnumPopup("持续方式", timedEvent.activeDurationMode);
@@ -1936,6 +1950,8 @@ namespace Game.Editor
                 }
                 newRepeatInterval = Mathf.Max(0.01f, EditorGUILayout.FloatField("重复触发间隔(秒)", timedEvent.repeatInterval));
                 EditorGUILayout.LabelField("重复触发间隔(帧)", FormatFrameOnly(newRepeatInterval), EditorStyles.miniLabel);
+                if (damageTimedEvent != null)
+                    newRepeatedAnchorMode = (SkillDamageRepeatedAnchorMode)EditorGUILayout.EnumPopup("重复锚点模式", damageTimedEvent.repeatedAnchorMode);
             }
 
             if (EditorGUI.EndChangeCheck())
@@ -1949,6 +1965,8 @@ namespace Game.Editor
                     ? SnapDuration(newActiveDuration)
                     : 0f;
                 timedEvent.repeatInterval = newTriggerMode == SkillEventTriggerMode.Repeated ? SnapDuration(newRepeatInterval) : 0.1f;
+                if (damageTimedEvent != null)
+                    damageTimedEvent.repeatedAnchorMode = newRepeatedAnchorMode;
                 MarkDatabaseDirty();
                 view = CreateLegacyEventView(timedEvent, _selectedEventTrackType);
             }
@@ -2156,6 +2174,7 @@ namespace Game.Editor
                     EditorGUILayout.LabelField("检测时长(帧)", FormatFrameOnly(newDetectionDuration), EditorStyles.miniLabel);
                     DamageDetectionType newDetectionType = (DamageDetectionType)EditorGUILayout.EnumPopup("检测方式", effect.detectionType);
                     string newHitLayerName = EditorGUILayout.TextField("命中层级名", effect.hitLayerName ?? string.Empty);
+                    SkillDamageAnchor newAnchor = effect.anchor;
                     AttackShapeType newShape = effect.shape;
                     Vector3 newCenterOffset = effect.centerOffset;
                     Vector3 newRotationEuler = effect.rotationEuler;
@@ -2171,6 +2190,7 @@ namespace Game.Editor
                     switch (newDetectionType)
                     {
                         case DamageDetectionType.RangeOverlap:
+                            newAnchor = (SkillDamageAnchor)EditorGUILayout.EnumPopup("锚点", effect.anchor);
                             newShape = (AttackShapeType)EditorGUILayout.EnumPopup("范围形状", effect.shape);
                             newCenterOffset = EditorGUILayout.Vector3Field("中心偏移", effect.centerOffset);
                             if (newShape == AttackShapeType.Sector || newShape == AttackShapeType.Box)
@@ -2188,6 +2208,7 @@ namespace Game.Editor
                             break;
 
                         case DamageDetectionType.Raycast:
+                            newAnchor = (SkillDamageAnchor)EditorGUILayout.EnumPopup("锚点", effect.anchor);
                             newRayOriginOffset = EditorGUILayout.Vector3Field("射线起点偏移", effect.rayOriginOffset);
                             newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                             newRayMaxDistance = Mathf.Max(0.01f, EditorGUILayout.FloatField("射线最大距离", effect.rayMaxDistance));
@@ -2196,7 +2217,7 @@ namespace Game.Editor
                     }
 
                     bool forceMotionApply = false;
-                    if (newDetectionType != DamageDetectionType.Collision)
+                    if (ShouldShowDamageMotionSettings(newDetectionType, newAnchor))
                         forceMotionApply = DrawMotionSettingsEditor("移动设置", newMotion);
 
                     if (EditorGUI.EndChangeCheck() || forceMotionApply)
@@ -2205,6 +2226,7 @@ namespace Game.Editor
                         effect.detectionDuration = SnapDuration(newDetectionDuration);
                         effect.detectionType = newDetectionType;
                         effect.hitLayerName = newHitLayerName;
+                        effect.anchor = newAnchor;
                         effect.shape = newShape;
                         effect.centerOffset = newCenterOffset;
                         effect.rotationEuler = newRotationEuler;
@@ -2215,7 +2237,7 @@ namespace Game.Editor
                         effect.rayOriginOffset = newRayOriginOffset;
                         effect.rayMaxDistance = Mathf.Max(0.01f, newRayMaxDistance);
                         effect.rayRadius = Mathf.Max(0f, newRayRadius);
-                        effect.motion = newMotion;
+                        effect.motion = ShouldShowDamageMotionSettings(newDetectionType, newAnchor) ? newMotion : new SkillMotionSettings();
                         MarkDatabaseDirty();
                     }
 
@@ -2994,6 +3016,11 @@ namespace Game.Editor
         private static bool ShouldShowCueMotionSettings(CueAnchor anchor)
         {
             return anchor == CueAnchor.World;
+        }
+
+        private static bool ShouldShowDamageMotionSettings(DamageDetectionType detectionType, SkillDamageAnchor anchor)
+        {
+            return detectionType != DamageDetectionType.Collision && anchor == SkillDamageAnchor.World;
         }
 
         private void DrawNestedAttributeEffectsEditor(SkillDamageEffect damageEffect, int damageIndex)
@@ -4022,6 +4049,7 @@ namespace Game.Editor
             StopAllTimelinePreviewAudio();
             DestroyTimelinePreviewVfxInstances();
             _timelinePreviewHitSfxKeys.Clear();
+            InvalidatePreviewDamageWorldOrigins();
             RestorePreviewPhysicsTransforms();
             if (AnimationMode.InAnimationMode())
                 AnimationMode.StopAnimationMode();
@@ -4709,20 +4737,22 @@ namespace Game.Editor
             if (playback?.damageEffect == null || playback.effect == null)
                 return false;
 
-            if (!TryEvaluatePreviewDamageCompanionTransform(playback.damageEffect, playback.effect, playback.triggerTime, _previewTime, out position, out rotation))
+            SkillDamageEvent damageEvent = GetTrackEvent(GetSelectedSkill(), TimelineTrackType.Damage, playback.eventIndex) as SkillDamageEvent;
+
+            if (!TryEvaluatePreviewDamageCompanionTransform(damageEvent, playback.damageEffect, playback.effect, playback.triggerTime, _previewTime, out position, out rotation))
                 return false;
 
             return true;
         }
 
-        private bool TryEvaluatePreviewDamageCompanionTransform(SkillDamageEffect damageEffect, SkillVfxEffect cue, float triggerTime, float sampleTime, out Vector3 position, out Quaternion rotation)
+        private bool TryEvaluatePreviewDamageCompanionTransform(SkillDamageEvent damageEvent, SkillDamageEffect damageEffect, SkillVfxEffect cue, float triggerTime, float sampleTime, out Vector3 position, out Quaternion rotation)
         {
             position = Vector3.zero;
             rotation = Quaternion.identity;
             if (damageEffect == null || cue == null)
                 return false;
 
-            if (!TryEvaluatePreviewDamageWindowTransform(damageEffect, triggerTime, sampleTime, out Vector3 bodyPosition, out Quaternion bodyRotation))
+            if (!TryEvaluatePreviewDamageWindowTransform(damageEvent, damageEffect, triggerTime, sampleTime, out Vector3 bodyPosition, out Quaternion bodyRotation))
                 return false;
 
             position = bodyPosition + bodyRotation * cue.offset;
@@ -4730,7 +4760,7 @@ namespace Game.Editor
             return true;
         }
 
-        private bool TryEvaluatePreviewDamageWindowTransform(SkillDamageEffect damageEffect, float triggerTime, float sampleTime, out Vector3 position, out Quaternion rotation)
+        private bool TryEvaluatePreviewDamageWindowTransform(SkillDamageEvent damageEvent, SkillDamageEffect damageEffect, float triggerTime, float sampleTime, out Vector3 position, out Quaternion rotation)
         {
             position = Vector3.zero;
             rotation = Quaternion.identity;
@@ -4745,8 +4775,18 @@ namespace Game.Editor
             Vector3 motionOffset = Vector3.zero;
             Vector3 basisPosition = preview.position;
             Quaternion basisRotation = preview.rotation;
-            if (damageEffect.motion != null && damageEffect.motion.IsActive)
+            SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(damageEvent, damageEffect, triggerTime, sampleTime);
+            if (motionFrame.HasValue)
+            {
+                basisPosition = motionFrame.Value.OriginPosition;
+                basisRotation = motionFrame.Value.OriginRotation;
+            }
+            if (ShouldShowDamageMotionSettings(damageEffect.detectionType, damageEffect.anchor)
+                && damageEffect.motion != null
+                && damageEffect.motion.IsActive)
+            {
                 motionOffset = damageEffect.motion.EvaluateLocalDisplacement(elapsed);
+            }
 
             switch (damageEffect.detectionType)
             {
@@ -4928,7 +4968,7 @@ namespace Game.Editor
                         if (effect == null)
                             continue;
 
-                        DrawDamageSceneHandle(effect, triggerTime);
+                        DrawDamageSceneHandle(evt, effect, triggerTime);
                     }
                 });
             }
@@ -5543,6 +5583,7 @@ namespace Game.Editor
                             continue;
 
                         results.AddRange(CollectPreviewDamageHitsForOccurrence(
+                            evt,
                             eventIndex,
                             effectIndex,
                             occurrenceIndex,
@@ -5586,6 +5627,7 @@ namespace Game.Editor
                             continue;
 
                         results.AddRange(CollectPreviewDamageHitsForOccurrence(
+                            evt,
                             eventIndex,
                             effectIndex,
                             occurrenceIndex,
@@ -5602,6 +5644,7 @@ namespace Game.Editor
         }
 
         private List<PreviewDamageHitResult> CollectPreviewDamageHitsForOccurrence(
+            SkillDamageEvent damageEvent,
             int eventIndex,
             int effectIndex,
             int triggerIndex,
@@ -5624,7 +5667,7 @@ namespace Game.Editor
 
             for (float sampleTime = triggerTime; sampleTime <= sampleEndTime + 0.0001f; sampleTime += effect.detectionDuration > 0f ? sampleStep : sampleEndTime + 1f)
             {
-                List<Transform> hitTargets = RunEditorPreviewDetection(effect, triggerTime, sampleTime, explicitVictim);
+                List<Transform> hitTargets = RunEditorPreviewDetection(damageEvent, effect, triggerTime, sampleTime, explicitVictim);
                 for (int targetIndex = 0; targetIndex < hitTargets.Count; targetIndex++)
                 {
                     Transform target = hitTargets[targetIndex];
@@ -5672,7 +5715,7 @@ namespace Game.Editor
             return Mathf.Abs(_previewTime - triggerTime) <= tolerance;
         }
 
-        private List<Transform> RunEditorPreviewDetection(SkillDamageEffect effect, float triggerTime, float sampleTime, Transform explicitVictim)
+        private List<Transform> RunEditorPreviewDetection(SkillDamageEvent damageEvent, SkillDamageEffect effect, float triggerTime, float sampleTime, Transform explicitVictim)
         {
             var targets = new List<Transform>();
             if (_previewTarget == null || effect == null)
@@ -5692,7 +5735,7 @@ namespace Game.Editor
             }
             else
             {
-                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(effect, triggerTime, sampleTime);
+                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(damageEvent, effect, triggerTime, sampleTime);
                 ranDetection = DamageDetectionRunner.TryRunDetection(effect, _previewTarget.transform, null, null, buffer, motionFrame, out hitCount);
             }
 
@@ -5718,13 +5761,69 @@ namespace Game.Editor
             return targets;
         }
 
-        private SkillDetectionMotionFrame? CreateEditorPreviewMotionFrame(SkillDamageEffect effect, float triggerTime, float sampleTime)
+        private SkillDetectionMotionFrame? CreateEditorPreviewMotionFrame(SkillDamageEvent damageEvent, SkillDamageEffect effect, float triggerTime, float sampleTime)
         {
-            if (_previewTarget == null || effect?.motion == null || !effect.motion.IsActive)
+            if (_previewTarget == null || effect == null || effect.anchor != SkillDamageAnchor.World)
                 return null;
 
             float elapsed = Mathf.Max(0f, sampleTime - triggerTime);
-            return new SkillDetectionMotionFrame(_previewTarget.transform.position, _previewTarget.transform.rotation, elapsed);
+            float anchorTriggerTime = ResolvePreviewDamageAnchorTriggerTime(damageEvent, triggerTime);
+            if (!TryCapturePreviewDamageWorldOrigin(damageEvent, anchorTriggerTime, out Vector3 originPosition, out Quaternion originRotation))
+                return null;
+
+            return new SkillDetectionMotionFrame(originPosition, originRotation, elapsed);
+        }
+
+        private float ResolvePreviewDamageAnchorTriggerTime(SkillDamageEvent damageEvent, float triggerTime)
+        {
+            if (damageEvent != null
+                && damageEvent.triggerMode == SkillEventTriggerMode.Repeated
+                && damageEvent.repeatedAnchorMode == SkillDamageRepeatedAnchorMode.Fixed)
+            {
+                return damageEvent.startTime;
+            }
+
+            return triggerTime;
+        }
+
+        private bool TryCapturePreviewDamageWorldOrigin(SkillDamageEvent damageEvent, float anchorTriggerTime, out Vector3 originPosition, out Quaternion originRotation)
+        {
+            originPosition = Vector3.zero;
+            originRotation = Quaternion.identity;
+            if (_previewTarget == null)
+                return false;
+
+            string cacheKey = BuildPreviewDamageWorldOriginKey(damageEvent, anchorTriggerTime);
+            if (_previewDamageWorldOrigins.TryGetValue(cacheKey, out PreviewDamageWorldOriginState state) && state != null)
+            {
+                originPosition = state.position;
+                originRotation = state.rotation;
+                return true;
+            }
+
+            Transform preview = _previewTarget.transform;
+            if (preview == null)
+                return false;
+
+            state = new PreviewDamageWorldOriginState
+            {
+                position = preview.position,
+                rotation = preview.rotation,
+            };
+            _previewDamageWorldOrigins[cacheKey] = state;
+            originPosition = state.position;
+            originRotation = state.rotation;
+            return true;
+        }
+
+        private string BuildPreviewDamageWorldOriginKey(SkillDamageEvent damageEvent, float anchorTriggerTime)
+        {
+            int eventIndex = -1;
+            SharedSkillDefinition skill = GetSelectedSkill();
+            if (skill?.damageEvents != null && damageEvent != null)
+                eventIndex = skill.damageEvents.IndexOf(damageEvent);
+
+            return $"{eventIndex}:{anchorTriggerTime:F4}";
         }
 
         private bool TryGetCurrentSelectedDamageTriggerTime(out float triggerTime)
@@ -8641,7 +8740,8 @@ namespace Game.Editor
             if (damageEffect == null || cue == null || _previewTarget == null)
                 return;
 
-            if (!TryEvaluatePreviewDamageCompanionTransform(damageEffect, cue, triggerTime, _previewTime, out Vector3 worldPosition, out Quaternion worldRotation))
+            SkillDamageEvent damageEvent = GetTrackEvent(GetSelectedSkill(), TimelineTrackType.Damage, _activeSceneCompanionVfxEventIndex) as SkillDamageEvent;
+            if (!TryEvaluatePreviewDamageCompanionTransform(damageEvent, damageEffect, cue, triggerTime, _previewTime, out Vector3 worldPosition, out Quaternion worldRotation))
                 return;
 
             Vector3 scale = cue.scale;
@@ -8657,7 +8757,7 @@ namespace Game.Editor
             Vector3 newScale = Handles.ScaleHandle(scale, newWorldPosition, newWorldRotation, handleSize * 0.75f);
             if (EditorGUI.EndChangeCheck())
             {
-                if (!TryEvaluatePreviewDamageWindowTransform(damageEffect, triggerTime, _previewTime, out Vector3 bodyPosition, out Quaternion bodyRotation))
+                if (!TryEvaluatePreviewDamageWindowTransform(damageEvent, damageEffect, triggerTime, _previewTime, out Vector3 bodyPosition, out Quaternion bodyRotation))
                     return;
 
                 Undo.RecordObject(_database, "Edit Damage Companion VFX Scene Handle");
@@ -8677,7 +8777,7 @@ namespace Game.Editor
             Handles.color = oldColor;
         }
 
-        private void DrawDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
+        private void DrawDamageSceneHandle(SkillDamageEvent damageEvent, SkillDamageEffect effect, float? triggerTime = null)
         {
             if (effect == null || _previewTarget == null)
                 return;
@@ -8685,10 +8785,10 @@ namespace Game.Editor
             switch (effect.detectionType)
             {
                 case DamageDetectionType.RangeOverlap:
-                    DrawRangeDamageSceneHandle(effect, triggerTime);
+                    DrawRangeDamageSceneHandle(damageEvent, effect, triggerTime);
                     break;
                 case DamageDetectionType.Raycast:
-                    DrawRaycastDamageSceneHandle(effect, triggerTime);
+                    DrawRaycastDamageSceneHandle(damageEvent, effect, triggerTime);
                     break;
                 case DamageDetectionType.Collision:
                     DrawCollisionDamageSceneHandle(effect);
@@ -8696,7 +8796,7 @@ namespace Game.Editor
             }
         }
 
-        private void DrawRangeDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
+        private void DrawRangeDamageSceneHandle(SkillDamageEvent damageEvent, SkillDamageEffect effect, float? triggerTime = null)
         {
             Transform preview = _previewTarget.transform;
             Vector3 basisPosition = preview.position;
@@ -8716,13 +8816,14 @@ namespace Game.Editor
 
             if (hasTriggerTime)
             {
-                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(effect, resolvedTriggerTime, _previewTime);
+                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(damageEvent, effect, resolvedTriggerTime, _previewTime);
                 if (motionFrame.HasValue)
                 {
                     basisPosition = motionFrame.Value.OriginPosition;
                     basisRotation = motionFrame.Value.OriginRotation;
                     motionElapsed = motionFrame.Value.Elapsed;
-                    motionOffset = effect.motion.EvaluateLocalDisplacement(motionElapsed);
+                    if (ShouldShowDamageMotionSettings(effect.detectionType, effect.anchor) && effect.motion != null && effect.motion.IsActive)
+                        motionOffset = effect.motion.EvaluateLocalDisplacement(motionElapsed);
                 }
             }
 
@@ -8792,7 +8893,8 @@ namespace Game.Editor
                     break;
             }
 
-            if (effect.motion != null
+            if (ShouldShowDamageMotionSettings(effect.detectionType, effect.anchor)
+                && effect.motion != null
                 && effect.motion.enabled
                 && effect.motion.mode == SkillMotionMode.BezierPath)
             {
@@ -8812,7 +8914,7 @@ namespace Game.Editor
             Handles.color = oldColor;
         }
 
-        private void DrawRaycastDamageSceneHandle(SkillDamageEffect effect, float? triggerTime = null)
+        private void DrawRaycastDamageSceneHandle(SkillDamageEvent damageEvent, SkillDamageEffect effect, float? triggerTime = null)
         {
             Transform preview = _previewTarget.transform;
             Vector3 basisPosition = preview.position;
@@ -8832,13 +8934,14 @@ namespace Game.Editor
 
             if (hasTriggerTime)
             {
-                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(effect, resolvedTriggerTime, _previewTime);
+                SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(damageEvent, effect, resolvedTriggerTime, _previewTime);
                 if (motionFrame.HasValue)
                 {
                     basisPosition = motionFrame.Value.OriginPosition;
                     basisRotation = motionFrame.Value.OriginRotation;
                     motionElapsed = motionFrame.Value.Elapsed;
-                    motionOffset = effect.motion.EvaluateLocalDisplacement(motionElapsed);
+                    if (ShouldShowDamageMotionSettings(effect.detectionType, effect.anchor) && effect.motion != null && effect.motion.IsActive)
+                        motionOffset = effect.motion.EvaluateLocalDisplacement(motionElapsed);
                 }
             }
 
@@ -8900,7 +9003,8 @@ namespace Game.Editor
                 changed = true;
             }
 
-            if (effect.motion != null
+            if (ShouldShowDamageMotionSettings(effect.detectionType, effect.anchor)
+                && effect.motion != null
                 && effect.motion.enabled
                 && effect.motion.mode == SkillMotionMode.BezierPath)
             {
@@ -9430,7 +9534,8 @@ namespace Game.Editor
             if (_scenePreviewCueInstance == null || damageEffect == null || cue == null)
                 return;
 
-            if (!TryEvaluatePreviewDamageCompanionTransform(damageEffect, cue, triggerTime, _previewTime, out Vector3 position, out Quaternion rotation))
+            SkillDamageEvent damageEvent = GetTrackEvent(GetSelectedSkill(), TimelineTrackType.Damage, _scenePreviewCueEventIndex) as SkillDamageEvent;
+            if (!TryEvaluatePreviewDamageCompanionTransform(damageEvent, damageEffect, cue, triggerTime, _previewTime, out Vector3 position, out Quaternion rotation))
             {
                 _scenePreviewCueInstance.SetActive(false);
                 return;
@@ -9844,6 +9949,11 @@ namespace Game.Editor
         {
             _scenePreviewCueHasWorldOrigin = false;
             _scenePreviewCueWorldOriginTriggerTime = -1f;
+        }
+
+        private void InvalidatePreviewDamageWorldOrigins()
+        {
+            _previewDamageWorldOrigins.Clear();
         }
 
         private bool TryCapturePreviewCueWorldOrigin(SkillVfxEffect cue, out Vector3 originPosition, out Quaternion originRotation)

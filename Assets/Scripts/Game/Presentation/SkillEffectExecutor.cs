@@ -64,12 +64,20 @@ namespace Game.Presentation
     {
         private const float SkillSfxMinDistance = 6f;
         private const float SkillSfxMaxDistance = 30f;
+        private const int TopLevelSfxPriority = 96;
+        private const int OnHitSfxPriority = 128;
         private static readonly List<Transform> DetectedTargetsScratch = new List<Transform>(16);
         private static readonly HashSet<Transform> DetectedTargetSet = new HashSet<Transform>();
         private static readonly List<Transform> DamageTargetsScratch = new List<Transform>(16);
         private static readonly HashSet<Transform> DamageTargetSet = new HashSet<Transform>();
         private static HitStopRunner _hitStopRunner;
         public static bool IsCameraLookBlockedByHitStop => _hitStopRunner != null && _hitStopRunner.IsCameraLookBlocked;
+
+        private enum SkillSfxSourceKind
+        {
+            TopLevel,
+            OnHit,
+        }
 
         public static void ExecuteDamageEvent(SkillDamageEvent evt, ISkillExecutionContext ctx)
             => ExecuteDamageEvent(evt, ctx, null);
@@ -182,7 +190,7 @@ namespace Game.Presentation
                     hitStopEffect.pauseCameraLookDuringHitStop);
             }
 
-            ApplyOnHitEffects(damageEffect, ctx, DamageTargetsScratch, cueRuntime);
+            ApplyOnHitEffects(damageEffect, ctx, DamageTargetsScratch, cueRuntime, motionFrame);
             return true;
         }
 
@@ -229,7 +237,7 @@ namespace Game.Presentation
             if (evt == null || ctx?.CasterTransform == null)
                 return;
 
-            PlaySfxEffects(evt.sfxEffects, ctx.CasterTransform, ctx.CasterTransform, cueRuntime);
+            PlaySfxEffects(evt.sfxEffects, ctx.CasterTransform, ctx.CasterTransform, cueRuntime, SkillSfxSourceKind.TopLevel);
         }
 
         private static void ApplyDamageToTarget(
@@ -357,7 +365,8 @@ namespace Game.Presentation
             SkillDamageEffect damageEffect,
             ISkillExecutionContext ctx,
             List<Transform> damageTargets,
-            SkillCueRuntimeScope cueRuntime)
+            SkillCueRuntimeScope cueRuntime,
+            SkillDetectionMotionFrame? motionFrame)
         {
             if (damageEffect == null || ctx == null || damageTargets == null || damageTargets.Count == 0)
                 return;
@@ -387,13 +396,14 @@ namespace Game.Presentation
             if (damageEffect.onHitSfxEffects != null)
             {
                 for (int targetIndex = 0; targetIndex < damageTargets.Count; targetIndex++)
-                    PlaySfxEffects(damageEffect.onHitSfxEffects, ctx.CasterTransform, damageTargets[targetIndex], cueRuntime);
+                    PlaySfxEffects(damageEffect.onHitSfxEffects, ctx.CasterTransform, damageTargets[targetIndex], cueRuntime, SkillSfxSourceKind.OnHit);
             }
 
             if (damageEffect.onHitPhysicsEffects != null)
             {
+                TryResolveDamageEffectOrigin(damageEffect, ctx.CasterTransform, motionFrame, out Vector3 effectOrigin);
                 for (int i = 0; i < damageEffect.onHitPhysicsEffects.Count; i++)
-                    ApplyPhysicsEffect(damageEffect.onHitPhysicsEffects[i], ctx, damageTargets, damageEffect);
+                    ApplyPhysicsEffect(damageEffect.onHitPhysicsEffects[i], ctx, damageTargets, damageEffect, effectOrigin);
             }
 
             if (damageEffect.onHitAttributeEffects != null)
@@ -446,7 +456,8 @@ namespace Game.Presentation
             SkillPhysicsEffect effect,
             ISkillExecutionContext ctx,
             List<Transform> detectedTargets,
-            SkillDamageEffect damageEffect)
+            SkillDamageEffect damageEffect,
+            Vector3 effectOrigin)
         {
             if (effect == null)
                 return;
@@ -460,7 +471,7 @@ namespace Game.Presentation
                 if (target == null)
                     continue;
 
-                ApplyTargetPhysicsEffect(target, effect, ctx, damageEffect);
+                ApplyTargetPhysicsEffect(target, effect, ctx, damageEffect, effectOrigin);
             }
         }
 
@@ -484,6 +495,13 @@ namespace Game.Presentation
         {
             if (effect.height <= 0f || ctx.CasterTransform == null)
                 return;
+
+            PlayerMover playerMover = ctx.CasterTransform.GetComponent<PlayerMover>();
+            if (playerMover != null)
+            {
+                playerMover.Jump(effect.height);
+                return;
+            }
 
             float duration = effect.duration > 0f ? effect.duration : 0.12f;
             var motion = ctx.CasterTransform.GetComponent<CombatMotionController>()
@@ -585,7 +603,8 @@ namespace Game.Presentation
             Transform target,
             SkillPhysicsEffect effect,
             ISkillExecutionContext ctx,
-            SkillDamageEffect damageEffect)
+            SkillDamageEffect damageEffect,
+            Vector3 effectOrigin)
         {
             if (target == null)
                 return;
@@ -610,7 +629,7 @@ namespace Game.Presentation
 
             var motion = target.GetComponent<CombatMotionController>()
                          ?? target.gameObject.AddComponent<CombatMotionController>();
-            Vector3 horizontal = ResolveHorizontalTargetDirection(ctx.CasterTransform, target, effect.effectType);
+            Vector3 horizontal = ResolveHorizontalTargetDirection(ctx.CasterTransform, target, effect.effectType, effectOrigin);
             Vector3 displacement = Vector3.zero;
 
             if (effect.effectType == PhysicsEffectType.Knockback)
@@ -844,7 +863,12 @@ namespace Game.Presentation
             }
         }
 
-        private static void PlaySfxEffects(List<SkillSfxEffect> effects, Transform caster, Transform target, SkillCueRuntimeScope cueRuntime)
+        private static void PlaySfxEffects(
+            List<SkillSfxEffect> effects,
+            Transform caster,
+            Transform target,
+            SkillCueRuntimeScope cueRuntime,
+            SkillSfxSourceKind sourceKind)
         {
             if (effects == null || caster == null)
                 return;
@@ -856,7 +880,7 @@ namespace Game.Presentation
                     continue;
 
                 Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
-                CreateSfxInstance(effect, caster, anchor, cueRuntime);
+                CreateSfxInstance(effect, caster, anchor, cueRuntime, sourceKind);
             }
         }
 
@@ -889,7 +913,12 @@ namespace Game.Presentation
             return instance;
         }
 
-        private static void CreateSfxInstance(SkillSfxEffect effect, Transform caster, Transform anchor, SkillCueRuntimeScope cueRuntime)
+        private static void CreateSfxInstance(
+            SkillSfxEffect effect,
+            Transform caster,
+            Transform anchor,
+            SkillCueRuntimeScope cueRuntime,
+            SkillSfxSourceKind sourceKind)
         {
             if (effect == null || effect.audioClip == null)
                 return;
@@ -903,6 +932,7 @@ namespace Game.Presentation
             audioSource.maxDistance = SkillSfxMaxDistance;
             audioSource.clip = effect.audioClip;
             audioSource.loop = effect.loop;
+            audioSource.priority = ResolveSfxPriority(sourceKind);
 
             if (anchor != null)
             {
@@ -917,6 +947,13 @@ namespace Game.Presentation
             audioSource.Play();
             EnsureCuePauseProxy(go);
             RegisterAudioLifetime(go, audioSource, effect, cueRuntime);
+        }
+
+        private static int ResolveSfxPriority(SkillSfxSourceKind sourceKind)
+        {
+            return sourceKind == SkillSfxSourceKind.OnHit
+                ? OnHitSfxPriority
+                : TopLevelSfxPriority;
         }
 
         private static void RegisterCueLifetime(GameObject instance, SkillCueDestroyMode destroyMode, float duration, SkillCueRuntimeScope cueRuntime)
@@ -1059,12 +1096,17 @@ namespace Game.Presentation
         private static Vector3 ResolveHorizontalTargetDirection(
             Transform caster,
             Transform target,
-            PhysicsEffectType effectType)
+            PhysicsEffectType effectType,
+            Vector3 effectOrigin)
         {
-            if (caster == null || target == null)
+            if (target == null)
                 return Vector3.zero;
 
-            Vector3 vector = target.position - caster.position;
+            Vector3 sourcePosition = effectType == PhysicsEffectType.Pull
+                ? effectOrigin
+                : caster != null ? caster.position : effectOrigin;
+
+            Vector3 vector = target.position - sourcePosition;
             vector.y = 0f;
             if (vector.sqrMagnitude <= 0.0001f)
                 return Vector3.zero;
@@ -1074,6 +1116,42 @@ namespace Game.Presentation
                 return -away;
 
             return away;
+        }
+
+        private static bool TryResolveDamageEffectOrigin(
+            SkillDamageEffect damageEffect,
+            Transform caster,
+            SkillDetectionMotionFrame? motionFrame,
+            out Vector3 origin)
+        {
+            origin = Vector3.zero;
+            if (damageEffect == null)
+                return false;
+
+            Vector3 basePosition = caster != null ? caster.position : Vector3.zero;
+            Quaternion baseRotation = caster != null ? caster.rotation : Quaternion.identity;
+            Vector3 motionOffset = Vector3.zero;
+
+            if (damageEffect.anchor == SkillDamageAnchor.World && motionFrame.HasValue)
+            {
+                basePosition = motionFrame.Value.OriginPosition;
+                baseRotation = motionFrame.Value.OriginRotation;
+                if (damageEffect.motion != null && damageEffect.motion.IsActive)
+                    motionOffset = damageEffect.motion.EvaluateLocalDisplacement(motionFrame.Value.Elapsed);
+            }
+
+            switch (damageEffect.detectionType)
+            {
+                case DamageDetectionType.RangeOverlap:
+                    origin = basePosition + baseRotation * (damageEffect.centerOffset + motionOffset);
+                    return true;
+                case DamageDetectionType.Raycast:
+                    origin = basePosition + baseRotation * (damageEffect.rayOriginOffset + motionOffset);
+                    return true;
+                default:
+                    origin = basePosition;
+                    return caster != null;
+            }
         }
 
         private static Transform ResolveAnchorTransform(CueAnchor anchor, Transform caster, Transform target)

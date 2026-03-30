@@ -245,10 +245,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.5
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0.05, y: 0, z: 1.5}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -362,7 +364,7 @@ MonoBehaviour:
           - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
+            durationMode: 1
             duration: 8.766667
         attributeEvents: []
         vfxEvents:
@@ -497,10 +499,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 1.8, z: 0}
             rotationEuler: {x: 0.1, y: 0, z: 80}
@@ -614,10 +618,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.5
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0.05, y: 0, z: 1.5}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -736,7 +742,7 @@ MonoBehaviour:
           - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
+            durationMode: 1
             duration: 8.766667
         attributeEvents: []
         vfxEvents:
@@ -921,10 +927,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.5
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0.05, y: 0, z: 1.5}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -1043,7 +1051,7 @@ MonoBehaviour:
           - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
+            durationMode: 1
             duration: 9.6
         attributeEvents: []
         vfxEvents:
@@ -1184,10 +1192,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0.7, z: 0}
             rotationEuler: {x: -0, y: 0, z: 0}
@@ -1301,10 +1311,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.033333335
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -1423,7 +1435,7 @@ MonoBehaviour:
           - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
+            durationMode: 1
             duration: 9.6
         attributeEvents: []
         vfxEvents:
@@ -1614,10 +1626,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 1
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 5}
             rotationEuler: {x: -0, y: 0, z: 0}
@@ -1736,7 +1750,7 @@ MonoBehaviour:
           - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
+            durationMode: 1
             duration: 6.5000005
         - eventId: evt_9
           startTime: 0.5666667
@@ -1950,10 +1964,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 1
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 5}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -2067,10 +2083,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 2
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -2189,7 +2207,7 @@ MonoBehaviour:
           - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
+            durationMode: 1
             duration: 6.5000005
         - eventId: evt_9
           startTime: 0.5666667
@@ -2492,10 +2510,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.20000002
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -2543,7 +2563,7 @@ MonoBehaviour:
             onHitDamageEffects:
             - damageMagnitude: 3
             onHitStopEffect:
-              hitStopDuration: 0.2
+              hitStopDuration: 0
               hitStopTimeScale: 0.5
               pauseCameraLookDuringHitStop: 0
             onHitPhysicsEffects:
@@ -2614,8 +2634,8 @@ MonoBehaviour:
           - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
-            duration: 6.5000005
+            durationMode: 1
+            duration: 2
         - eventId: evt_6
           startTime: 0.5666667
           triggerMode: 0
@@ -2768,15 +2788,9 @@ MonoBehaviour:
         speedEvents:
         - eventId: evt_8
           startTime: 0
-          durationMode: 0
-          duration: 1
-          castSpeedMultiplier: 0.5
-          movementSpeedMultiplier: 1
-        - eventId: evt_9
-          startTime: 5.2000003
           durationMode: 1
           duration: 0
-          castSpeedMultiplier: 0.5
+          castSpeedMultiplier: 0.6
           movementSpeedMultiplier: 1
         cameraEvents:
         - eventId: evt_7
@@ -2786,8 +2800,8 @@ MonoBehaviour:
           positionMode: 1
           holdLocalOffset: {x: 0, y: 1.6, z: 0}
           pathStartLocalOffset: {x: 0, y: 1.6, z: 0}
-          pathControlPointA: {x: 0, y: 1.6, z: 3.3333335}
-          pathControlPointB: {x: 0, y: 1.6, z: 6.666667}
+          pathControlPointA: {x: 0, y: 1.6, z: 3.333}
+          pathControlPointB: {x: 0, y: 1.6, z: 6.666}
           pathEndLocalOffset: {x: 0, y: 1.6, z: 10}
           pathProgressCurve:
             serializedVersion: 2
@@ -2802,19 +2816,19 @@ MonoBehaviour:
               inWeight: 0
               outWeight: 0
             - serializedVersion: 3
-              time: 0.7690342
-              value: 0.27382106
-              inSlope: 1.1032506
-              outSlope: 1.1032506
+              time: 0.46560687
+              value: 0.079360485
+              inSlope: 0.4696699
+              outSlope: 0.4696699
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0.11143961
-              outWeight: 0.80891305
+              inWeight: 0.33333334
+              outWeight: 0.33333334
             - serializedVersion: 3
-              time: 0.8630633
-              value: 0.9015439
-              inSlope: 2.306169
-              outSlope: 2.306169
+              time: 0.575639
+              value: 0.85666245
+              inSlope: 1.0022926
+              outSlope: 1.0022926
               tangentMode: 0
               weightedMode: 0
               inWeight: 0.33333334
@@ -2832,7 +2846,7 @@ MonoBehaviour:
             m_PostInfinity: 2
             m_RotationOrder: 4
           blendInDuration: 0.033333335
-          blendOutDuration: 0.5
+          blendOutDuration: 0.033333335
           lockLookInput: 1
     - groupName: Attack3
       entries:
@@ -2849,10 +2863,12 @@ MonoBehaviour:
           activeDuration: 0.3
           activeDurationMode: 0
           repeatInterval: 0.10000001
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.033333335
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 4, z: 8}
             rotationEuler: {x: -0, y: 0, z: 0}
@@ -2971,7 +2987,7 @@ MonoBehaviour:
           - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
+            durationMode: 1
             duration: 7.0000005
         attributeEvents: []
         vfxEvents:
@@ -3071,10 +3087,12 @@ MonoBehaviour:
           activeDuration: 0.3
           activeDurationMode: 0
           repeatInterval: 0.10000001
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.033333335
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 4, z: 8}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -3295,10 +3313,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 2
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 1.8052559, z: 5.1355877}
             rotationEuler: {x: 347.20093, y: 0, z: 0}
@@ -3577,10 +3597,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -3843,7 +3865,7 @@ MonoBehaviour:
           durationMode: 1
           duration: 0
           castSpeedMultiplier: 1
-          movementSpeedMultiplier: 5
+          movementSpeedMultiplier: 10
         cameraEvents: []
     - groupName: FallAttackLand
       entries:
@@ -3860,10 +3882,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.20000002
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -4051,10 +4075,10 @@ MonoBehaviour:
         speedEvents:
         - eventId: 
           startTime: 0
-          durationMode: 0
+          durationMode: 1
           duration: 0
-          castSpeedMultiplier: 0
-          movementSpeedMultiplier: 0
+          castSpeedMultiplier: 2
+          movementSpeedMultiplier: 2
         cameraEvents: []
     - groupName: HitStun
       entries:
@@ -4101,10 +4125,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 1.18, z: 0.5}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -4345,10 +4371,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: -10, z: 0}
@@ -4459,6 +4487,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -4569,6 +4598,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -4679,6 +4709,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -4789,6 +4820,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -4899,6 +4931,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -5351,10 +5384,12 @@ MonoBehaviour:
           activeDuration: 0.13333334
           activeDurationMode: 0
           repeatInterval: 0.13333334
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 1.5}
             rotationEuler: {x: -0, y: 349.99997, z: 0}
@@ -5458,6 +5493,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 1.5}
             rotationEuler: {x: -0, y: 0, z: 0}
@@ -5561,6 +5597,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 1.5}
             rotationEuler: {x: -0, y: 9.999994, z: 0}
@@ -5885,10 +5922,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 1
           repeatInterval: 0.20000002
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 1.18, z: 0.5}
             rotationEuler: {x: -0, y: 0, z: 0}
@@ -6129,10 +6168,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 1
           repeatInterval: 0.20000002
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: -10, z: 0}
@@ -6243,6 +6284,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -6353,6 +6395,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -6463,6 +6506,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -6573,6 +6617,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -6683,6 +6728,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -7135,10 +7181,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 1
           repeatInterval: 0.20000002
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 1.5}
             rotationEuler: {x: 0, y: -10, z: 0}
@@ -7242,6 +7290,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 1.5}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -7345,6 +7394,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 1.5}
             rotationEuler: {x: 0, y: 10, z: 0}
@@ -7448,6 +7498,7 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0.15, y: 1.18, z: 1.5}
             rotationEuler: {x: 0, y: -5, z: 0}
@@ -7551,6 +7602,7 @@ MonoBehaviour:
           - detectionDuration: 0.033333335
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 5, z: 0}
@@ -7972,12 +8024,14 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
-          - detectionDuration: 1
+          - detectionDuration: 0.5
             detectionType: 0
             hitLayerName: Enemy
-            shape: 0
-            centerOffset: {x: 0, y: 0, z: -0.02645874}
+            anchor: 0
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: -0, y: 0, z: 0}
             sphereRadius: 3
             sectorAngle: 360
@@ -7989,7 +8043,78 @@ MonoBehaviour:
             motion:
               enabled: 1
               mode: 0
-              speed: 10
+              speed: 6
+              direction: {x: 0, y: 1, z: 0}
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0, z: 0.4}
+              pathControlPointB: {x: 0, y: 0, z: 0.8}
+              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects:
+            - effectType: 1
+              distance: 3
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        - eventId: evt_6
+          startTime: 0.033333335
+          triggerMode: 1
+          activeDuration: 10.000001
+          activeDurationMode: 0
+          repeatInterval: 0.20000002
+          repeatedAnchorMode: 1
+          damageEffects:
+          - detectionDuration: 0.033333335
+            detectionType: 0
+            hitLayerName: Enemy
+            anchor: 0
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              mode: 0
+              speed: 0
               direction: {x: 0, y: 0, z: 1}
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
@@ -8021,80 +8146,20 @@ MonoBehaviour:
                 m_RotationOrder: 4
             companionVfxEffects: []
             onHitDamageEffects:
-            - damageMagnitude: 2
+            - damageMagnitude: 0.001
             onHitStopEffect:
               hitStopDuration: 0
               hitStopTimeScale: 0
               pauseCameraLookDuringHitStop: 0
             onHitPhysicsEffects:
-            - effectType: 0
-              distance: 2
+            - effectType: 1
+              distance: 0.5
               height: 1
               durationMode: 0
-              duration: 1
-            onHitAttributeEffects:
-            - statField: 0
-              targetMode: 0
-              magnitude: 0.2
-              usePercent: 1
-              durationMode: 0
-              duration: 0
-            - statField: 12
-              targetMode: 0
-              magnitude: 0.2
-              usePercent: 1
-              durationMode: 0
-              duration: 5
-            onHitVfxEffects:
-            - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
-                type: 3}
-              anchor: 0
-              offset: {x: 0, y: 0, z: 0}
-              rotationEuler: {x: -0, y: 0, z: 0}
-              scale: {x: 1, y: 1, z: 1}
-              motion:
-                enabled: 0
-                mode: 0
-                speed: 0
-                direction: {x: 0, y: 0, z: 1}
-                duration: 0.3
-                pathControlPointA: {x: 0, y: 0, z: 0.4}
-                pathControlPointB: {x: 0, y: 0, z: 0.8}
-                pathEndOffset: {x: 0, y: 0, z: 1.2}
-                pathProgressCurve:
-                  serializedVersion: 2
-                  m_Curve:
-                  - serializedVersion: 3
-                    time: 0
-                    value: 0
-                    inSlope: 0
-                    outSlope: 1
-                    tangentMode: 0
-                    weightedMode: 0
-                    inWeight: 0
-                    outWeight: 0
-                  - serializedVersion: 3
-                    time: 1
-                    value: 1
-                    inSlope: 1
-                    outSlope: 0
-                    tangentMode: 0
-                    weightedMode: 0
-                    inWeight: 0
-                    outWeight: 0
-                  m_PreInfinity: 2
-                  m_PostInfinity: 2
-                  m_RotationOrder: 4
-              destroyMode: 1
-              duration: 6
-            onHitSfxEffects:
-            - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667,
-                type: 3}
-              anchor: 0
-              offset: {x: 0, y: 0, z: 0}
-              loop: 0
-              destroyMode: 0
-              duration: 0
+              duration: 0.1
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
         physicsEvents:
         - eventId: evt_3
           startTime: 0
@@ -8103,11 +8168,16 @@ MonoBehaviour:
           activeDurationMode: 0
           repeatInterval: 0.1
           physicsEffects:
-          - effectType: 7
+          - effectType: 6
             distance: 1
             height: 1
-            durationMode: 0
+            durationMode: 1
             duration: 6
+          - effectType: 5
+            distance: 1
+            height: 3
+            durationMode: 0
+            duration: 0.5
         attributeEvents:
         - eventId: evt_4
           startTime: 0
@@ -8116,12 +8186,12 @@ MonoBehaviour:
           activeDurationMode: 0
           repeatInterval: 0.1
           attributeEffects:
-          - statField: 2
+          - statField: 12
             targetMode: 0
-            magnitude: 0
+            magnitude: 0.2
             usePercent: 0
             durationMode: 0
-            duration: 7
+            duration: 5
         vfxEvents:
         - eventId: evt_1
           startTime: 0
@@ -8132,14 +8202,103 @@ MonoBehaviour:
           vfxEffects:
           - particlePrefab: {fileID: 7953274726775274605, guid: 011e27cfead306647a07e1c09d1cfeb9,
               type: 3}
-            anchor: 0
+            anchor: 2
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
             motion:
               enabled: 1
+              mode: 1
+              speed: 6
+              direction: {x: 0, y: 1, z: 1}
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0.6, z: 0}
+              pathControlPointB: {x: 0, y: 1.2, z: 0}
+              pathEndOffset: {x: 0, y: 1.8, z: 0}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            destroyMode: 0
+            duration: 0
+          - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0.6, z: 0}
+              pathControlPointB: {x: 0, y: 1.2, z: 0}
+              pathEndOffset: {x: 0, y: 1.8, z: 0}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_5
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 1498992060833090654, guid: 09b6351619ea57748b97423f746a6809,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 1, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 0.5, y: 0.5, z: 0.5}
+            motion:
+              enabled: 0
               mode: 0
-              speed: 10
+              speed: 2
               direction: {x: 0, y: 0, z: 1}
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
@@ -8170,22 +8329,34 @@ MonoBehaviour:
                 m_PostInfinity: 2
                 m_RotationOrder: 4
             destroyMode: 1
-            duration: 4
+            duration: 10
         sfxEvents:
         - eventId: evt_2
           startTime: 0
-          triggerMode: 1
-          activeDuration: 0.033333335
+          triggerMode: 0
+          activeDuration: 0
           activeDurationMode: 0
-          repeatInterval: 0.10000001
+          repeatInterval: 0.1
           sfxEffects:
-          - audioClip: {fileID: 8300000, guid: 8072efeecc8957949aca9a8ece2971ab, type: 3}
+          - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
             anchor: 0
             offset: {x: 0, y: 0, z: 0}
             loop: 0
             destroyMode: 0
             duration: 0
-        speedEvents: []
+          - audioClip: {fileID: 8300000, guid: ff414a5a87e92444a8bcbc85769a447d, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 0
+            duration: 0
+        speedEvents:
+        - eventId: evt_5
+          startTime: 0
+          durationMode: 1
+          duration: 0
+          castSpeedMultiplier: 2
+          movementSpeedMultiplier: 1
         cameraEvents: []
     - groupName: Skill1
       entries:
@@ -8202,10 +8373,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.13333334
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -8348,10 +8521,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -8488,10 +8663,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -8631,10 +8808,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -8713,10 +8892,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 2
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -8795,10 +8976,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -8859,10 +9042,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -8950,10 +9135,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 1.4}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -9044,10 +9231,12 @@ MonoBehaviour:
           activeDuration: 0.36
           activeDurationMode: 0
           repeatInterval: 0.18
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 2
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -9123,10 +9312,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -9217,10 +9408,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 1.4}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -9447,10 +9640,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -9545,10 +9740,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -9639,10 +9836,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -9777,10 +9976,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 2
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -9856,10 +10057,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10002,10 +10205,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Enemy
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10081,10 +10286,12 @@ MonoBehaviour:
           activeDuration: 0.45
           activeDurationMode: 0
           repeatInterval: 0.15
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 2
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10160,10 +10367,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10300,10 +10509,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10403,10 +10614,12 @@ MonoBehaviour:
           activeDuration: 0.6
           activeDurationMode: 0
           repeatInterval: 0.15
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 2
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10482,10 +10695,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10585,10 +10800,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10698,10 +10915,12 @@ MonoBehaviour:
           activeDuration: 0.5
           activeDurationMode: 0
           repeatInterval: 0.16
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10789,10 +11008,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 2
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -10880,10 +11101,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -11026,10 +11249,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 0
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -11117,10 +11342,12 @@ MonoBehaviour:
           activeDuration: 0.75
           activeDurationMode: 0
           repeatInterval: 0.15
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 2
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -11196,10 +11423,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 2
             centerOffset: {x: 0, y: 0, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
@@ -11299,10 +11528,12 @@ MonoBehaviour:
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
+          repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.033333335
             detectionType: 0
             hitLayerName: Player
+            anchor: 0
             shape: 1
             centerOffset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}

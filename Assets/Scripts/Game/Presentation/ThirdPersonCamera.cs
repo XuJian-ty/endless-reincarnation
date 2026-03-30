@@ -121,7 +121,10 @@ namespace Game.Presentation
 
             PlayerController player = _target.GetComponent<PlayerController>();
             PlayerStateBase currentState = player?.StateMachine?.CurrentState;
-            return currentState != null && currentState.TryGetCurrentCameraOverride(_targetHeight, out request);
+            if (currentState != null && currentState.TryGetCurrentCameraOverride(_targetHeight, out request))
+                return request.IsActive;
+
+            return player != null && player.TryGetDetachedCameraOverride(_targetHeight, out request);
         }
 
         private Vector3 ResolveCameraCollision(Vector3 lookAtPosition, Vector3 desiredPosition)

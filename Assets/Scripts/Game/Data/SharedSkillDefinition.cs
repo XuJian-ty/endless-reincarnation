@@ -77,6 +77,22 @@ namespace Game.Data
         World,
     }
 
+    public enum SkillDamageAnchor
+    {
+        [InspectorName("世界")]
+        World,
+        [InspectorName("自身")]
+        Self,
+    }
+
+    public enum SkillDamageRepeatedAnchorMode
+    {
+        [InspectorName("跟随")]
+        Follow,
+        [InspectorName("固定")]
+        Fixed,
+    }
+
     public enum SkillCueDestroyMode
     {
         [InspectorName("等待自然销毁")]
@@ -319,6 +335,10 @@ namespace Game.Data
         [Tooltip("例如 Enemy 或 Player。")]
         public string hitLayerName = "Enemy";
 
+        [InspectorLabel("锚点")]
+        [Tooltip("世界=创建时只采样一次施法者的位置和朝向，之后不再跟随施法者；自身=始终使用施法者当前位置和朝向。")]
+        public SkillDamageAnchor anchor = SkillDamageAnchor.World;
+
         [InspectorLabel("范围形状")]
         [Tooltip("仅 RangeOverlap 检测方式使用。")]
         public AttackShapeType shape = AttackShapeType.Sphere;
@@ -537,6 +557,10 @@ namespace Game.Data
     [Serializable]
     public class SkillDamageEvent : SkillTimedEventBase
     {
+        [InspectorLabel("重复锚点模式")]
+        [Tooltip("仅 Repeated 模式使用。跟随=每次重复触发都以当前施法者位置为锚点；固定=从第一次重复触发开始，后续所有重复触发都复用第一次触发时的锚点。")]
+        public SkillDamageRepeatedAnchorMode repeatedAnchorMode = SkillDamageRepeatedAnchorMode.Follow;
+
         [InspectorLabel("命中效果")]
         [Tooltip("一条命中事件可以配置多条命中效果，用于同一帧多段命中。")]
         public List<SkillDamageEffect> damageEffects = new List<SkillDamageEffect>();
