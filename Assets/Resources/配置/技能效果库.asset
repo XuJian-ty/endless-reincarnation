@@ -248,6 +248,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -502,6 +506,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -621,6 +629,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -930,6 +942,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -1195,6 +1211,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -1314,6 +1334,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.033333335
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -1629,6 +1653,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 1
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -1967,6 +1995,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 1
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -2086,6 +2118,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 2
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -2513,6 +2549,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.20000002
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -2866,6 +2906,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.033333335
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -3090,6 +3134,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.033333335
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -3316,6 +3364,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 2
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -3600,6 +3652,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -3885,6 +3941,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.20000002
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4128,6 +4188,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4374,6 +4438,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4485,6 +4553,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4596,6 +4668,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4707,6 +4783,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4818,6 +4898,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4929,6 +5013,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -5387,6 +5475,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -5491,6 +5583,10 @@ MonoBehaviour:
               duration: 0
             onHitSfxEffects: []
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -5595,6 +5691,10 @@ MonoBehaviour:
               duration: 0
             onHitSfxEffects: []
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -5925,6 +6025,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6171,6 +6275,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6282,6 +6390,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6393,6 +6505,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6504,6 +6620,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6615,6 +6735,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6726,6 +6850,10 @@ MonoBehaviour:
               destroyMode: 0
               duration: 0
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7184,6 +7312,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7288,6 +7420,10 @@ MonoBehaviour:
               duration: 0
             onHitSfxEffects: []
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7392,6 +7528,10 @@ MonoBehaviour:
               duration: 0
             onHitSfxEffects: []
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7496,6 +7636,10 @@ MonoBehaviour:
               duration: 0
             onHitSfxEffects: []
           - detectionDuration: 5.0000005
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7600,6 +7744,10 @@ MonoBehaviour:
               duration: 0
             onHitSfxEffects: []
           - detectionDuration: 0.033333335
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8027,6 +8175,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8098,6 +8250,10 @@ MonoBehaviour:
           repeatedAnchorMode: 1
           damageEffects:
           - detectionDuration: 0.033333335
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8335,6 +8491,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 1
+            activationTime: 0.5
+            activationMode: 0
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8397,7 +8557,19 @@ MonoBehaviour:
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
-        physicsEvents: []
+        physicsEvents:
+        - eventId: evt_5
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
         attributeEvents: []
         vfxEvents:
         - eventId: evt_2
@@ -8542,29 +8714,33 @@ MonoBehaviour:
           repeatInterval: 0.1
           repeatedAnchorMode: 0
           damageEffects:
-          - detectionDuration: 0
+          - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
-            shape: 1
-            centerOffset: {x: 0, y: 0, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 1.5
-            sectorAngle: 180
+            shape: 0
+            centerOffset: {x: 0, y: 0.9, z: 0}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            sphereRadius: 0.8
+            sectorAngle: 360
             boxSize: {x: 1, y: 1, z: 1}
             colliderNodeName: 
             rayOriginOffset: {x: 0, y: 0, z: 0}
             rayMaxDistance: 50
             rayRadius: 0
             motion:
-              enabled: 0
-              mode: 0
+              enabled: 1
+              mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
-              duration: 0.3
-              pathControlPointA: {x: 0, y: 0, z: 0.4}
-              pathControlPointB: {x: 0, y: 0, z: 0.8}
-              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              duration: 0.5
+              pathControlPointA: {x: -0.863, y: 0, z: 3.22}
+              pathControlPointB: {x: -1.725, y: 0, z: 6.439}
+              pathEndOffset: {x: -2.588, y: 0, z: 9.659}
               pathProgressCurve:
                 serializedVersion: 2
                 m_Curve:
@@ -8591,40 +8767,47 @@ MonoBehaviour:
                 m_RotationOrder: 4
             companionVfxEffects: []
             onHitDamageEffects:
-            - damageMagnitude: 1
+            - damageMagnitude: 3
             onHitStopEffect:
               hitStopDuration: 0
               hitStopTimeScale: 0
               pauseCameraLookDuringHitStop: 0
-            onHitPhysicsEffects: []
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
-        physicsEvents: []
-        attributeEvents: []
-        vfxEvents:
-        - eventId: evt_1
-          startTime: 0
-          triggerMode: 0
-          activeDuration: 0
-          activeDurationMode: 0
-          repeatInterval: 0.1
-          vfxEffects:
-          - particlePrefab: {fileID: 119472137316233201, guid: b8b99bd032e58a9468512dcb060bc156,
-              type: 3}
+          - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
+            detectionType: 0
+            hitLayerName: Enemy
             anchor: 0
-            offset: {x: 0, y: 0, z: 0}
+            shape: 0
+            centerOffset: {x: 0, y: 0.9, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
-            scale: {x: 1, y: 1, z: 1}
+            sphereRadius: 0.8
+            sectorAngle: 360
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
             motion:
-              enabled: 0
-              mode: 0
+              enabled: 1
+              mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
-              duration: 0.3
-              pathControlPointA: {x: 0, y: 0, z: 0.4}
-              pathControlPointB: {x: 0, y: 0, z: 0.8}
-              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              duration: 0.5
+              pathControlPointA: {x: 0, y: 0, z: 3.3333335}
+              pathControlPointB: {x: 0, y: 0, z: 6.666667}
+              pathEndOffset: {x: 0, y: 0, z: 10}
               pathProgressCurve:
                 serializedVersion: 2
                 m_Curve:
@@ -8649,8 +8832,497 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
-            destroyMode: 0
-            duration: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+          - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
+            detectionType: 0
+            hitLayerName: Enemy
+            anchor: 0
+            shape: 0
+            centerOffset: {x: 0, y: 0.9, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 0.8
+            sectorAngle: 360
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.5
+              pathControlPointA: {x: 0.863, y: 0, z: 3.22}
+              pathControlPointB: {x: 1.725, y: 0, z: 6.439}
+              pathEndOffset: {x: 2.588, y: 0, z: 9.659}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        - eventId: evt_3
+          startTime: 1
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          repeatedAnchorMode: 0
+          damageEffects:
+          - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
+            detectionType: 0
+            hitLayerName: Enemy
+            anchor: 0
+            shape: 0
+            centerOffset: {x: 0, y: 0.9, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 0.8
+            sectorAngle: 360
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.5
+              pathControlPointA: {x: -0.863, y: 0, z: 3.22}
+              pathControlPointB: {x: -1.725, y: 0, z: 6.439}
+              pathEndOffset: {x: -2.588, y: 0, z: 9.659}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 1
+                  inSlope: 0
+                  outSlope: -1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 0
+                  inSlope: -1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+          - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
+            detectionType: 0
+            hitLayerName: Enemy
+            anchor: 0
+            shape: 0
+            centerOffset: {x: 0, y: 0.9, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 0.8
+            sectorAngle: 360
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.5
+              pathControlPointA: {x: 0, y: 0, z: 3.3333335}
+              pathControlPointB: {x: 0, y: 0, z: 6.666667}
+              pathEndOffset: {x: 0, y: 0, z: 10}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 1
+                  inSlope: 0
+                  outSlope: -1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 0
+                  inSlope: -1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+          - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
+            detectionType: 0
+            hitLayerName: Enemy
+            anchor: 0
+            shape: 0
+            centerOffset: {x: 0, y: 0.9, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 0.8
+            sectorAngle: 360
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.5
+              pathControlPointA: {x: 0.863, y: 0, z: 3.22}
+              pathControlPointB: {x: 1.725, y: 0, z: 6.439}
+              pathEndOffset: {x: 2.588, y: 0, z: 9.659}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 1
+                  inSlope: 0
+                  outSlope: -1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 0
+                  inSlope: -1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects:
+            - effectType: 0
+              distance: 1
+              height: 1
+              durationMode: 0
+              duration: 0.2
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents:
+        - eventId: evt_4
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 2074141471970691052, guid: 7a78238904957d64484e569385d55c14,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 0.9, z: 0}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 1.5
+              pathControlPointA: {x: -0.863, y: 0, z: 3.22}
+              pathControlPointB: {x: -1.725, y: 0, z: 6.439}
+              pathEndOffset: {x: -2.588, y: 0, z: 9.659}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 3
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.33333334
+                  value: 1
+                  inSlope: 3
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.6666667
+                  value: 1
+                  inSlope: 0
+                  outSlope: -3.0000002
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 0
+                  inSlope: -3.0000002
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            destroyMode: 1
+            duration: 1.5
+          - particlePrefab: {fileID: 2074141471970691052, guid: 7a78238904957d64484e569385d55c14,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 0.9, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 1.5
+              pathControlPointA: {x: 0, y: 0, z: 3.3333335}
+              pathControlPointB: {x: 0, y: 0, z: 6.666667}
+              pathEndOffset: {x: 0, y: 0, z: 10}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 3
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.33333334
+                  value: 1
+                  inSlope: 3
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.6666667
+                  value: 1
+                  inSlope: 0
+                  outSlope: -3.0000002
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 0
+                  inSlope: -3.0000002
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            destroyMode: 1
+            duration: 1.5
+          - particlePrefab: {fileID: 2074141471970691052, guid: 7a78238904957d64484e569385d55c14,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 0.9, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 1.5
+              pathControlPointA: {x: 0.863, y: 0, z: 3.22}
+              pathControlPointB: {x: 1.725, y: 0, z: 6.439}
+              pathEndOffset: {x: 2.588, y: 0, z: 9.659}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 3
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.33333334
+                  value: 1
+                  inSlope: 3
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.6666667
+                  value: 1
+                  inSlope: 0
+                  outSlope: -3.0000002
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 0
+                  inSlope: -3.0000002
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            destroyMode: 1
+            duration: 1.5
         sfxEvents:
         - eventId: evt_2
           startTime: 0
@@ -8659,7 +9331,7 @@ MonoBehaviour:
           activeDurationMode: 0
           repeatInterval: 0.1
           sfxEffects:
-          - audioClip: {fileID: 8300000, guid: a8c94e0eb86758241bcc4f8250ec3da3, type: 3}
+          - audioClip: {fileID: 8300000, guid: 5ca23b9f233734446a52422d1408123a, type: 3}
             anchor: 0
             offset: {x: 0, y: 0, z: 0}
             loop: 0
@@ -8685,6 +9357,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8830,6 +9506,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -8914,6 +9594,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -8998,6 +9682,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9064,6 +9752,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9157,6 +9849,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9253,6 +9949,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -9334,6 +10034,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9430,6 +10134,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9662,6 +10370,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9762,6 +10474,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9858,6 +10574,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9998,6 +10718,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -10079,6 +10803,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10227,6 +10955,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -10308,6 +11040,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -10389,6 +11125,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10531,6 +11271,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10636,6 +11380,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -10717,6 +11465,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10822,6 +11574,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10937,6 +11693,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11030,6 +11790,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -11123,6 +11887,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11271,6 +12039,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11364,6 +12136,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -11445,6 +12221,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11550,6 +12330,10 @@ MonoBehaviour:
           repeatedAnchorMode: 0
           damageEffects:
           - detectionDuration: 0.033333335
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
             detectionType: 0
             hitLayerName: Player
             anchor: 0

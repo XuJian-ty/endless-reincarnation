@@ -184,6 +184,16 @@ namespace Game.Editor
             Enemy,
         }
 
+        private enum PathCurveKeyTangentMode
+        {
+            [InspectorName("平滑")]
+            Smooth,
+            [InspectorName("线性")]
+            Linear,
+            [InspectorName("平坦")]
+            Flat,
+        }
+
         private enum TimelineTrackType
         {
             [InspectorName("命中")]
@@ -260,6 +270,12 @@ namespace Game.Editor
         {
             public Vector3 position;
             public Quaternion rotation = Quaternion.identity;
+        }
+
+        private struct PathCurveKeyEditorState
+        {
+            public Keyframe key;
+            public PathCurveKeyTangentMode tangentMode;
         }
 
         [MenuItem("游戏/技能时间轴编辑器")]
@@ -2080,7 +2096,7 @@ namespace Game.Editor
                 newControlA = EditorGUILayout.Vector3Field("路径控制点 A [黄色小球]", cameraEvent.pathControlPointA);
                 newControlB = EditorGUILayout.Vector3Field("路径控制点 B [橙色小球]", cameraEvent.pathControlPointB);
                 newPathEnd = EditorGUILayout.Vector3Field("路径终点局部偏移 [红色方块]", cameraEvent.pathEndLocalOffset);
-                newProgressCurve = EditorGUILayout.CurveField("路径进度曲线", cameraEvent.pathProgressCurve);
+                newProgressCurve = DrawPathProgressCurveEditor(cameraEvent.pathProgressCurve, ref forceCameraPathApply);
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     GUILayout.FlexibleSpace();
@@ -2174,6 +2190,10 @@ namespace Game.Editor
                     EditorGUILayout.LabelField("检测时长(帧)", FormatFrameOnly(newDetectionDuration), EditorStyles.miniLabel);
                     DamageDetectionType newDetectionType = (DamageDetectionType)EditorGUILayout.EnumPopup("检测方式", effect.detectionType);
                     string newHitLayerName = EditorGUILayout.TextField("命中层级名", effect.hitLayerName ?? string.Empty);
+                    float newActivationTime = effect.activationTime;
+                    SkillDamageActivationMode newActivationMode = effect.activationMode;
+                    float newIntermittentActiveDuration = effect.intermittentActiveDuration;
+                    float newIntermittentIntervalDuration = effect.intermittentIntervalDuration;
                     SkillDamageAnchor newAnchor = effect.anchor;
                     AttackShapeType newShape = effect.shape;
                     Vector3 newCenterOffset = effect.centerOffset;
@@ -2190,6 +2210,16 @@ namespace Game.Editor
                     switch (newDetectionType)
                     {
                         case DamageDetectionType.RangeOverlap:
+                            newActivationTime = Mathf.Max(0f, EditorGUILayout.FloatField("激活时刻(秒)", effect.activationTime));
+                            EditorGUILayout.LabelField("激活时刻(帧)", FormatFrameOnly(newActivationTime), EditorStyles.miniLabel);
+                            newActivationMode = (SkillDamageActivationMode)EditorGUILayout.EnumPopup("激活方式", effect.activationMode);
+                            if (newActivationMode == SkillDamageActivationMode.Intermittent)
+                            {
+                                newIntermittentActiveDuration = Mathf.Max(0.01f, EditorGUILayout.FloatField("激活时长(秒)", effect.intermittentActiveDuration));
+                                EditorGUILayout.LabelField("激活时长(帧)", FormatFrameOnly(newIntermittentActiveDuration), EditorStyles.miniLabel);
+                                newIntermittentIntervalDuration = Mathf.Max(0f, EditorGUILayout.FloatField("间隔时长(秒)", effect.intermittentIntervalDuration));
+                                EditorGUILayout.LabelField("间隔时长(帧)", FormatFrameOnly(newIntermittentIntervalDuration), EditorStyles.miniLabel);
+                            }
                             newAnchor = (SkillDamageAnchor)EditorGUILayout.EnumPopup("锚点", effect.anchor);
                             newShape = (AttackShapeType)EditorGUILayout.EnumPopup("范围形状", effect.shape);
                             newCenterOffset = EditorGUILayout.Vector3Field("中心偏移", effect.centerOffset);
@@ -2208,6 +2238,16 @@ namespace Game.Editor
                             break;
 
                         case DamageDetectionType.Raycast:
+                            newActivationTime = Mathf.Max(0f, EditorGUILayout.FloatField("激活时刻(秒)", effect.activationTime));
+                            EditorGUILayout.LabelField("激活时刻(帧)", FormatFrameOnly(newActivationTime), EditorStyles.miniLabel);
+                            newActivationMode = (SkillDamageActivationMode)EditorGUILayout.EnumPopup("激活方式", effect.activationMode);
+                            if (newActivationMode == SkillDamageActivationMode.Intermittent)
+                            {
+                                newIntermittentActiveDuration = Mathf.Max(0.01f, EditorGUILayout.FloatField("激活时长(秒)", effect.intermittentActiveDuration));
+                                EditorGUILayout.LabelField("激活时长(帧)", FormatFrameOnly(newIntermittentActiveDuration), EditorStyles.miniLabel);
+                                newIntermittentIntervalDuration = Mathf.Max(0f, EditorGUILayout.FloatField("间隔时长(秒)", effect.intermittentIntervalDuration));
+                                EditorGUILayout.LabelField("间隔时长(帧)", FormatFrameOnly(newIntermittentIntervalDuration), EditorStyles.miniLabel);
+                            }
                             newAnchor = (SkillDamageAnchor)EditorGUILayout.EnumPopup("锚点", effect.anchor);
                             newRayOriginOffset = EditorGUILayout.Vector3Field("射线起点偏移", effect.rayOriginOffset);
                             newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
@@ -2226,6 +2266,16 @@ namespace Game.Editor
                         effect.detectionDuration = SnapDuration(newDetectionDuration);
                         effect.detectionType = newDetectionType;
                         effect.hitLayerName = newHitLayerName;
+                        effect.activationTime = ShouldShowDamageActivationSettings(newDetectionType) ? SnapTime(newActivationTime) : 0f;
+                        effect.activationMode = ShouldShowDamageActivationSettings(newDetectionType)
+                            ? newActivationMode
+                            : SkillDamageActivationMode.Continuous;
+                        effect.intermittentActiveDuration = ShouldShowDamageActivationSettings(newDetectionType)
+                            ? SnapDuration(Mathf.Max(0.01f, newIntermittentActiveDuration))
+                            : 0.1f;
+                        effect.intermittentIntervalDuration = ShouldShowDamageActivationSettings(newDetectionType)
+                            ? SnapTime(newIntermittentIntervalDuration)
+                            : 0.1f;
                         effect.anchor = newAnchor;
                         effect.shape = newShape;
                         effect.centerOffset = newCenterOffset;
@@ -2959,7 +3009,7 @@ namespace Game.Editor
                     motion.pathControlPointA = EditorGUILayout.Vector3Field("路径控制点 A [黄色小球]", motion.pathControlPointA);
                     motion.pathControlPointB = EditorGUILayout.Vector3Field("路径控制点 B [橙色小球]", motion.pathControlPointB);
                     motion.pathEndOffset = EditorGUILayout.Vector3Field("路径终点偏移 [红色方块]", motion.pathEndOffset);
-                    motion.pathProgressCurve = EditorGUILayout.CurveField("路径进度曲线", motion.pathProgressCurve ?? AnimationCurve.Linear(0f, 0f, 1f, 1f));
+                    motion.pathProgressCurve = DrawPathProgressCurveEditor(motion.pathProgressCurve, ref forceApply);
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         GUILayout.FlexibleSpace();
@@ -3000,6 +3050,295 @@ namespace Game.Editor
             return AnimationCurve.Linear(0f, 0f, 1f, 1f);
         }
 
+        private static AnimationCurve DrawPathProgressCurveEditor(AnimationCurve curve, ref bool forceApply)
+        {
+            AnimationCurve workingCurve = CloneAnimationCurve(curve) ?? CreateLinearProgressCurve();
+            workingCurve = EditorGUILayout.CurveField("路径进度曲线", workingCurve);
+            workingCurve = SanitizePathProgressCurve(workingCurve);
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.LabelField("关键点数值", EditorStyles.miniBoldLabel);
+            EditorGUILayout.LabelField("可直接输入 time / value，范围都会限制在 0~1。", EditorStyles.miniLabel);
+            Rect headerRect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
+            float pointLabelWidth = 34f;
+            float fieldLabelWidth = 16f;
+            float tangentWidth = 62f;
+            float buttonWidth = 24f;
+            float gap = 4f;
+            float remainingWidth = Mathf.Max(80f, headerRect.width - pointLabelWidth - fieldLabelWidth * 2f - tangentWidth - buttonWidth * 2f - gap * 7f);
+            float fieldWidth = remainingWidth * 0.5f;
+            float tangentX = headerRect.x + pointLabelWidth + gap + fieldLabelWidth + gap + fieldWidth + gap * 2f + fieldLabelWidth + fieldWidth + gap;
+
+            EditorGUI.LabelField(new Rect(headerRect.x, headerRect.y, pointLabelWidth, headerRect.height), "点");
+            EditorGUI.LabelField(new Rect(headerRect.x + pointLabelWidth + gap, headerRect.y, fieldLabelWidth + fieldWidth, headerRect.height), "Time");
+            EditorGUI.LabelField(new Rect(headerRect.x + pointLabelWidth + gap + fieldLabelWidth + gap + fieldWidth + gap, headerRect.y, fieldLabelWidth + fieldWidth, headerRect.height), "Value");
+            EditorGUI.LabelField(new Rect(tangentX, headerRect.y, tangentWidth, headerRect.height), "切线");
+
+            List<PathCurveKeyEditorState> keys = BuildPathCurveKeyEditorStates(workingCurve);
+            int removeIndex = -1;
+            int insertAfterIndex = -1;
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                PathCurveKeyEditorState entry = keys[i];
+                Keyframe key = entry.key;
+                Rect rowRect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
+                float pointRectX = rowRect.x;
+                float timeLabelRectX = pointRectX + pointLabelWidth + gap;
+                float timeFieldRectX = timeLabelRectX + fieldLabelWidth + gap;
+                float valueLabelRectX = timeFieldRectX + fieldWidth + gap;
+                float valueFieldRectX = valueLabelRectX + fieldLabelWidth + gap;
+                float tangentRectX = valueFieldRectX + fieldWidth + gap;
+                float addButtonRectX = tangentRectX + tangentWidth + gap;
+                float removeButtonRectX = addButtonRectX + buttonWidth + gap;
+
+                EditorGUI.LabelField(new Rect(pointRectX, rowRect.y, pointLabelWidth, rowRect.height), $"点{i + 1}");
+                EditorGUI.LabelField(new Rect(timeLabelRectX, rowRect.y, fieldLabelWidth, rowRect.height), "T");
+                EditorGUI.LabelField(new Rect(valueLabelRectX, rowRect.y, fieldLabelWidth, rowRect.height), "V");
+
+                EditorGUI.BeginChangeCheck();
+                float newTime = Mathf.Clamp01(EditorGUI.DelayedFloatField(new Rect(timeFieldRectX, rowRect.y, fieldWidth, rowRect.height), key.time));
+                float newValue = Mathf.Clamp01(EditorGUI.DelayedFloatField(new Rect(valueFieldRectX, rowRect.y, fieldWidth, rowRect.height), key.value));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    key.time = newTime;
+                    key.value = newValue;
+                    entry.key = key;
+                    keys[i] = entry;
+                    forceApply = true;
+                }
+
+                EditorGUI.BeginChangeCheck();
+                PathCurveKeyTangentMode newTangentMode = (PathCurveKeyTangentMode)EditorGUI.EnumPopup(
+                    new Rect(tangentRectX, rowRect.y, tangentWidth, rowRect.height),
+                    GUIContent.none,
+                    entry.tangentMode);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    entry.tangentMode = newTangentMode;
+                    keys[i] = entry;
+                    forceApply = true;
+                }
+
+                if (GUI.Button(new Rect(addButtonRectX, rowRect.y, buttonWidth, rowRect.height), "+"))
+                {
+                    insertAfterIndex = i;
+                    forceApply = true;
+                }
+
+                using (new EditorGUI.DisabledScope(keys.Count <= 2))
+                {
+                    if (GUI.Button(new Rect(removeButtonRectX, rowRect.y, buttonWidth, rowRect.height), "-"))
+                    {
+                        removeIndex = i;
+                        forceApply = true;
+                    }
+                }
+            }
+
+            if (insertAfterIndex >= 0)
+            {
+                PathCurveKeyEditorState baseEntry = keys[insertAfterIndex];
+                Keyframe baseKey = baseEntry.key;
+                float newTime;
+                float newValue;
+                if (insertAfterIndex < keys.Count - 1)
+                {
+                    Keyframe nextKey = keys[insertAfterIndex + 1].key;
+                    newTime = Mathf.Clamp01((baseKey.time + nextKey.time) * 0.5f);
+                    newValue = Mathf.Clamp01((baseKey.value + nextKey.value) * 0.5f);
+                }
+                else
+                {
+                    newTime = Mathf.Clamp01(baseKey.time + 0.1f);
+                    newValue = baseKey.value;
+                }
+
+                keys.Insert(insertAfterIndex + 1, new PathCurveKeyEditorState
+                {
+                    key = new Keyframe(newTime, newValue),
+                    tangentMode = baseEntry.tangentMode,
+                });
+            }
+
+            if (removeIndex >= 0 && keys.Count > 2)
+                keys.RemoveAt(removeIndex);
+
+            EditorGUILayout.EndVertical();
+
+            if (forceApply)
+                workingCurve = BuildPathProgressCurve(keys, workingCurve);
+
+            return workingCurve;
+        }
+
+        private static List<PathCurveKeyEditorState> BuildPathCurveKeyEditorStates(AnimationCurve curve)
+        {
+            AnimationCurve source = SanitizePathProgressCurve(curve);
+            var states = new List<PathCurveKeyEditorState>(source.length);
+            for (int i = 0; i < source.length; i++)
+            {
+                states.Add(new PathCurveKeyEditorState
+                {
+                    key = source.keys[i],
+                    tangentMode = InferPathCurveKeyTangentMode(source, i),
+                });
+            }
+
+            return states;
+        }
+
+        private static AnimationCurve BuildPathProgressCurve(List<PathCurveKeyEditorState> states, AnimationCurve template)
+        {
+            if (states == null || states.Count == 0)
+                return CreateLinearProgressCurve();
+
+            List<PathCurveKeyEditorState> sanitizedStates = SanitizePathCurveKeyEditorStates(states);
+            Keyframe[] keyframes = new Keyframe[sanitizedStates.Count];
+            for (int i = 0; i < sanitizedStates.Count; i++)
+                keyframes[i] = sanitizedStates[i].key;
+
+            AnimationCurve curve = new AnimationCurve(keyframes)
+            {
+                preWrapMode = template != null ? template.preWrapMode : WrapMode.Clamp,
+                postWrapMode = template != null ? template.postWrapMode : WrapMode.Clamp,
+            };
+            ApplyPathCurveKeyTangentModes(curve, sanitizedStates);
+            return curve;
+        }
+
+        private static List<PathCurveKeyEditorState> SanitizePathCurveKeyEditorStates(List<PathCurveKeyEditorState> states)
+        {
+            var sanitized = new List<PathCurveKeyEditorState>(states.Count);
+            for (int i = 0; i < states.Count; i++)
+            {
+                PathCurveKeyEditorState state = states[i];
+                Keyframe key = state.key;
+                key.time = Mathf.Clamp01(key.time);
+                key.value = Mathf.Clamp01(key.value);
+                state.key = key;
+                sanitized.Add(state);
+            }
+
+            sanitized.Sort((left, right) => left.key.time.CompareTo(right.key.time));
+            return sanitized;
+        }
+
+        private static PathCurveKeyTangentMode InferPathCurveKeyTangentMode(AnimationCurve curve, int index)
+        {
+            if (curve == null || index < 0 || index >= curve.length)
+                return PathCurveKeyTangentMode.Smooth;
+
+            Keyframe key = curve.keys[index];
+            if (Mathf.Abs(key.inTangent) <= 0.0001f && Mathf.Abs(key.outTangent) <= 0.0001f)
+                return PathCurveKeyTangentMode.Flat;
+
+            float? expectedInSlope = EvaluatePathCurveNeighborSlope(curve, index - 1, index);
+            float? expectedOutSlope = EvaluatePathCurveNeighborSlope(curve, index, index + 1);
+            bool hasLinearIn = expectedInSlope.HasValue && Mathf.Abs(key.inTangent - expectedInSlope.Value) <= 0.001f;
+            bool hasLinearOut = expectedOutSlope.HasValue && Mathf.Abs(key.outTangent - expectedOutSlope.Value) <= 0.001f;
+            if (hasLinearIn || hasLinearOut)
+                return PathCurveKeyTangentMode.Linear;
+
+            return PathCurveKeyTangentMode.Smooth;
+        }
+
+        private static void ApplyPathCurveKeyTangentModes(AnimationCurve curve, List<PathCurveKeyEditorState> states)
+        {
+            if (curve == null || states == null || states.Count == 0)
+                return;
+
+            Keyframe[] keyframes = curve.keys;
+            int count = Mathf.Min(keyframes.Length, states.Count);
+            for (int i = 0; i < count; i++)
+            {
+                Keyframe key = keyframes[i];
+                switch (states[i].tangentMode)
+                {
+                    case PathCurveKeyTangentMode.Flat:
+                        key.inTangent = 0f;
+                        key.outTangent = 0f;
+                        break;
+                    case PathCurveKeyTangentMode.Linear:
+                        key.inTangent = EvaluatePathCurveNeighborSlope(keyframes, i - 1, i) ?? 0f;
+                        key.outTangent = EvaluatePathCurveNeighborSlope(keyframes, i, i + 1) ?? 0f;
+                        break;
+                    default:
+                        float smoothTangent = EvaluateSmoothPathCurveTangent(keyframes, i);
+                        key.inTangent = smoothTangent;
+                        key.outTangent = smoothTangent;
+                        break;
+                }
+
+                keyframes[i] = key;
+            }
+
+            curve.keys = keyframes;
+        }
+
+        private static float EvaluateSmoothPathCurveTangent(Keyframe[] keyframes, int index)
+        {
+            float? leftSlope = EvaluatePathCurveNeighborSlope(keyframes, index - 1, index);
+            float? rightSlope = EvaluatePathCurveNeighborSlope(keyframes, index, index + 1);
+            if (leftSlope.HasValue && rightSlope.HasValue)
+                return (leftSlope.Value + rightSlope.Value) * 0.5f;
+            if (leftSlope.HasValue)
+                return leftSlope.Value;
+            if (rightSlope.HasValue)
+                return rightSlope.Value;
+            return 0f;
+        }
+
+        private static float? EvaluatePathCurveNeighborSlope(AnimationCurve curve, int fromIndex, int toIndex)
+        {
+            if (curve == null)
+                return null;
+
+            return EvaluatePathCurveNeighborSlope(curve.keys, fromIndex, toIndex);
+        }
+
+        private static float? EvaluatePathCurveNeighborSlope(Keyframe[] keyframes, int fromIndex, int toIndex)
+        {
+            if (keyframes == null
+                || fromIndex < 0
+                || toIndex < 0
+                || fromIndex >= keyframes.Length
+                || toIndex >= keyframes.Length)
+            {
+                return null;
+            }
+
+            float deltaTime = keyframes[toIndex].time - keyframes[fromIndex].time;
+            if (Mathf.Abs(deltaTime) <= 0.0001f)
+                return null;
+
+            return (keyframes[toIndex].value - keyframes[fromIndex].value) / deltaTime;
+        }
+
+        private static AnimationCurve SanitizePathProgressCurve(AnimationCurve curve)
+        {
+            AnimationCurve source = curve ?? CreateLinearProgressCurve();
+            List<Keyframe> keys = new List<Keyframe>(source.keys);
+            if (keys.Count == 0)
+                return CreateLinearProgressCurve();
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                Keyframe key = keys[i];
+                key.time = Mathf.Clamp01(key.time);
+                key.value = Mathf.Clamp01(key.value);
+                keys[i] = key;
+            }
+
+            keys.Sort((left, right) => left.time.CompareTo(right.time));
+            var sanitized = new AnimationCurve(keys.ToArray())
+            {
+                preWrapMode = source.preWrapMode,
+                postWrapMode = source.postWrapMode
+            };
+            return sanitized;
+        }
+
         private static AnimationCurve CloneAnimationCurve(AnimationCurve source)
         {
             if (source == null)
@@ -3021,6 +3360,12 @@ namespace Game.Editor
         private static bool ShouldShowDamageMotionSettings(DamageDetectionType detectionType, SkillDamageAnchor anchor)
         {
             return detectionType != DamageDetectionType.Collision && anchor == SkillDamageAnchor.World;
+        }
+
+        private static bool ShouldShowDamageActivationSettings(DamageDetectionType detectionType)
+        {
+            return detectionType == DamageDetectionType.RangeOverlap
+                || detectionType == DamageDetectionType.Raycast;
         }
 
         private void DrawNestedAttributeEffectsEditor(SkillDamageEffect damageEffect, int damageIndex)
@@ -4280,7 +4625,7 @@ namespace Game.Editor
                 if (effect == null)
                     continue;
 
-                float detectionDuration = Mathf.Max(0f, effect.detectionDuration);
+                float detectionDuration = SharedSkillDefinition.GetDamageDetectionWindowLifetime(effect);
                 float hitTime = lastTriggerTime + detectionDuration;
                 float onHitTail = Mathf.Max(
                     GetPreviewOnHitPhysicsTailDuration(effect),
@@ -4651,6 +4996,7 @@ namespace Game.Editor
             if (instance == null)
                 return null;
 
+            SanitizePreviewCueInstance(instance);
             ApplyHideFlagsRecursively(instance, HideFlags.HideAndDontSave);
             instance.name = $"[TimelinePreview]{effect.particlePrefab.name}";
 
@@ -5659,13 +6005,17 @@ namespace Game.Editor
             Transform explicitVictim = ResolveRootPreviewTarget(_previewVictimTarget)?.transform;
             float tolerance = Mathf.Max(0.02f, 0.5f / Mathf.Max(1, _frameRate));
             float sampleStep = 1f / Mathf.Max(1, _frameRate);
-            float sampleEndTime = effect.detectionDuration > 0f
-                ? Mathf.Min(_previewTime, triggerTime + effect.detectionDuration)
+            float detectionLifetime = SharedSkillDefinition.GetDamageDetectionWindowLifetime(effect);
+            float sampleStartTime = effect.detectionDuration > 0f
+                ? triggerTime
+                : triggerTime + detectionLifetime;
+            float sampleEndTime = detectionLifetime > 0f
+                ? Mathf.Min(_previewTime, triggerTime + detectionLifetime)
                 : triggerTime;
             float currentWindowStart = Mathf.Max(triggerTime, _previewTime - sampleStep - tolerance);
             var firstHitTimes = new Dictionary<Transform, float>();
 
-            for (float sampleTime = triggerTime; sampleTime <= sampleEndTime + 0.0001f; sampleTime += effect.detectionDuration > 0f ? sampleStep : sampleEndTime + 1f)
+            for (float sampleTime = sampleStartTime; sampleTime <= sampleEndTime + 0.0001f; sampleTime += effect.detectionDuration > 0f ? sampleStep : sampleEndTime + 1f)
             {
                 List<Transform> hitTargets = RunEditorPreviewDetection(damageEvent, effect, triggerTime, sampleTime, explicitVictim);
                 for (int targetIndex = 0; targetIndex < hitTargets.Count; targetIndex++)
@@ -5735,6 +6085,9 @@ namespace Game.Editor
             }
             else
             {
+                if (!ShouldRunEditorPreviewDetection(effect, triggerTime, sampleTime))
+                    return targets;
+
                 SkillDetectionMotionFrame? motionFrame = CreateEditorPreviewMotionFrame(damageEvent, effect, triggerTime, sampleTime);
                 ranDetection = DamageDetectionRunner.TryRunDetection(effect, _previewTarget.transform, null, null, buffer, motionFrame, out hitCount);
             }
@@ -5772,6 +6125,23 @@ namespace Game.Editor
                 return null;
 
             return new SkillDetectionMotionFrame(originPosition, originRotation, elapsed);
+        }
+
+        private bool ShouldRunEditorPreviewDetection(SkillDamageEffect effect, float triggerTime, float sampleTime)
+        {
+            if (effect == null)
+                return false;
+
+            float elapsed = Mathf.Max(0f, sampleTime - triggerTime);
+            if (!SharedSkillDefinition.IsDamageDetectionActiveAt(effect, elapsed))
+                return false;
+
+            if (effect.detectionDuration > 0f)
+                return true;
+
+            float activationSampleTime = triggerTime + Mathf.Max(0f, effect.activationTime);
+            float tolerance = Mathf.Max(0.02f, 0.5f / Mathf.Max(1, _frameRate));
+            return Mathf.Abs(sampleTime - activationSampleTime) <= tolerance;
         }
 
         private float ResolvePreviewDamageAnchorTriggerTime(SkillDamageEvent damageEvent, float triggerTime)
@@ -7813,7 +8183,7 @@ namespace Game.Editor
             {
                 SkillDamageEffect effect = evt.damageEffects[i];
                 if (effect != null)
-                    duration = Mathf.Max(duration, effect.detectionDuration);
+                    duration = Mathf.Max(duration, SharedSkillDefinition.GetDamageDetectionWindowLifetime(effect));
             }
 
             return duration;
@@ -9476,6 +9846,7 @@ namespace Game.Editor
             if (_scenePreviewCueInstance == null)
                 return;
 
+            SanitizePreviewCueInstance(_scenePreviewCueInstance);
             ApplyHideFlagsRecursively(_scenePreviewCueInstance, HideFlags.HideAndDontSave);
             _scenePreviewCueInstance.name = $"[SkillPreview]{cue.particlePrefab.name}";
             _scenePreviewCuePrefab = cue.particlePrefab;
@@ -9527,6 +9898,41 @@ namespace Game.Editor
             _scenePreviewCueInstance.transform.position = position;
             _scenePreviewCueInstance.transform.rotation = rotation;
             _scenePreviewCueInstance.transform.localScale = cue.scale;
+        }
+
+        private static void SanitizePreviewCueInstance(GameObject instance)
+        {
+            if (instance == null)
+                return;
+
+            ProjectileMover[] projectileMovers = instance.GetComponentsInChildren<ProjectileMover>(true);
+            for (int i = 0; i < projectileMovers.Length; i++)
+            {
+                ProjectileMover projectileMover = projectileMovers[i];
+                if (projectileMover != null)
+                    projectileMover.enabled = false;
+            }
+
+            Rigidbody[] rigidbodies = instance.GetComponentsInChildren<Rigidbody>(true);
+            for (int i = 0; i < rigidbodies.Length; i++)
+            {
+                Rigidbody rigidbody = rigidbodies[i];
+                if (rigidbody == null)
+                    continue;
+
+                rigidbody.velocity = Vector3.zero;
+                rigidbody.angularVelocity = Vector3.zero;
+                rigidbody.isKinematic = true;
+                rigidbody.detectCollisions = false;
+            }
+
+            Collider[] colliders = instance.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider collider = colliders[i];
+                if (collider != null)
+                    collider.enabled = false;
+            }
         }
 
         private void UpdateScenePreviewCompanionCueTransform(SkillDamageEffect damageEffect, SkillVfxEffect cue, float triggerTime)
