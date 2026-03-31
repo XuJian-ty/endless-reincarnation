@@ -906,11 +906,47 @@ namespace Game.Presentation
                 instance = UnityObject.Instantiate(effect.particlePrefab, position, rotation);
             }
 
+            SanitizeSpawnedVfxInstance(instance);
             instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
             ConfigureVfxMotion(instance, effect.motion, useWorldMotion);
             ApplyCueMotion(instance, effect.motion, caster, useWorldMotion);
             EnsureCuePauseProxy(instance);
             return instance;
+        }
+
+        private static void SanitizeSpawnedVfxInstance(GameObject instance)
+        {
+            if (instance == null)
+                return;
+
+            ProjectileMover[] projectileMovers = instance.GetComponentsInChildren<ProjectileMover>(true);
+            for (int i = 0; i < projectileMovers.Length; i++)
+            {
+                ProjectileMover projectileMover = projectileMovers[i];
+                if (projectileMover != null)
+                    projectileMover.enabled = false;
+            }
+
+            Rigidbody[] rigidbodies = instance.GetComponentsInChildren<Rigidbody>(true);
+            for (int i = 0; i < rigidbodies.Length; i++)
+            {
+                Rigidbody rigidbody = rigidbodies[i];
+                if (rigidbody == null)
+                    continue;
+
+                rigidbody.velocity = Vector3.zero;
+                rigidbody.angularVelocity = Vector3.zero;
+                rigidbody.isKinematic = true;
+                rigidbody.detectCollisions = false;
+            }
+
+            Collider[] colliders = instance.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider collider = colliders[i];
+                if (collider != null)
+                    collider.enabled = false;
+            }
         }
 
         private static void CreateSfxInstance(

@@ -39,6 +39,7 @@ namespace Game.Presentation
             public UnityEngine.Vector3 originPosition;
             public UnityEngine.Quaternion originRotation;
             public UnityEngine.Transform casterTransform;
+            public bool hasExecutedOneShotDetection;
             public readonly HashSet<UnityEngine.Transform> hitTargets = new HashSet<UnityEngine.Transform>();
         }
 
@@ -321,9 +322,10 @@ namespace Game.Presentation
                     continue;
                 }
 
-                if (effect.detectionDuration <= 0f)
+                float detectionLifetime = SharedSkillDefinition.GetDamageDetectionWindowLifetime(effect);
+                UpdateDynamicCompletionTime(_elapsed + SharedSkillDefinition.GetDamageEffectLifetime(effect));
+                if (effect.detectionDuration <= 0f && detectionLifetime <= 0f)
                 {
-                    UpdateDynamicCompletionTime(_elapsed + SharedSkillDefinition.GetDamageEffectLifetime(effect));
                     SkillEffectExecutor.ExecuteDamageEffect(
                         effect,
                         _context,
@@ -338,23 +340,32 @@ namespace Game.Presentation
                 var detectionWindow = new ActiveDamageWindow
                 {
                     effect = effect,
-                    endTime = _elapsed + effect.detectionDuration,
+                    endTime = _elapsed + detectionLifetime,
                     startTime = _elapsed,
                     originPosition = anchorPosition,
                     originRotation = anchorRotation,
                     casterTransform = _context.CasterTransform,
                 };
-                UpdateDynamicCompletionTime(_elapsed + SharedSkillDefinition.GetDamageEffectLifetime(effect));
                 CreateDamageWindowCompanionVfx(detectionWindow);
                 _activeDamageWindows.Add(detectionWindow);
-                SkillEffectExecutor.ExecuteDamageEffect(
-                    effect,
-                    _context,
-                    detectionWindow.hitTargets,
-                    null,
-                    null,
-                    _cueRuntime,
-                    CreateMotionFrame(detectionWindow, 0f));
+                if (ShouldExecuteDamageWindow(detectionWindow, 0f))
+                {
+                    SkillEffectExecutor.ExecuteDamageEffect(
+                        effect,
+                        _context,
+                        detectionWindow.hitTargets,
+                        null,
+                        null,
+                        _cueRuntime,
+                        CreateMotionFrame(detectionWindow, 0f));
+
+                    if (IsOneShotDamageWindow(detectionWindow))
+                    {
+                        detectionWindow.hasExecutedOneShotDetection = true;
+                        DestroyDamageWindowCompanionVfx(detectionWindow);
+                        _activeDamageWindows.Remove(detectionWindow);
+                    }
+                }
             }
         }
 
@@ -374,23 +385,35 @@ namespace Game.Presentation
                     continue;
                 }
 
+                float windowElapsed = _elapsed - window.startTime;
+                UpdateDamageWindowCompanionVfx(window, windowElapsed);
+                if (ShouldExecuteDamageWindow(window, windowElapsed))
+                {
+                    SkillEffectExecutor.ExecuteDamageEffect(
+                        window.effect,
+                        _context,
+                        window.hitTargets,
+                        window.collisionHitbox,
+                        window,
+                        _cueRuntime,
+                        CreateMotionFrame(window, windowElapsed));
+
+                    if (IsOneShotDamageWindow(window))
+                    {
+                        window.hasExecutedOneShotDetection = true;
+                        CloseCollisionWindow(window);
+                        DestroyDamageWindowCompanionVfx(window);
+                        _activeDamageWindows.RemoveAt(i);
+                        continue;
+                    }
+                }
+
                 if (_elapsed > window.endTime + 0.0001f)
                 {
                     CloseCollisionWindow(window);
                     DestroyDamageWindowCompanionVfx(window);
                     _activeDamageWindows.RemoveAt(i);
-                    continue;
                 }
-
-                UpdateDamageWindowCompanionVfx(window, _elapsed - window.startTime);
-                SkillEffectExecutor.ExecuteDamageEffect(
-                    window.effect,
-                    _context,
-                    window.hitTargets,
-                    window.collisionHitbox,
-                    window,
-                    _cueRuntime,
-                    CreateMotionFrame(window, _elapsed - window.startTime));
             }
         }
 
@@ -583,6 +606,34 @@ namespace Game.Presentation
             }
 
             return new SkillDetectionMotionFrame(window.originPosition, window.originRotation, elapsed);
+        }
+
+        private static bool ShouldExecuteDamageWindow(ActiveDamageWindow window, float elapsed)
+        {
+            if (window?.effect == null)
+                return false;
+
+            SkillDamageEffect effect = window.effect;
+            if (effect.detectionType == DamageDetectionType.Collision)
+                return true;
+
+            if (!SharedSkillDefinition.UsesDamageActivationScheduling(effect))
+                return true;
+
+            if (!SharedSkillDefinition.IsDamageDetectionActiveAt(effect, elapsed))
+                return false;
+
+            if (IsOneShotDamageWindow(window) && window.hasExecutedOneShotDetection)
+                return false;
+
+            return true;
+        }
+
+        private static bool IsOneShotDamageWindow(ActiveDamageWindow window)
+        {
+            return window?.effect != null
+                && SharedSkillDefinition.UsesDamageActivationScheduling(window.effect)
+                && window.effect.detectionDuration <= 0f;
         }
 
         private void CreateDamageWindowCompanionVfx(ActiveDamageWindow window)

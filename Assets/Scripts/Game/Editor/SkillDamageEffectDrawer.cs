@@ -23,6 +23,10 @@ namespace Game.Editor
                 EditorGUI.indentLevel++;
 
                 var detectionDuration = property.FindPropertyRelative("detectionDuration");
+                var activationTime = property.FindPropertyRelative("activationTime");
+                var activationMode = property.FindPropertyRelative("activationMode");
+                var intermittentActiveDuration = property.FindPropertyRelative("intermittentActiveDuration");
+                var intermittentIntervalDuration = property.FindPropertyRelative("intermittentIntervalDuration");
                 var detectionType = property.FindPropertyRelative("detectionType");
                 var hitLayerName = property.FindPropertyRelative("hitLayerName");
                 var anchor = property.FindPropertyRelative("anchor");
@@ -51,6 +55,9 @@ namespace Game.Editor
                 SkillDamageAnchor anchorValue = anchor != null
                     ? (SkillDamageAnchor)anchor.enumValueIndex
                     : SkillDamageAnchor.World;
+                SkillDamageActivationMode activationModeValue = activationMode != null
+                    ? (SkillDamageActivationMode)activationMode.enumValueIndex
+                    : SkillDamageActivationMode.Continuous;
                 AttackShapeType shapeValue = shape != null
                     ? (AttackShapeType)shape.enumValueIndex
                     : AttackShapeType.Sphere;
@@ -59,6 +66,17 @@ namespace Game.Editor
                 y = DrawProperty(y, position, detectionDuration);
                 y = DrawProperty(y, position, detectionType);
                 y = DrawProperty(y, position, hitLayerName);
+
+                if (ShouldShowDamageActivationSettings(detection))
+                {
+                    y = DrawProperty(y, position, activationTime);
+                    y = DrawProperty(y, position, activationMode);
+                    if (activationModeValue == SkillDamageActivationMode.Intermittent)
+                    {
+                        y = DrawProperty(y, position, intermittentActiveDuration);
+                        y = DrawProperty(y, position, intermittentIntervalDuration);
+                    }
+                }
 
                 if (detection != DamageDetectionType.Collision)
                     y = DrawProperty(y, position, anchor);
@@ -121,6 +139,7 @@ namespace Game.Editor
                 return height;
 
             SerializedProperty detectionType = property.FindPropertyRelative("detectionType");
+            SerializedProperty activationMode = property.FindPropertyRelative("activationMode");
             SerializedProperty shape = property.FindPropertyRelative("shape");
             DamageDetectionType detection = detectionType != null
                 ? (DamageDetectionType)detectionType.enumValueIndex
@@ -129,6 +148,9 @@ namespace Game.Editor
             SkillDamageAnchor anchorValue = anchor != null
                 ? (SkillDamageAnchor)anchor.enumValueIndex
                 : SkillDamageAnchor.World;
+            SkillDamageActivationMode activationModeValue = activationMode != null
+                ? (SkillDamageActivationMode)activationMode.enumValueIndex
+                : SkillDamageActivationMode.Continuous;
             AttackShapeType shapeValue = shape != null
                 ? (AttackShapeType)shape.enumValueIndex
                 : AttackShapeType.Sphere;
@@ -137,6 +159,16 @@ namespace Game.Editor
             height += GetChildHeight(property.FindPropertyRelative("detectionDuration"));
             height += GetChildHeight(detectionType);
             height += GetChildHeight(property.FindPropertyRelative("hitLayerName"));
+            if (ShouldShowDamageActivationSettings(detection))
+            {
+                height += GetChildHeight(property.FindPropertyRelative("activationTime"));
+                height += GetChildHeight(activationMode);
+                if (activationModeValue == SkillDamageActivationMode.Intermittent)
+                {
+                    height += GetChildHeight(property.FindPropertyRelative("intermittentActiveDuration"));
+                    height += GetChildHeight(property.FindPropertyRelative("intermittentIntervalDuration"));
+                }
+            }
             if (detection != DamageDetectionType.Collision)
                 height += GetChildHeight(anchor);
 
@@ -204,6 +236,12 @@ namespace Game.Editor
                 return 0f;
 
             return EditorGUI.GetPropertyHeight(property, true) + EditorGUIUtility.standardVerticalSpacing;
+        }
+
+        private static bool ShouldShowDamageActivationSettings(DamageDetectionType detectionType)
+        {
+            return detectionType == DamageDetectionType.RangeOverlap
+                || detectionType == DamageDetectionType.Raycast;
         }
     }
 }

@@ -93,6 +93,14 @@ namespace Game.Data
         Fixed,
     }
 
+    public enum SkillDamageActivationMode
+    {
+        [InspectorName("持续激活")]
+        Continuous,
+        [InspectorName("间断激活")]
+        Intermittent,
+    }
+
     public enum SkillCueDestroyMode
     {
         [InspectorName("等待自然销毁")]
@@ -324,8 +332,24 @@ namespace Game.Data
     public class SkillDamageEffect
     {
         [InspectorLabel("检测时长(秒)")]
-        [Tooltip("每次伤害触发后，这条伤害判定会持续存在的时间。0 表示仅在触发瞬间检测一次；大于 0 表示在该时间窗口内持续检测，但同一目标只会在第一次进入时命中一次。对碰撞检测来说，这个时长就是武器碰撞器的开启时长。")]
+        [Tooltip("每次伤害触发后，这条伤害判定会持续存在的时间。0 表示仅在激活时刻检测一次；大于 0 表示在该时间窗口内持续检测，但同一目标只会在第一次进入时命中一次。对碰撞检测来说，这个时长就是武器碰撞器的开启时长。")]
         [Min(0f)] public float detectionDuration = 0f;
+
+        [InspectorLabel("激活时刻(秒)")]
+        [Tooltip("仅 RangeOverlap / Raycast 使用。命中事件触发后，到达该时刻才会真正启用检测形状。0 表示立即启用。")]
+        [Min(0f)] public float activationTime = 0f;
+
+        [InspectorLabel("激活方式")]
+        [Tooltip("仅 RangeOverlap / Raycast 使用。持续激活=从激活时刻开始持续到检测时长结束；间断激活=按激活时长/间隔时长交替启用检测形状。")]
+        public SkillDamageActivationMode activationMode = SkillDamageActivationMode.Continuous;
+
+        [InspectorLabel("激活时长(秒)")]
+        [Tooltip("仅“间断激活”使用。每次启用检测形状会持续的时间。")]
+        [Min(0.01f)] public float intermittentActiveDuration = 0.1f;
+
+        [InspectorLabel("间隔时长(秒)")]
+        [Tooltip("仅“间断激活”使用。检测形状每次失活后，需要等待多久才会再次启用。")]
+        [Min(0f)] public float intermittentIntervalDuration = 0.1f;
 
         [InspectorLabel("检测方式")]
         [Tooltip("范围=在检测窗口内每帧重做 Overlap；碰撞=在检测窗口内启用指定挂点上的 Trigger Collider；射线=在检测窗口内每帧重做 Raycast。")]
@@ -1091,7 +1115,57 @@ namespace Game.Data
             if (effect == null)
                 return 0f;
 
-            return Mathf.Max(0f, effect.detectionDuration) + GetDamageOnHitTailDuration(effect);
+            return GetDamageDetectionWindowLifetime(effect) + GetDamageOnHitTailDuration(effect);
+        }
+
+        public static float GetDamageDetectionWindowLifetime(SkillDamageEffect effect)
+        {
+            if (effect == null)
+                return 0f;
+
+            float detectionDuration = Mathf.Max(0f, effect.detectionDuration);
+            if (!UsesDamageActivationScheduling(effect))
+                return detectionDuration;
+
+            if (detectionDuration > 0f)
+                return detectionDuration;
+
+            return Mathf.Max(0f, effect.activationTime);
+        }
+
+        public static bool UsesDamageActivationScheduling(SkillDamageEffect effect)
+        {
+            return effect != null
+                && (effect.detectionType == DamageDetectionType.RangeOverlap
+                    || effect.detectionType == DamageDetectionType.Raycast);
+        }
+
+        public static bool IsDamageDetectionActiveAt(SkillDamageEffect effect, float elapsed)
+        {
+            if (!UsesDamageActivationScheduling(effect))
+                return false;
+
+            float resolvedElapsed = Mathf.Max(0f, elapsed);
+            float activationTime = Mathf.Max(0f, effect.activationTime);
+            float detectionDuration = Mathf.Max(0f, effect.detectionDuration);
+            if (detectionDuration <= 0f)
+                return resolvedElapsed >= activationTime;
+
+            if (resolvedElapsed < activationTime || resolvedElapsed > detectionDuration + 0.0001f)
+                return false;
+
+            if (effect.activationMode == SkillDamageActivationMode.Continuous)
+                return true;
+
+            float activeDuration = Mathf.Max(0.01f, effect.intermittentActiveDuration);
+            float intervalDuration = Mathf.Max(0f, effect.intermittentIntervalDuration);
+            float cycleDuration = activeDuration + intervalDuration;
+            if (cycleDuration <= 0.0001f)
+                return true;
+
+            float cycleElapsed = resolvedElapsed - activationTime;
+            float cycleOffset = cycleElapsed % cycleDuration;
+            return cycleOffset <= activeDuration + 0.0001f;
         }
 
         public static float GetDamageOnHitTailDuration(SkillDamageEffect effect)
