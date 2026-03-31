@@ -152,9 +152,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sensitivityX: 0.3
   _sensitivityY: 0.3
-  _minPitch: -25
-  _maxPitch: 40
-  _distance: 2
+  _minPitch: -10
+  _maxPitch: 25
+  _distance: 5
   _targetHeight: 1
   _collisionMask:
     serializedVersion: 2

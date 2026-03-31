@@ -8090,7 +8090,7 @@ MonoBehaviour:
             onHitVfxEffects: []
             onHitSfxEffects: []
         - eventId: evt_6
-          startTime: 0.033333335
+          startTime: 0
           triggerMode: 1
           activeDuration: 10.000001
           activeDurationMode: 0
@@ -8102,9 +8102,9 @@ MonoBehaviour:
             hitLayerName: Enemy
             anchor: 0
             shape: 1
-            centerOffset: {x: 0, y: 0, z: 0}
+            centerOffset: {x: 0, y: 1.5, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 5
+            sphereRadius: 3
             sectorAngle: 180
             boxSize: {x: 1, y: 1, z: 1}
             colliderNodeName: 
@@ -8200,58 +8200,17 @@ MonoBehaviour:
           activeDurationMode: 0
           repeatInterval: 0.1
           vfxEffects:
-          - particlePrefab: {fileID: 401308839048019152, guid: bde7d55263124c0aab0fb6f076f17514,
+          - particlePrefab: {fileID: 7953274726775274605, guid: bde7d55263124c0aab0fb6f076f17514,
               type: 3}
             anchor: 2
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
-            scale: {x: 1, y: 1, z: 1}
+            scale: {x: 0.5, y: 0.5, z: 0.5}
             motion:
               enabled: 1
               mode: 1
               speed: 6
               direction: {x: 0, y: 1, z: 1}
-              duration: 0.3
-              pathControlPointA: {x: 0, y: 0.6, z: 0}
-              pathControlPointB: {x: 0, y: 1.2, z: 0}
-              pathEndOffset: {x: 0, y: 1.8, z: 0}
-              pathProgressCurve:
-                serializedVersion: 2
-                m_Curve:
-                - serializedVersion: 3
-                  time: 0
-                  value: 0
-                  inSlope: 0
-                  outSlope: 1
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                - serializedVersion: 3
-                  time: 1
-                  value: 1
-                  inSlope: 1
-                  outSlope: 0
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                m_PreInfinity: 2
-                m_PostInfinity: 2
-                m_RotationOrder: 4
-            destroyMode: 0
-            duration: 0
-          - particlePrefab: {fileID: 119472137316233201, guid: 4e39d30528b14dfa8ca40be52f1c7b90,
-              type: 3}
-            anchor: 2
-            offset: {x: 0, y: 0, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            scale: {x: 1, y: 1, z: 1}
-            motion:
-              enabled: 1
-              mode: 1
-              speed: 0
-              direction: {x: 0, y: 0, z: 1}
               duration: 0.3
               pathControlPointA: {x: 0, y: 0.6, z: 0}
               pathControlPointB: {x: 0, y: 1.2, z: 0}
@@ -8289,12 +8248,12 @@ MonoBehaviour:
           activeDurationMode: 0
           repeatInterval: 0.1
           vfxEffects:
-          - particlePrefab: {fileID: 1498992060833090654, guid: 09b6351619ea57748b97423f746a6809,
+          - particlePrefab: {fileID: 1498992060833090654, guid: 368fc731acac4aeeb94cd7544fbe6bb3,
               type: 3}
             anchor: 2
-            offset: {x: 0, y: 1, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            scale: {x: 0.5, y: 0.5, z: 0.5}
+            offset: {x: 0, y: 1.5, z: 0}
+            rotationEuler: {x: -0, y: 0, z: 0}
+            scale: {x: 0.8, y: 0.8, z: 0.8}
             motion:
               enabled: 0
               mode: 0
@@ -8368,21 +8327,21 @@ MonoBehaviour:
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_0
-          startTime: 0
+          startTime: 0.5
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
           repeatedAnchorMode: 0
           damageEffects:
-          - detectionDuration: 0.13333334
+          - detectionDuration: 1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
             shape: 1
-            centerOffset: {x: 0, y: 0, z: 0}
+            centerOffset: {x: 0, y: 1, z: 8}
             rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 3
+            sphereRadius: 4
             sectorAngle: 180
             boxSize: {x: 1, y: 1, z: 1}
             colliderNodeName: 
@@ -8424,19 +8383,18 @@ MonoBehaviour:
                 m_RotationOrder: 4
             companionVfxEffects: []
             onHitDamageEffects:
-            - damageMagnitude: 1
+            - damageMagnitude: 10
             onHitStopEffect:
               hitStopDuration: 0
               hitStopTimeScale: 0
               pauseCameraLookDuringHitStop: 0
-            onHitPhysicsEffects: []
-            onHitAttributeEffects:
-            - statField: 0
-              targetMode: 1
-              magnitude: 111
-              usePercent: 0
+            onHitPhysicsEffects:
+            - effectType: 2
+              distance: 3
+              height: 2
               durationMode: 0
-              duration: 0
+              duration: 0.2
+            onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
         physicsEvents: []
@@ -8449,10 +8407,58 @@ MonoBehaviour:
           activeDurationMode: 0
           repeatInterval: 0.1
           vfxEffects:
-          - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
+          - particlePrefab: {fileID: 3688407426501259577, guid: db876033bd76ade45ab55f2b8fda3f8c,
               type: 3}
-            anchor: 0
-            offset: {x: 0, y: 0, z: 0}
+            anchor: 2
+            offset: {x: 0, y: 1, z: 1}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            motion:
+              enabled: 1
+              mode: 1
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.5
+              pathControlPointA: {x: 0, y: 3, z: 2.3333335}
+              pathControlPointB: {x: 0, y: 3, z: 4.666667}
+              pathEndOffset: {x: 0, y: 0, z: 7}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+            destroyMode: 1
+            duration: 0.5
+        - eventId: evt_4
+          startTime: 0.5
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 6217828449439956435, guid: 84faa950692e9c343a74bcb3eab8cd0d,
+              type: 3}
+            anchor: 2
+            offset: {x: 0, y: 1, z: 8}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
             motion:
@@ -8498,8 +8504,21 @@ MonoBehaviour:
           activeDurationMode: 0
           repeatInterval: 0.1
           sfxEffects:
-          - audioClip: {fileID: 8300000, guid: 8cbcd35164c5ea74bb0a830f490d220c, type: 3}
-            anchor: 0
+          - audioClip: {fileID: 8300000, guid: dc61862ef194e0a4ab5c090a70418802, type: 3}
+            anchor: 2
+            offset: {x: 0, y: 0, z: 0}
+            loop: 0
+            destroyMode: 1
+            duration: 0.5
+        - eventId: evt_3
+          startTime: 0.5
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 5efdbc3065e9df84c8fff989b93f4646, type: 3}
+            anchor: 2
             offset: {x: 0, y: 0, z: 0}
             loop: 0
             destroyMode: 0
