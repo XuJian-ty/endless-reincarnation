@@ -101,6 +101,16 @@ namespace Game.Data
         Intermittent,
     }
 
+    public enum SkillDamageHitDeduplicationScope
+    {
+        [InspectorName("整个事件")]
+        WholeEvent,
+        [InspectorName("每次激活")]
+        PerActivation,
+        [InspectorName("每次检测")]
+        PerDetection,
+    }
+
     public enum SkillCueDestroyMode
     {
         [InspectorName("等待自然销毁")]
@@ -175,6 +185,10 @@ namespace Game.Data
         [Tooltip("仅路径模式使用。输入为归一化时间 0~1，输出为路径归一化进度 0~1。")]
         public AnimationCurve pathProgressCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
+        [InspectorLabel("下降段回收目标点")]
+        [Tooltip("仅路径模式使用。开启后，路径进度曲线一旦进入下降段，就不再沿原路径返回，而是从当前已达到的最远点直线回收到目标点。适合回旋镖。")]
+        public bool retargetOnDescendingPath = false;
+
         public bool IsActive => enabled && (mode switch
         {
             SkillMotionMode.BezierPath => duration > 0.0001f && HasPathDisplacement,
@@ -204,6 +218,24 @@ namespace Game.Data
             return basisRotation * EvaluateLocalDisplacement(elapsed);
         }
 
+        public bool TryEvaluateRetargetedWorldPosition(Vector3 originPosition, Quaternion originRotation, Vector3 targetPosition, float elapsed, out Vector3 worldPosition)
+        {
+            worldPosition = originPosition;
+            if (!UsesRetargetOnDescendingPath)
+                return false;
+
+            float normalizedTime = EvaluateNormalizedTime(elapsed);
+            float progress = EvaluateProgressCurve(pathProgressCurve, normalizedTime);
+            float maxProgress = EvaluateMaxProgressUntil(normalizedTime);
+            if (maxProgress <= 0.0001f || progress >= maxProgress - 0.0001f)
+                return false;
+
+            Vector3 sourceWorld = originPosition + originRotation * EvaluateBezierLocalPoint(maxProgress);
+            float returnLerp = Mathf.Clamp01(1f - (progress / maxProgress));
+            worldPosition = Vector3.Lerp(sourceWorld, targetPosition, returnLerp);
+            return true;
+        }
+
         private Vector3 EvaluateLinearLocalDisplacement(float elapsed)
         {
             if (speed <= 0.0001f || direction.sqrMagnitude <= 0.0001f)
@@ -217,8 +249,40 @@ namespace Game.Data
             if (duration <= 0.0001f || !HasPathDisplacement)
                 return Vector3.zero;
 
-            float normalizedTime = Mathf.Clamp01(elapsed / duration);
-            float progress = EvaluateProgressCurve(pathProgressCurve, normalizedTime);
+            float progress = EvaluateProgressCurve(pathProgressCurve, EvaluateNormalizedTime(elapsed));
+            return EvaluateBezierLocalPoint(progress);
+        }
+
+        private bool UsesRetargetOnDescendingPath =>
+            mode == SkillMotionMode.BezierPath
+            && retargetOnDescendingPath
+            && duration > 0.0001f
+            && HasPathDisplacement;
+
+        private float EvaluateNormalizedTime(float elapsed)
+        {
+            if (duration <= 0.0001f)
+                return 0f;
+
+            return Mathf.Clamp01(elapsed / duration);
+        }
+
+        private float EvaluateMaxProgressUntil(float normalizedTime)
+        {
+            float clampedTime = Mathf.Clamp01(normalizedTime);
+            int sampleCount = Mathf.Max(2, Mathf.CeilToInt(clampedTime * 24f));
+            float maxProgress = 0f;
+            for (int i = 0; i <= sampleCount; i++)
+            {
+                float sampleTime = clampedTime * (i / (float)sampleCount);
+                maxProgress = Mathf.Max(maxProgress, EvaluateProgressCurve(pathProgressCurve, sampleTime));
+            }
+
+            return maxProgress;
+        }
+
+        private Vector3 EvaluateBezierLocalPoint(float progress)
+        {
             return EvaluateCubicBezier(Vector3.zero, pathControlPointA, pathControlPointB, pathEndOffset, progress);
         }
 
@@ -332,7 +396,7 @@ namespace Game.Data
     public class SkillDamageEffect
     {
         [InspectorLabel("检测时长(秒)")]
-        [Tooltip("每次伤害触发后，这条伤害判定会持续存在的时间。0 表示仅在激活时刻检测一次；大于 0 表示在该时间窗口内持续检测，但同一目标只会在第一次进入时命中一次。对碰撞检测来说，这个时长就是武器碰撞器的开启时长。")]
+        [Tooltip("每次伤害触发后，这条伤害判定会持续存在的时间。0 表示仅在激活时刻检测一次；大于 0 表示在该时间窗口内持续检测。实际是否能重复命中同一目标，由“命中去重范围”决定。对碰撞检测来说，这个时长就是武器碰撞器的开启时长。")]
         [Min(0f)] public float detectionDuration = 0f;
 
         [InspectorLabel("激活时刻(秒)")]
@@ -350,6 +414,10 @@ namespace Game.Data
         [InspectorLabel("间隔时长(秒)")]
         [Tooltip("仅“间断激活”使用。检测形状每次失活后，需要等待多久才会再次启用。")]
         [Min(0f)] public float intermittentIntervalDuration = 0.1f;
+
+        [InspectorLabel("命中去重范围")]
+        [Tooltip("整个事件=同一检测窗口内同一目标只会命中一次；每次激活=每次从失活切回激活时清空已命中目标；每次检测=每次检测前都清空已命中目标。")]
+        public SkillDamageHitDeduplicationScope hitDeduplicationScope = SkillDamageHitDeduplicationScope.WholeEvent;
 
         [InspectorLabel("检测方式")]
         [Tooltip("范围=在检测窗口内每帧重做 Overlap；碰撞=在检测窗口内启用指定挂点上的 Trigger Collider；射线=在检测窗口内每帧重做 Raycast。")]

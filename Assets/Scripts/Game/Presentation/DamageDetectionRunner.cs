@@ -50,6 +50,46 @@ namespace Game.Presentation
 
         private static int RunRangeOverlap(Transform attacker, SkillDamageEffect effect, int layerMask, Collider[] outBuffer, SkillDetectionMotionFrame? motionFrame)
         {
+            if (TryResolveRetargetedDetectionPose(attacker, effect, motionFrame, effect.centerOffset, out Vector3 retargetedOrigin, out Quaternion retargetedRotation))
+            {
+                float retargetedRangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker);
+                int retargetedCount;
+                switch (effect.shape)
+                {
+                    case AttackShapeType.Sphere:
+                        return Physics.OverlapSphereNonAlloc(retargetedOrigin, effect.sphereRadius * retargetedRangeScale, outBuffer, layerMask, QueryTriggerInteraction.Collide);
+
+                    case AttackShapeType.Sector:
+                        float retargetedRadius = Mathf.Max(effect.sphereRadius * retargetedRangeScale, 0.01f);
+                        retargetedCount = Physics.OverlapSphereNonAlloc(retargetedOrigin, retargetedRadius, outBuffer, layerMask, QueryTriggerInteraction.Collide);
+                        if (retargetedCount <= 0) return 0;
+                        float halfAngle = effect.sectorAngle * 0.5f;
+                        Quaternion inverseRotation = Quaternion.Inverse(retargetedRotation);
+                        int write = 0;
+                        for (int i = 0; i < retargetedCount; i++)
+                        {
+                            Collider collider = outBuffer[i];
+                            if (collider == null)
+                                continue;
+
+                            Vector3 targetPoint = collider.bounds.center;
+                            Vector3 local = inverseRotation * (targetPoint - retargetedOrigin);
+                            Vector2 planar = new Vector2(local.x, local.z);
+                            if (planar.sqrMagnitude < 0.0001f ||
+                                Vector2.Angle(Vector2.up, planar) <= halfAngle)
+                            {
+                                if (write != i) outBuffer[write] = outBuffer[i];
+                                write++;
+                            }
+                        }
+                        return write;
+
+                    case AttackShapeType.Box:
+                        Vector3 retargetedHalfExtents = effect.boxSize * retargetedRangeScale * 0.5f;
+                        return Physics.OverlapBoxNonAlloc(retargetedOrigin, retargetedHalfExtents, outBuffer, retargetedRotation, layerMask, QueryTriggerInteraction.Collide);
+                }
+            }
+
             ResolveDetectionPose(attacker, effect, motionFrame, out Vector3 basePosition, out Quaternion baseRotation, out Vector3 motionOffset);
             Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
             Vector3 origin = basePosition + baseRotation * (effect.centerOffset + motionOffset);
@@ -99,6 +139,31 @@ namespace Game.Presentation
 
         private static int RunRaycast(Transform attacker, SkillDamageEffect effect, int layerMask, Collider[] outBuffer, SkillDetectionMotionFrame? motionFrame)
         {
+            if (TryResolveRetargetedDetectionPose(attacker, effect, motionFrame, effect.rayOriginOffset, out Vector3 retargetedOrigin, out Quaternion retargetedRotation))
+            {
+                Vector3 retargetedDirection = retargetedRotation * Vector3.forward;
+                float retargetedRangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(attacker);
+                float retargetedDistance = Mathf.Max(0f, effect.rayMaxDistance * retargetedRangeScale);
+                float retargetedRadius = Mathf.Max(0f, effect.rayRadius * retargetedRangeScale);
+
+                int retargetedHits = retargetedRadius > 0.0001f
+                    ? Physics.SphereCastNonAlloc(retargetedOrigin, retargetedRadius, retargetedDirection, RaycastHitBuffer, retargetedDistance, layerMask, QueryTriggerInteraction.Collide)
+                    : Physics.RaycastNonAlloc(retargetedOrigin, retargetedDirection, RaycastHitBuffer, retargetedDistance, layerMask, QueryTriggerInteraction.Collide);
+                if (retargetedHits <= 0) return 0;
+
+                RaycastColliderList.Clear();
+                for (int i = 0; i < retargetedHits; i++)
+                {
+                    Collider c = RaycastHitBuffer[i].collider;
+                    if (c != null && !RaycastColliderList.Contains(c))
+                        RaycastColliderList.Add(c);
+                }
+                int retargetedCount = Mathf.Min(RaycastColliderList.Count, outBuffer.Length);
+                for (int i = 0; i < retargetedCount; i++)
+                    outBuffer[i] = RaycastColliderList[i];
+                return retargetedCount;
+            }
+
             ResolveDetectionPose(attacker, effect, motionFrame, out Vector3 basePosition, out Quaternion baseRotation, out Vector3 motionOffset);
             Quaternion detectionRotation = baseRotation * Quaternion.Euler(effect.rotationEuler);
             Vector3 origin = basePosition + baseRotation * (effect.rayOriginOffset + motionOffset);
@@ -147,6 +212,28 @@ namespace Game.Presentation
             basePosition = attacker.position;
             baseRotation = attacker.rotation;
             motionOffset = Vector3.zero;
+        }
+
+        private static bool TryResolveRetargetedDetectionPose(
+            Transform attacker,
+            SkillDamageEffect effect,
+            SkillDetectionMotionFrame? motionFrame,
+            Vector3 localOffset,
+            out Vector3 origin,
+            out Quaternion rotation)
+        {
+            origin = Vector3.zero;
+            rotation = Quaternion.identity;
+            if (attacker == null || effect?.motion == null || !motionFrame.HasValue)
+                return false;
+
+            Vector3 motionOrigin = motionFrame.Value.OriginPosition + motionFrame.Value.OriginRotation * localOffset;
+            Vector3 retargetPosition = attacker.TransformPoint(localOffset);
+            if (!effect.motion.TryEvaluateRetargetedWorldPosition(motionOrigin, motionFrame.Value.OriginRotation, retargetPosition, motionFrame.Value.Elapsed, out origin))
+                return false;
+
+            rotation = attacker.rotation * Quaternion.Euler(effect.rotationEuler);
+            return true;
         }
 
         public static SkillCollisionHitbox BeginCollisionWindow(Transform attacker, SkillDamageEffect effect, object collisionToken)

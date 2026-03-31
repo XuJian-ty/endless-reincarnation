@@ -611,7 +611,7 @@ namespace Game.UI
                 instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale);
                 SetLayerRecursively(instance.transform, _previewLayer);
                 ConfigurePreviewParticleSystems(instance, effect.motion, useWorldMotion);
-                ApplyCueMotion(instance, effect.motion, caster, useWorldMotion);
+                ApplyCueMotion(instance, effect, caster, useWorldMotion);
                 return instance;
             }
 
@@ -655,8 +655,9 @@ namespace Game.UI
                 }
             }
 
-            private static void ApplyCueMotion(GameObject instance, SkillMotionSettings motion, Transform caster, bool useWorldMotion)
+            private static void ApplyCueMotion(GameObject instance, SkillVfxEffect effect, Transform caster, bool useWorldMotion)
             {
+                SkillMotionSettings motion = effect != null ? effect.motion : null;
                 if (instance == null || caster == null || motion == null || !motion.IsActive || !useWorldMotion)
                     return;
 
@@ -666,7 +667,7 @@ namespace Game.UI
                 SkillCueMover mover = instance.GetComponent<SkillCueMover>();
                 if (mover == null)
                     mover = instance.AddComponent<SkillCueMover>();
-                mover.Initialize(originPosition, originRotation, motion, true, true, lockedRotation);
+                mover.Initialize(originPosition, originRotation, motion, true, true, lockedRotation, caster, effect != null ? effect.offset : Vector3.zero);
             }
 
             private static EventState[] BuildStates<T>(List<T> events) where T : SkillTimedEventBase

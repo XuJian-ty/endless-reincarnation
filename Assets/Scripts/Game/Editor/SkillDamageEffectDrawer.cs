@@ -27,6 +27,7 @@ namespace Game.Editor
                 var activationMode = property.FindPropertyRelative("activationMode");
                 var intermittentActiveDuration = property.FindPropertyRelative("intermittentActiveDuration");
                 var intermittentIntervalDuration = property.FindPropertyRelative("intermittentIntervalDuration");
+                var hitDeduplicationScope = property.FindPropertyRelative("hitDeduplicationScope");
                 var detectionType = property.FindPropertyRelative("detectionType");
                 var hitLayerName = property.FindPropertyRelative("hitLayerName");
                 var anchor = property.FindPropertyRelative("anchor");
@@ -77,6 +78,8 @@ namespace Game.Editor
                         y = DrawProperty(y, position, intermittentIntervalDuration);
                     }
                 }
+
+                y = DrawProperty(y, position, hitDeduplicationScope);
 
                 if (detection != DamageDetectionType.Collision)
                     y = DrawProperty(y, position, anchor);
@@ -169,6 +172,7 @@ namespace Game.Editor
                     height += GetChildHeight(property.FindPropertyRelative("intermittentIntervalDuration"));
                 }
             }
+            height += GetChildHeight(property.FindPropertyRelative("hitDeduplicationScope"));
             if (detection != DamageDetectionType.Collision)
                 height += GetChildHeight(anchor);
 

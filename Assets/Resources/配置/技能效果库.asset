@@ -252,6 +252,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -298,6 +299,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -347,6 +349,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -418,6 +421,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
@@ -459,6 +463,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -510,6 +515,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -556,6 +562,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -610,6 +617,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -633,6 +641,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -679,6 +688,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -733,6 +743,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -804,6 +815,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
@@ -845,6 +857,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_3
@@ -893,6 +906,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
         sfxEvents:
@@ -946,6 +960,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -992,6 +1007,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -1046,6 +1062,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -1117,6 +1134,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
@@ -1158,6 +1176,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -1215,6 +1234,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -1261,6 +1281,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -1315,6 +1336,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -1338,6 +1360,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -1384,6 +1407,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -1438,6 +1462,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -1509,6 +1534,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
@@ -1550,6 +1576,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_3
@@ -1598,6 +1625,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
         sfxEvents:
@@ -1657,6 +1685,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -1703,6 +1732,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -1757,6 +1787,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -1840,6 +1871,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_3
@@ -1888,6 +1920,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
@@ -1929,6 +1962,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -1999,6 +2033,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -2045,6 +2080,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -2099,6 +2135,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -2122,6 +2159,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -2168,6 +2206,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -2222,6 +2261,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -2305,6 +2345,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_3
@@ -2353,6 +2394,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
@@ -2394,6 +2436,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_7
@@ -2442,6 +2485,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 2
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
@@ -2483,6 +2527,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 2
         sfxEvents:
@@ -2553,6 +2598,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -2599,6 +2645,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -2653,6 +2700,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -2736,6 +2784,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 2770607203840344508, guid: 2e8068baf55939d4f90645c3b54fa5a5,
@@ -2777,6 +2826,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -2910,6 +2960,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -2956,6 +3007,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -3010,6 +3062,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -3081,6 +3134,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -3138,6 +3192,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -3184,6 +3239,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -3238,6 +3294,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -3309,6 +3366,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -3368,6 +3426,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -3414,6 +3473,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects:
             - particlePrefab: {fileID: 0}
               anchor: 0
@@ -3453,6 +3513,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitDamageEffects:
@@ -3539,6 +3600,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -3629,6 +3691,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents: []
@@ -3656,6 +3719,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -3702,6 +3766,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -3762,6 +3827,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
@@ -3803,6 +3869,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
           - particlePrefab: {fileID: 2071025297289623881, guid: 448772dc5fb1251449d5027dcd08b3ec,
@@ -3844,6 +3911,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -3945,6 +4013,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -3991,6 +4060,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -4045,6 +4115,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -4116,6 +4187,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -4192,6 +4264,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4238,6 +4311,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -4292,6 +4366,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -4356,6 +4431,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_4
@@ -4404,6 +4480,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
         sfxEvents:
@@ -4442,6 +4519,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4488,6 +4566,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -4542,6 +4621,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -4557,6 +4637,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4603,6 +4684,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -4657,6 +4739,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -4672,6 +4755,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4718,6 +4802,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -4772,6 +4857,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -4787,6 +4873,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4833,6 +4920,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -4887,6 +4975,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -4902,6 +4991,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -4948,6 +5038,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -5002,6 +5093,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -5017,6 +5109,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -5063,6 +5156,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -5117,6 +5211,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -5188,6 +5283,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_4
@@ -5236,6 +5332,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 1863762097856787420, guid: f130c8ffc55db664aaf7d62fdf80264d,
@@ -5277,6 +5374,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 3934439594000541907, guid: 44403ac3e96cc2b4b8ecbee3ffc19e92,
@@ -5318,6 +5416,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 1913877743864255190, guid: 28343e63f6273e948a25baef2944a5ac,
@@ -5359,6 +5458,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
@@ -5400,6 +5500,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
@@ -5441,6 +5542,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
         sfxEvents:
@@ -5479,6 +5581,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -5525,6 +5628,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -5579,6 +5683,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -5587,6 +5692,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -5633,6 +5739,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -5687,6 +5794,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -5695,6 +5803,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -5741,6 +5850,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -5795,6 +5905,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -5859,6 +5970,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_4
@@ -5907,6 +6019,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
@@ -5948,6 +6061,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 0
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
@@ -5989,6 +6103,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
         sfxEvents:
@@ -6029,6 +6144,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6075,6 +6191,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -6129,6 +6246,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -6193,6 +6311,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_4
@@ -6241,6 +6360,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
         sfxEvents:
@@ -6279,6 +6399,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6325,6 +6446,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -6379,6 +6501,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -6394,6 +6517,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6440,6 +6564,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -6494,6 +6619,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -6509,6 +6635,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6555,6 +6682,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -6609,6 +6737,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -6624,6 +6753,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6670,6 +6800,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -6724,6 +6855,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -6739,6 +6871,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6785,6 +6918,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -6839,6 +6973,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -6854,6 +6989,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -6900,6 +7036,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -6954,6 +7091,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects:
@@ -7025,6 +7163,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_4
@@ -7073,6 +7212,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 1863762097856787420, guid: f130c8ffc55db664aaf7d62fdf80264d,
@@ -7114,6 +7254,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 3934439594000541907, guid: 44403ac3e96cc2b4b8ecbee3ffc19e92,
@@ -7155,6 +7296,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 1913877743864255190, guid: 28343e63f6273e948a25baef2944a5ac,
@@ -7196,6 +7338,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
@@ -7237,6 +7380,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
@@ -7278,6 +7422,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
         sfxEvents:
@@ -7316,6 +7461,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7362,6 +7508,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -7416,6 +7563,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -7424,6 +7572,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7470,6 +7619,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -7524,6 +7674,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -7532,6 +7683,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7578,6 +7730,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -7632,6 +7785,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -7640,6 +7794,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7686,6 +7841,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -7740,6 +7896,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -7748,6 +7905,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -7794,6 +7952,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -7848,6 +8007,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -7912,6 +8072,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
@@ -7953,6 +8114,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
@@ -7994,6 +8156,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
@@ -8035,6 +8198,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
@@ -8076,6 +8240,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 5
         - eventId: evt_3
@@ -8124,6 +8289,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -8179,6 +8345,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8225,6 +8392,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -8254,6 +8422,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8300,6 +8469,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.001
@@ -8395,6 +8565,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         - eventId: evt_5
@@ -8443,6 +8614,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 10
         sfxEvents:
@@ -8495,6 +8667,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.10000001
             intermittentIntervalDuration: 0.10000001
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8541,6 +8714,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 10
@@ -8618,6 +8792,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 1
             duration: 0.5
         - eventId: evt_4
@@ -8666,6 +8841,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -8714,11 +8890,12 @@ MonoBehaviour:
           repeatInterval: 0.1
           repeatedAnchorMode: 0
           damageEffects:
-          - detectionDuration: 0.5
+          - detectionDuration: 1.5000001
             activationTime: 0
-            activationMode: 0
-            intermittentActiveDuration: 0.10000001
-            intermittentIntervalDuration: 0.10000001
+            activationMode: 1
+            intermittentActiveDuration: 0.73333335
+            intermittentIntervalDuration: 0
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8737,7 +8914,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
-              duration: 0.5
+              duration: 1.5
               pathControlPointA: {x: -0.863, y: 0, z: 3.22}
               pathControlPointB: {x: -1.725, y: 0, z: 6.439}
               pathEndOffset: {x: -2.588, y: 0, z: 9.659}
@@ -8748,15 +8925,33 @@ MonoBehaviour:
                   time: 0
                   value: 0
                   inSlope: 0
-                  outSlope: 1
+                  outSlope: 3
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.33333334
+                  value: 1
+                  inSlope: 3
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.6666667
+                  value: 1
+                  inSlope: 0
+                  outSlope: -3.0000002
                   tangentMode: 0
                   weightedMode: 0
                   inWeight: 0
                   outWeight: 0
                 - serializedVersion: 3
                   time: 1
-                  value: 1
-                  inSlope: 1
+                  value: 0
+                  inSlope: -3.0000002
                   outSlope: 0
                   tangentMode: 0
                   weightedMode: 0
@@ -8765,6 +8960,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 1
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -8781,11 +8977,12 @@ MonoBehaviour:
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
-          - detectionDuration: 0.5
+          - detectionDuration: 1.5000001
             activationTime: 0
-            activationMode: 0
-            intermittentActiveDuration: 0.10000001
-            intermittentIntervalDuration: 0.10000001
+            activationMode: 1
+            intermittentActiveDuration: 0.73333335
+            intermittentIntervalDuration: 0
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8804,7 +9001,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
-              duration: 0.5
+              duration: 1.5
               pathControlPointA: {x: 0, y: 0, z: 3.3333335}
               pathControlPointB: {x: 0, y: 0, z: 6.666667}
               pathEndOffset: {x: 0, y: 0, z: 10}
@@ -8815,15 +9012,33 @@ MonoBehaviour:
                   time: 0
                   value: 0
                   inSlope: 0
-                  outSlope: 1
+                  outSlope: 3
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.33333334
+                  value: 1
+                  inSlope: 3
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 0.6666667
+                  value: 1
+                  inSlope: 0
+                  outSlope: -3.0000002
                   tangentMode: 0
                   weightedMode: 0
                   inWeight: 0
                   outWeight: 0
                 - serializedVersion: 3
                   time: 1
-                  value: 1
-                  inSlope: 1
+                  value: 0
+                  inSlope: -3.0000002
                   outSlope: 0
                   tangentMode: 0
                   weightedMode: 0
@@ -8832,6 +9047,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 1
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -8848,11 +9064,12 @@ MonoBehaviour:
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
-          - detectionDuration: 0.5
+          - detectionDuration: 1.5000001
             activationTime: 0
-            activationMode: 0
-            intermittentActiveDuration: 0.10000001
-            intermittentIntervalDuration: 0.10000001
+            activationMode: 1
+            intermittentActiveDuration: 0.73333335
+            intermittentIntervalDuration: 0
+            hitDeduplicationScope: 1
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -8871,7 +9088,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
-              duration: 0.5
+              duration: 1.5
               pathControlPointA: {x: 0.863, y: 0, z: 3.22}
               pathControlPointB: {x: 1.725, y: 0, z: 6.439}
               pathEndOffset: {x: 2.588, y: 0, z: 9.659}
@@ -8882,82 +9099,25 @@ MonoBehaviour:
                   time: 0
                   value: 0
                   inSlope: 0
-                  outSlope: 1
+                  outSlope: 3
                   tangentMode: 0
                   weightedMode: 0
                   inWeight: 0
                   outWeight: 0
                 - serializedVersion: 3
-                  time: 1
+                  time: 0.33333334
                   value: 1
-                  inSlope: 1
+                  inSlope: 3
                   outSlope: 0
                   tangentMode: 0
                   weightedMode: 0
                   inWeight: 0
                   outWeight: 0
-                m_PreInfinity: 2
-                m_PostInfinity: 2
-                m_RotationOrder: 4
-            companionVfxEffects: []
-            onHitDamageEffects:
-            - damageMagnitude: 3
-            onHitStopEffect:
-              hitStopDuration: 0
-              hitStopTimeScale: 0
-              pauseCameraLookDuringHitStop: 0
-            onHitPhysicsEffects:
-            - effectType: 0
-              distance: 1
-              height: 1
-              durationMode: 0
-              duration: 0.2
-            onHitAttributeEffects: []
-            onHitVfxEffects: []
-            onHitSfxEffects: []
-        - eventId: evt_3
-          startTime: 1
-          triggerMode: 0
-          activeDuration: 0
-          activeDurationMode: 0
-          repeatInterval: 0.1
-          repeatedAnchorMode: 0
-          damageEffects:
-          - detectionDuration: 0.5
-            activationTime: 0
-            activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
-            detectionType: 0
-            hitLayerName: Enemy
-            anchor: 0
-            shape: 0
-            centerOffset: {x: 0, y: 0.9, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 0.8
-            sectorAngle: 360
-            boxSize: {x: 1, y: 1, z: 1}
-            colliderNodeName: 
-            rayOriginOffset: {x: 0, y: 0, z: 0}
-            rayMaxDistance: 50
-            rayRadius: 0
-            motion:
-              enabled: 1
-              mode: 1
-              speed: 0
-              direction: {x: 0, y: 0, z: 1}
-              duration: 0.5
-              pathControlPointA: {x: -0.863, y: 0, z: 3.22}
-              pathControlPointB: {x: -1.725, y: 0, z: 6.439}
-              pathEndOffset: {x: -2.588, y: 0, z: 9.659}
-              pathProgressCurve:
-                serializedVersion: 2
-                m_Curve:
                 - serializedVersion: 3
-                  time: 0
+                  time: 0.6666667
                   value: 1
                   inSlope: 0
-                  outSlope: -1
+                  outSlope: -3.0000002
                   tangentMode: 0
                   weightedMode: 0
                   inWeight: 0
@@ -8965,7 +9125,7 @@ MonoBehaviour:
                 - serializedVersion: 3
                   time: 1
                   value: 0
-                  inSlope: -1
+                  inSlope: -3.0000002
                   outSlope: 0
                   tangentMode: 0
                   weightedMode: 0
@@ -8974,140 +9134,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
-            companionVfxEffects: []
-            onHitDamageEffects:
-            - damageMagnitude: 3
-            onHitStopEffect:
-              hitStopDuration: 0
-              hitStopTimeScale: 0
-              pauseCameraLookDuringHitStop: 0
-            onHitPhysicsEffects:
-            - effectType: 0
-              distance: 1
-              height: 1
-              durationMode: 0
-              duration: 0.2
-            onHitAttributeEffects: []
-            onHitVfxEffects: []
-            onHitSfxEffects: []
-          - detectionDuration: 0.5
-            activationTime: 0
-            activationMode: 0
-            intermittentActiveDuration: 0.10000001
-            intermittentIntervalDuration: 0.10000001
-            detectionType: 0
-            hitLayerName: Enemy
-            anchor: 0
-            shape: 0
-            centerOffset: {x: 0, y: 0.9, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 0.8
-            sectorAngle: 360
-            boxSize: {x: 1, y: 1, z: 1}
-            colliderNodeName: 
-            rayOriginOffset: {x: 0, y: 0, z: 0}
-            rayMaxDistance: 50
-            rayRadius: 0
-            motion:
-              enabled: 1
-              mode: 1
-              speed: 0
-              direction: {x: 0, y: 0, z: 1}
-              duration: 0.5
-              pathControlPointA: {x: 0, y: 0, z: 3.3333335}
-              pathControlPointB: {x: 0, y: 0, z: 6.666667}
-              pathEndOffset: {x: 0, y: 0, z: 10}
-              pathProgressCurve:
-                serializedVersion: 2
-                m_Curve:
-                - serializedVersion: 3
-                  time: 0
-                  value: 1
-                  inSlope: 0
-                  outSlope: -1
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                - serializedVersion: 3
-                  time: 1
-                  value: 0
-                  inSlope: -1
-                  outSlope: 0
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                m_PreInfinity: 2
-                m_PostInfinity: 2
-                m_RotationOrder: 4
-            companionVfxEffects: []
-            onHitDamageEffects:
-            - damageMagnitude: 3
-            onHitStopEffect:
-              hitStopDuration: 0
-              hitStopTimeScale: 0
-              pauseCameraLookDuringHitStop: 0
-            onHitPhysicsEffects:
-            - effectType: 0
-              distance: 1
-              height: 1
-              durationMode: 0
-              duration: 0.2
-            onHitAttributeEffects: []
-            onHitVfxEffects: []
-            onHitSfxEffects: []
-          - detectionDuration: 0.5
-            activationTime: 0
-            activationMode: 0
-            intermittentActiveDuration: 0.10000001
-            intermittentIntervalDuration: 0.10000001
-            detectionType: 0
-            hitLayerName: Enemy
-            anchor: 0
-            shape: 0
-            centerOffset: {x: 0, y: 0.9, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 0.8
-            sectorAngle: 360
-            boxSize: {x: 1, y: 1, z: 1}
-            colliderNodeName: 
-            rayOriginOffset: {x: 0, y: 0, z: 0}
-            rayMaxDistance: 50
-            rayRadius: 0
-            motion:
-              enabled: 1
-              mode: 1
-              speed: 0
-              direction: {x: 0, y: 0, z: 1}
-              duration: 0.5
-              pathControlPointA: {x: 0.863, y: 0, z: 3.22}
-              pathControlPointB: {x: 1.725, y: 0, z: 6.439}
-              pathEndOffset: {x: 2.588, y: 0, z: 9.659}
-              pathProgressCurve:
-                serializedVersion: 2
-                m_Curve:
-                - serializedVersion: 3
-                  time: 0
-                  value: 1
-                  inSlope: 0
-                  outSlope: -1
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                - serializedVersion: 3
-                  time: 1
-                  value: 0
-                  inSlope: -1
-                  outSlope: 0
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                m_PreInfinity: 2
-                m_PostInfinity: 2
-                m_RotationOrder: 4
+              retargetOnDescendingPath: 1
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 3
@@ -9203,6 +9230,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 1
             destroyMode: 1
             duration: 1.5
           - particlePrefab: {fileID: 2074141471970691052, guid: 7a78238904957d64484e569385d55c14,
@@ -9262,6 +9290,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 1
             destroyMode: 1
             duration: 1.5
           - particlePrefab: {fileID: 2074141471970691052, guid: 7a78238904957d64484e569385d55c14,
@@ -9321,6 +9350,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 1
             destroyMode: 1
             duration: 1.5
         sfxEvents:
@@ -9361,6 +9391,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -9407,6 +9438,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -9467,6 +9499,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -9510,6 +9543,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9556,6 +9590,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -9598,6 +9633,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -9644,6 +9680,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -9686,6 +9723,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9732,6 +9770,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.8925
@@ -9756,6 +9795,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9802,6 +9842,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1.05
@@ -9853,6 +9894,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -9899,6 +9941,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1.6875
@@ -9953,6 +9996,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -9999,6 +10043,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.5525
@@ -10038,6 +10083,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10084,6 +10130,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.8
@@ -10138,6 +10185,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10184,6 +10232,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1.875
@@ -10233,6 +10282,7 @@ MonoBehaviour:
                   m_PreInfinity: 2
                   m_PostInfinity: 2
                   m_RotationOrder: 4
+                retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
             onHitSfxEffects: []
@@ -10297,6 +10347,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents:
@@ -10374,6 +10425,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10420,6 +10472,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.03
@@ -10478,6 +10531,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10524,6 +10578,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.95
@@ -10578,6 +10633,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10624,6 +10680,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.3200002
@@ -10695,6 +10752,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
         sfxEvents: []
@@ -10722,6 +10780,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -10768,6 +10827,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1.5525
@@ -10807,6 +10867,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -10853,6 +10914,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.52
@@ -10959,6 +11021,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
@@ -11005,6 +11068,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1
@@ -11044,6 +11108,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -11090,6 +11155,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.61200005
@@ -11129,6 +11195,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11175,6 +11242,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.8
@@ -11275,6 +11343,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11321,6 +11390,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.16
@@ -11384,6 +11454,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -11430,6 +11501,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.578
@@ -11469,6 +11541,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11515,6 +11588,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.45
@@ -11578,6 +11652,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11624,6 +11699,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.75
@@ -11697,6 +11773,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11743,6 +11820,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.56
@@ -11794,6 +11872,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -11840,6 +11919,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 1.89
@@ -11891,6 +11971,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -11937,6 +12018,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.73
@@ -12043,6 +12125,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -12089,6 +12172,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.72
@@ -12140,6 +12224,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 2
             hitLayerName: Player
             anchor: 0
@@ -12186,6 +12271,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.63750005
@@ -12225,6 +12311,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -12271,6 +12358,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 2.9399998
@@ -12334,6 +12422,7 @@ MonoBehaviour:
             activationMode: 0
             intermittentActiveDuration: 0.1
             intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Player
             anchor: 0
@@ -12380,6 +12469,7 @@ MonoBehaviour:
                 m_PreInfinity: 2
                 m_PostInfinity: 2
                 m_RotationOrder: 4
+              retargetOnDescendingPath: 0
             companionVfxEffects: []
             onHitDamageEffects:
             - damageMagnitude: 0.85

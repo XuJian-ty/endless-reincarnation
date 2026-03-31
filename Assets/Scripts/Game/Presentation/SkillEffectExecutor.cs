@@ -909,7 +909,7 @@ namespace Game.Presentation
             SanitizeSpawnedVfxInstance(instance);
             instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
             ConfigureVfxMotion(instance, effect.motion, useWorldMotion);
-            ApplyCueMotion(instance, effect.motion, caster, useWorldMotion);
+            ApplyCueMotion(instance, effect, caster, useWorldMotion);
             EnsureCuePauseProxy(instance);
             return instance;
         }
@@ -1043,8 +1043,9 @@ namespace Game.Presentation
                 UnityObject.Destroy(instance, 0.1f);
         }
 
-        private static void ApplyCueMotion(GameObject instance, SkillMotionSettings motion, Transform caster, bool useWorldMotion)
+        private static void ApplyCueMotion(GameObject instance, SkillVfxEffect effect, Transform caster, bool useWorldMotion)
         {
+            SkillMotionSettings motion = effect != null ? effect.motion : null;
             if (instance == null || caster == null || motion == null || !useWorldMotion || !motion.IsActive)
                 return;
 
@@ -1055,7 +1056,7 @@ namespace Game.Presentation
             SkillCueMover mover = instance.GetComponent<SkillCueMover>();
             if (mover == null)
                 mover = instance.AddComponent<SkillCueMover>();
-            mover.Initialize(originPosition, originRotation, motion, false, true, lockedRotation);
+            mover.Initialize(originPosition, originRotation, motion, false, true, lockedRotation, caster, effect != null ? effect.offset : Vector3.zero);
         }
 
         private static void EnsureCuePauseProxy(GameObject instance)
@@ -1170,6 +1171,23 @@ namespace Game.Presentation
 
             if (damageEffect.anchor == SkillDamageAnchor.World && motionFrame.HasValue)
             {
+                Vector3 localOriginOffset = damageEffect.detectionType switch
+                {
+                    DamageDetectionType.Raycast => damageEffect.rayOriginOffset,
+                    DamageDetectionType.RangeOverlap => damageEffect.centerOffset,
+                    _ => Vector3.zero,
+                };
+                Vector3 originWorld = motionFrame.Value.OriginPosition + motionFrame.Value.OriginRotation * localOriginOffset;
+                Vector3 retargetWorld = caster != null
+                    ? caster.TransformPoint(localOriginOffset)
+                    : originWorld;
+                if (damageEffect.motion != null
+                    && damageEffect.motion.IsActive
+                    && damageEffect.motion.TryEvaluateRetargetedWorldPosition(originWorld, motionFrame.Value.OriginRotation, retargetWorld, motionFrame.Value.Elapsed, out origin))
+                {
+                    return true;
+                }
+
                 basePosition = motionFrame.Value.OriginPosition;
                 baseRotation = motionFrame.Value.OriginRotation;
                 if (damageEffect.motion != null && damageEffect.motion.IsActive)
