@@ -2194,6 +2194,7 @@ namespace Game.Editor
                     SkillDamageActivationMode newActivationMode = effect.activationMode;
                     float newIntermittentActiveDuration = effect.intermittentActiveDuration;
                     float newIntermittentIntervalDuration = effect.intermittentIntervalDuration;
+                    SkillDamageHitDeduplicationScope newHitDeduplicationScope = effect.hitDeduplicationScope;
                     SkillDamageAnchor newAnchor = effect.anchor;
                     AttackShapeType newShape = effect.shape;
                     Vector3 newCenterOffset = effect.centerOffset;
@@ -2256,6 +2257,8 @@ namespace Game.Editor
                             break;
                     }
 
+                    newHitDeduplicationScope = (SkillDamageHitDeduplicationScope)EditorGUILayout.EnumPopup("命中去重范围", effect.hitDeduplicationScope);
+
                     bool forceMotionApply = false;
                     if (ShouldShowDamageMotionSettings(newDetectionType, newAnchor))
                         forceMotionApply = DrawMotionSettingsEditor("移动设置", newMotion);
@@ -2276,6 +2279,7 @@ namespace Game.Editor
                         effect.intermittentIntervalDuration = ShouldShowDamageActivationSettings(newDetectionType)
                             ? SnapTime(newIntermittentIntervalDuration)
                             : 0.1f;
+                        effect.hitDeduplicationScope = newHitDeduplicationScope;
                         effect.anchor = newAnchor;
                         effect.shape = newShape;
                         effect.centerOffset = newCenterOffset;
@@ -2985,6 +2989,7 @@ namespace Game.Editor
                 pathControlPointB = source.pathControlPointB,
                 pathEndOffset = source.pathEndOffset,
                 pathProgressCurve = CloneAnimationCurve(source.pathProgressCurve),
+                retargetOnDescendingPath = source.retargetOnDescendingPath,
             };
         }
 
@@ -3010,6 +3015,7 @@ namespace Game.Editor
                     motion.pathControlPointB = EditorGUILayout.Vector3Field("路径控制点 B [橙色小球]", motion.pathControlPointB);
                     motion.pathEndOffset = EditorGUILayout.Vector3Field("路径终点偏移 [红色方块]", motion.pathEndOffset);
                     motion.pathProgressCurve = DrawPathProgressCurveEditor(motion.pathProgressCurve, ref forceApply);
+                    motion.retargetOnDescendingPath = EditorGUILayout.Toggle("下降段回收目标点", motion.retargetOnDescendingPath);
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         GUILayout.FlexibleSpace();
@@ -5137,10 +5143,28 @@ namespace Game.Editor
             switch (damageEffect.detectionType)
             {
                 case DamageDetectionType.RangeOverlap:
+                    Vector3 rangeOrigin = basisPosition + basisRotation * damageEffect.centerOffset;
+                    if (damageEffect.motion != null
+                        && damageEffect.motion.IsActive
+                        && damageEffect.motion.TryEvaluateRetargetedWorldPosition(rangeOrigin, basisRotation, preview.TransformPoint(damageEffect.centerOffset), elapsed, out position))
+                    {
+                        rotation = preview.rotation * Quaternion.Euler(damageEffect.rotationEuler);
+                        return true;
+                    }
+
                     position = basisPosition + basisRotation * damageEffect.centerOffset + motionOffset;
                     rotation = basisRotation * Quaternion.Euler(damageEffect.rotationEuler);
                     return true;
                 case DamageDetectionType.Raycast:
+                    Vector3 rayOrigin = basisPosition + basisRotation * damageEffect.rayOriginOffset;
+                    if (damageEffect.motion != null
+                        && damageEffect.motion.IsActive
+                        && damageEffect.motion.TryEvaluateRetargetedWorldPosition(rayOrigin, basisRotation, preview.TransformPoint(damageEffect.rayOriginOffset), elapsed, out position))
+                    {
+                        rotation = preview.rotation * Quaternion.Euler(damageEffect.rotationEuler);
+                        return true;
+                    }
+
                     position = basisPosition + basisRotation * damageEffect.rayOriginOffset + motionOffset;
                     rotation = basisRotation * Quaternion.Euler(damageEffect.rotationEuler);
                     return true;
@@ -6013,40 +6037,55 @@ namespace Game.Editor
                 ? Mathf.Min(_previewTime, triggerTime + detectionLifetime)
                 : triggerTime;
             float currentWindowStart = Mathf.Max(triggerTime, _previewTime - sampleStep - tolerance);
-            var firstHitTimes = new Dictionary<Transform, float>();
+            var seenTargets = new HashSet<Transform>();
+            bool wasDetectionActive = false;
 
             for (float sampleTime = sampleStartTime; sampleTime <= sampleEndTime + 0.0001f; sampleTime += effect.detectionDuration > 0f ? sampleStep : sampleEndTime + 1f)
             {
+                float elapsed = Mathf.Max(0f, sampleTime - triggerTime);
+                bool isDetectionActive = effect.detectionType == DamageDetectionType.Collision
+                    || !SharedSkillDefinition.UsesDamageActivationScheduling(effect)
+                    || SharedSkillDefinition.IsDamageDetectionActiveAt(effect, elapsed);
+                if (isDetectionActive)
+                {
+                    switch (effect.hitDeduplicationScope)
+                    {
+                        case SkillDamageHitDeduplicationScope.PerActivation:
+                            if (!wasDetectionActive)
+                                seenTargets.Clear();
+                            break;
+                        case SkillDamageHitDeduplicationScope.PerDetection:
+                            seenTargets.Clear();
+                            break;
+                    }
+                }
+
+                wasDetectionActive = isDetectionActive;
                 List<Transform> hitTargets = RunEditorPreviewDetection(damageEvent, effect, triggerTime, sampleTime, explicitVictim);
                 for (int targetIndex = 0; targetIndex < hitTargets.Count; targetIndex++)
                 {
                     Transform target = hitTargets[targetIndex];
-                    if (target == null || firstHitTimes.ContainsKey(target))
+                    if (target == null || !seenTargets.Add(target))
                         continue;
 
-                    firstHitTimes.Add(target, sampleTime);
+                    bool include = !currentOnly || (sampleTime >= currentWindowStart - 0.0001f && sampleTime <= _previewTime + 0.0001f);
+                    if (!include)
+                        continue;
+
+                    results.Add(new PreviewDamageHitResult
+                    {
+                        eventIndex = eventIndex,
+                        effectIndex = effectIndex,
+                        triggerIndex = triggerIndex,
+                        triggerTime = triggerTime,
+                        hitTime = sampleTime,
+                        effect = effect,
+                        hitTargets = new List<Transform> { target }
+                    });
                 }
 
                 if (effect.detectionDuration <= 0f)
                     break;
-            }
-
-            foreach (var pair in firstHitTimes)
-            {
-                bool include = !currentOnly || (pair.Value >= currentWindowStart - 0.0001f && pair.Value <= _previewTime + 0.0001f);
-                if (!include)
-                    continue;
-
-                results.Add(new PreviewDamageHitResult
-                {
-                    eventIndex = eventIndex,
-                    effectIndex = effectIndex,
-                    triggerIndex = triggerIndex,
-                    triggerTime = triggerTime,
-                    hitTime = pair.Value,
-                    effect = effect,
-                    hitTargets = new List<Transform> { pair.Key }
-                });
             }
 
             return results;
@@ -10378,12 +10417,18 @@ namespace Game.Editor
             return true;
         }
 
-        private static void EvaluateWorldCueTransform(SkillVfxEffect cue, Vector3 originPosition, Quaternion originRotation, float elapsed, out Vector3 position, out Quaternion rotation)
+        private void EvaluateWorldCueTransform(SkillVfxEffect cue, Vector3 originPosition, Quaternion originRotation, float elapsed, out Vector3 position, out Quaternion rotation)
         {
             position = originPosition;
             rotation = originRotation * Quaternion.Euler(cue.rotationEuler);
 
             if (!CueUsesWorldMotion(cue))
+                return;
+
+            Vector3 retargetPosition = _previewTarget != null
+                ? _previewTarget.transform.TransformPoint(cue.offset)
+                : originPosition;
+            if (cue.motion.TryEvaluateRetargetedWorldPosition(originPosition, originRotation, retargetPosition, Mathf.Max(0f, elapsed), out position))
                 return;
 
             position += EvaluateEditorMotionOffset(cue.motion, originRotation, Mathf.Max(0f, elapsed));

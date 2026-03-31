@@ -40,6 +40,8 @@ namespace Game.Presentation
             public UnityEngine.Quaternion originRotation;
             public UnityEngine.Transform casterTransform;
             public bool hasExecutedOneShotDetection;
+            public bool wasDetectionActive;
+            public int lastActivationCycleIndex = -1;
             public readonly HashSet<UnityEngine.Transform> hitTargets = new HashSet<UnityEngine.Transform>();
         }
 
@@ -315,6 +317,8 @@ namespace Game.Presentation
                         originPosition = anchorPosition,
                         originRotation = anchorRotation,
                         casterTransform = _context.CasterTransform,
+                        wasDetectionActive = true,
+                        lastActivationCycleIndex = 0,
                     };
                     collisionWindow.collisionHitbox = DamageDetectionRunner.BeginCollisionWindow(_context.CasterTransform, effect, collisionWindow);
                     if (collisionWindow.collisionHitbox != null)
@@ -337,6 +341,7 @@ namespace Game.Presentation
                     continue;
                 }
 
+                bool initialDetectionActive = IsDamageWindowDetectionActive(effect, 0f);
                 var detectionWindow = new ActiveDamageWindow
                 {
                     effect = effect,
@@ -345,10 +350,12 @@ namespace Game.Presentation
                     originPosition = anchorPosition,
                     originRotation = anchorRotation,
                     casterTransform = _context.CasterTransform,
+                    wasDetectionActive = initialDetectionActive,
+                    lastActivationCycleIndex = ResolveDamageActivationCycleIndex(effect, 0f, initialDetectionActive),
                 };
                 CreateDamageWindowCompanionVfx(detectionWindow);
                 _activeDamageWindows.Add(detectionWindow);
-                if (ShouldExecuteDamageWindow(detectionWindow, 0f))
+                if (ShouldExecuteDamageWindow(detectionWindow, 0f, detectionWindow.wasDetectionActive))
                 {
                     SkillEffectExecutor.ExecuteDamageEffect(
                         effect,
@@ -387,7 +394,10 @@ namespace Game.Presentation
 
                 float windowElapsed = _elapsed - window.startTime;
                 UpdateDamageWindowCompanionVfx(window, windowElapsed);
-                if (ShouldExecuteDamageWindow(window, windowElapsed))
+                bool isDetectionActive = IsDamageWindowDetectionActive(window.effect, windowElapsed);
+                ApplyDamageWindowHitDeduplication(window, windowElapsed, isDetectionActive);
+                window.wasDetectionActive = isDetectionActive;
+                if (ShouldExecuteDamageWindow(window, windowElapsed, isDetectionActive))
                 {
                     SkillEffectExecutor.ExecuteDamageEffect(
                         window.effect,
@@ -608,19 +618,73 @@ namespace Game.Presentation
             return new SkillDetectionMotionFrame(window.originPosition, window.originRotation, elapsed);
         }
 
-        private static bool ShouldExecuteDamageWindow(ActiveDamageWindow window, float elapsed)
+        private static void ApplyDamageWindowHitDeduplication(ActiveDamageWindow window, float elapsed, bool isDetectionActive)
         {
-            if (window?.effect == null)
+            if (window?.effect == null || !isDetectionActive)
+                return;
+
+            switch (window.effect.hitDeduplicationScope)
+            {
+                case SkillDamageHitDeduplicationScope.PerActivation:
+                    int currentCycleIndex = ResolveDamageActivationCycleIndex(window.effect, elapsed, isDetectionActive);
+                    if (currentCycleIndex != window.lastActivationCycleIndex)
+                    {
+                        window.hitTargets.Clear();
+                        window.lastActivationCycleIndex = currentCycleIndex;
+                    }
+                    break;
+                case SkillDamageHitDeduplicationScope.PerDetection:
+                    window.hitTargets.Clear();
+                    break;
+            }
+        }
+
+        private static int ResolveDamageActivationCycleIndex(SkillDamageEffect effect, float elapsed, bool isDetectionActive)
+        {
+            if (effect == null || !isDetectionActive)
+                return -1;
+
+            if (effect.detectionType == DamageDetectionType.Collision || !SharedSkillDefinition.UsesDamageActivationScheduling(effect))
+                return 0;
+
+            float resolvedElapsed = UnityEngine.Mathf.Max(0f, elapsed);
+            float activationTime = UnityEngine.Mathf.Max(0f, effect.activationTime);
+            if (resolvedElapsed < activationTime)
+                return -1;
+
+            if (effect.activationMode == SkillDamageActivationMode.Continuous)
+                return 0;
+
+            float activeDuration = UnityEngine.Mathf.Max(0.01f, effect.intermittentActiveDuration);
+            float intervalDuration = UnityEngine.Mathf.Max(0f, effect.intermittentIntervalDuration);
+            float cycleDuration = activeDuration + intervalDuration;
+            if (cycleDuration <= 0.0001f)
+                return 0;
+
+            float cycleElapsed = resolvedElapsed - activationTime;
+            return UnityEngine.Mathf.Max(0, UnityEngine.Mathf.FloorToInt(cycleElapsed / cycleDuration));
+        }
+
+        private static bool IsDamageWindowDetectionActive(SkillDamageEffect effect, float elapsed)
+        {
+            if (effect == null)
                 return false;
 
-            SkillDamageEffect effect = window.effect;
             if (effect.detectionType == DamageDetectionType.Collision)
                 return true;
 
             if (!SharedSkillDefinition.UsesDamageActivationScheduling(effect))
                 return true;
 
-            if (!SharedSkillDefinition.IsDamageDetectionActiveAt(effect, elapsed))
+            return SharedSkillDefinition.IsDamageDetectionActiveAt(effect, elapsed);
+        }
+
+        private static bool ShouldExecuteDamageWindow(ActiveDamageWindow window, float elapsed, bool isDetectionActive)
+        {
+            if (window?.effect == null)
+                return false;
+
+            if (!isDetectionActive)
                 return false;
 
             if (IsOneShotDamageWindow(window) && window.hasExecutedOneShotDetection)
