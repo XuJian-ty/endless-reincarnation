@@ -27,7 +27,7 @@ MonoBehaviour:
     lightPulseSpeed: 2.2
     lightRange: 4.8
   levelBoss:
-    scaleMultiplier: 3
+    scaleMultiplier: 2
     markerColor: {r: 1, g: 0, b: 0, a: 1}
     minIntensity: 20
     maxIntensity: 25
