@@ -315,7 +315,7 @@ namespace Game.Data
                 for (int i = 0; i < actionPolicies.Count; i++)
                 {
                     PlayerStateActionPolicyRule rule = actionPolicies[i];
-                    if (rule != null && rule.action == action)
+                    if (rule != null && rule.Matches(action))
                     {
                         policy = rule.policy;
                         return true;
@@ -334,7 +334,7 @@ namespace Game.Data
                 for (int i = 0; i < pendingReleaseRules.Count; i++)
                 {
                     PlayerStatePendingReleaseRule rule = pendingReleaseRules[i];
-                    if (rule != null && rule.pendingAction == action)
+                    if (rule != null && rule.Matches(action))
                     {
                         threshold = rule.normalizedTime;
                         return true;

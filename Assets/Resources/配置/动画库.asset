@@ -154,6 +154,10 @@ MonoBehaviour:
       entries:
       - animationId: Skill3
         clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+    - groupName: Skill4
+      entries:
+      - animationId: Skill4
+        clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
     entries:
     - animationId: NormalIdle
       clip: {fileID: 7400000, guid: 979fd354997c06a46ad48ffd58abbb2f, type: 2}
@@ -232,6 +236,8 @@ MonoBehaviour:
     - animationId: Skill2
       clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
     - animationId: Skill3
+      clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+    - animationId: Skill4
       clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
   - groupId: melee_minion
     groupName: "\u8FD1\u6218\u5C0F\u602A"
@@ -535,6 +541,8 @@ MonoBehaviour:
   - animationId: Skill2
     clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
   - animationId: Skill3
+    clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  - animationId: Skill4
     clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
   - animationId: melee_minionSkill0
     clip: {fileID: 7400000, guid: cd3bd7ed6a4243f4b8956e090dc8d16c, type: 2}

@@ -1,5 +1,6 @@
 using Game.Data;
 using Game.Presentation;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,34 +11,30 @@ namespace Game.Editor
     {
         private static readonly GameAction[] AllowedActions =
         {
-            GameAction.None,
             GameAction.Walk,
-            GameAction.Run,
             GameAction.Jump,
-            GameAction.NormalAttack,
-            GameAction.ChargeStart,
-            GameAction.AirAttack,
-            GameAction.FallAttack,
             GameAction.Dodge,
-            GameAction.Skill,
+            GameAction.NormalAttack,
+            GameAction.AirAttack,
+            GameAction.ChargeStart,
+            GameAction.FallAttack,
             GameAction.Shoot,
             GameAction.ShootCharge,
+            GameAction.Skill,
         };
 
         private static readonly string[] AllowedLabels =
         {
-            "None",
-            "Walk",
-            "Run",
+            "Move",
             "Jump",
-            "NormalAttack",
-            "ChargeStart",
-            "AirAttack",
-            "FallAttackStart",
             "Dodge",
-            "Skill",
+            "NormalAttack",
+            "AirAttack",
+            "ChargeStart",
+            "FallAttackStart",
             "Shoot",
             "ShootCharge",
+            "Skill",
         };
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -81,21 +78,66 @@ namespace Game.Editor
             if (property == null)
                 return y;
 
-            int selectedIndex = 0;
             GameAction current = (GameAction)property.enumValueIndex;
-            for (int i = 0; i < AllowedActions.Length; i++)
-            {
-                if (AllowedActions[i] == current)
-                {
-                    selectedIndex = i;
-                    break;
-                }
-            }
+            int allowedIndex = FindAllowedIndex(current);
+            bool isSupported = allowedIndex >= 0;
+            string[] options = BuildOptions(current, isSupported);
+            int selectedIndex = isSupported ? allowedIndex : 0;
 
             Rect rect = new Rect(totalRect.x, y, totalRect.width, EditorGUIUtility.singleLineHeight);
-            int newIndex = EditorGUI.Popup(rect, "缓存动作", selectedIndex, AllowedLabels);
-            property.enumValueIndex = (int)AllowedActions[Mathf.Clamp(newIndex, 0, AllowedActions.Length - 1)];
+            int newIndex = EditorGUI.Popup(rect, "缓存动作", selectedIndex, options);
+            GameAction resolved = ResolveSelectedAction(current, newIndex, isSupported);
+            if (resolved != current)
+                property.enumValueIndex = (int)resolved;
             return y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+        }
+
+        private static int FindAllowedIndex(GameAction action)
+        {
+            if (IsMoveAction(action))
+                return 0;
+
+            for (int i = 0; i < AllowedActions.Length; i++)
+            {
+                if (AllowedActions[i] == action)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private static GameAction ResolveSelectedAction(GameAction current, int selectedIndex, bool currentIsSupported)
+        {
+            if (!currentIsSupported)
+            {
+                if (selectedIndex <= 0)
+                    return current;
+
+                selectedIndex--;
+            }
+
+            selectedIndex = Mathf.Clamp(selectedIndex, 0, AllowedActions.Length - 1);
+            GameAction selected = AllowedActions[selectedIndex];
+            if (selected == GameAction.Walk)
+                return IsMoveAction(current) ? current : GameAction.Walk;
+
+            return selected;
+        }
+
+        private static string[] BuildOptions(GameAction current, bool currentIsSupported)
+        {
+            if (currentIsSupported)
+                return AllowedLabels;
+
+            string[] options = new string[AllowedLabels.Length + 1];
+            options[0] = $"Current ({current})";
+            Array.Copy(AllowedLabels, 0, options, 1, AllowedLabels.Length);
+            return options;
+        }
+
+        private static bool IsMoveAction(GameAction action)
+        {
+            return action == GameAction.Walk || action == GameAction.Run;
         }
 
         private static float DrawProperty(float y, Rect totalRect, SerializedProperty property)

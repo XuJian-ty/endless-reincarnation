@@ -51,15 +51,16 @@ namespace Game.Presentation
             GoTo<FallState>();
         }
 
-        public override TransitionPolicy GetPolicyFor(GameAction action) => action switch
-        {
-            GameAction.Walk         => TransitionPolicy.Interrupt,
-            GameAction.Run          => TransitionPolicy.Interrupt,
-            GameAction.Jump         => TransitionPolicy.Interrupt,
-            GameAction.NormalAttack => TransitionPolicy.Interrupt,
-            GameAction.Shoot        => TransitionPolicy.Interrupt,
-            GameAction.ShootCharge  => TransitionPolicy.Interrupt,
-            _                       => base.GetPolicyFor(action),
-        };
+        public override TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, action switch
+            {
+                GameAction.Walk         => TransitionPolicy.Interrupt,
+                GameAction.Run          => TransitionPolicy.Interrupt,
+                GameAction.Jump         => TransitionPolicy.Interrupt,
+                GameAction.NormalAttack => TransitionPolicy.Interrupt,
+                GameAction.Shoot        => TransitionPolicy.Interrupt,
+                GameAction.ShootCharge  => TransitionPolicy.Interrupt,
+                _                       => base.GetPolicyFor(action),
+            });
     }
 }

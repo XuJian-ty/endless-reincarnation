@@ -1383,13 +1383,16 @@ namespace Game.Editor
                 default:
                     if (entry.entryGroup == PlayerSkillEntryGroup.ActiveSkill)
                     {
+                        AddPolicy(entry, GameAction.Walk, TransitionPolicy.Buffer);
+                        AddPolicy(entry, GameAction.Jump, TransitionPolicy.Buffer);
                         AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
-                        AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
-                        AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Interrupt);
-                        AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Interrupt);
                         AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                        AddPolicy(entry, GameAction.AirAttack, TransitionPolicy.Buffer);
+                        AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Interrupt);
+                        AddPolicy(entry, GameAction.FallAttack, TransitionPolicy.Buffer);
                         AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Ignore);
-                        AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+                        AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Interrupt);
+                        AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
                         entry.overrideNaturalExitNormalizedTime = true;
                         entry.naturalExitNormalizedTime = 0.90f;
                         entry.naturalExitTarget = PlayerStateNaturalExitTarget.IdleState;
