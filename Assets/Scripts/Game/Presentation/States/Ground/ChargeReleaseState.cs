@@ -33,19 +33,20 @@ namespace Game.Presentation
             }
         }
 
-        public override TransitionPolicy GetPolicyFor(GameAction action) => action switch
-        {
-            GameAction.Dodge        => TransitionPolicy.Interrupt,
-            GameAction.Skill        => TransitionPolicy.Interrupt,
-            GameAction.ChargeStart  => TransitionPolicy.Buffer,
-            GameAction.ShootCharge  => TransitionPolicy.Buffer,
-            GameAction.ChargeRelease=> TransitionPolicy.Ignore,
-            GameAction.NormalAttack => TransitionPolicy.Buffer,
-            GameAction.Shoot        => TransitionPolicy.Buffer,
-            GameAction.Jump         => TransitionPolicy.Buffer,
-            GameAction.Walk         => TransitionPolicy.Buffer,
-            GameAction.Run          => TransitionPolicy.Buffer,
-            _                       => TransitionPolicy.Ignore,
-        };
+        public override TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, action switch
+            {
+                GameAction.Dodge         => TransitionPolicy.Interrupt,
+                GameAction.Skill         => TransitionPolicy.Interrupt,
+                GameAction.ChargeStart   => TransitionPolicy.Buffer,
+                GameAction.ShootCharge   => TransitionPolicy.Buffer,
+                GameAction.ChargeRelease => TransitionPolicy.Ignore,
+                GameAction.NormalAttack  => TransitionPolicy.Buffer,
+                GameAction.Shoot         => TransitionPolicy.Buffer,
+                GameAction.Jump          => TransitionPolicy.Buffer,
+                GameAction.Walk          => TransitionPolicy.Buffer,
+                GameAction.Run           => TransitionPolicy.Buffer,
+                _                        => TransitionPolicy.Ignore,
+            });
     }
 }

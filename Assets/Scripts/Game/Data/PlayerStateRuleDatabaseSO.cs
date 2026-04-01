@@ -27,6 +27,19 @@ namespace Game.Data
 
         [InspectorLabel("策略")]
         public TransitionPolicy policy = TransitionPolicy.Ignore;
+
+        public bool Matches(GameAction requestedAction)
+        {
+            if (action == requestedAction)
+                return true;
+
+            return IsMoveAction(action) && IsMoveAction(requestedAction);
+        }
+
+        private static bool IsMoveAction(GameAction value)
+        {
+            return value == GameAction.Walk || value == GameAction.Run;
+        }
     }
 
     [Serializable]
@@ -39,6 +52,19 @@ namespace Game.Data
         [Tooltip("当前状态动画播放到该进度时，若缓存动作匹配，则允许提前释放缓存。")]
         [Range(0f, 1f)]
         public float normalizedTime = 0.9f;
+
+        public bool Matches(GameAction requestedAction)
+        {
+            if (pendingAction == requestedAction)
+                return true;
+
+            return IsMoveAction(pendingAction) && IsMoveAction(requestedAction);
+        }
+
+        private static bool IsMoveAction(GameAction value)
+        {
+            return value == GameAction.Walk || value == GameAction.Run;
+        }
     }
 
     [Serializable]
@@ -73,7 +99,7 @@ namespace Game.Data
                 for (int i = 0; i < actionPolicies.Count; i++)
                 {
                     PlayerStateActionPolicyRule rule = actionPolicies[i];
-                    if (rule != null && rule.action == action)
+                    if (rule != null && rule.Matches(action))
                     {
                         policy = rule.policy;
                         return true;
@@ -92,7 +118,7 @@ namespace Game.Data
                 for (int i = 0; i < pendingReleaseRules.Count; i++)
                 {
                     PlayerStatePendingReleaseRule rule = pendingReleaseRules[i];
-                    if (rule != null && rule.pendingAction == action)
+                    if (rule != null && rule.Matches(action))
                     {
                         threshold = rule.normalizedTime;
                         return true;

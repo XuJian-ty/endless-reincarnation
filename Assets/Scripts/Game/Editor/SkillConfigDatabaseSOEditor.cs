@@ -191,6 +191,13 @@ namespace Game.Editor
                 EditorGUILayout.PropertyField(prop, true);
         }
 
+        private void DrawProperty(SerializedProperty entryProp, string relativeName, string label)
+        {
+            SerializedProperty prop = entryProp.FindPropertyRelative(relativeName);
+            if (prop != null)
+                EditorGUILayout.PropertyField(prop, new GUIContent(label), true);
+        }
+
         private void DrawReadOnlyProperty(SerializedProperty entryProp, string relativeName)
         {
             SerializedProperty prop = entryProp.FindPropertyRelative(relativeName);
@@ -203,8 +210,8 @@ namespace Game.Editor
 
         private void DrawActionRuleFields(SerializedProperty entryProp)
         {
-            DrawProperty(entryProp, nameof(SkillConfigEntry.actionPolicies));
-            DrawProperty(entryProp, nameof(SkillConfigEntry.pendingReleaseRules));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.actionPolicies), "动作策略表");
+            DrawProperty(entryProp, nameof(SkillConfigEntry.pendingReleaseRules), "缓存释放规则");
             DrawProperty(entryProp, nameof(SkillConfigEntry.overrideNaturalExitNormalizedTime));
             if (entryProp.FindPropertyRelative(nameof(SkillConfigEntry.overrideNaturalExitNormalizedTime))?.boolValue == true)
                 DrawProperty(entryProp, nameof(SkillConfigEntry.naturalExitNormalizedTime));
@@ -417,13 +424,16 @@ namespace Game.Editor
                 actionPolicies.ClearArray();
                 if (group == PlayerSkillEntryGroup.ActiveSkill)
                 {
+                    AddActionPolicy(actionPolicies, GameAction.Walk, TransitionPolicy.Buffer);
+                    AddActionPolicy(actionPolicies, GameAction.Jump, TransitionPolicy.Buffer);
                     AddActionPolicy(actionPolicies, GameAction.Dodge, TransitionPolicy.Interrupt);
-                    AddActionPolicy(actionPolicies, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddActionPolicy(actionPolicies, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    AddActionPolicy(actionPolicies, GameAction.AirAttack, TransitionPolicy.Buffer);
                     AddActionPolicy(actionPolicies, GameAction.ChargeStart, TransitionPolicy.Interrupt);
+                    AddActionPolicy(actionPolicies, GameAction.FallAttack, TransitionPolicy.Buffer);
+                    AddActionPolicy(actionPolicies, GameAction.Shoot, TransitionPolicy.Ignore);
                     AddActionPolicy(actionPolicies, GameAction.ShootCharge, TransitionPolicy.Interrupt);
-                    AddActionPolicy(actionPolicies, GameAction.NormalAttack, TransitionPolicy.Buffer);
-                    AddActionPolicy(actionPolicies, GameAction.Shoot, TransitionPolicy.Buffer);
-                    AddActionPolicy(actionPolicies, GameAction.ChargeRelease, TransitionPolicy.Buffer);
+                    AddActionPolicy(actionPolicies, GameAction.Skill, TransitionPolicy.Interrupt);
                 }
             }
 

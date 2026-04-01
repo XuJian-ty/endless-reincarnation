@@ -26,11 +26,12 @@ namespace Game.Presentation
 
         protected override void OnExit() { }
 
-        public override TransitionPolicy GetPolicyFor(GameAction action) => action switch
-        {
-            GameAction.Jump => TransitionPolicy.Interrupt,
-            _               => base.GetPolicyFor(action),
-        };
+        public override TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, action switch
+            {
+                GameAction.Jump => TransitionPolicy.Interrupt,
+                _               => base.GetPolicyFor(action),
+            });
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {

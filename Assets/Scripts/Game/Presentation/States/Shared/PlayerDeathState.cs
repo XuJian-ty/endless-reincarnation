@@ -34,6 +34,7 @@ namespace Game.Presentation
                 Ctx.CompleteDeathSequence();
         }
 
-        public override TransitionPolicy GetPolicyFor(GameAction action) => TransitionPolicy.Ignore;
+        public override TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
     }
 }

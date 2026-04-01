@@ -35,6 +35,7 @@ namespace Game.Presentation
         }
 
         /// <summary>仅由本状态 OnTick（接地→FallAttackLand，动画结束→FallAttackLoop）决定退出，不允许外部 Interrupt 打断。</summary>
-        public override TransitionPolicy GetPolicyFor(GameAction action) => TransitionPolicy.Ignore;
+        public override TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
     }
 }

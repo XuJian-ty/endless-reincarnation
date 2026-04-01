@@ -72,11 +72,12 @@ namespace Game.Presentation
             });
         }
 
-        public override TransitionPolicy GetPolicyFor(GameAction action) => action switch
-        {
-            GameAction.Jump => TransitionPolicy.Interrupt,
-            _               => base.GetPolicyFor(action),
-        };
+        public override TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, action switch
+            {
+                GameAction.Jump => TransitionPolicy.Interrupt,
+                _               => base.GetPolicyFor(action),
+            });
 
         private bool IsShootAnimationNearEnd(float threshold)
         {

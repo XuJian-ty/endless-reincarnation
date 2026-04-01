@@ -6,8 +6,8 @@ using UnityEngine;
 
 namespace Game.Editor
 {
-    [CustomPropertyDrawer(typeof(PlayerStatePendingReleaseRule))]
-    public sealed class PlayerStatePendingReleaseRuleDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(PlayerStateActionPolicyRule))]
+    public sealed class PlayerStateActionPolicyRuleDrawer : PropertyDrawer
     {
         private static readonly GameAction[] AllowedActions =
         {
@@ -48,12 +48,12 @@ namespace Game.Editor
                 int oldIndent = EditorGUI.indentLevel;
                 EditorGUI.indentLevel++;
 
-                SerializedProperty pendingAction = property.FindPropertyRelative(nameof(PlayerStatePendingReleaseRule.pendingAction));
-                SerializedProperty normalizedTime = property.FindPropertyRelative(nameof(PlayerStatePendingReleaseRule.normalizedTime));
+                SerializedProperty action = property.FindPropertyRelative(nameof(PlayerStateActionPolicyRule.action));
+                SerializedProperty policy = property.FindPropertyRelative(nameof(PlayerStateActionPolicyRule.policy));
 
                 float y = position.y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                y = DrawPendingAction(y, position, pendingAction);
-                DrawProperty(y, position, normalizedTime);
+                y = DrawAction(y, position, action);
+                DrawProperty(y, position, policy);
 
                 EditorGUI.indentLevel = oldIndent;
             }
@@ -69,11 +69,11 @@ namespace Game.Editor
 
             height += EditorGUIUtility.standardVerticalSpacing;
             height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-            height += GetChildHeight(property.FindPropertyRelative(nameof(PlayerStatePendingReleaseRule.normalizedTime)));
+            height += GetChildHeight(property.FindPropertyRelative(nameof(PlayerStateActionPolicyRule.policy)));
             return height;
         }
 
-        private static float DrawPendingAction(float y, Rect totalRect, SerializedProperty property)
+        private static float DrawAction(float y, Rect totalRect, SerializedProperty property)
         {
             if (property == null)
                 return y;
@@ -85,10 +85,11 @@ namespace Game.Editor
             int selectedIndex = isSupported ? allowedIndex : 0;
 
             Rect rect = new Rect(totalRect.x, y, totalRect.width, EditorGUIUtility.singleLineHeight);
-            int newIndex = EditorGUI.Popup(rect, "缓存动作", selectedIndex, options);
+            int newIndex = EditorGUI.Popup(rect, "动作", selectedIndex, options);
             GameAction resolved = ResolveSelectedAction(current, newIndex, isSupported);
             if (resolved != current)
                 property.enumValueIndex = (int)resolved;
+
             return y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         }
 

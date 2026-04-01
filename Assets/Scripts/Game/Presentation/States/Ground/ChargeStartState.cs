@@ -26,16 +26,17 @@ namespace Game.Presentation
                 GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.ChargeLoopState);
         }
 
-        public override TransitionPolicy GetPolicyFor(GameAction action) => action switch
-        {
-            GameAction.Dodge         => TransitionPolicy.Interrupt,
-            GameAction.Skill         => TransitionPolicy.Interrupt,
-            GameAction.ChargeRelease => TransitionPolicy.Interrupt,
-            GameAction.ChargeStart   => TransitionPolicy.Ignore,
-            GameAction.NormalAttack  => TransitionPolicy.Ignore,
-            GameAction.ShootCharge   => TransitionPolicy.Ignore,
-            GameAction.Shoot         => TransitionPolicy.Ignore,
-            _                        => TransitionPolicy.Buffer,
-        };
+        public override TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, action switch
+            {
+                GameAction.Dodge         => TransitionPolicy.Interrupt,
+                GameAction.Skill         => TransitionPolicy.Interrupt,
+                GameAction.ChargeRelease => TransitionPolicy.Interrupt,
+                GameAction.ChargeStart   => TransitionPolicy.Ignore,
+                GameAction.NormalAttack  => TransitionPolicy.Ignore,
+                GameAction.ShootCharge   => TransitionPolicy.Ignore,
+                GameAction.Shoot         => TransitionPolicy.Ignore,
+                _                        => TransitionPolicy.Buffer,
+            });
     }
 }

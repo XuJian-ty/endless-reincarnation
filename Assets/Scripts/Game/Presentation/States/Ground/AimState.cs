@@ -81,18 +81,19 @@ namespace Game.Presentation
             UpdateConfiguredAuxiliaryBaseActionTimeline(isRunning ? "AimRun" : "AimWalk");
         }
 
-        public override TransitionPolicy GetPolicyFor(GameAction action) => action switch
-        {
-            GameAction.Jump          => TransitionPolicy.Interrupt,
-            GameAction.NormalAttack  => TransitionPolicy.Interrupt,
-            GameAction.Shoot         => TransitionPolicy.Interrupt,
-            GameAction.ChargeStart   => TransitionPolicy.Interrupt,
-            GameAction.ShootCharge   => TransitionPolicy.Interrupt,
-            GameAction.Walk          => TransitionPolicy.Ignore,
-            GameAction.Run          => TransitionPolicy.Ignore,
-            GameAction.ChargeRelease => TransitionPolicy.Ignore,
-            _                       => base.GetPolicyFor(action),
-        };
+        public override TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, action switch
+            {
+                GameAction.Jump          => TransitionPolicy.Interrupt,
+                GameAction.NormalAttack  => TransitionPolicy.Interrupt,
+                GameAction.Shoot         => TransitionPolicy.Interrupt,
+                GameAction.ChargeStart   => TransitionPolicy.Interrupt,
+                GameAction.ShootCharge   => TransitionPolicy.Interrupt,
+                GameAction.Walk          => TransitionPolicy.Ignore,
+                GameAction.Run           => TransitionPolicy.Ignore,
+                GameAction.ChargeRelease => TransitionPolicy.Ignore,
+                _                        => base.GetPolicyFor(action),
+            });
 
         private void ExitAimState(in PlayerInputData input)
         {

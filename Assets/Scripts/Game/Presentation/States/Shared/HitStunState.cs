@@ -49,6 +49,6 @@ namespace Game.Presentation
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action) =>
-            TransitionPolicy.Ignore;
+            ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
     }
 }
