@@ -52,17 +52,7 @@ namespace Game.Presentation
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action)
-            => ResolveConfiguredPolicy(action, action switch
-            {
-                GameAction.Dodge         => TransitionPolicy.Interrupt,
-                GameAction.Skill         => TransitionPolicy.Interrupt,
-                GameAction.ChargeStart   => TransitionPolicy.Interrupt,
-                GameAction.ShootCharge   => TransitionPolicy.Interrupt,
-                GameAction.NormalAttack  => TransitionPolicy.Ignore,
-                GameAction.Shoot         => TransitionPolicy.Ignore,
-                GameAction.ChargeRelease => TransitionPolicy.Ignore,
-                _                        => TransitionPolicy.Buffer,
-            });
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
 
         // ── 时间轴初始化 ─────────────────────────────────────────────────────
 

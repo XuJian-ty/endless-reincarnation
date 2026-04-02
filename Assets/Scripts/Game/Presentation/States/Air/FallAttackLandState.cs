@@ -29,16 +29,6 @@ namespace Game.Presentation
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action)
-            => ResolveConfiguredPolicy(action, action switch
-            {
-                GameAction.Dodge         => TransitionPolicy.Interrupt,
-                GameAction.Skill         => TransitionPolicy.Interrupt,
-                GameAction.ChargeStart   => TransitionPolicy.Interrupt,
-                GameAction.NormalAttack  => TransitionPolicy.Buffer,
-                GameAction.Jump          => TransitionPolicy.Buffer,
-                GameAction.Walk          => TransitionPolicy.Buffer,
-                GameAction.Run           => TransitionPolicy.Buffer,
-                _                        => TransitionPolicy.Ignore,
-            });
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
     }
 }

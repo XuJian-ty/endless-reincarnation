@@ -151,6 +151,7 @@ namespace Game.Editor
             DrawProperty(entryProp, nameof(SkillConfigEntry.skillId));
             DrawProperty(entryProp, nameof(SkillConfigEntry.displayName));
             DrawProperty(entryProp, nameof(SkillConfigEntry.description));
+            DrawProperty(entryProp, nameof(SkillConfigEntry.skillIcon));
             EditorGUILayout.HelpBox("动画 Trigger 统一在“技能效果库”对应 skillId 的默认技能效果项中维护。", MessageType.Info);
             DrawProperty(entryProp, nameof(SkillConfigEntry.supportedAttackModes));
             DrawActionRuleFields(entryProp);

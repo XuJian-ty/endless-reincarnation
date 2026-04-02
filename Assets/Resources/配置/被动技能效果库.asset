@@ -20,7 +20,7 @@ MonoBehaviour:
       entries:
       - skillId: passive_1
         displayName: "\u589E\u52A0\u8840\u91CF"
-        effectDescription: "\u589E\u52A01000\u6700\u5927\u751F\u547D\u503C\u3002"
+        effectDescription: "\u589E\u52A01000\u751F\u547D\u503C\u4E0A\u9650"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 1000
@@ -38,7 +38,7 @@ MonoBehaviour:
           damageReduceAdd: 0
       - skillId: passive_1_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u8840\u91CF"
-        effectDescription: "\u589E\u52A02000\u6700\u5927\u751F\u547D\u503C\u3002"
+        effectDescription: "\u589E\u52A02000\u751F\u547D\u503C\u4E0A\u9650"
         mutationTalentCost: 2
         statModifier:
           hpAdd: 2000
@@ -55,27 +55,9 @@ MonoBehaviour:
           damageBonusAdd: 0
           damageReduceAdd: 0
       - skillId: passive_1_Variant2
-        displayName: "\u51CF\u5C11\u8840\u91CF\u589E\u52A0\u653B\u51FB"
-        effectDescription: "\u51CF\u5C111000\u6700\u5927\u751F\u547D\u503C\uFF0C\u589E\u52A0200\u653B\u51FB\u529B\u3002"
-        mutationTalentCost: 2
-        statModifier:
-          hpAdd: -1000
-          mpAdd: 0
-          attackAdd: 200
-          defenseAdd: 0
-          hpRegenAdd: 0
-          mpRegenAdd: 0
-          critRateAdd: 0
-          critDmgAdd: 0
-          attackSpeedAdd: 0
-          moveSpeedAdd: 0
-          lifeStealAdd: 0
-          damageBonusAdd: 0
-          damageReduceAdd: 0
-      - skillId: passive_1_Variant3
         displayName: "\u589E\u52A0\u5DE8\u989D\u8840\u91CF"
-        effectDescription: "\u589E\u52A05000\u6700\u5927\u751F\u547D\u503C\u3002"
-        mutationTalentCost: 3
+        effectDescription: "\u589E\u52A05000\u751F\u547D\u503C\u4E0A\u9650"
+        mutationTalentCost: 5
         statModifier:
           hpAdd: 5000
           mpAdd: 0
@@ -93,12 +75,48 @@ MonoBehaviour:
     - groupName: passive_2
       entries:
       - skillId: passive_2
-        displayName: 
-        effectDescription: "\u88AB\u52A82\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u84DD\u91CF"
+        effectDescription: "\u589E\u52A01000\u6CD5\u529B\u503C\u4E0A\u9650"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
-          mpAdd: 0
+          mpAdd: 1000
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_2_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u84DD\u91CF"
+        effectDescription: "\u589E\u52A02000\u6CD5\u529B\u503C\u4E0A\u9650"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 2000
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_2_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u84DD\u91CF"
+        effectDescription: "\u589E\u52A05000\u6CD5\u529B\u503C\u4E0A\u9650"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 5000
           attackAdd: 0
           defenseAdd: 0
           hpRegenAdd: 0
@@ -113,13 +131,49 @@ MonoBehaviour:
     - groupName: passive_3
       entries:
       - skillId: passive_3
-        displayName: 
-        effectDescription: "\u88AB\u52A83\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u653B\u51FB\u529B"
+        effectDescription: "\u589E\u52A0100\u653B\u51FB\u529B"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
-          attackAdd: 0
+          attackAdd: 100
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_3_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u653B\u51FB\u529B"
+        effectDescription: "\u589E\u52A0200\u653B\u51FB\u529B"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 200
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_3_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u653B\u51FB\u529B"
+        effectDescription: "\u589E\u52A0500\u653B\u51FB\u529B"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 500
           defenseAdd: 0
           hpRegenAdd: 0
           mpRegenAdd: 0
@@ -133,14 +187,50 @@ MonoBehaviour:
     - groupName: passive_4
       entries:
       - skillId: passive_4
-        displayName: 
-        effectDescription: "\u88AB\u52A84\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u9632\u5FA1\u529B"
+        effectDescription: "\u589E\u52A0200\u9632\u5FA1\u529B"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
-          defenseAdd: 0
+          defenseAdd: 200
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_4_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u9632\u5FA1\u529B"
+        effectDescription: "\u589E\u52A0400\u9632\u5FA1\u529B"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 400
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_4_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u9632\u5FA1\u529B"
+        effectDescription: "\u589E\u52A01000\u9632\u5FA1\u529B"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 1000
           hpRegenAdd: 0
           mpRegenAdd: 0
           critRateAdd: 0
@@ -153,15 +243,51 @@ MonoBehaviour:
     - groupName: passive_5
       entries:
       - skillId: passive_5
-        displayName: 
-        effectDescription: "\u88AB\u52A85\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u6BCF\u79D2\u56DE\u8840"
+        effectDescription: "\u589E\u52A050\u6BCF\u79D2\u56DE\u8840"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
           mpAdd: 0
           attackAdd: 0
           defenseAdd: 0
-          hpRegenAdd: 0
+          hpRegenAdd: 50
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_5_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u6BCF\u79D2\u56DE\u8840"
+        effectDescription: "\u589E\u52A0100\u6BCF\u79D2\u56DE\u8840"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 100
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_5_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u6BCF\u79D2\u56DE\u8840"
+        effectDescription: "\u589E\u52A0250\u6BCF\u79D2\u56DE\u8840"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 250
           mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
@@ -173,8 +299,8 @@ MonoBehaviour:
     - groupName: passive_6
       entries:
       - skillId: passive_6
-        displayName: 
-        effectDescription: "\u88AB\u52A86\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u6BCF\u79D2\u56DE\u84DD"
+        effectDescription: "\u589E\u52A050\u6BCF\u79D2\u56DE\u84DD"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
@@ -182,7 +308,43 @@ MonoBehaviour:
           attackAdd: 0
           defenseAdd: 0
           hpRegenAdd: 0
-          mpRegenAdd: 0
+          mpRegenAdd: 50
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_6_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u6BCF\u79D2\u56DE\u84DD"
+        effectDescription: "\u589E\u52A0100\u6BCF\u79D2\u56DE\u84DD"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 100
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_6_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u6BCF\u79D2\u56DE\u84DD"
+        effectDescription: "\u589E\u52A0250\u6BCF\u79D2\u56DE\u84DD"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 250
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
@@ -193,8 +355,8 @@ MonoBehaviour:
     - groupName: passive_7
       entries:
       - skillId: passive_7
-        displayName: 
-        effectDescription: "\u88AB\u52A87\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u66B4\u51FB\u7387"
+        effectDescription: "\u589E\u52A020%\u66B4\u51FB\u7387"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
@@ -203,7 +365,43 @@ MonoBehaviour:
           defenseAdd: 0
           hpRegenAdd: 0
           mpRegenAdd: 0
-          critRateAdd: 0
+          critRateAdd: 0.2
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_7_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u66B4\u51FB\u7387"
+        effectDescription: "\u589E\u52A040%\u66B4\u51FB\u7387"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0.4
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_7_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u66B4\u51FB\u7387"
+        effectDescription: "\u589E\u52A0100%\u66B4\u51FB\u7387"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 1
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
@@ -213,8 +411,8 @@ MonoBehaviour:
     - groupName: passive_8
       entries:
       - skillId: passive_8
-        displayName: 
-        effectDescription: "\u88AB\u52A88\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u66B4\u51FB\u4F24\u5BB3"
+        effectDescription: "\u589E\u52A040%\u66B4\u51FB\u4F24\u5BB3"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
@@ -224,7 +422,43 @@ MonoBehaviour:
           hpRegenAdd: 0
           mpRegenAdd: 0
           critRateAdd: 0
-          critDmgAdd: 0
+          critDmgAdd: 0.4
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_8_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u66B4\u51FB\u4F24\u5BB3"
+        effectDescription: "\u589E\u52A080%\u66B4\u51FB\u4F24\u5BB3"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0.8
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_8_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u66B4\u51FB\u4F24\u5BB3"
+        effectDescription: "\u589E\u52A0200%\u66B4\u51FB\u4F24\u5BB3"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 2
           attackSpeedAdd: 0
           moveSpeedAdd: 0
           lifeStealAdd: 0
@@ -233,8 +467,8 @@ MonoBehaviour:
     - groupName: passive_9
       entries:
       - skillId: passive_9
-        displayName: 
-        effectDescription: "\u88AB\u52A89\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u653B\u901F"
+        effectDescription: "\u589E\u52A020%\u653B\u51FB\u901F\u5EA6"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
@@ -245,7 +479,43 @@ MonoBehaviour:
           mpRegenAdd: 0
           critRateAdd: 0
           critDmgAdd: 0
-          attackSpeedAdd: 0
+          attackSpeedAdd: 0.2
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_9_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u653B\u901F"
+        effectDescription: "\u589E\u52A040%\u653B\u51FB\u901F\u5EA6"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0.4
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_9_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u653B\u901F"
+        effectDescription: "\u589E\u52A0100%\u653B\u51FB\u901F\u5EA6"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 1
           moveSpeedAdd: 0
           lifeStealAdd: 0
           damageBonusAdd: 0
@@ -253,8 +523,8 @@ MonoBehaviour:
     - groupName: passive_10
       entries:
       - skillId: passive_10
-        displayName: 
-        effectDescription: "\u88AB\u52A810\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u79FB\u901F"
+        effectDescription: "\u589E\u52A020%\u79FB\u52A8\u901F\u5EA6"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
@@ -266,15 +536,51 @@ MonoBehaviour:
           critRateAdd: 0
           critDmgAdd: 0
           attackSpeedAdd: 0
-          moveSpeedAdd: 0
+          moveSpeedAdd: 0.2
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_10_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u79FB\u901F"
+        effectDescription: "\u589E\u52A040%\u79FB\u52A8\u901F\u5EA6"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0.4
+          lifeStealAdd: 0
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_10_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u79FB\u901F"
+        effectDescription: "\u589E\u52A0100%\u79FB\u52A8\u901F\u5EA6"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 1
           lifeStealAdd: 0
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_11
       entries:
       - skillId: passive_11
-        displayName: 
-        effectDescription: "\u88AB\u52A811\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u5438\u8840\u6BD4\u4F8B"
+        effectDescription: "\u589E\u52A020%\u5438\u8840\u6BD4\u4F8B"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
@@ -287,14 +593,50 @@ MonoBehaviour:
           critDmgAdd: 0
           attackSpeedAdd: 0
           moveSpeedAdd: 0
-          lifeStealAdd: 0
+          lifeStealAdd: 0.2
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_11_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u5438\u8840\u6BD4\u4F8B"
+        effectDescription: "\u589E\u52A040%\u5438\u8840\u6BD4\u4F8B"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0.4
+          damageBonusAdd: 0
+          damageReduceAdd: 0
+      - skillId: passive_11_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u5438\u8840\u6BD4\u4F8B"
+        effectDescription: "\u589E\u52A0100%\u5438\u8840\u6BD4\u4F8B"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 1
           damageBonusAdd: 0
           damageReduceAdd: 0
     - groupName: passive_12
       entries:
       - skillId: passive_12
-        displayName: 
-        effectDescription: "\u88AB\u52A812\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
+        displayName: "\u589E\u52A0\u589E\u4F24\u6BD4\u4F8B"
+        effectDescription: "\u589E\u52A020%\u589E\u4F24\u6BD4\u4F8B"
         mutationTalentCost: 0
         statModifier:
           hpAdd: 0
@@ -308,5 +650,41 @@ MonoBehaviour:
           attackSpeedAdd: 0
           moveSpeedAdd: 0
           lifeStealAdd: 0
-          damageBonusAdd: 0
+          damageBonusAdd: 0.2
+          damageReduceAdd: 0
+      - skillId: passive_12_Variant1
+        displayName: "\u589E\u52A0\u9AD8\u989D\u589E\u4F24\u6BD4\u4F8B"
+        effectDescription: "\u589E\u52A040%\u589E\u4F24\u6BD4\u4F8B"
+        mutationTalentCost: 2
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 0.4
+          damageReduceAdd: 0
+      - skillId: passive_12_Variant2
+        displayName: "\u589E\u52A0\u5DE8\u989D\u589E\u4F24\u6BD4\u4F8B"
+        effectDescription: "\u589E\u52A0100%\u589E\u4F24\u6BD4\u4F8B"
+        mutationTalentCost: 5
+        statModifier:
+          hpAdd: 0
+          mpAdd: 0
+          attackAdd: 0
+          defenseAdd: 0
+          hpRegenAdd: 0
+          mpRegenAdd: 0
+          critRateAdd: 0
+          critDmgAdd: 0
+          attackSpeedAdd: 0
+          moveSpeedAdd: 0
+          lifeStealAdd: 0
+          damageBonusAdd: 1
           damageReduceAdd: 0

@@ -14,18 +14,15 @@ namespace Game.Presentation
     ///   - CompleteWithPending() 供自然结束的状态调用，优先消费预输入，无则走默认
     ///   - Flyweight：每种状态仅实例化一次，被复用，OnEnter/OnExit 替代构造/析构
     ///
-    /// 默认策略（适用于有自然结束点的动作状态，如攻击、技能、蓄力）：
-    ///   Dodge / Skill / ChargeStart / ShootCharge → Interrupt
-    ///   NormalAttack / Shoot / Jump / Walk / Run → Buffer
-    ///   其余 → Ignore
-    ///
-    /// ⚠ 没有自然结束点的状态（不调用 CompleteWithPending）必须覆写 Walk / Run / Jump
-    ///   为 Interrupt，否则这些输入会被静默丢弃。当前此类状态：IdleState、MoveState。
+    /// 默认策略：
+    ///   优先读取玩家动作及技能配置库中的动作策略表；
+    ///   若当前状态没有对应配置，则回退为 Ignore。
     /// </summary>
     public abstract class PlayerStateBase
     {
         protected IPlayerContext Ctx { get; private set; }
         protected virtual string ActionId => TrimStateSuffix(GetType().Name);
+        protected virtual string PolicyActionId => ActionId;
 
         private float _stateAge;
         private SkillTimelineRunner _timelineRunner;
@@ -86,19 +83,7 @@ namespace Game.Presentation
 
         // ── 策略表（Strategy Pattern）────────────────────────────────────
         public virtual TransitionPolicy GetPolicyFor(GameAction action)
-            => ResolveConfiguredPolicy(action, action switch
-            {
-                GameAction.Dodge        => TransitionPolicy.Interrupt,
-                GameAction.Skill        => TransitionPolicy.Interrupt,
-                GameAction.ChargeStart  => TransitionPolicy.Interrupt,
-                GameAction.ShootCharge  => TransitionPolicy.Interrupt,
-                GameAction.NormalAttack => TransitionPolicy.Buffer,
-                GameAction.Shoot        => TransitionPolicy.Buffer,
-                GameAction.Jump         => TransitionPolicy.Buffer,
-                GameAction.Walk         => TransitionPolicy.Buffer,
-                GameAction.Run          => TransitionPolicy.Buffer,
-                _                       => TransitionPolicy.Ignore,
-            });
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
 
         // ── 过渡辅助 ─────────────────────────────────────────────────────
         /// <summary>
@@ -256,7 +241,7 @@ namespace Game.Presentation
 
         protected TransitionPolicy ResolveConfiguredPolicy(GameAction action, TransitionPolicy fallback)
         {
-            SkillConfigEntry entry = ResolveCurrentActionEntry();
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
             if (entry != null && entry.TryGetPolicy(action, out TransitionPolicy configured))
                 return configured;
 
@@ -265,7 +250,7 @@ namespace Game.Presentation
 
         protected float GetConfiguredPendingReleaseThreshold(GameAction pendingAction, float fallbackThreshold)
         {
-            SkillConfigEntry entry = ResolveCurrentActionEntry();
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
             if (entry != null && entry.TryGetPendingReleaseThreshold(pendingAction, out float configured))
                 return configured;
 
@@ -274,7 +259,7 @@ namespace Game.Presentation
 
         protected float GetConfiguredNaturalExitThreshold(float fallbackThreshold)
         {
-            SkillConfigEntry entry = ResolveCurrentActionEntry();
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
             if (entry != null && entry.overrideNaturalExitNormalizedTime)
                 return entry.naturalExitNormalizedTime;
 
@@ -283,12 +268,17 @@ namespace Game.Presentation
 
         protected PlayerStateNaturalExitTarget GetConfiguredNaturalExitTarget(PlayerStateNaturalExitTarget fallbackTarget)
         {
-            SkillConfigEntry entry = ResolveCurrentActionEntry();
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
             if (entry == null)
                 return fallbackTarget;
 
             PlayerStateNaturalExitTarget configured = entry.naturalExitTarget;
             return configured != PlayerStateNaturalExitTarget.None ? configured : fallbackTarget;
+        }
+
+        private SkillConfigEntry ResolveCurrentPolicyEntry()
+        {
+            return ResolvePlayerActionEntry(PolicyActionId);
         }
 
         protected void GoToConfiguredNaturalExit(PlayerStateNaturalExitTarget fallbackTarget)

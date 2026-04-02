@@ -908,10 +908,23 @@ namespace Game.Presentation
 
             SanitizeSpawnedVfxInstance(instance);
             instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
+            ConfigureCueFollowDuration(instance, effect, followAnchor);
             ConfigureVfxMotion(instance, effect.motion, useWorldMotion);
             ApplyCueMotion(instance, effect, caster, useWorldMotion);
             EnsureCuePauseProxy(instance);
             return instance;
+        }
+
+        private static void ConfigureCueFollowDuration(GameObject instance, SkillVfxEffect effect, bool followAnchor)
+        {
+            if (instance == null || effect == null || !followAnchor || !effect.useFollowDuration)
+                return;
+
+            SkillCueFollowDetachProxy detachProxy = instance.GetComponent<SkillCueFollowDetachProxy>();
+            if (detachProxy == null)
+                detachProxy = instance.AddComponent<SkillCueFollowDetachProxy>();
+
+            detachProxy.Configure(effect.followDuration);
         }
 
         private static void SanitizeSpawnedVfxInstance(GameObject instance)

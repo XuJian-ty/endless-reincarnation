@@ -25,9 +25,6 @@ MonoBehaviour:
   - actionName: Skill3
     bindingPart: 
     displayName: "\u6280\u80FD\u69FD\u4F4D4"
-  - actionName: Skill4
-    bindingPart: 
-    displayName: "\u6280\u80FD5"
   - actionName: UseHealthPotion
     bindingPart: 
     displayName: "\u56DE\u8840\u836F\u5242"

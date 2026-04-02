@@ -31,20 +31,24 @@ namespace Game.Presentation
             _timer -= dt;
             if (_timer <= 0f)
             {
-                if (IsGrounded)
+                Vector2 moveInput = input.MoveInput;
+                bool isRunRequested = input.IsRunRequested;
+                CompleteWithPending(() =>
                 {
-                    if (input.MoveInput.sqrMagnitude > 0.01f)
+                    if (IsGrounded)
                     {
-                        bool isRunning = input.IsRunRequested;
-                        GoTo<MoveState>(s => s.InitialIsRunning = isRunning);
+                        if (moveInput.sqrMagnitude > 0.01f)
+                        {
+                            GoTo<MoveState>(s => s.InitialIsRunning = isRunRequested);
+                        }
+                        else
+                            GoTo<IdleState>();
                     }
                     else
-                        GoTo<IdleState>();
-                }
-                else
-                {
-                    GoTo<FallState>();
-                }
+                    {
+                        GoTo<FallState>();
+                    }
+                });
             }
         }
 

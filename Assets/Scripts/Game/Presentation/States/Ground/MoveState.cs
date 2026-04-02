@@ -17,6 +17,7 @@ namespace Game.Presentation
         public bool? InitialIsRunning { get; set; }
 
         private bool _isRunning;
+        protected override string PolicyActionId => _isRunning ? "NormalRun" : "NormalWalk";
 
         protected override void OnEnter()
         {
@@ -85,18 +86,6 @@ namespace Game.Presentation
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action)
-            => ResolveConfiguredPolicy(action, action switch
-            {
-                GameAction.Jump         => TransitionPolicy.Interrupt,
-                GameAction.NormalAttack => TransitionPolicy.Interrupt,
-                GameAction.Shoot        => TransitionPolicy.Interrupt,
-                GameAction.ShootCharge  => TransitionPolicy.Interrupt,
-                // MoveState 在 OnTick 中直接读取 input，无需将 Walk/Run 写入 _pending。
-                // 继承 base 的 Buffer 会每帧污染 _pending，导致攻击/技能结束后 CompleteWithPending
-                // 意外消费到残留的移动动作，引发状态机抖动。
-                GameAction.Walk         => TransitionPolicy.Ignore,
-                GameAction.Run          => TransitionPolicy.Ignore,
-                _                       => base.GetPolicyFor(action),
-            });
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
     }
 }
