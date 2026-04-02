@@ -2579,6 +2579,14 @@ namespace Game.Editor
                     Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", cue.offset);
                     Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", cue.rotationEuler);
                     Vector3 newScale = EditorGUILayout.Vector3Field("缩放", cue.scale);
+                    bool newUseFollowDuration = cue.useFollowDuration;
+                    float newFollowDuration = cue.followDuration;
+                    if (ShouldShowCueFollowDurationSettings(newAnchor))
+                    {
+                        newUseFollowDuration = EditorGUILayout.Toggle("启用跟随时长", cue.useFollowDuration);
+                        if (newUseFollowDuration)
+                            newFollowDuration = Mathf.Max(0f, EditorGUILayout.FloatField("跟随时长(秒)", cue.followDuration));
+                    }
                     SkillMotionSettings newMotion = CopyMotionSettings(cue.motion);
                     bool forceMotionApply = false;
                     if (ShouldShowCueMotionSettings(newAnchor))
@@ -2598,6 +2606,8 @@ namespace Game.Editor
                             Mathf.Max(0.01f, newScale.x),
                             Mathf.Max(0.01f, newScale.y),
                             Mathf.Max(0.01f, newScale.z));
+                        cue.useFollowDuration = ShouldShowCueFollowDurationSettings(newAnchor) && newUseFollowDuration;
+                        cue.followDuration = cue.useFollowDuration ? newFollowDuration : 0f;
                         cue.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
                         cue.destroyMode = newDestroyMode;
                         cue.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
@@ -3363,6 +3373,11 @@ namespace Game.Editor
             return anchor == CueAnchor.World;
         }
 
+        private static bool ShouldShowCueFollowDurationSettings(CueAnchor anchor)
+        {
+            return anchor != CueAnchor.World;
+        }
+
         private static bool ShouldShowDamageMotionSettings(DamageDetectionType detectionType, SkillDamageAnchor anchor)
         {
             return detectionType != DamageDetectionType.Collision && anchor == SkillDamageAnchor.World;
@@ -3542,6 +3557,8 @@ namespace Game.Editor
                         effect.offset = newOffset;
                         effect.rotationEuler = newRotationEuler;
                         effect.scale = ClampVector3(newScale, 0.01f);
+                        effect.useFollowDuration = false;
+                        effect.followDuration = 0f;
                         effect.motion = new SkillMotionSettings();
                         effect.destroyMode = SkillCueDestroyMode.NaturalDestroy;
                         effect.duration = 0f;
@@ -3663,6 +3680,14 @@ namespace Game.Editor
                     Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
                     Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                     Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
+                    bool newUseFollowDuration = effect.useFollowDuration;
+                    float newFollowDuration = effect.followDuration;
+                    if (ShouldShowCueFollowDurationSettings(newAnchor))
+                    {
+                        newUseFollowDuration = EditorGUILayout.Toggle("启用跟随时长", effect.useFollowDuration);
+                        if (newUseFollowDuration)
+                            newFollowDuration = Mathf.Max(0f, EditorGUILayout.FloatField("跟随时长(秒)", effect.followDuration));
+                    }
                     SkillMotionSettings newMotion = CopyMotionSettings(effect.motion);
                     bool forceMotionApply = false;
                     if (ShouldShowCueMotionSettings(newAnchor))
@@ -3682,6 +3707,8 @@ namespace Game.Editor
                             Mathf.Max(0.01f, newScale.x),
                             Mathf.Max(0.01f, newScale.y),
                             Mathf.Max(0.01f, newScale.z));
+                        effect.useFollowDuration = ShouldShowCueFollowDurationSettings(newAnchor) && newUseFollowDuration;
+                        effect.followDuration = effect.useFollowDuration ? newFollowDuration : 0f;
                         effect.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
                         effect.destroyMode = newDestroyMode;
                         effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
@@ -4416,20 +4443,25 @@ namespace Game.Editor
                 return;
             }
 
-            if (_previewClip != null)
-            {
-                if (!AnimationMode.InAnimationMode())
-                    AnimationMode.StartAnimationMode();
-
-                float sampleTime = Mathf.Clamp(time, 0f, _previewClip.length);
-                AnimationMode.BeginSampling();
-                AnimationMode.SampleAnimationClip(_previewTarget, _previewClip, sampleTime);
-                AnimationMode.EndSampling();
-            }
+            SamplePreviewClipPose(time);
 
             UpdateTimelinePreviewVfxInstances();
             ApplyPreviewPhysicsTransforms();
             UpdateScenePreviewCueInstance();
+        }
+
+        private void SamplePreviewClipPose(float time)
+        {
+            if (_previewTarget == null || _previewClip == null)
+                return;
+
+            if (!AnimationMode.InAnimationMode())
+                AnimationMode.StartAnimationMode();
+
+            float sampleTime = Mathf.Clamp(time, 0f, _previewClip.length);
+            AnimationMode.BeginSampling();
+            AnimationMode.SampleAnimationClip(_previewTarget, _previewClip, sampleTime);
+            AnimationMode.EndSampling();
         }
 
         private float GetPreviewTotalDuration()
@@ -10355,9 +10387,41 @@ namespace Game.Editor
             if (anchor == null)
                 return false;
 
+            float elapsed = Mathf.Max(0f, _previewTime - triggerTime);
+            if (cue.useFollowDuration && elapsed > cue.followDuration + 0.0001f)
+                return TryEvaluateDetachedPreviewCueTransform(cue, explicitTarget, triggerTime + cue.followDuration, out position, out rotation);
+
             position = anchor.TransformPoint(cue.offset);
             rotation = anchor.rotation * Quaternion.Euler(cue.rotationEuler);
             return true;
+        }
+
+        private bool TryEvaluateDetachedPreviewCueTransform(SkillVfxEffect cue, Transform explicitTarget, float detachTime, out Vector3 position, out Quaternion rotation)
+        {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+            if (cue == null || _previewTarget == null)
+                return false;
+
+            float restoreTime = _previewTime;
+            if (_previewClip != null)
+                SamplePreviewClipPose(detachTime);
+
+            Transform anchor = ResolveCueAnchorTransform(cue.anchor, cue, explicitTarget);
+            if (anchor == null)
+                anchor = _previewTarget.transform;
+
+            bool valid = anchor != null;
+            if (valid)
+            {
+                position = anchor.TransformPoint(cue.offset);
+                rotation = anchor.rotation * Quaternion.Euler(cue.rotationEuler);
+            }
+
+            if (_previewClip != null)
+                SamplePreviewClipPose(restoreTime);
+
+            return valid;
         }
 
         private void EnsureTimelinePreviewCueWorldOrigin(TimelinePreviewVfxInstance playback)

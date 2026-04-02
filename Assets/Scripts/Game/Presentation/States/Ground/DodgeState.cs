@@ -70,13 +70,7 @@ namespace Game.Presentation
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action)
-            => ResolveConfiguredPolicy(action, action switch
-            {
-                GameAction.Dodge         => TransitionPolicy.Ignore,
-                GameAction.Skill         => TransitionPolicy.Ignore,
-                GameAction.ChargeRelease => TransitionPolicy.Ignore,
-                _                        => TransitionPolicy.Buffer,
-            });
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
 
         private Vector3 ResolveDodgeDirection(Vector2 moveInput)
         {

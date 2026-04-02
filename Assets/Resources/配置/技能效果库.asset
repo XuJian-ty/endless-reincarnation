@@ -313,6 +313,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.97179085, z: -0.7401718}
               rotationEuler: {x: -0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -385,6 +387,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 0.5}
             rotationEuler: {x: 0, y: 0, z: 82.4}
             scale: {x: 1, y: 1, z: 1}
@@ -427,6 +431,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 0}
             rotationEuler: {x: 73.34457, y: 296.40793, z: 25.44244}
             scale: {x: 1, y: 1, z: 1}
@@ -581,6 +587,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -707,6 +715,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.97179085, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -779,6 +789,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 0.5}
             rotationEuler: {x: 0, y: 0, z: 82.4}
             scale: {x: 1, y: 1, z: 1}
@@ -821,6 +833,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 0}
             rotationEuler: {x: 73.34457, y: 296.40793, z: 25.44244}
             scale: {x: 1, y: 1, z: 1}
@@ -870,6 +884,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 8961541309960190529, guid: e9a35131ab737a044b03a8b09ee17b1d,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.8, z: 2.3999999}
             rotationEuler: {x: 0, y: 0, z: 80}
             scale: {x: 0.2, y: 0.2, z: 0.2}
@@ -1026,6 +1042,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: -0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -1098,6 +1116,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 8008210279060486150, guid: 5a970aecdd97bb24f8f68f4a327c07c3,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 1.5}
             rotationEuler: {x: -0, y: 300, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -1140,6 +1160,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 1.5}
             rotationEuler: {x: 0, y: 140, z: 180}
             scale: {x: 1, y: 1, z: 1}
@@ -1300,6 +1322,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -1426,6 +1450,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -1498,6 +1524,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 8008210279060486150, guid: 5a970aecdd97bb24f8f68f4a327c07c3,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 1.5}
             rotationEuler: {x: 0, y: 300, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -1540,6 +1568,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 1.5}
             rotationEuler: {x: 0, y: 140, z: 180}
             scale: {x: 1, y: 1, z: 1}
@@ -1589,6 +1619,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 8961541309960190529, guid: e9a35131ab737a044b03a8b09ee17b1d,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 2.4}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 0.2, y: 0.2, z: 0.2}
@@ -1751,6 +1783,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -1835,6 +1869,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2001595592669538821, guid: 432b6d8f6c1c7df4695b90df6c8db7c7,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.65, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -1884,6 +1920,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 8262102246949548658, guid: b28600130c843ab48b208c3cb19613d7,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.65, z: 0.3}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -1926,6 +1964,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.65, z: 0.3}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -2099,6 +2139,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -2225,6 +2267,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1625881847255917415, guid: 098b836f3d9958f4685d2ee911be8fef,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 1, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -2309,6 +2353,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2001595592669538821, guid: 432b6d8f6c1c7df4695b90df6c8db7c7,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.65, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -2358,6 +2404,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 8262102246949548658, guid: b28600130c843ab48b208c3cb19613d7,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.65, z: 0.3}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -2400,6 +2448,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 281455835102411622, guid: 0a870bb5ec529f942bb59c618bbf64d9,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.65, z: 0.3}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -2449,6 +2499,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 133775368961196409, guid: bc76775cfef64e148810da25addd410d,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 3.5}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -2491,6 +2543,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 3}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -2664,6 +2718,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -2748,6 +2804,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 4437629712069995043, guid: 24fab151083af074cbf45690a72006c0,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -2790,6 +2848,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2770607203840344508, guid: 2e8068baf55939d4f90645c3b54fa5a5,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -2948,12 +3008,12 @@ MonoBehaviour:
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_2
-          startTime: 1.3333334
+          startTime: 1.2
           triggerMode: 1
           activeDuration: 0.3
           activeDurationMode: 0
           repeatInterval: 0.10000001
-          repeatedAnchorMode: 0
+          repeatedAnchorMode: 1
           damageEffects:
           - detectionDuration: 0.033333335
             activationTime: 0
@@ -3026,6 +3086,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: -0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -3098,13 +3160,15 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6663020237317949801, guid: 1f0754f224af04141b10edc780c129e6,
               type: 3}
             anchor: 0
+            useFollowDuration: 1
+            followDuration: 1.2
             offset: {x: 0, y: 0, z: 10.654}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
             motion:
               enabled: 0
               mode: 0
-              speed: 1
+              speed: 0
               direction: {x: 0, y: 0, z: 1}
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
@@ -3139,7 +3203,7 @@ MonoBehaviour:
             duration: 0
         sfxEvents:
         - eventId: evt_0
-          startTime: 1.3666668
+          startTime: 1.2
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
@@ -3158,7 +3222,7 @@ MonoBehaviour:
             destroyMode: 0
             duration: 0
         - eventId: evt_5
-          startTime: 1.2
+          startTime: 1
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
@@ -3180,12 +3244,12 @@ MonoBehaviour:
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_2
-          startTime: 1.3333334
+          startTime: 1.2
           triggerMode: 1
           activeDuration: 0.3
           activeDurationMode: 0
           repeatInterval: 0.10000001
-          repeatedAnchorMode: 0
+          repeatedAnchorMode: 1
           damageEffects:
           - detectionDuration: 0.033333335
             activationTime: 0
@@ -3258,6 +3322,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.08045721, y: 0.9717909, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -3330,13 +3396,15 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6663020237317949801, guid: 1f0754f224af04141b10edc780c129e6,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 10.654}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
             motion:
               enabled: 0
               mode: 0
-              speed: 1
+              speed: 0
               direction: {x: 0, y: 0, z: 1}
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
@@ -3371,7 +3439,7 @@ MonoBehaviour:
             duration: 0
         sfxEvents:
         - eventId: evt_0
-          startTime: 1.3666668
+          startTime: 1.2
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
@@ -3390,7 +3458,7 @@ MonoBehaviour:
             destroyMode: 0
             duration: 0
         - eventId: evt_5
-          startTime: 1.2
+          startTime: 1
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
@@ -3477,6 +3545,8 @@ MonoBehaviour:
             companionVfxEffects:
             - particlePrefab: {fileID: 0}
               anchor: 0
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 1, y: 1, z: 1}
@@ -3564,6 +3634,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -3653,11 +3725,14 @@ MonoBehaviour:
           activeDurationMode: 1
           repeatInterval: 0.10000001
           vfxEffects:
-          - particlePrefab: {fileID: 0}
+          - particlePrefab: {fileID: 9013344612769080090, guid: 750e6a8bff11f514ea81b288569e4dc4,
+              type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
-            scale: {x: 1, y: 1, z: 1}
+            scale: {x: 0.2, y: 1, z: 1}
             motion:
               enabled: 0
               mode: 0
@@ -3791,6 +3866,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 8372332783136226562, guid: 426d5a46bb731d542b637d4e046fecb4,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -3833,6 +3910,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 7527748851774952376, guid: 4cd4d6f527a769b459efcf52faa79638,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -3875,6 +3954,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2071025297289623881, guid: 448772dc5fb1251449d5027dcd08b3ec,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -4079,6 +4160,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 385144991248866690, guid: 75918b807bcc63640a75c87a8de23749,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 1, y: 1, z: 1}
@@ -4151,6 +4234,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 8844124174356594635, guid: 9bf38af988b76044bb5ffcfe11d96f15,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -4330,6 +4415,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0.8980476, z: 0}
               rotationEuler: {x: -0, y: 0, z: 0}
               scale: {x: 1, y: 1, z: 1}
@@ -4395,6 +4482,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -4444,6 +4533,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 1}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -4585,6 +4676,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1020301050692611391, guid: 061c305cf54fbb24db098cf5c06d20ff,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0.8980476, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -4703,6 +4796,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6131207280537624799, guid: 35fa76ad6b6075b4c9e119ce43fb4414,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -4821,6 +4916,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1020301050692611391, guid: 061c305cf54fbb24db098cf5c06d20ff,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -4939,6 +5036,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 9014708122764640312, guid: 5928ad7d25f222844ae2467ab39174be,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5057,6 +5156,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1625881847255917415, guid: 098b836f3d9958f4685d2ee911be8fef,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5175,6 +5276,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1625881847255917415, guid: 098b836f3d9958f4685d2ee911be8fef,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5247,6 +5350,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -5296,6 +5401,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 3934439594000541907, guid: 44403ac3e96cc2b4b8ecbee3ffc19e92,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: -10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5338,6 +5445,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1863762097856787420, guid: f130c8ffc55db664aaf7d62fdf80264d,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5380,6 +5489,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 3934439594000541907, guid: 44403ac3e96cc2b4b8ecbee3ffc19e92,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5422,6 +5533,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1913877743864255190, guid: 28343e63f6273e948a25baef2944a5ac,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5464,6 +5577,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5506,6 +5621,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5647,6 +5764,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 7773608426833955299, guid: c7bc6ace95ed1e9438c2193f3724ba18,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0.8980476, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5758,6 +5877,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 7773608426833955299, guid: c7bc6ace95ed1e9438c2193f3724ba18,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0.8980476, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5869,6 +5990,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 7773608426833955299, guid: c7bc6ace95ed1e9438c2193f3724ba18,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -5934,6 +6057,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 40750468827784360, guid: 7766696b9c5c8d74cb0c68f4c5565f7d,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -5983,6 +6108,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 2}
             rotationEuler: {x: 0, y: -10, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -6025,6 +6152,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -6067,6 +6196,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 2}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -6210,6 +6341,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0.8980476, z: 0}
               rotationEuler: {x: -0, y: 0, z: 0}
               scale: {x: 1, y: 1, z: 1}
@@ -6275,6 +6408,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0.17940223, y: 1.2355455, z: 0.8696799}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -6324,6 +6459,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1796749963149706, guid: 7d9628d8dd1c41e40a689cba91859604,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 1}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -6465,6 +6602,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1020301050692611391, guid: 061c305cf54fbb24db098cf5c06d20ff,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0.8980476, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -6583,6 +6722,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6131207280537624799, guid: 35fa76ad6b6075b4c9e119ce43fb4414,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -6701,6 +6842,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1020301050692611391, guid: 061c305cf54fbb24db098cf5c06d20ff,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -6819,6 +6962,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 9014708122764640312, guid: 5928ad7d25f222844ae2467ab39174be,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -6937,6 +7082,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1625881847255917415, guid: 098b836f3d9958f4685d2ee911be8fef,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7055,6 +7202,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 1625881847255917415, guid: 098b836f3d9958f4685d2ee911be8fef,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0.8980476, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7127,6 +7276,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1879272669879180, guid: 15b9dd0ff0b73454aad08fc61f1d3084,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0.17940223, y: 1.2355455, z: 0.8696799}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -7176,6 +7327,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 3934439594000541907, guid: 44403ac3e96cc2b4b8ecbee3ffc19e92,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: -10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7218,6 +7371,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1863762097856787420, guid: f130c8ffc55db664aaf7d62fdf80264d,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7260,6 +7415,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 3934439594000541907, guid: 44403ac3e96cc2b4b8ecbee3ffc19e92,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7302,6 +7459,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1913877743864255190, guid: 28343e63f6273e948a25baef2944a5ac,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7344,6 +7503,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7386,6 +7547,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1508888276557069620, guid: 44ef4705f47af674e980697ae699df5e,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 3}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7527,6 +7690,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 7773608426833955299, guid: c7bc6ace95ed1e9438c2193f3724ba18,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0.8980476, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7638,6 +7803,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 7773608426833955299, guid: c7bc6ace95ed1e9438c2193f3724ba18,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0.8980476, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7749,6 +7916,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 7773608426833955299, guid: c7bc6ace95ed1e9438c2193f3724ba18,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.1809494, y: 1.18, z: 2.290977}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7860,6 +8029,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 7773608426833955299, guid: c7bc6ace95ed1e9438c2193f3724ba18,
                 type: 3}
               anchor: 1
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: -0.1809494, y: 1.18, z: 2.290977}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -7971,6 +8142,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 7773608426833955299, guid: c7bc6ace95ed1e9438c2193f3724ba18,
                 type: 3}
               anchor: 0
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0.15, y: 1.18, z: 1.5}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -8036,6 +8209,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 2}
             rotationEuler: {x: 0, y: -10, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -8078,6 +8253,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 2}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -8120,6 +8297,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 2}
             rotationEuler: {x: 0, y: 10, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -8162,6 +8341,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 2}
             rotationEuler: {x: 0, y: -5, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -8204,6 +8385,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6493559264762622796, guid: 8a42d3b66a622d3468e79f16bc6cb1d0,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.18, z: 2}
             rotationEuler: {x: 0, y: 5, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -8253,6 +8436,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 40750468827784360, guid: 7766696b9c5c8d74cb0c68f4c5565f7d,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: -0.12288, y: 1.1547331, z: 0.86650085}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -8529,6 +8714,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 7953274726775274605, guid: bde7d55263124c0aab0fb6f076f17514,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 0.5, y: 0.5, z: 0.5}
@@ -8578,6 +8765,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1498992060833090654, guid: 368fc731acac4aeeb94cd7544fbe6bb3,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1.5, z: 0}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 0.8, y: 0.8, z: 0.8}
@@ -8756,6 +8945,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 3688407426501259577, guid: db876033bd76ade45ab55f2b8fda3f8c,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1, z: 1}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -8805,6 +8996,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6217828449439956435, guid: 84faa950692e9c343a74bcb3eab8cd0d,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 1, z: 8}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -8969,11 +9162,11 @@ MonoBehaviour:
               hitStopTimeScale: 0
               pauseCameraLookDuringHitStop: 0
             onHitPhysicsEffects:
-            - effectType: 0
-              distance: 1
+            - effectType: 1
+              distance: 2
               height: 1
               durationMode: 0
-              duration: 0.2
+              duration: 0.1
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
@@ -9056,11 +9249,11 @@ MonoBehaviour:
               hitStopTimeScale: 0
               pauseCameraLookDuringHitStop: 0
             onHitPhysicsEffects:
-            - effectType: 0
-              distance: 1
+            - effectType: 1
+              distance: 2
               height: 1
               durationMode: 0
-              duration: 0.2
+              duration: 0.1
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
@@ -9143,11 +9336,11 @@ MonoBehaviour:
               hitStopTimeScale: 0
               pauseCameraLookDuringHitStop: 0
             onHitPhysicsEffects:
-            - effectType: 0
-              distance: 1
+            - effectType: 1
+              distance: 2
               height: 1
               durationMode: 0
-              duration: 0.2
+              duration: 0.1
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
@@ -9176,6 +9369,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2074141471970691052, guid: 7a78238904957d64484e569385d55c14,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.9, z: 0}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -9236,6 +9431,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2074141471970691052, guid: 7a78238904957d64484e569385d55c14,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.9, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -9296,6 +9493,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 2074141471970691052, guid: 7a78238904957d64484e569385d55c14,
               type: 3}
             anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.9, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -9714,7 +9913,19 @@ MonoBehaviour:
               loop: 0
               destroyMode: 0
               duration: 0
-        physicsEvents: []
+        physicsEvents:
+        - eventId: evt_12
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
         attributeEvents: []
         vfxEvents:
         - eventId: evt_1
@@ -9727,6 +9938,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1919708242137258, guid: e60d36cff17a1ce4db49ef54f9e72f61,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: -0.33019447, y: 0.8, z: 0.32247448}
             rotationEuler: {x: -0, y: 320, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -9776,6 +9989,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1919708242137258, guid: e60d36cff17a1ce4db49ef54f9e72f61,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.7, z: 0}
             rotationEuler: {x: -0, y: 320, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -9825,6 +10040,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1919708242137258, guid: e60d36cff17a1ce4db49ef54f9e72f61,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: -0.08066392, y: 0.30260742, z: -0.25700474}
             rotationEuler: {x: -0, y: 6.0000005, z: 100}
             scale: {x: 1, y: 1, z: 1}
@@ -9874,6 +10091,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1919708242137258, guid: e60d36cff17a1ce4db49ef54f9e72f61,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0.6, z: 0}
             rotationEuler: {x: -0, y: 320, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -9961,155 +10180,6 @@ MonoBehaviour:
           repeatInterval: 0.1
           sfxEffects:
           - audioClip: {fileID: 8300000, guid: 3a724c657492a6348bfdfd275c4c4f88, type: 3}
-            anchor: 0
-            offset: {x: 0, y: 0, z: 0}
-            loop: 0
-            destroyMode: 0
-            duration: 0
-        speedEvents: []
-        cameraEvents: []
-    - groupName: Skill4
-      entries:
-      - skillId: Skill4
-        effectDescription: "\u4E3B\u52A83\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-        mutationTalentCost: 0
-        displayName: "\u4E3B\u52A84"
-        animationTrigger: Skill4
-        ignoreAnimationDamageEvents: 1
-        damageEvents:
-        - eventId: evt_0
-          startTime: 0
-          triggerMode: 0
-          activeDuration: 0
-          activeDurationMode: 0
-          repeatInterval: 0.1
-          repeatedAnchorMode: 0
-          damageEffects:
-          - detectionDuration: 0
-            activationTime: 0
-            activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
-            hitDeduplicationScope: 0
-            detectionType: 0
-            hitLayerName: Enemy
-            anchor: 0
-            shape: 1
-            centerOffset: {x: 0, y: 0, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 1.5
-            sectorAngle: 180
-            boxSize: {x: 1, y: 1, z: 1}
-            colliderNodeName: 
-            rayOriginOffset: {x: 0, y: 0, z: 0}
-            rayMaxDistance: 50
-            rayRadius: 0
-            motion:
-              enabled: 0
-              mode: 0
-              speed: 0
-              direction: {x: 0, y: 0, z: 1}
-              duration: 0.3
-              pathControlPointA: {x: 0, y: 0, z: 0.4}
-              pathControlPointB: {x: 0, y: 0, z: 0.8}
-              pathEndOffset: {x: 0, y: 0, z: 1.2}
-              pathProgressCurve:
-                serializedVersion: 2
-                m_Curve:
-                - serializedVersion: 3
-                  time: 0
-                  value: 0
-                  inSlope: 0
-                  outSlope: 1
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                - serializedVersion: 3
-                  time: 1
-                  value: 1
-                  inSlope: 1
-                  outSlope: 0
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                m_PreInfinity: 2
-                m_PostInfinity: 2
-                m_RotationOrder: 4
-              retargetOnDescendingPath: 0
-            companionVfxEffects: []
-            onHitDamageEffects:
-            - damageMagnitude: 1
-            onHitStopEffect:
-              hitStopDuration: 0
-              hitStopTimeScale: 0
-              pauseCameraLookDuringHitStop: 0
-            onHitPhysicsEffects: []
-            onHitAttributeEffects: []
-            onHitVfxEffects: []
-            onHitSfxEffects: []
-        physicsEvents: []
-        attributeEvents: []
-        vfxEvents:
-        - eventId: evt_1
-          startTime: 0
-          triggerMode: 0
-          activeDuration: 0
-          activeDurationMode: 0
-          repeatInterval: 0.1
-          vfxEffects:
-          - particlePrefab: {fileID: 5088021964179563093, guid: 7857477d059a4f8468d21c3c08f8db80,
-              type: 3}
-            anchor: 0
-            offset: {x: 0, y: 0, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            scale: {x: 1, y: 1, z: 1}
-            motion:
-              enabled: 0
-              mode: 0
-              speed: 0
-              direction: {x: 0, y: 0, z: 1}
-              duration: 0.3
-              pathControlPointA: {x: 0, y: 0, z: 0.4}
-              pathControlPointB: {x: 0, y: 0, z: 0.8}
-              pathEndOffset: {x: 0, y: 0, z: 1.2}
-              pathProgressCurve:
-                serializedVersion: 2
-                m_Curve:
-                - serializedVersion: 3
-                  time: 0
-                  value: 0
-                  inSlope: 0
-                  outSlope: 1
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                - serializedVersion: 3
-                  time: 1
-                  value: 1
-                  inSlope: 1
-                  outSlope: 0
-                  tangentMode: 0
-                  weightedMode: 0
-                  inWeight: 0
-                  outWeight: 0
-                m_PreInfinity: 2
-                m_PostInfinity: 2
-                m_RotationOrder: 4
-              retargetOnDescendingPath: 0
-            destroyMode: 0
-            duration: 0
-        sfxEvents:
-        - eventId: evt_2
-          startTime: 0
-          triggerMode: 0
-          activeDuration: 0
-          activeDurationMode: 0
-          repeatInterval: 0.1
-          sfxEffects:
-          - audioClip: {fileID: 8300000, guid: cd5261ff219a3e44b8550d58337e4cc2, type: 3}
             anchor: 0
             offset: {x: 0, y: 0, z: 0}
             loop: 0
@@ -10845,6 +10915,8 @@ MonoBehaviour:
             - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
                 type: 3}
               anchor: 0
+              useFollowDuration: 0
+              followDuration: 0
               offset: {x: 0, y: 0, z: 0}
               rotationEuler: {x: 0, y: 0, z: 0}
               scale: {x: 1, y: 1, z: 1}
@@ -10910,6 +10982,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 1467176678092317590, guid: 3d2577ae792621e468ceedab40731658,
               type: 3}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -11315,6 +11389,8 @@ MonoBehaviour:
           vfxEffects:
           - particlePrefab: {fileID: 0}
             anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 0}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}

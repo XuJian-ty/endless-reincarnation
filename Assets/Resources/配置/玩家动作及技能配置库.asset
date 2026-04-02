@@ -421,7 +421,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u8FD1\u6218\u666E\u653B1\u6BB5"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: 0a5529fa3e5ccf14a9ad51c19c25adb8, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 3
@@ -465,7 +465,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u8FD1\u6218\u666E\u653B2\u6BB5"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: c0aff5baf5deec541ba7f8940336e6ff, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 3
@@ -509,7 +509,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u8FD1\u6218\u666E\u653B3\u6BB5"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: 5a6d32c2c1f51474b85a69fd0e233bd5, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 3
@@ -553,7 +553,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u8FD1\u6218\u666E\u653B4\u6BB5"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: 0397e81dc09ea5c43a586d22c9119395, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 3
@@ -959,7 +959,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u8FDC\u7A0B\u666E\u653B(\u70B9\u5C04)"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: 10f0977d71782124580ac4082ed48fec, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 2
@@ -1001,7 +1001,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: 9f8916be7d382354f88e884c337c49d3, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 2
@@ -1076,8 +1076,8 @@ MonoBehaviour:
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u4E3B\u52A80"
-    description: "\u4E3B\u52A80\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-    skillIcon: {fileID: 21300000, guid: e04ee1c07f9b69c409b0da6bfae8dd0c, type: 3}
+    description: "\u817E\u7A7A\u5E76\u53EC\u5524\u4E00\u4E2A\u98CE\u7403\uFF0C\u98CE\u7403\u4F1A\u5438\u5F15\u654C\u4EBA\uFF0C\u540C\u65F6\u83B7\u5F975\u79D2\u768420%\u5438\u8840\u6548\u679C"
+    skillIcon: {fileID: 21300000, guid: f3d8e8fa15cb318409c369ba5bdcbde7, type: 3}
     isPassive: 0
     entryGroup: 1
     supportedAttackModes: 3
@@ -1126,8 +1126,8 @@ MonoBehaviour:
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u4E3B\u52A81"
-    description: "\u4E3B\u52A81\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-    skillIcon: {fileID: 21300000, guid: 81fcbee4e7a5a154da69526fdfb7e121, type: 3}
+    description: "\u5411\u524D\u884C\u629B\u5C04\u4E00\u4E2A\u9B54\u6CD5\u70B8\u5F39\uFF0C\u5728\u7EC8\u70B9\u5904\u7206\u70B8\u5E76\u9020\u6210\u5DE8\u989D\u4F24\u5BB3\u4EE5\u53CA\u51FB\u98DE\u6548\u679C"
+    skillIcon: {fileID: 21300000, guid: 1d7345b200d08a443a745dd2c3295381, type: 3}
     isPassive: 0
     entryGroup: 1
     supportedAttackModes: 3
@@ -1176,14 +1176,14 @@ MonoBehaviour:
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u4E3B\u52A82"
-    description: "\u4E3B\u52A82\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-    skillIcon: {fileID: 21300000, guid: e04ee1c07f9b69c409b0da6bfae8dd0c, type: 3}
+    description: "\u671D\u524D\u65B9\u53D1\u5C04\u4E09\u679A\u56DE\u65CB\u9556\uFF0C\u6765\u56DE\u90FD\u4F1A\u547D\u4E2D\u654C\u4EBA\u5E76\u9020\u6210\u4F24\u5BB3\u548C\u62C9\u62FD\u6548\u679C"
+    skillIcon: {fileID: 21300000, guid: d5a6ca1cc7480b94abc7d7d1d7dea21e, type: 3}
     isPassive: 0
     entryGroup: 1
     supportedAttackModes: 3
     talentCost: 0
     mpCost: 0
-    cooldownSeconds: 3
+    cooldownSeconds: 0
     actionPolicies:
     - action: 1
       policy: 1
@@ -1226,8 +1226,8 @@ MonoBehaviour:
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u4E3B\u52A83"
-    description: "\u4E3B\u52A83\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-    skillIcon: {fileID: 21300000, guid: 81fcbee4e7a5a154da69526fdfb7e121, type: 3}
+    description: "\u671D\u524D\u65B9\u8FDB\u884C\u56DB\u6BB5\u6325\u780D\uFF0C\u9020\u6210\u591A\u6BB5\u4F24\u5BB3\u548C\u51FB\u9000\u6548\u679C"
+    skillIcon: {fileID: 21300000, guid: 2bcfdc2c662e2ce4e8647e0f2c56f2d7, type: 3}
     isPassive: 0
     entryGroup: 1
     supportedAttackModes: 3
@@ -1275,9 +1275,9 @@ MonoBehaviour:
     skillId: passive_1
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A81"
-    description: "\u88AB\u52A81\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u751F\u547D"
+    description: "\u88AB\u52A81\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u751F\u547D\u503C\u4E0A\u9650"
+    skillIcon: {fileID: 21300000, guid: f2bfad970222e0f42b479cc7f0aab86b, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1293,9 +1293,9 @@ MonoBehaviour:
     skillId: passive_2
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A82"
-    description: "\u88AB\u52A82\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u6CD5\u529B"
+    description: "\u88AB\u52A82\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u6CD5\u529B\u503C\u4E0A\u9650"
+    skillIcon: {fileID: 21300000, guid: 226d23e25332bc24ebd16f8c2c729802, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1311,9 +1311,9 @@ MonoBehaviour:
     skillId: passive_3
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A83"
-    description: "\u88AB\u52A83\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u653B\u51FB"
+    description: "\u88AB\u52A83\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u653B\u51FB\u529B"
+    skillIcon: {fileID: 21300000, guid: 934ec598bef031a459ac6615e556bea9, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1329,9 +1329,9 @@ MonoBehaviour:
     skillId: passive_4
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A84"
-    description: "\u88AB\u52A84\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u9632\u5FA1"
+    description: "\u88AB\u52A84\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u9632\u5FA1\u529B"
+    skillIcon: {fileID: 21300000, guid: 520572b812067034eb2aa6249a2bcea4, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1347,9 +1347,9 @@ MonoBehaviour:
     skillId: passive_5
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A85"
-    description: "\u88AB\u52A85\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u56DE\u8840"
+    description: "\u88AB\u52A85\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u6BCF\u79D2\u56DE\u8840"
+    skillIcon: {fileID: 21300000, guid: d99367028b31efc46a0fdeea29a265d9, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1365,9 +1365,9 @@ MonoBehaviour:
     skillId: passive_6
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A86"
-    description: "\u88AB\u52A86\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u56DE\u84DD"
+    description: "\u88AB\u52A86\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u6BCF\u79D2\u56DE\u84DD"
+    skillIcon: {fileID: 21300000, guid: 5318d5d69b783d04d9ba0dd5e48ae7d9, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1383,9 +1383,9 @@ MonoBehaviour:
     skillId: passive_7
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A87"
-    description: "\u88AB\u52A87\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u66B4\u51FB"
+    description: "\u88AB\u52A87\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u66B4\u51FB\u7387"
+    skillIcon: {fileID: 21300000, guid: cecd09eec8c93fd46ade3428527d8a31, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1401,9 +1401,9 @@ MonoBehaviour:
     skillId: passive_8
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A88"
-    description: "\u88AB\u52A88\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u7206\u4F24"
+    description: "\u88AB\u52A88\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u66B4\u51FB\u4F24\u5BB3"
+    skillIcon: {fileID: 21300000, guid: e18e7b323474bcd45b3bd33bc563a11f, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1419,9 +1419,9 @@ MonoBehaviour:
     skillId: passive_9
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A89"
-    description: "\u88AB\u52A89\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u653B\u901F"
+    description: "\u88AB\u52A89\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u653B\u51FB\u901F\u5EA6"
+    skillIcon: {fileID: 21300000, guid: 593dc6a917958cc4f9b99e0a13ce44a3, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1437,9 +1437,9 @@ MonoBehaviour:
     skillId: passive_10
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A810"
-    description: "\u88AB\u52A810\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u79FB\u901F"
+    description: "\u88AB\u52A810\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u79FB\u52A8\u901F\u5EA6"
+    skillIcon: {fileID: 21300000, guid: cc555354af0e9264997f52d1f6333355, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1455,9 +1455,9 @@ MonoBehaviour:
     skillId: passive_11
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A811"
-    description: "\u88AB\u52A811\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u5438\u8840"
+    description: "\u88AB\u52A811\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u5438\u8840\u6BD4\u4F8B"
+    skillIcon: {fileID: 21300000, guid: 4eb9674088364c34b90c0d136c3f2030, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1473,9 +1473,9 @@ MonoBehaviour:
     skillId: passive_12
     skillEffectDatabase: {fileID: 0}
     passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u88AB\u52A812"
-    description: "\u88AB\u52A812\uFF0C\u89E3\u9501\u540E\u4F1A\u7ACB\u5373\u751F\u6548\u3002"
-    skillIcon: {fileID: 0}
+    displayName: "\u589E\u4F24"
+    description: "\u88AB\u52A812\uFF0C\u89E3\u9501\u540E\u6C38\u4E45\u589E\u52A0\u589E\u4F24\u6BD4\u4F8B"
+    skillIcon: {fileID: 21300000, guid: c4619d9acdfb95149aea2ae4c258d98a, type: 3}
     isPassive: 1
     entryGroup: 2
     supportedAttackModes: 3
@@ -1487,57 +1487,6 @@ MonoBehaviour:
     overrideNaturalExitNormalizedTime: 0
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
-  - actionId: Skill4
-    skillId: Skill4
-    skillEffectDatabase: {fileID: 11400000, guid: 7c3684380ee60164aa555bcd268f8e8e,
-      type: 2}
-    passiveSkillEffectDatabase: {fileID: 0}
-    displayName: "\u4E3B\u52A84"
-    description: "\u4E3B\u52A83\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-    skillIcon: {fileID: 21300000, guid: 81fcbee4e7a5a154da69526fdfb7e121, type: 3}
-    isPassive: 0
-    entryGroup: 1
-    supportedAttackModes: 3
-    talentCost: 2
-    mpCost: 0
-    cooldownSeconds: 0
-    actionPolicies:
-    - action: 1
-      policy: 1
-    - action: 3
-      policy: 2
-    - action: 9
-      policy: 0
-    - action: 4
-      policy: 1
-    - action: 7
-      policy: 2
-    - action: 5
-      policy: 1
-    - action: 8
-      policy: 2
-    - action: 11
-      policy: 1
-    - action: 12
-      policy: 1
-    - action: 10
-      policy: 1
-    pendingReleaseRules:
-    - pendingAction: 1
-      normalizedTime: 0.9
-    - pendingAction: 4
-      normalizedTime: 0.9
-    - pendingAction: 5
-      normalizedTime: 0.9
-    - pendingAction: 11
-      normalizedTime: 0.9
-    - pendingAction: 12
-      normalizedTime: 0.9
-    - pendingAction: 10
-      normalizedTime: 0.9
-    overrideNaturalExitNormalizedTime: 1
-    naturalExitNormalizedTime: 1
-    naturalExitTarget: 1
   formActionMappings:
   - actionSlot: 0
     meleeActionId: Attack0

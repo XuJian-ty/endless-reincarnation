@@ -38,19 +38,6 @@ namespace Game.Presentation
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action)
-            => ResolveConfiguredPolicy(action, action switch
-            {
-                GameAction.Dodge         => TransitionPolicy.Interrupt,
-                GameAction.Skill         => TransitionPolicy.Interrupt,
-                GameAction.AirAttack     => TransitionPolicy.Interrupt,
-                GameAction.FallAttack    => TransitionPolicy.Interrupt,
-                GameAction.Jump          => TransitionPolicy.Ignore,
-                GameAction.ChargeStart   => TransitionPolicy.Ignore,
-                GameAction.ChargeRelease => TransitionPolicy.Ignore,
-                GameAction.NormalAttack  => TransitionPolicy.Ignore,
-                GameAction.Walk          => TransitionPolicy.Ignore,
-                GameAction.Run           => TransitionPolicy.Ignore,
-                _                        => TransitionPolicy.Ignore,
-            });
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
     }
 }

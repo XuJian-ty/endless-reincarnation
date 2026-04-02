@@ -315,6 +315,14 @@ namespace Game.Data
         [Tooltip("Caster=施法者，Target=目标，World=世界位置。")]
         public CueAnchor anchor = CueAnchor.Caster;
 
+        [InspectorLabel("启用跟随时长")]
+        [Tooltip("仅非 World 挂点使用。勾选后，特效会先跟随挂点一段时间，到时解除父子关系并固定在当前世界位置与朝向。")]
+        public bool useFollowDuration = false;
+
+        [InspectorLabel("跟随时长(秒)")]
+        [Tooltip("仅在启用跟随时长后使用。0 表示生成后立刻解除跟随。")]
+        [Min(0f)] public float followDuration = 0f;
+
         [InspectorLabel("位置偏移")]
         [Tooltip("相对挂点的局部偏移，单位：米。")]
         public Vector3 offset = Vector3.zero;
