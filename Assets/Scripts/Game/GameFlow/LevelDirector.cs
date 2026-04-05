@@ -41,7 +41,9 @@ namespace Game.GameFlow
         private Coroutine _bossSpawnRoutine;
         private Coroutine _bossResultRoutine;
         private float _bossSpawnReadyTime = -1f;
+        private float _bossResultReadyTime = -1f;
         private float _guardianStateCheckTimer;
+        private string _defeatedBossId = string.Empty;
 
         private void Awake()
         {
@@ -117,6 +119,7 @@ namespace Game.GameFlow
 
             _bossDefeated = true;
             _bossSpawned = true;
+            _defeatedBossId = string.IsNullOrWhiteSpace(bossId) ? string.Empty : bossId.Trim();
             if (_bossSpawnRoutine != null)
             {
                 StopCoroutine(_bossSpawnRoutine);
@@ -124,7 +127,7 @@ namespace Game.GameFlow
             }
             _bossSpawnReadyTime = -1f;
 
-            _bossResultRoutine = StartCoroutine(ShowBossResultPanelAfterDelay(bossId));
+            ScheduleBossResultPanel(_defeatedBossId, BossResultPanelDelay);
         }
 
         public string GetSnapshotId()
@@ -145,6 +148,11 @@ namespace Game.GameFlow
                 bossSpawnRemainingTime = _bossSpawnRoutine != null
                     ? Mathf.Max(0f, _bossSpawnReadyTime - Time.time)
                     : 0f,
+                defeatedBossId = _defeatedBossId,
+                hasPendingBossResult = _bossResultRoutine != null,
+                bossResultRemainingTime = _bossResultRoutine != null
+                    ? Mathf.Max(0f, _bossResultReadyTime - Time.time)
+                    : 0f,
             };
             return true;
         }
@@ -156,6 +164,7 @@ namespace Game.GameFlow
 
             _bossSpawned = snapshot.bossSpawned;
             _bossDefeated = snapshot.bossDefeated;
+            _defeatedBossId = string.IsNullOrWhiteSpace(snapshot.defeatedBossId) ? string.Empty : snapshot.defeatedBossId.Trim();
 
             if (_bossSpawnRoutine != null)
             {
@@ -163,7 +172,22 @@ namespace Game.GameFlow
                 _bossSpawnRoutine = null;
             }
 
+            if (_bossResultRoutine != null)
+            {
+                StopCoroutine(_bossResultRoutine);
+                _bossResultRoutine = null;
+            }
+
             _bossSpawnReadyTime = -1f;
+            _bossResultReadyTime = -1f;
+            if (_bossDefeated && !string.IsNullOrWhiteSpace(_defeatedBossId))
+            {
+                ScheduleBossResultPanel(
+                    _defeatedBossId,
+                    snapshot.hasPendingBossResult ? snapshot.bossResultRemainingTime : 0f);
+                return;
+            }
+
             if (!snapshot.hasPendingBossSpawn || _bossSpawned || _bossDefeated)
                 return;
 
@@ -268,10 +292,23 @@ namespace Game.GameFlow
         private System.Collections.IEnumerator ShowBossResultPanelAfterDelay(string bossId)
         {
             if (BossResultPanelDelay > 0f)
-                yield return new WaitForSeconds(BossResultPanelDelay);
+                yield return new WaitForSeconds(Mathf.Max(0f, _bossResultReadyTime - Time.time));
 
             ShowBossResultPanel(bossId);
+            _bossResultReadyTime = -1f;
             _bossResultRoutine = null;
+        }
+
+        private void ScheduleBossResultPanel(string bossId, float delay)
+        {
+            if (_bossResultRoutine != null)
+            {
+                StopCoroutine(_bossResultRoutine);
+                _bossResultRoutine = null;
+            }
+
+            _bossResultReadyTime = Time.time + Mathf.Max(0f, delay);
+            _bossResultRoutine = StartCoroutine(ShowBossResultPanelAfterDelay(bossId));
         }
 
         private void ShowBossResultPanel(string bossId)

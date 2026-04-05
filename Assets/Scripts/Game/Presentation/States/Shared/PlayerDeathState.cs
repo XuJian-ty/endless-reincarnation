@@ -39,6 +39,7 @@ namespace Game.Presentation
                 _timer -= dt;
                 if (AnimNearConfiguredEnd(0.95f) || _timer <= 0f)
                 {
+                    _timer = 0f;
                     _awaitingCompletionDelay = true;
                     _completionDelayTimer = CompletionDelay;
                 }
