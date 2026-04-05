@@ -476,7 +476,7 @@ namespace Game.Presentation
                         continue;
 
                     float delay = Mathf.Max(0f, effect.onHitTriggerDelay);
-                    ScheduleOnHitEffect(delay, () => ApplyAttributeEffect(effect, ctx, targetSnapshot));
+                    ScheduleOnHitEffect(delay, () => ApplyAttributeEffect(effect, ctx, targetSnapshot, cueRuntime));
                 }
             }
         }
@@ -751,14 +751,15 @@ namespace Game.Presentation
         private static void ApplyAttributeEffect(
             SkillAttributeEffect effect,
             ISkillExecutionContext ctx,
-            List<Transform> detectedTargets)
+            List<Transform> detectedTargets,
+            SkillCueRuntimeScope cueRuntime)
         {
             if (effect == null)
                 return;
 
             var targets = ResolveTargets(effect.targetMode, ctx, detectedTargets);
             for (int i = 0; i < targets.Count; i++)
-                ApplyAttributeToTarget(targets[i], effect, null);
+                ApplyAttributeToTarget(targets[i], effect, cueRuntime);
         }
 
         private static void ApplyAttributeToTarget(Transform target, SkillAttributeEffect effect, SkillCueRuntimeScope cueRuntime)

@@ -369,7 +369,7 @@ namespace Game.UI
             }
 
             private readonly PreviewSkillExecutionContext _context = new PreviewSkillExecutionContext();
-            private readonly SkillCueRuntimeScope _cueRuntime = new SkillCueRuntimeScope();
+            private SkillCueRuntimeScope _cueRuntime = new SkillCueRuntimeScope();
             private readonly List<GameObject> _audioInstances = new List<GameObject>();
             private SharedSkillDefinition _definition;
             private float _elapsed;
@@ -385,6 +385,7 @@ namespace Game.UI
                 if (definition == null || caster == null)
                     return;
 
+                _cueRuntime = new SkillCueRuntimeScope();
                 _definition = definition;
                 _elapsed = 0f;
                 _running = true;
