@@ -3,7 +3,122 @@ guid: 4a83500d23984784692d4c109528414d
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 前镜片
+    second: {fileID: 2100000, guid: a229ce46e3ef4a8997daaf4a021f285b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 准星
+    second: {fileID: 2100000, guid: 738a2b27c38c47d88dad858ef238a320, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 后镜片
+    second: {fileID: 2100000, guid: bdf246bd972c4c46b392f31160df694a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 螺栓
+    second: {fileID: 2100000, guid: 816b006d46944fe5b177c4aeb04b3d48, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 红点镜分色
+    second: {fileID: 2100000, guid: a229ce46e3ef4a8997daaf4a021f285b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 枪机
+    second: {fileID: 2100000, guid: e668e5f70a5d4ee79c46e3301a27e960, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 红点镜
+    second: {fileID: 2100000, guid: bdf246bd972c4c46b392f31160df694a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 缓冲
+    second: {fileID: 2100000, guid: 7699f5afce57471da1da5465268854fa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 弹簧
+    second: {fileID: 2100000, guid: 816b006d46944fe5b177c4aeb04b3d48, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 导气
+    second: {fileID: 2100000, guid: 76f2d31d984b42f5824a7271beb17705, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 枪口
+    second: {fileID: 2100000, guid: 10f1a9cdf41142d1bc6c4f7a6502b4fd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 消音器
+    second: {fileID: 2100000, guid: 342d0877d7024d1792662a12c572de6f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 导轨片2
+    second: {fileID: 2100000, guid: 44f7fa4c9b3047b79035eb9e5bd37bb6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 弹头2
+    second: {fileID: 2100000, guid: 3eecf6fb7454442fb2fef26c3694bc07, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 弹壳2
+    second: {fileID: 2100000, guid: 2e7ed4981f914c1ca92dc1a8e1afd65f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 弹匣弹簧
+    second: {fileID: 2100000, guid: 816b006d46944fe5b177c4aeb04b3d48, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: logo
+    second: {fileID: 2100000, guid: 836c79c080064ac0946fbb0aa43214b0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: logo 4
+    second: {fileID: 2100000, guid: f1ad1cfcebb944d98f8ea01c5c6e9743, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: logo 3
+    second: {fileID: 2100000, guid: 8f5572606fad41a7a50b3d7b2ed66215, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 红点准星
+    second: {fileID: 2100000, guid: 6392e846529d42caad435530ad3fc2a4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 红点镜片
+    second: {fileID: 2100000, guid: a229ce46e3ef4a8997daaf4a021f285b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 消音器外壳
+    second: {fileID: 2100000, guid: 342d0877d7024d1792662a12c572de6f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: 托腮板
+    second: {fileID: 2100000, guid: a229ce46e3ef4a8997daaf4a021f285b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

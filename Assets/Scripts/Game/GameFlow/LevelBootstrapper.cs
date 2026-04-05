@@ -369,6 +369,7 @@ namespace Game.GameFlow
 
             RestoreOpenedChests(snapshot);
             RestoreEnemySnapshots(snapshot);
+            UnityEngine.Object.FindFirstObjectByType<LevelDirector>()?.CompleteRuntimeSnapshotRestore();
             RestoreShopSnapshots(snapshot);
             RestoreGroundDrops(snapshot);
         }
