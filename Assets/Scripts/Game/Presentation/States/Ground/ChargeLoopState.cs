@@ -4,7 +4,7 @@ using Game.Data;
 namespace Game.Presentation
 {
     /// <summary>
-    /// 近战蓄力循环状态：蓄力开始动画播完后进入，持续循环直到释放或取消。
+    /// 近战蓄力循环状态：蓄力开始动画播完后进入，持续循环直到内部切到蓄力释放。
     /// 代码驱动进入（由 ChargeStartState.OnTick 检测动画接近结束后切过来）。
     /// </summary>
     public class ChargeLoopState : PlayerStateBase
@@ -28,7 +28,7 @@ namespace Game.Presentation
                     return;
                 }
 
-                GoTo<IdleState>();
+                GoTo<ChargeReleaseState>();
             }
         }
 

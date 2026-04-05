@@ -335,6 +335,10 @@ namespace Game.Data
         [Tooltip("生成特效时附加的局部缩放。")]
         public Vector3 scale = Vector3.one;
 
+        [InspectorLabel("生效时间(秒)")]
+        [Tooltip("仅命中特效效果使用。命中成功后延迟多久才真正生成该特效。0 表示立即生效。")]
+        [Min(0f)] public float onHitTriggerDelay = 0f;
+
         [InspectorLabel("移动设置")]
         [Tooltip("用于实现剑气、前进中的扇形特效等。")]
         public SkillMotionSettings motion = new SkillMotionSettings();
@@ -363,6 +367,10 @@ namespace Game.Data
         [Tooltip("相对挂点的局部偏移，单位：米。")]
         public Vector3 offset = Vector3.zero;
 
+        [InspectorLabel("生效时间(秒)")]
+        [Tooltip("仅命中音效效果使用。命中成功后延迟多久才真正播放该音效。0 表示立即生效。")]
+        [Min(0f)] public float onHitTriggerDelay = 0f;
+
         [InspectorLabel("循环播放")]
         [Tooltip("开启后使用循环 AudioSource，通常应搭配“指定秒数销毁”或“状态退出销毁”。")]
         public bool loop = false;
@@ -379,6 +387,10 @@ namespace Game.Data
     [Serializable]
     public class SkillHitDamageEffect
     {
+        [InspectorLabel("生效时间(秒)")]
+        [Tooltip("命中成功后延迟多久才真正结算该段伤害。0 表示立即生效。")]
+        [Min(0f)] public float onHitTriggerDelay = 0f;
+
         [InspectorLabel("伤害倍率")]
         [Tooltip("当前命中伤害效果的最终伤害倍率。")]
         [Min(0f)] public float damageMagnitude = 1f;
@@ -539,6 +551,10 @@ namespace Game.Data
         [Tooltip("击退/拉拽/击飞/眩晕 只用于命中物理效果。位移/腾空/霸体/无敌 只用于顶层物理效果。方向由代码按效果类型自动计算。")]
         public PhysicsEffectType effectType = PhysicsEffectType.Knockback;
 
+        [InspectorLabel("生效时间(秒)")]
+        [Tooltip("仅命中物理效果使用。命中成功后延迟多久才真正施加该物理效果。0 表示立即生效。")]
+        [Min(0f)] public float onHitTriggerDelay = 0f;
+
         [InspectorLabel("距离")]
         [Tooltip("击退/拉拽/位移 使用该距离；击飞表示水平距离。")]
         [Min(0f)] public float distance = 1f;
@@ -592,6 +608,10 @@ namespace Game.Data
         [InspectorLabel("作用目标")]
         [Tooltip("Self=自身，DetectedTargets=本次伤害检测命中的所有目标。")]
         public SkillTargetMode targetMode = SkillTargetMode.Self;
+
+        [InspectorLabel("生效时间(秒)")]
+        [Tooltip("仅命中属性效果使用。命中成功后延迟多久才真正施加该属性效果。0 表示立即生效。")]
+        [Min(0f)] public float onHitTriggerDelay = 0f;
 
         [InspectorLabel("数值")]
         [Tooltip("正数表示增加或恢复，负数表示减少。")]
@@ -1250,28 +1270,34 @@ namespace Game.Data
                 return 0f;
 
             float duration = 0f;
+            if (effect.onHitDamageEffects != null)
+            {
+                for (int i = 0; i < effect.onHitDamageEffects.Count; i++)
+                    duration = Mathf.Max(duration, GetOnHitDamageEffectLifetime(effect.onHitDamageEffects[i]));
+            }
+
             if (effect.onHitPhysicsEffects != null)
             {
                 for (int i = 0; i < effect.onHitPhysicsEffects.Count; i++)
-                    duration = Mathf.Max(duration, GetPhysicsEffectLifetime(effect.onHitPhysicsEffects[i]));
+                    duration = Mathf.Max(duration, GetOnHitPhysicsEffectLifetime(effect.onHitPhysicsEffects[i]));
             }
 
             if (effect.onHitAttributeEffects != null)
             {
                 for (int i = 0; i < effect.onHitAttributeEffects.Count; i++)
-                    duration = Mathf.Max(duration, GetAttributeEffectLifetime(effect.onHitAttributeEffects[i]));
+                    duration = Mathf.Max(duration, GetOnHitAttributeEffectLifetime(effect.onHitAttributeEffects[i]));
             }
 
             if (effect.onHitVfxEffects != null)
             {
                 for (int i = 0; i < effect.onHitVfxEffects.Count; i++)
-                    duration = Mathf.Max(duration, GetVfxEffectLifetime(effect.onHitVfxEffects[i]));
+                    duration = Mathf.Max(duration, GetOnHitVfxEffectLifetime(effect.onHitVfxEffects[i]));
             }
 
             if (effect.onHitSfxEffects != null)
             {
                 for (int i = 0; i < effect.onHitSfxEffects.Count; i++)
-                    duration = Mathf.Max(duration, GetSfxEffectLifetime(effect.onHitSfxEffects[i]));
+                    duration = Mathf.Max(duration, GetOnHitSfxEffectLifetime(effect.onHitSfxEffects[i]));
             }
 
             return duration;
@@ -1335,6 +1361,20 @@ namespace Game.Data
                 : Mathf.Max(0f, effect.duration);
         }
 
+        public static float GetOnHitDamageEffectLifetime(SkillHitDamageEffect effect)
+        {
+            return effect == null
+                ? 0f
+                : Mathf.Max(0f, effect.onHitTriggerDelay);
+        }
+
+        public static float GetOnHitPhysicsEffectLifetime(SkillPhysicsEffect effect)
+        {
+            return effect == null
+                ? 0f
+                : Mathf.Max(0f, effect.onHitTriggerDelay) + GetPhysicsEffectLifetime(effect);
+        }
+
         public static float GetAttributeEffectLifetime(SkillAttributeEffect effect)
         {
             if (effect == null)
@@ -1345,6 +1385,13 @@ namespace Game.Data
                 : effect.durationMode == SkillEffectDurationMode.UntilStateExit
                     ? 0f
                     : Mathf.Max(0f, effect.duration);
+        }
+
+        public static float GetOnHitAttributeEffectLifetime(SkillAttributeEffect effect)
+        {
+            return effect == null
+                ? 0f
+                : Mathf.Max(0f, effect.onHitTriggerDelay) + GetAttributeEffectLifetime(effect);
         }
 
         private static bool HasUntilStateExitTopLevelEffects(List<SkillPhysicsEvent> list)
@@ -1413,6 +1460,13 @@ namespace Game.Data
             return EstimateParticlePrefabDuration(effect.particlePrefab);
         }
 
+        public static float GetOnHitVfxEffectLifetime(SkillVfxEffect effect)
+        {
+            return effect == null
+                ? 0f
+                : Mathf.Max(0f, effect.onHitTriggerDelay) + GetVfxEffectLifetime(effect);
+        }
+
         public static float GetSfxEffectLifetime(SkillSfxEffect effect)
         {
             if (effect == null)
@@ -1428,6 +1482,13 @@ namespace Game.Data
                 return effect.duration;
 
             return effect.audioClip != null ? effect.audioClip.length : 0f;
+        }
+
+        public static float GetOnHitSfxEffectLifetime(SkillSfxEffect effect)
+        {
+            return effect == null
+                ? 0f
+                : Mathf.Max(0f, effect.onHitTriggerDelay) + GetSfxEffectLifetime(effect);
         }
 
         private float EvaluateSpeedMultiplier(float time, bool stateScopeEnded, bool castSpeed)

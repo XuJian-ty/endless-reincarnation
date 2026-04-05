@@ -12,6 +12,7 @@ namespace Game.Editor
         private SerializedProperty _groupsProperty;
         private SkillConfigDatabaseSO _skillConfigDatabase;
         private readonly Dictionary<string, bool> _playerSkillGroupFoldouts = new Dictionary<string, bool>();
+        private bool _pendingSaveAsset;
 
         private void OnEnable()
         {
@@ -22,6 +23,7 @@ namespace Game.Editor
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+            _pendingSaveAsset = false;
 
             if (_groupsProperty == null)
             {
@@ -77,6 +79,9 @@ namespace Game.Editor
             }
 
             serializedObject.ApplyModifiedProperties();
+
+            if (_pendingSaveAsset && target != null)
+                AssetDatabase.SaveAssetIfDirty(target);
         }
 
         private void DrawConfiguredPlayerEntries(SerializedProperty skillGroupsProperty)
@@ -152,7 +157,7 @@ namespace Game.Editor
             }
         }
 
-        private static void DrawAnimationEntry(SerializedProperty entryProperty, int entryIndex, bool isDefaultEntry = false)
+        private void DrawAnimationEntry(SerializedProperty entryProperty, int entryIndex, bool isDefaultEntry = false)
         {
             if (entryProperty == null)
                 return;
@@ -173,8 +178,69 @@ namespace Game.Editor
 
                 using (new EditorGUI.DisabledScope(true))
                     EditorGUILayout.PropertyField(animationIdProperty);
-                EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative(nameof(CharacterAnimationEntry.clip)));
+                DrawClipField(entryProperty, animationIdProperty);
             }
+        }
+
+        private void DrawClipField(SerializedProperty entryProperty, SerializedProperty animationIdProperty)
+        {
+            if (entryProperty == null)
+                return;
+
+            string animationId = animationIdProperty != null ? animationIdProperty.stringValue?.Trim() : string.Empty;
+            CharacterAnimationEntry entry = FindAnimationEntry(animationId);
+            AnimationClip currentClip = entry != null ? entry.clip : null;
+
+            EditorGUI.BeginChangeCheck();
+            AnimationClip newClip = (AnimationClip)EditorGUILayout.ObjectField("动画片段", currentClip, typeof(AnimationClip), false);
+            if (!EditorGUI.EndChangeCheck())
+                return;
+
+            CharacterAnimationLibrarySO library = target as CharacterAnimationLibrarySO;
+            if (entry == null || library == null)
+                return;
+
+            if (library != null)
+                Undo.RecordObject(library, "修改动画片段引用");
+
+            entry.clip = newClip;
+            EditorUtility.SetDirty(library);
+            _pendingSaveAsset = true;
+
+            GUI.changed = true;
+        }
+
+        private CharacterAnimationEntry FindAnimationEntry(string animationId)
+        {
+            CharacterAnimationLibrarySO library = target as CharacterAnimationLibrarySO;
+            if (library?.groups == null || string.IsNullOrWhiteSpace(animationId))
+                return null;
+
+            for (int groupIndex = 0; groupIndex < library.groups.Count; groupIndex++)
+            {
+                CharacterAnimationGroupDefinition group = library.groups[groupIndex];
+                if (group?.skillGroups == null)
+                    continue;
+
+                for (int variantGroupIndex = 0; variantGroupIndex < group.skillGroups.Count; variantGroupIndex++)
+                {
+                    CharacterAnimationVariantGroupDefinition variantGroup = group.skillGroups[variantGroupIndex];
+                    if (variantGroup?.entries == null)
+                        continue;
+
+                    for (int entryIndex = 0; entryIndex < variantGroup.entries.Count; entryIndex++)
+                    {
+                        CharacterAnimationEntry entry = variantGroup.entries[entryIndex];
+                        if (entry != null
+                            && string.Equals(entry.animationId?.Trim(), animationId, System.StringComparison.Ordinal))
+                        {
+                            return entry;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         private bool TryGetPlayerEntryGroup(SerializedProperty variantGroupProperty, out PlayerSkillEntryGroup entryGroup)

@@ -29,13 +29,15 @@ namespace Game.Editor
 
                 var statField = property.FindPropertyRelative("statField");
                 var targetMode = property.FindPropertyRelative("targetMode");
+                bool isOnHit = IsOnHitContext(property);
                 y = DrawProperty(y, position, statField);
-                y = DrawTargetMode(y, position, targetMode, IsOnHitContext(property));
+                y = DrawTargetMode(y, position, targetMode, isOnHit);
+                if (isOnHit)
+                    y = DrawProperty(y, position, property.FindPropertyRelative("onHitTriggerDelay"));
                 y = DrawProperty(y, position, property.FindPropertyRelative("magnitude"));
                 y = DrawProperty(y, position, property.FindPropertyRelative("usePercent"));
 
                 bool showDuration = ShouldShowDuration(statField);
-                bool isOnHit = IsOnHitContext(property);
                 if (showDuration)
                 {
                     var durationMode = property.FindPropertyRelative("durationMode");
@@ -74,6 +76,8 @@ namespace Game.Editor
             var statField = property.FindPropertyRelative("statField");
             height += GetChildHeight(statField);
             height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            if (IsOnHitContext(property))
+                height += GetChildHeight(property.FindPropertyRelative("onHitTriggerDelay"));
             height += GetChildHeight(property.FindPropertyRelative("magnitude"));
             height += GetChildHeight(property.FindPropertyRelative("usePercent"));
 

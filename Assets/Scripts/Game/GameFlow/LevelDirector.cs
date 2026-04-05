@@ -16,6 +16,7 @@ namespace Game.GameFlow
     public class LevelDirector : MonoBehaviour
     {
         private const float GuardianStateCheckInterval = 0.2f;
+        private const float BossResultPanelDelay = 1.5f;
         private const string BossArrivalNoticeMessage = "最终Boss即将降临！";
 
         // 配置由 ConfigManager 单例提供，无需挂载
@@ -38,6 +39,7 @@ namespace Game.GameFlow
         private bool _bossSpawned;
         private bool _bossDefeated;
         private Coroutine _bossSpawnRoutine;
+        private Coroutine _bossResultRoutine;
         private float _bossSpawnReadyTime = -1f;
         private float _guardianStateCheckTimer;
 
@@ -98,6 +100,9 @@ namespace Game.GameFlow
                 StopCoroutine(_bossSpawnRoutine);
                 _bossSpawnReadyTime = -1f;
             }
+
+            if (_bossResultRoutine != null)
+                StopCoroutine(_bossResultRoutine);
         }
 
         private void OnGuardianDied()
@@ -119,7 +124,7 @@ namespace Game.GameFlow
             }
             _bossSpawnReadyTime = -1f;
 
-            ShowBossResultPanel(bossId);
+            _bossResultRoutine = StartCoroutine(ShowBossResultPanelAfterDelay(bossId));
         }
 
         public string GetSnapshotId()
@@ -258,6 +263,15 @@ namespace Game.GameFlow
 
             _bossSpawnRoutine = null;
             _bossSpawnReadyTime = -1f;
+        }
+
+        private System.Collections.IEnumerator ShowBossResultPanelAfterDelay(string bossId)
+        {
+            if (BossResultPanelDelay > 0f)
+                yield return new WaitForSeconds(BossResultPanelDelay);
+
+            ShowBossResultPanel(bossId);
+            _bossResultRoutine = null;
         }
 
         private void ShowBossResultPanel(string bossId)
