@@ -1595,7 +1595,13 @@ namespace Game.Editor
                     if (!DoesOnHitAttributeEffectApplyToTarget(effect, target, hit.hitTargets))
                         continue;
 
-                    ApplyPreviewAttributeEffect(ref value, effect, field, referenceValue, hit.hitTime, resourceMode);
+                    ApplyPreviewAttributeEffect(
+                        ref value,
+                        effect,
+                        field,
+                        referenceValue,
+                        hit.hitTime + Mathf.Max(0f, effect.onHitTriggerDelay),
+                        resourceMode);
                 }
             }
         }
@@ -2823,10 +2829,12 @@ namespace Game.Editor
                 if (isExpanded)
                 {
                     EditorGUI.BeginChangeCheck();
+                    float newOnHitTriggerDelay = Mathf.Max(0f, EditorGUILayout.FloatField("生效时间(秒)", effect.onHitTriggerDelay));
                     float newDamageMagnitude = Mathf.Max(0f, EditorGUILayout.FloatField("伤害倍率", effect.damageMagnitude));
                     if (EditorGUI.EndChangeCheck())
                     {
                         Undo.RecordObject(_database, "Edit Nested Hit Damage Effect");
+                        effect.onHitTriggerDelay = newOnHitTriggerDelay;
                         effect.damageMagnitude = newDamageMagnitude;
                         MarkDatabaseDirty();
                     }
@@ -2909,6 +2917,7 @@ namespace Game.Editor
                 {
                     EditorGUI.BeginChangeCheck();
                     PhysicsEffectType newEffectType = DrawPhysicsEffectTypePopup(effect.effectType, true);
+                    float newOnHitTriggerDelay = Mathf.Max(0f, EditorGUILayout.FloatField("生效时间(秒)", effect.onHitTriggerDelay));
                     float newDistance = effect.distance;
                     float newHeight = effect.height;
                     if (UsesPhysicsDistance(newEffectType))
@@ -2920,6 +2929,7 @@ namespace Game.Editor
                     {
                         Undo.RecordObject(_database, "Edit Nested Physics Effect");
                         effect.effectType = newEffectType;
+                        effect.onHitTriggerDelay = newOnHitTriggerDelay;
                         effect.distance = newDistance;
                         effect.height = newHeight;
                         effect.duration = newDuration;
@@ -3429,6 +3439,7 @@ namespace Game.Editor
                     int targetModeIndex = effect.targetMode == SkillTargetMode.DetectedTargets ? 1 : 0;
                     targetModeIndex = EditorGUILayout.Popup("作用目标", targetModeIndex, new[] { "自身", "命中目标" });
                     SkillTargetMode newTargetMode = targetModeIndex == 1 ? SkillTargetMode.DetectedTargets : SkillTargetMode.Self;
+                    float newOnHitTriggerDelay = Mathf.Max(0f, EditorGUILayout.FloatField("生效时间(秒)", effect.onHitTriggerDelay));
                     float newMagnitude = EditorGUILayout.FloatField("数值", effect.magnitude);
                     bool newUsePercent = EditorGUILayout.Toggle("按比例计算", effect.usePercent);
                     float newDuration = effect.duration;
@@ -3440,6 +3451,7 @@ namespace Game.Editor
                         Undo.RecordObject(_database, "Edit Nested Attribute Effect");
                         effect.statField = newStatField;
                         effect.targetMode = newTargetMode;
+                        effect.onHitTriggerDelay = newOnHitTriggerDelay;
                         effect.magnitude = newMagnitude;
                         effect.usePercent = newUsePercent;
                         effect.duration = showDuration ? newDuration : 0f;
@@ -3680,6 +3692,7 @@ namespace Game.Editor
                     Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
                     Vector3 newRotationEuler = EditorGUILayout.Vector3Field("旋转偏移", effect.rotationEuler);
                     Vector3 newScale = EditorGUILayout.Vector3Field("缩放", effect.scale);
+                    float newOnHitTriggerDelay = Mathf.Max(0f, EditorGUILayout.FloatField("生效时间(秒)", effect.onHitTriggerDelay));
                     bool newUseFollowDuration = effect.useFollowDuration;
                     float newFollowDuration = effect.followDuration;
                     if (ShouldShowCueFollowDurationSettings(newAnchor))
@@ -3707,6 +3720,7 @@ namespace Game.Editor
                             Mathf.Max(0.01f, newScale.x),
                             Mathf.Max(0.01f, newScale.y),
                             Mathf.Max(0.01f, newScale.z));
+                        effect.onHitTriggerDelay = newOnHitTriggerDelay;
                         effect.useFollowDuration = ShouldShowCueFollowDurationSettings(newAnchor) && newUseFollowDuration;
                         effect.followDuration = effect.useFollowDuration ? newFollowDuration : 0f;
                         effect.motion = ShouldShowCueMotionSettings(newAnchor) ? newMotion : new SkillMotionSettings();
@@ -3781,6 +3795,7 @@ namespace Game.Editor
                     AudioClip newAudioClip = (AudioClip)EditorGUILayout.ObjectField("音效片段", effect.audioClip, typeof(AudioClip), false);
                     CueAnchor newAnchor = DrawCueAnchorPopup("挂点", effect.anchor, OnHitCueAnchors, OnHitCueAnchorLabels);
                     Vector3 newOffset = EditorGUILayout.Vector3Field("位置偏移", effect.offset);
+                    float newOnHitTriggerDelay = Mathf.Max(0f, EditorGUILayout.FloatField("生效时间(秒)", effect.onHitTriggerDelay));
                     bool newLoop = EditorGUILayout.Toggle("循环播放", effect.loop);
                     SkillCueDestroyMode newDestroyMode = (SkillCueDestroyMode)EditorGUILayout.EnumPopup("销毁方式", effect.destroyMode);
                     float newDuration = effect.duration;
@@ -3792,6 +3807,7 @@ namespace Game.Editor
                         effect.audioClip = newAudioClip;
                         effect.anchor = newAnchor;
                         effect.offset = newOffset;
+                        effect.onHitTriggerDelay = newOnHitTriggerDelay;
                         effect.loop = newLoop;
                         effect.destroyMode = newDestroyMode;
                         effect.duration = newDestroyMode == SkillCueDestroyMode.Timed ? newDuration : 0f;
@@ -4666,19 +4682,20 @@ namespace Game.Editor
                 float detectionDuration = SharedSkillDefinition.GetDamageDetectionWindowLifetime(effect);
                 float hitTime = lastTriggerTime + detectionDuration;
                 float onHitTail = Mathf.Max(
+                    GetPreviewOnHitDamageTailDuration(effect),
                     GetPreviewOnHitPhysicsTailDuration(effect),
                     GetPreviewOnHitAttributeTailDuration(effect));
 
                 if (effect.onHitVfxEffects != null)
                 {
                     for (int vfxIndex = 0; vfxIndex < effect.onHitVfxEffects.Count; vfxIndex++)
-                        onHitTail = Mathf.Max(onHitTail, GetVfxPlaybackDuration(effect.onHitVfxEffects[vfxIndex], hitTime));
+                        onHitTail = Mathf.Max(onHitTail, GetOnHitVfxPlaybackDuration(effect.onHitVfxEffects[vfxIndex], hitTime));
                 }
 
                 if (effect.onHitSfxEffects != null)
                 {
                     for (int sfxIndex = 0; sfxIndex < effect.onHitSfxEffects.Count; sfxIndex++)
-                        onHitTail = Mathf.Max(onHitTail, GetSfxPlaybackDuration(effect.onHitSfxEffects[sfxIndex], hitTime));
+                        onHitTail = Mathf.Max(onHitTail, GetOnHitSfxPlaybackDuration(effect.onHitSfxEffects[sfxIndex], hitTime));
                 }
 
                 duration = Mathf.Max(duration, detectionDuration + onHitTail);
@@ -4694,7 +4711,19 @@ namespace Game.Editor
 
             float duration = 0f;
             for (int i = 0; i < effect.onHitPhysicsEffects.Count; i++)
-                duration = Mathf.Max(duration, SharedSkillDefinition.GetPhysicsEffectLifetime(effect.onHitPhysicsEffects[i]));
+                duration = Mathf.Max(duration, SharedSkillDefinition.GetOnHitPhysicsEffectLifetime(effect.onHitPhysicsEffects[i]));
+
+            return duration;
+        }
+
+        private static float GetPreviewOnHitDamageTailDuration(SkillDamageEffect effect)
+        {
+            if (effect?.onHitDamageEffects == null)
+                return 0f;
+
+            float duration = 0f;
+            for (int i = 0; i < effect.onHitDamageEffects.Count; i++)
+                duration = Mathf.Max(duration, SharedSkillDefinition.GetOnHitDamageEffectLifetime(effect.onHitDamageEffects[i]));
 
             return duration;
         }
@@ -4706,7 +4735,7 @@ namespace Game.Editor
 
             float duration = 0f;
             for (int i = 0; i < effect.onHitAttributeEffects.Count; i++)
-                duration = Mathf.Max(duration, SharedSkillDefinition.GetAttributeEffectLifetime(effect.onHitAttributeEffects[i]));
+                duration = Mathf.Max(duration, SharedSkillDefinition.GetOnHitAttributeEffectLifetime(effect.onHitAttributeEffects[i]));
 
             return duration;
         }
@@ -4725,6 +4754,15 @@ namespace Game.Editor
             return SharedSkillDefinition.GetVfxEffectLifetime(effect);
         }
 
+        private float GetOnHitVfxPlaybackDuration(SkillVfxEffect effect, float hitTime)
+        {
+            if (effect == null)
+                return 0f;
+
+            float delay = Mathf.Max(0f, effect.onHitTriggerDelay);
+            return delay + GetVfxPlaybackDuration(effect, hitTime + delay);
+        }
+
         private float GetSfxPlaybackDuration(SkillSfxEffect effect, float triggerTime)
         {
             if (effect == null)
@@ -4740,6 +4778,15 @@ namespace Game.Editor
                 return effect.duration;
 
             return SharedSkillDefinition.GetSfxEffectLifetime(effect);
+        }
+
+        private float GetOnHitSfxPlaybackDuration(SkillSfxEffect effect, float hitTime)
+        {
+            if (effect == null)
+                return 0f;
+
+            float delay = Mathf.Max(0f, effect.onHitTriggerDelay);
+            return delay + GetSfxPlaybackDuration(effect, hitTime + delay);
         }
 
         private static MethodInfo ResolveAudioUtilMethod(string methodName, params System.Type[] parameterTypes)
@@ -4958,7 +5005,8 @@ namespace Game.Editor
                     for (int effectIndex = 0; effectIndex < hit.effect.onHitVfxEffects.Count; effectIndex++)
                     {
                         SkillVfxEffect effect = hit.effect.onHitVfxEffects[effectIndex];
-                        float duration = GetVfxPlaybackDuration(effect, hit.hitTime);
+                        float onHitTriggerTime = hit.hitTime + Mathf.Max(0f, effect?.onHitTriggerDelay ?? 0f);
+                        float duration = GetVfxPlaybackDuration(effect, onHitTriggerTime);
                         if (effect?.particlePrefab == null || duration <= 0f)
                             continue;
 
@@ -4968,12 +5016,12 @@ namespace Game.Editor
                         if (!_isPlaying && IsSceneEditingOnHitCue(hit.eventIndex, hit.effectIndex, effectIndex))
                             continue;
 
-                        if (_previewTime + 0.0001f < hit.hitTime || _previewTime > hit.hitTime + duration + 0.0001f)
+                        if (_previewTime + 0.0001f < onHitTriggerTime || _previewTime > onHitTriggerTime + duration + 0.0001f)
                             continue;
 
                         string key = GetTimelinePreviewOnHitVfxKey(hit.eventIndex, hit.triggerIndex, hit.effectIndex, effectIndex, target);
                         activeKeys.Add(key);
-                        TimelinePreviewVfxInstance playback = EnsureTimelinePreviewVfxInstance(key, effect, TimelineTrackType.Damage, hit.eventIndex, effectIndex, hit.triggerIndex, hit.hitTime, target);
+                        TimelinePreviewVfxInstance playback = EnsureTimelinePreviewVfxInstance(key, effect, TimelineTrackType.Damage, hit.eventIndex, effectIndex, hit.triggerIndex, onHitTriggerTime, target);
                         if (playback != null)
                             SimulateTimelinePreviewVfx(playback, Mathf.Max(0f, _previewTime - playback.triggerTime));
                     }
@@ -5299,6 +5347,9 @@ namespace Game.Editor
                             continue;
                         if (!IsOnHitSfxVisible(hit.eventIndex, hit.effectIndex, effectIndex))
                             continue;
+                        float onHitTriggerTime = hit.hitTime + Mathf.Max(0f, effect.onHitTriggerDelay);
+                        if (_previewTime + 0.0001f < onHitTriggerTime)
+                            continue;
 
                         string key = $"{hit.eventIndex}:{hit.triggerIndex}:{hit.effectIndex}:{effectIndex}:{target.GetInstanceID()}";
                         if (_timelinePreviewHitSfxKeys.Add(key))
@@ -5333,6 +5384,9 @@ namespace Game.Editor
                     {
                         SkillSfxEffect effect = hit.effect.onHitSfxEffects[effectIndex];
                         if (effect?.audioClip == null)
+                            continue;
+                        float onHitTriggerTime = hit.hitTime + Mathf.Max(0f, effect.onHitTriggerDelay);
+                        if (_previewTime + 0.0001f < onHitTriggerTime)
                             continue;
 
                         string key = $"{hit.eventIndex}:{hit.triggerIndex}:{hit.effectIndex}:{effectIndex}:{target.GetInstanceID()}";
@@ -5476,7 +5530,11 @@ namespace Game.Editor
                         if (effect == null)
                             continue;
 
-                        ApplyPreviewPhysicsEffectToTarget(target, _previewTarget.transform.position, effect, hit.hitTime);
+                        ApplyPreviewPhysicsEffectToTarget(
+                            target,
+                            _previewTarget.transform.position,
+                            effect,
+                            hit.hitTime + Mathf.Max(0f, effect.onHitTriggerDelay));
                     }
                 }
             }
@@ -6454,7 +6512,7 @@ namespace Game.Editor
             {
                 SkillPhysicsEffect effect = effects[i];
                 if (effect != null)
-                    names.Add(GetPhysicsEffectDisplayName(effect.effectType));
+                    names.Add($"{GetPhysicsEffectDisplayName(effect.effectType)}{FormatOnHitDelaySuffix(effect.onHitTriggerDelay)}");
             }
 
             return string.Join("、", names);
@@ -6476,8 +6534,11 @@ namespace Game.Editor
                         : $"{effect.magnitude:+0.##;-0.##;0}";
                     string text = $"{GetStatFieldDisplayName(effect.statField)} {valueText}";
                     string durationSuffix = GetAttributeEffectDurationSuffix(effect);
+                    string delaySuffix = FormatOnHitDelaySuffix(effect.onHitTriggerDelay);
                     if (!string.IsNullOrEmpty(durationSuffix))
                         text += durationSuffix;
+                    if (!string.IsNullOrEmpty(delaySuffix))
+                        text += delaySuffix;
                     names.Add(text);
                 }
             }
@@ -6675,6 +6736,12 @@ namespace Game.Editor
             return effect.duration > 0f ? $" {effect.duration:0.##}s" : string.Empty;
         }
 
+        private static string FormatOnHitDelaySuffix(float delay)
+        {
+            float resolved = Mathf.Max(0f, delay);
+            return resolved > 0f ? $" @{resolved:0.##}s" : string.Empty;
+        }
+
         private static string GetStatFieldDisplayName(SkillStatField statField)
         {
             return statField switch
@@ -6749,7 +6816,7 @@ namespace Game.Editor
             {
                 SkillHitDamageEffect effect = effects[i];
                 if (effect != null)
-                    values.Add(effect.damageMagnitude.ToString("0.##"));
+                    values.Add($"{effect.damageMagnitude:0.##}{FormatOnHitDelaySuffix(effect.onHitTriggerDelay)}");
             }
 
             return string.Join("、", values);
@@ -6773,7 +6840,7 @@ namespace Game.Editor
             {
                 SkillVfxEffect effect = effects[i];
                 if (effect?.particlePrefab != null)
-                    names.Add(effect.particlePrefab.name);
+                    names.Add($"{effect.particlePrefab.name}{FormatOnHitDelaySuffix(effect.onHitTriggerDelay)}");
             }
 
             return string.Join("、", names);
@@ -6789,7 +6856,7 @@ namespace Game.Editor
             {
                 SkillSfxEffect effect = effects[i];
                 if (effect?.audioClip != null)
-                    names.Add(effect.audioClip.name);
+                    names.Add($"{effect.audioClip.name}{FormatOnHitDelaySuffix(effect.onHitTriggerDelay)}");
             }
 
             return string.Join("、", names);
@@ -9585,8 +9652,10 @@ namespace Game.Editor
             if (cameraEvent == null || _previewTarget == null)
                 return;
 
-            Vector3 basisPosition = _previewTarget.transform.position;
-            Quaternion basisRotation = Quaternion.Euler(0f, _previewTarget.transform.eulerAngles.y, 0f);
+            Transform previewTransform = _previewTarget.transform;
+            Vector3 basisPosition = previewTransform.position;
+            Quaternion basisRotation = Quaternion.Euler(0f, previewTransform.eulerAngles.y, 0f);
+            TryCaptureCameraPreviewSnapshot(cameraEvent, out basisPosition, out basisRotation);
             Vector3 lookAtPosition = ResolveCameraPreviewLookAtPosition();
             float handleSize = HandleUtility.GetHandleSize(lookAtPosition);
             Color oldColor = Handles.color;
@@ -9684,6 +9753,36 @@ namespace Game.Editor
             }
 
             Handles.color = oldColor;
+        }
+
+        private bool TryCaptureCameraPreviewSnapshot(SkillCameraEvent cameraEvent, out Vector3 snapshotPosition, out Quaternion snapshotRotation)
+        {
+            snapshotPosition = Vector3.zero;
+            snapshotRotation = Quaternion.identity;
+            if (cameraEvent == null || _previewTarget == null)
+                return false;
+
+            Transform previewTransform = _previewTarget.transform;
+            if (previewTransform == null)
+                return false;
+
+            float restoreTime = _previewTime;
+            RestorePreviewPhysicsTransforms();
+            _previewTime = cameraEvent.startTime;
+            if (_previewClip != null)
+                SamplePreviewClipPose(cameraEvent.startTime);
+            ApplyPreviewPhysicsTransforms();
+
+            snapshotPosition = previewTransform.position;
+            snapshotRotation = Quaternion.Euler(0f, previewTransform.eulerAngles.y, 0f);
+
+            RestorePreviewPhysicsTransforms();
+            _previewTime = restoreTime;
+            if (_previewClip != null)
+                SamplePreviewClipPose(restoreTime);
+            ApplyPreviewPhysicsTransforms();
+
+            return true;
         }
 
         private Vector3 ResolveCameraPreviewLookAtPosition()
@@ -10077,17 +10176,21 @@ namespace Game.Editor
 
         private static string GetVfxEffectSummary(SkillVfxEffect effect)
         {
-            return effect?.particlePrefab != null ? effect.particlePrefab.name : string.Empty;
+            return effect?.particlePrefab != null
+                ? $"{effect.particlePrefab.name}{FormatOnHitDelaySuffix(effect.onHitTriggerDelay)}"
+                : string.Empty;
         }
 
         private static string GetSfxEffectSummary(SkillSfxEffect effect)
         {
-            return effect?.audioClip != null ? effect.audioClip.name : string.Empty;
+            return effect?.audioClip != null
+                ? $"{effect.audioClip.name}{FormatOnHitDelaySuffix(effect.onHitTriggerDelay)}"
+                : string.Empty;
         }
 
         private static string GetHitDamageEffectSummary(SkillHitDamageEffect effect)
         {
-            return effect != null ? $"倍率 {effect.damageMagnitude:0.##}" : string.Empty;
+            return effect != null ? $"倍率 {effect.damageMagnitude:0.##}{FormatOnHitDelaySuffix(effect.onHitTriggerDelay)}" : string.Empty;
         }
 
         private static string GetAttributeEffectSummary(SkillAttributeEffect effect)
@@ -10097,7 +10200,7 @@ namespace Game.Editor
 
             string targetText = effect.targetMode == SkillTargetMode.DetectedTargets ? "命中目标" : "自身";
             string valueText = effect.usePercent ? $"{effect.magnitude:0.##}%" : effect.magnitude.ToString("0.##");
-            return $"{targetText} {GetStatFieldDisplayName(effect.statField)} {valueText}{GetAttributeEffectDurationSuffix(effect)}";
+            return $"{targetText} {GetStatFieldDisplayName(effect.statField)} {valueText}{GetAttributeEffectDurationSuffix(effect)}{FormatOnHitDelaySuffix(effect.onHitTriggerDelay)}";
         }
 
         private string GetDamageEffectFoldoutKey(int eventIndex, int damageEffectIndex)

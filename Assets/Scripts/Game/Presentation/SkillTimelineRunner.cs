@@ -87,7 +87,7 @@ namespace Game.Presentation
         private EventState[] _sfxStates;
         private CameraEventState[] _cameraStates;
         private readonly List<ActiveDamageWindow> _activeDamageWindows = new List<ActiveDamageWindow>();
-        private readonly SkillCueRuntimeScope _cueRuntime = new SkillCueRuntimeScope();
+        private SkillCueRuntimeScope _cueRuntime = new SkillCueRuntimeScope();
         private bool _started;
         private bool _stateScopeEnded;
         private float _dynamicCompletionTime;
@@ -157,6 +157,7 @@ namespace Game.Presentation
             _dynamicCompletionTime = 0f;
             IsComplete    = false;
             _cueRuntime.Stop();
+            _cueRuntime = new SkillCueRuntimeScope();
 
             _damageStates = BuildStates(_definition?.damageEvents);
             _physicsStates = BuildStates(_definition?.physicsEvents);

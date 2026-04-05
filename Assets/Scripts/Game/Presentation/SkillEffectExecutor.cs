@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Data;
@@ -26,21 +27,43 @@ namespace Game.Presentation
     {
         private readonly List<GameObject> _stateExitInstances = new List<GameObject>();
         private readonly List<Action> _stateExitCallbacks = new List<Action>();
+        private bool _stopped;
 
         public void RegisterStateExitInstance(GameObject instance)
         {
-            if (instance != null)
-                _stateExitInstances.Add(instance);
+            if (instance == null)
+                return;
+
+            if (_stopped)
+            {
+                UnityObject.Destroy(instance);
+                return;
+            }
+
+            _stateExitInstances.Add(instance);
         }
 
         public void RegisterStateExitCallback(Action callback)
         {
-            if (callback != null)
-                _stateExitCallbacks.Add(callback);
+            if (callback == null)
+                return;
+
+            if (_stopped)
+            {
+                callback.Invoke();
+                return;
+            }
+
+            _stateExitCallbacks.Add(callback);
         }
 
         public void Stop()
         {
+            if (_stopped)
+                return;
+
+            _stopped = true;
+
             for (int i = _stateExitCallbacks.Count - 1; i >= 0; i--)
             {
                 Action callback = _stateExitCallbacks[i];
@@ -71,6 +94,7 @@ namespace Game.Presentation
         private static readonly List<Transform> DamageTargetsScratch = new List<Transform>(16);
         private static readonly HashSet<Transform> DamageTargetSet = new HashSet<Transform>();
         private static HitStopRunner _hitStopRunner;
+        private static DelayedEffectRunner _delayedEffectRunner;
         public static bool IsCameraLookBlockedByHitStop => _hitStopRunner != null && _hitStopRunner.IsCameraLookBlocked;
 
         private enum SkillSfxSourceKind
@@ -371,6 +395,10 @@ namespace Game.Presentation
             if (damageEffect == null || ctx == null || damageTargets == null || damageTargets.Count == 0)
                 return;
 
+            List<Transform> targetSnapshot = CopyDamageTargets(damageTargets);
+            if (targetSnapshot.Count == 0)
+                return;
+
             float stunDuration = 0.2f;
             List<SkillHitDamageEffect> hitDamageEffects = damageEffect.GetEffectiveHitDamageEffects();
             for (int damageIndex = 0; damageIndex < hitDamageEffects.Count; damageIndex++)
@@ -383,34 +411,109 @@ namespace Game.Presentation
                 if (finalMultiplier <= 0f)
                     continue;
 
-                for (int i = 0; i < damageTargets.Count; i++)
-                    ApplyDamageToTarget(damageTargets[i], ctx, finalMultiplier, stunDuration);
+                float delay = Mathf.Max(0f, hitDamageEffect.onHitTriggerDelay);
+                ScheduleOnHitEffect(delay, () =>
+                {
+                    for (int i = 0; i < targetSnapshot.Count; i++)
+                        ApplyDamageToTarget(targetSnapshot[i], ctx, finalMultiplier, stunDuration);
+                });
             }
 
             if (damageEffect.onHitVfxEffects != null)
             {
-                for (int targetIndex = 0; targetIndex < damageTargets.Count; targetIndex++)
-                    PlayVfxEffects(damageEffect.onHitVfxEffects, ctx.CasterTransform, damageTargets[targetIndex], cueRuntime);
+                for (int targetIndex = 0; targetIndex < targetSnapshot.Count; targetIndex++)
+                {
+                    Transform target = targetSnapshot[targetIndex];
+                    for (int effectIndex = 0; effectIndex < damageEffect.onHitVfxEffects.Count; effectIndex++)
+                    {
+                        SkillVfxEffect effect = damageEffect.onHitVfxEffects[effectIndex];
+                        if (effect == null || effect.particlePrefab == null)
+                            continue;
+
+                        float delay = Mathf.Max(0f, effect.onHitTriggerDelay);
+                        ScheduleOnHitEffect(delay, () => PlayVfxEffect(effect, ctx.CasterTransform, target, cueRuntime));
+                    }
+                }
             }
 
             if (damageEffect.onHitSfxEffects != null)
             {
-                for (int targetIndex = 0; targetIndex < damageTargets.Count; targetIndex++)
-                    PlaySfxEffects(damageEffect.onHitSfxEffects, ctx.CasterTransform, damageTargets[targetIndex], cueRuntime, SkillSfxSourceKind.OnHit);
+                for (int targetIndex = 0; targetIndex < targetSnapshot.Count; targetIndex++)
+                {
+                    Transform target = targetSnapshot[targetIndex];
+                    for (int effectIndex = 0; effectIndex < damageEffect.onHitSfxEffects.Count; effectIndex++)
+                    {
+                        SkillSfxEffect effect = damageEffect.onHitSfxEffects[effectIndex];
+                        if (effect == null || effect.audioClip == null)
+                            continue;
+
+                        float delay = Mathf.Max(0f, effect.onHitTriggerDelay);
+                        ScheduleOnHitEffect(delay, () => PlaySfxEffect(effect, ctx.CasterTransform, target, cueRuntime, SkillSfxSourceKind.OnHit));
+                    }
+                }
             }
 
             if (damageEffect.onHitPhysicsEffects != null)
             {
                 TryResolveDamageEffectOrigin(damageEffect, ctx.CasterTransform, motionFrame, out Vector3 effectOrigin);
                 for (int i = 0; i < damageEffect.onHitPhysicsEffects.Count; i++)
-                    ApplyPhysicsEffect(damageEffect.onHitPhysicsEffects[i], ctx, damageTargets, damageEffect, effectOrigin);
+                {
+                    SkillPhysicsEffect effect = damageEffect.onHitPhysicsEffects[i];
+                    if (effect == null)
+                        continue;
+
+                    float delay = Mathf.Max(0f, effect.onHitTriggerDelay);
+                    ScheduleOnHitEffect(delay, () => ApplyPhysicsEffect(effect, ctx, targetSnapshot, damageEffect, effectOrigin));
+                }
             }
 
             if (damageEffect.onHitAttributeEffects != null)
             {
                 for (int i = 0; i < damageEffect.onHitAttributeEffects.Count; i++)
-                    ApplyAttributeEffect(damageEffect.onHitAttributeEffects[i], ctx, damageTargets);
+                {
+                    SkillAttributeEffect effect = damageEffect.onHitAttributeEffects[i];
+                    if (effect == null)
+                        continue;
+
+                    float delay = Mathf.Max(0f, effect.onHitTriggerDelay);
+                    ScheduleOnHitEffect(delay, () => ApplyAttributeEffect(effect, ctx, targetSnapshot));
+                }
             }
+        }
+
+        private static List<Transform> CopyDamageTargets(List<Transform> damageTargets)
+        {
+            var targets = new List<Transform>(damageTargets.Count);
+            for (int i = 0; i < damageTargets.Count; i++)
+            {
+                Transform target = damageTargets[i];
+                if (target != null)
+                    targets.Add(target);
+            }
+
+            return targets;
+        }
+
+        private static void ScheduleOnHitEffect(float delay, Action action)
+        {
+            if (action == null)
+                return;
+
+            if (delay <= 0f)
+            {
+                action.Invoke();
+                return;
+            }
+
+            if (_delayedEffectRunner == null)
+            {
+                var go = new GameObject("[SkillDelayedEffectRunner]");
+                go.hideFlags = HideFlags.HideAndDontSave;
+                UnityObject.DontDestroyOnLoad(go);
+                _delayedEffectRunner = go.AddComponent<DelayedEffectRunner>();
+            }
+
+            _delayedEffectRunner.Schedule(delay, action);
         }
 
         private static void ApplyIndependentPhysicsEffect(SkillPhysicsEffect effect, ISkillExecutionContext ctx, SkillCueRuntimeScope cueRuntime)
@@ -852,15 +955,17 @@ namespace Game.Presentation
                 return;
 
             for (int i = 0; i < effects.Count; i++)
-            {
-                var effect = effects[i];
-                if (effect == null || effect.particlePrefab == null)
-                    continue;
+                PlayVfxEffect(effects[i], caster, target, cueRuntime);
+        }
 
-                Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
-                GameObject instance = CreateVfxInstance(effect, caster, anchor);
-                RegisterCueLifetime(instance, effect.destroyMode, effect.duration, cueRuntime);
-            }
+        private static void PlayVfxEffect(SkillVfxEffect effect, Transform caster, Transform target, SkillCueRuntimeScope cueRuntime)
+        {
+            if (effect == null || effect.particlePrefab == null || caster == null)
+                return;
+
+            Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
+            GameObject instance = CreateVfxInstance(effect, caster, anchor);
+            RegisterCueLifetime(instance, effect.destroyMode, effect.duration, cueRuntime);
         }
 
         private static void PlaySfxEffects(
@@ -874,14 +979,21 @@ namespace Game.Presentation
                 return;
 
             for (int i = 0; i < effects.Count; i++)
-            {
-                var effect = effects[i];
-                if (effect == null || effect.audioClip == null)
-                    continue;
+                PlaySfxEffect(effects[i], caster, target, cueRuntime, sourceKind);
+        }
 
-                Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
-                CreateSfxInstance(effect, caster, anchor, cueRuntime, sourceKind);
-            }
+        private static void PlaySfxEffect(
+            SkillSfxEffect effect,
+            Transform caster,
+            Transform target,
+            SkillCueRuntimeScope cueRuntime,
+            SkillSfxSourceKind sourceKind)
+        {
+            if (effect == null || effect.audioClip == null || caster == null)
+                return;
+
+            Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
+            CreateSfxInstance(effect, caster, anchor, cueRuntime, sourceKind);
         }
 
         private static GameObject CreateVfxInstance(SkillVfxEffect effect, Transform caster, Transform anchor)
@@ -1376,6 +1488,25 @@ namespace Game.Presentation
 
                 _active = false;
                 _pauseCameraLookDuringHitStop = false;
+            }
+        }
+
+        private sealed class DelayedEffectRunner : MonoBehaviour
+        {
+            public void Schedule(float delay, Action action)
+            {
+                if (action == null)
+                    return;
+
+                StartCoroutine(Run(delay, action));
+            }
+
+            private static IEnumerator Run(float delay, Action action)
+            {
+                if (delay > 0f)
+                    yield return new WaitForSeconds(delay);
+
+                action?.Invoke();
             }
         }
 

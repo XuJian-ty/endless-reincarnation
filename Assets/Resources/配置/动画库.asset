@@ -97,7 +97,7 @@ MonoBehaviour:
     - groupName: ChargeRelease
       entries:
       - animationId: ChargeRelease
-        clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
+        clip: {fileID: 7400000, guid: d0b5c00656e2cc14a981773cb8a04766, type: 2}
     - groupName: FallAttackStart
       entries:
       - animationId: FallAttackStart
@@ -200,7 +200,7 @@ MonoBehaviour:
     - animationId: ChargeLoop
       clip: {fileID: 7400000, guid: 6acbbbccbff6bc543bcbbf8e048550a7, type: 2}
     - animationId: ChargeRelease
-      clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
+      clip: {fileID: 7400000, guid: d0b5c00656e2cc14a981773cb8a04766, type: 2}
     - animationId: FallAttackStart
       clip: {fileID: 7400000, guid: 94a31d07dd3054c4c89d9bf38b0d3c74, type: 2}
     - animationId: FallAttackLoop
@@ -503,7 +503,7 @@ MonoBehaviour:
   - animationId: ChargeLoop
     clip: {fileID: 7400000, guid: 6acbbbccbff6bc543bcbbf8e048550a7, type: 2}
   - animationId: ChargeRelease
-    clip: {fileID: 7400000, guid: 58f199cbf7cd57c4b97133806b5ee1c1, type: 2}
+    clip: {fileID: 7400000, guid: d0b5c00656e2cc14a981773cb8a04766, type: 2}
   - animationId: FallAttackStart
     clip: {fileID: 7400000, guid: 94a31d07dd3054c4c89d9bf38b0d3c74, type: 2}
   - animationId: FallAttackLoop

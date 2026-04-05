@@ -67,6 +67,9 @@ namespace Game.Editor
                 float y = position.y + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                 y = DrawEffectTypePopup(y, position, effectType, effectTypeValue, allowedTypes, allowedLabels);
 
+                if (isOnHit)
+                    y = DrawProperty(y, position, property.FindPropertyRelative("onHitTriggerDelay"));
+
                 if (UsesDistance(effectTypeValue))
                     y = DrawProperty(y, position, distance);
 
@@ -107,6 +110,9 @@ namespace Game.Editor
 
             height += EditorGUIUtility.standardVerticalSpacing;
             height += GetChildHeight(effectType);
+
+            if (isOnHit)
+                height += GetChildHeight(property.FindPropertyRelative("onHitTriggerDelay"));
 
             if (UsesDistance(effectTypeValue))
                 height += GetChildHeight(property.FindPropertyRelative("distance"));

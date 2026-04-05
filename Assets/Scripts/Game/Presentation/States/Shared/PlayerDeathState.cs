@@ -8,17 +8,22 @@ namespace Game.Presentation
     public class PlayerDeathState : PlayerStateBase, IPlayerStateWithDuration
     {
         private const float FallbackDuration = 3f;
+        private const float CompletionDelay = 1.5f;
 
         private float _timer;
+        private float _completionDelayTimer;
+        private bool _awaitingCompletionDelay;
         protected override string ActionId => "PlayerDeath";
 
-        public float RemainingTime => Mathf.Max(0f, _timer);
-        public float NormalizedProgress => 1f - Mathf.Clamp01(_timer / FallbackDuration);
+        public float RemainingTime => Mathf.Max(0f, _timer) + Mathf.Max(0f, _completionDelayTimer);
+        public float NormalizedProgress => 1f - Mathf.Clamp01(RemainingTime / (FallbackDuration + CompletionDelay));
         public override GameAction CurrentActionId => GameAction.None;
 
         protected override void OnEnter()
         {
             _timer = FallbackDuration;
+            _completionDelayTimer = 0f;
+            _awaitingCompletionDelay = false;
             Ctx.StateMachine.ClearPending();
             Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
             Ctx.Mover.SetVerticalVelocity(0f);
@@ -29,8 +34,19 @@ namespace Game.Presentation
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
-            _timer -= dt;
-            if (AnimNearConfiguredEnd(0.95f) || _timer <= 0f)
+            if (!_awaitingCompletionDelay)
+            {
+                _timer -= dt;
+                if (AnimNearConfiguredEnd(0.95f) || _timer <= 0f)
+                {
+                    _awaitingCompletionDelay = true;
+                    _completionDelayTimer = CompletionDelay;
+                }
+                return;
+            }
+
+            _completionDelayTimer -= dt;
+            if (_completionDelayTimer <= 0f)
                 Ctx.CompleteDeathSequence();
         }
 
