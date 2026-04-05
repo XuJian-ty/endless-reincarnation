@@ -236,6 +236,7 @@ namespace Game.Saving
         public float bossSpawnRemainingTime;
         public string defeatedBossId;
         public bool hasPendingBossResult;
+        public bool bossResultPanelOpen;
         public float bossResultRemainingTime;
     }
 }

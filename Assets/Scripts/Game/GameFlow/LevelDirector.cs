@@ -43,6 +43,7 @@ namespace Game.GameFlow
         private float _bossSpawnReadyTime = -1f;
         private float _bossResultReadyTime = -1f;
         private float _guardianStateCheckTimer;
+        private bool _suspendBossSchedulingForRuntimeRestore;
         private string _defeatedBossId = string.Empty;
 
         private void Awake()
@@ -70,13 +71,19 @@ namespace Game.GameFlow
 
             ApplySnapshotIfAvailable();
             if (HasRuntimeSnapshotToRestore())
+            {
+                _suspendBossSchedulingForRuntimeRestore = true;
                 return;
+            }
 
             TryScheduleBossSpawnIfReady();
         }
 
         private void Update()
         {
+            if (_suspendBossSchedulingForRuntimeRestore)
+                return;
+
             if (_bossSpawned || _bossDefeated || _bossSpawnRoutine != null)
                 return;
 
@@ -109,6 +116,9 @@ namespace Game.GameFlow
 
         private void OnGuardianDied()
         {
+            if (_suspendBossSchedulingForRuntimeRestore)
+                return;
+
             TryScheduleBossSpawnIfReady();
         }
 
@@ -127,6 +137,9 @@ namespace Game.GameFlow
             }
             _bossSpawnReadyTime = -1f;
 
+            if (BattleMemorySceneRuntime.IsBattleMemoryScene())
+                return;
+
             ScheduleBossResultPanel(_defeatedBossId, BossResultPanelDelay);
         }
 
@@ -139,6 +152,8 @@ namespace Game.GameFlow
 
         public bool TryBuildSnapshot(out LevelDirectorSnapshotSave snapshot)
         {
+            var ui = UIManager.GetInstance();
+            BossResultPanel bossResultPanel = ui?.GetPanel<BossResultPanel>(PanelNames.BossResult);
             snapshot = new LevelDirectorSnapshotSave
             {
                 directorId = GetSnapshotId(),
@@ -150,6 +165,9 @@ namespace Game.GameFlow
                     : 0f,
                 defeatedBossId = _defeatedBossId,
                 hasPendingBossResult = _bossResultRoutine != null,
+                bossResultPanelOpen = bossResultPanel != null &&
+                                      bossResultPanel.gameObject != null &&
+                                      bossResultPanel.gameObject.activeInHierarchy,
                 bossResultRemainingTime = _bossResultRoutine != null
                     ? Mathf.Max(0f, _bossResultReadyTime - Time.time)
                     : 0f,
@@ -180,11 +198,21 @@ namespace Game.GameFlow
 
             _bossSpawnReadyTime = -1f;
             _bossResultReadyTime = -1f;
-            if (_bossDefeated && !string.IsNullOrWhiteSpace(_defeatedBossId))
+            if (_bossDefeated &&
+                snapshot.hasPendingBossResult &&
+                !string.IsNullOrWhiteSpace(_defeatedBossId))
             {
                 ScheduleBossResultPanel(
                     _defeatedBossId,
-                    snapshot.hasPendingBossResult ? snapshot.bossResultRemainingTime : 0f);
+                    snapshot.bossResultRemainingTime);
+                return;
+            }
+
+            if (_bossDefeated &&
+                snapshot.bossResultPanelOpen &&
+                !string.IsNullOrWhiteSpace(_defeatedBossId))
+            {
+                ShowBossResultPanel(_defeatedBossId);
                 return;
             }
 
@@ -192,6 +220,15 @@ namespace Game.GameFlow
                 return;
 
             ScheduleBossSpawn(snapshot.bossSpawnRemainingTime);
+        }
+
+        public void CompleteRuntimeSnapshotRestore()
+        {
+            if (!_suspendBossSchedulingForRuntimeRestore)
+                return;
+
+            _suspendBossSchedulingForRuntimeRestore = false;
+            TryScheduleBossSpawnIfReady();
         }
 
         private void ScheduleBossSpawn(float delayOverride = -1f)
