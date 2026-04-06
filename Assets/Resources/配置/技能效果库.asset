@@ -10641,7 +10641,7 @@ MonoBehaviour:
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: 
-          startTime: 0
+          startTime: 0.23333335
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
@@ -10715,7 +10715,58 @@ MonoBehaviour:
             onHitSfxEffects: []
         physicsEvents: []
         attributeEvents: []
-        vfxEvents: []
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0.23333335
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 0}
+            anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
+            offset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 1, y: 1, z: 1}
+            onHitTriggerDelay: 0
+            motion:
+              enabled: 0
+              mode: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0, z: 0.4}
+              pathControlPointB: {x: 0, y: 0, z: 0.8}
+              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+              retargetOnDescendingPath: 0
+            destroyMode: 0
+            duration: 0
         sfxEvents: []
         speedEvents: []
         cameraEvents: []
@@ -10732,26 +10783,26 @@ MonoBehaviour:
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: shot
-          startTime: 0.28
+          startTime: 0
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
           repeatedAnchorMode: 0
           damageEffects:
-          - detectionDuration: 0
+          - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
-            detectionType: 2
+            detectionType: 0
             hitLayerName: Player
             anchor: 0
             shape: 1
-            centerOffset: {x: 0, y: 0, z: 0}
+            centerOffset: {x: 0, y: 0.5, z: 0.04}
             rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 1.5
+            sphereRadius: 0.4
             sectorAngle: 180
             boxSize: {x: 1, y: 1, z: 1}
             colliderNodeName: 
@@ -10759,9 +10810,9 @@ MonoBehaviour:
             rayMaxDistance: 14
             rayRadius: 0
             motion:
-              enabled: 0
+              enabled: 1
               mode: 0
-              speed: 0
+              speed: 10
               direction: {x: 0, y: 0, z: 1}
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
@@ -10806,7 +10857,59 @@ MonoBehaviour:
             onHitSfxEffects: []
         physicsEvents: []
         attributeEvents: []
-        vfxEvents: []
+        vfxEvents:
+        - eventId: evt_1
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          vfxEffects:
+          - particlePrefab: {fileID: 4165669854878222867, guid: c6dfe8d90ff9dc942b5fb72c00659444,
+              type: 3}
+            anchor: 2
+            useFollowDuration: 0
+            followDuration: 0
+            offset: {x: 0, y: 0.5, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            scale: {x: 0.5, y: 0.5, z: 0.5}
+            onHitTriggerDelay: 0
+            motion:
+              enabled: 1
+              mode: 0
+              speed: 10
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0, z: 0.4}
+              pathControlPointB: {x: 0, y: 0, z: 0.8}
+              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+              retargetOnDescendingPath: 0
+            destroyMode: 1
+            duration: 5
         sfxEvents: []
         speedEvents: []
         cameraEvents: []
