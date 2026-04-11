@@ -11205,14 +11205,14 @@ MonoBehaviour:
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: burst
-          startTime: 0.5666667
-          triggerMode: 1
-          activeDuration: 2
+          startTime: 0.8333334
+          triggerMode: 0
+          activeDuration: 0
           activeDurationMode: 0
-          repeatInterval: 0.16666667
+          repeatInterval: 0.1
           repeatedAnchorMode: 0
           damageEffects:
-          - detectionDuration: 0.033333335
+          - detectionDuration: 0.5
             activationTime: 0
             activationMode: 0
             intermittentActiveDuration: 0.10000001
@@ -11221,10 +11221,10 @@ MonoBehaviour:
             detectionType: 0
             hitLayerName: Player
             anchor: 0
-            shape: 1
-            centerOffset: {x: 0, y: 0, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            sphereRadius: 1.5
+            shape: 0
+            centerOffset: {x: -1.576932, y: 2.206835, z: 1.4523158}
+            rotationEuler: {x: 1.3500168, y: 9.243076, z: 3.1468706}
+            sphereRadius: 3
             sectorAngle: 180
             boxSize: {x: 1, y: 1, z: 1}
             colliderNodeName: 
@@ -11268,7 +11268,153 @@ MonoBehaviour:
             companionVfxEffects: []
             onHitDamageEffects:
             - onHitTriggerDelay: 0
-              damageMagnitude: 0.5525
+              damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        - eventId: burst
+          startTime: 0.8333334
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          repeatedAnchorMode: 0
+          damageEffects:
+          - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
+            hitDeduplicationScope: 0
+            detectionType: 0
+            hitLayerName: Player
+            anchor: 0
+            shape: 0
+            centerOffset: {x: -1.5382273, y: 1.4403212, z: 1.4277148}
+            rotationEuler: {x: 1.3500168, y: 9.243076, z: 3.146872}
+            sphereRadius: 3
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 16
+            rayRadius: 0
+            motion:
+              enabled: 0
+              mode: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0, z: 0.4}
+              pathControlPointB: {x: 0, y: 0, z: 0.8}
+              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+              retargetOnDescendingPath: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - onHitTriggerDelay: 0
+              damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        - eventId: burst
+          startTime: 0.8333334
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          repeatedAnchorMode: 0
+          damageEffects:
+          - detectionDuration: 0.5
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
+            hitDeduplicationScope: 0
+            detectionType: 0
+            hitLayerName: Player
+            anchor: 0
+            shape: 0
+            centerOffset: {x: -1.4983326, y: 0.65024245, z: 1.4023585}
+            rotationEuler: {x: 1.3500168, y: 9.243076, z: 3.146872}
+            sphereRadius: 3
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 1, z: 0}
+            rayMaxDistance: 16
+            rayRadius: 0
+            motion:
+              enabled: 0
+              mode: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0, z: 0.4}
+              pathControlPointB: {x: 0, y: 0, z: 0.8}
+              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+              retargetOnDescendingPath: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - onHitTriggerDelay: 0
+              damageMagnitude: 3
             onHitStopEffect:
               hitStopDuration: 0
               hitStopTimeScale: 0
@@ -11281,20 +11427,20 @@ MonoBehaviour:
         attributeEvents: []
         vfxEvents:
         - eventId: evt_1
-          startTime: 0.5666667
+          startTime: 0.8333334
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
           vfxEffects:
-          - particlePrefab: {fileID: 1210069404974878, guid: fbab27c98b168764eb295cfff1e9f61f,
+          - particlePrefab: {fileID: 7382523158277782761, guid: 0c4482279db7c0c43b8734cbf4e0ada6,
               type: 3}
             anchor: 0
             useFollowDuration: 0
             followDuration: 0
-            offset: {x: 0, y: 0, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
-            scale: {x: 1, y: 1, z: 1}
+            offset: {x: -4.0245705, y: -0.08363581, z: -0.32006168}
+            rotationEuler: {x: -0, y: 0, z: 300}
+            scale: {x: 2, y: 2, z: 2}
             onHitTriggerDelay: 0
             motion:
               enabled: 0

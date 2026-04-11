@@ -57,7 +57,7 @@ MonoBehaviour:
   - slotIndex: 0
     skillId: melee_minionSkill0
     displayName: "\u6280\u80FD0"
-    cooldown: 0.65
+    cooldown: 2
     castRange: 3
     minCastRange: 0
     idealCastRange: 2.5
