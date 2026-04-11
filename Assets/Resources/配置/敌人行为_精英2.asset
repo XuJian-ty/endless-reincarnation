@@ -57,7 +57,7 @@ MonoBehaviour:
   - slotIndex: 0
     skillId: elite_2Skill0
     displayName: "\u6280\u80FD0"
-    cooldown: 1.6
+    cooldown: 2
     castRange: 13
     minCastRange: 0
     idealCastRange: 11.5
@@ -76,7 +76,7 @@ MonoBehaviour:
   - slotIndex: 1
     skillId: elite_2Skill1
     displayName: "\u6280\u80FD1"
-    cooldown: 2
+    cooldown: 3
     castRange: 4
     minCastRange: 1.5
     idealCastRange: 3.4

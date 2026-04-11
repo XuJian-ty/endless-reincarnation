@@ -57,7 +57,7 @@ MonoBehaviour:
   - slotIndex: 0
     skillId: guardian_2Skill0
     displayName: "\u6280\u80FD0"
-    cooldown: 1.5
+    cooldown: 2
     castRange: 3.2
     minCastRange: 0
     idealCastRange: 2.8
@@ -76,7 +76,7 @@ MonoBehaviour:
   - slotIndex: 1
     skillId: guardian_2Skill1
     displayName: "\u6280\u80FD1"
-    cooldown: 1.5
+    cooldown: 3
     castRange: 5
     minCastRange: 0
     idealCastRange: 4.3

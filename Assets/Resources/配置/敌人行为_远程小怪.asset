@@ -57,7 +57,7 @@ MonoBehaviour:
   - slotIndex: 0
     skillId: ranged_minionSkill0
     displayName: "\u6280\u80FD0"
-    cooldown: 1
+    cooldown: 2
     castRange: 12
     minCastRange: 0
     idealCastRange: 10.5
