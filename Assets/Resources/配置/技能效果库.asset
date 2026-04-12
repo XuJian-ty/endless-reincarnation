@@ -276,6 +276,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -330,6 +331,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -407,6 +409,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -452,6 +455,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -553,6 +557,7 @@ MonoBehaviour:
               mode: 0
               speed: 20
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 33.333336}
               pathControlPointB: {x: 0, y: 0, z: 66.66667}
@@ -613,6 +618,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -685,6 +691,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -745,6 +752,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -822,6 +830,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -867,6 +876,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -919,6 +929,7 @@ MonoBehaviour:
               mode: 0
               speed: 20
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 33.333336}
               pathControlPointB: {x: 0, y: 0, z: 66.66667}
@@ -1022,6 +1033,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1082,6 +1094,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1159,6 +1172,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1204,6 +1218,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1312,6 +1327,7 @@ MonoBehaviour:
               mode: 0
               speed: 20
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 33.333336}
               pathControlPointB: {x: 0, y: 0, z: 66.66667}
@@ -1372,6 +1388,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1444,6 +1461,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1504,6 +1522,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1581,6 +1600,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1626,6 +1646,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1678,6 +1699,7 @@ MonoBehaviour:
               mode: 0
               speed: 20
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 33.333336}
               pathControlPointB: {x: 0, y: 0, z: 66.66667}
@@ -1788,6 +1810,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1848,6 +1871,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1938,6 +1962,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -1990,6 +2015,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2035,6 +2061,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2157,6 +2184,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2217,6 +2245,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2289,6 +2318,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 2
               pathControlPointA: {x: 0, y: 0, z: 80}
               pathControlPointB: {x: 0, y: 0, z: 80}
@@ -2349,6 +2379,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2439,6 +2470,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2491,6 +2523,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2536,6 +2569,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2588,6 +2622,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 2
               pathControlPointA: {x: 0, y: 0, z: 80}
               pathControlPointB: {x: 0, y: 0, z: 80}
@@ -2633,6 +2668,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 2
               pathControlPointA: {x: 0, y: 0, z: 80}
               pathControlPointB: {x: 0, y: 0, z: 80}
@@ -2755,6 +2791,7 @@ MonoBehaviour:
               mode: 0
               speed: 50
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0}
               pathControlPointB: {x: 0, y: 0, z: 0}
@@ -2815,6 +2852,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2905,6 +2943,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -2950,6 +2989,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3135,6 +3175,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3195,6 +3236,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3272,6 +3314,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3380,6 +3423,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3440,6 +3484,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3517,6 +3562,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3627,6 +3673,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3670,6 +3717,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3763,6 +3811,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3885,6 +3934,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -3960,6 +4010,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4033,6 +4084,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4130,6 +4182,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4175,6 +4228,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4379,6 +4433,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4439,6 +4494,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4516,6 +4572,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4620,8 +4677,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -4641,6 +4698,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 200}
               pathControlPointB: {x: 0, y: 0, z: 200}
@@ -4701,6 +4759,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4770,6 +4829,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -4822,6 +4882,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 200}
               pathControlPointB: {x: 0, y: 0, z: 200}
@@ -4888,8 +4949,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -4909,6 +4970,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: -0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -30, y: 0, z: 66.666664}
               pathControlPointB: {x: -30, y: 0, z: 133.33333}
@@ -4969,6 +5031,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -5012,8 +5075,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -5033,6 +5096,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 66.666664}
               pathControlPointB: {x: 0, y: 0, z: 133.33333}
@@ -5093,6 +5157,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -5136,8 +5201,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -5157,6 +5222,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 30, y: 0, z: 66.666664}
               pathControlPointB: {x: 30, y: 0, z: 133.33333}
@@ -5217,6 +5283,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -5260,8 +5327,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -5281,6 +5348,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 30, z: 66.66667}
               pathControlPointB: {x: 0, y: 30, z: 133.33334}
@@ -5341,6 +5409,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -5384,8 +5453,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -5405,6 +5474,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -21.21, y: 21.21, z: 66.66667}
               pathControlPointB: {x: -21.21, y: 21.21, z: 133.33334}
@@ -5465,6 +5535,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -5508,8 +5579,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -5529,6 +5600,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 21.21, y: 21.21, z: 66.66667}
               pathControlPointB: {x: 21.21, y: 21.21, z: 133.33334}
@@ -5589,6 +5661,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -5666,6 +5739,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -5718,6 +5792,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: -0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -30, y: 0, z: 66.666664}
               pathControlPointB: {x: -30, y: 0, z: 133.33333}
@@ -5763,6 +5838,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 66.666664}
               pathControlPointB: {x: 0, y: 0, z: 133.33333}
@@ -5808,6 +5884,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 30, y: 0, z: 66.666664}
               pathControlPointB: {x: 30, y: 0, z: 133.33333}
@@ -5853,6 +5930,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 30, z: 66.66667}
               pathControlPointB: {x: 0, y: 30, z: 133.33334}
@@ -5898,6 +5976,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -21.21, y: 21.21, z: 66.66667}
               pathControlPointB: {x: -21.21, y: 21.21, z: 133.33334}
@@ -5943,6 +6022,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 21.21, y: 21.21, z: 66.66667}
               pathControlPointB: {x: 21.21, y: 21.21, z: 133.33334}
@@ -6009,8 +6089,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -6030,6 +6110,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: -0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -0.1763, y: 0, z: 200}
               pathControlPointB: {x: -0.1763, y: 0, z: 200}
@@ -6090,6 +6171,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6125,8 +6207,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -6146,6 +6228,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6206,6 +6289,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6241,8 +6325,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -6262,6 +6346,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6322,6 +6407,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6391,6 +6477,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6443,6 +6530,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: -0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -11.753333, y: 0, z: 66.66667}
               pathControlPointB: {x: -23.506666, y: 0, z: 133.33334}
@@ -6488,6 +6576,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 66.666664}
               pathControlPointB: {x: 0, y: 0, z: 133.33333}
@@ -6533,6 +6622,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 35.26, y: 0, z: 200}
               pathControlPointB: {x: 35.26, y: 0, z: 200}
@@ -6601,8 +6691,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -6622,6 +6712,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6682,6 +6773,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6751,6 +6843,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6803,6 +6896,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6869,8 +6963,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -6890,6 +6984,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: -0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -30, y: 0, z: 66.666664}
               pathControlPointB: {x: -30, y: 0, z: 133.33333}
@@ -6950,6 +7045,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -6993,8 +7089,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -7014,6 +7110,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 66.666664}
               pathControlPointB: {x: 0, y: 0, z: 133.33333}
@@ -7074,6 +7171,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -7117,8 +7215,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -7138,6 +7236,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 30, y: 0, z: 66.666664}
               pathControlPointB: {x: 30, y: 0, z: 133.33333}
@@ -7198,6 +7297,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -7262,6 +7362,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 5
               pathControlPointA: {x: 0, y: 30, z: 66.66667}
               pathControlPointB: {x: 0, y: 30, z: 133.33334}
@@ -7322,6 +7423,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -7386,6 +7488,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 5
               pathControlPointA: {x: -21.21, y: 21.21, z: 66.66667}
               pathControlPointB: {x: -21.21, y: 21.21, z: 133.33334}
@@ -7446,6 +7549,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -7510,6 +7614,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 5
               pathControlPointA: {x: 21.21, y: 21.21, z: 66.66667}
               pathControlPointB: {x: 21.21, y: 21.21, z: 133.33334}
@@ -7570,6 +7675,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -7647,6 +7753,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -7699,6 +7806,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: -0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -30, y: 0, z: 66.666664}
               pathControlPointB: {x: -30, y: 0, z: 133.33333}
@@ -7744,6 +7852,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 0, z: 66.666664}
               pathControlPointB: {x: 0, y: 0, z: 133.33333}
@@ -7789,6 +7898,7 @@ MonoBehaviour:
               mode: 1
               speed: 40
               direction: {x: 0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 30, y: 0, z: 66.666664}
               pathControlPointB: {x: 30, y: 0, z: 133.33333}
@@ -7834,6 +7944,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 0, y: 30, z: 66.66667}
               pathControlPointB: {x: 0, y: 30, z: 133.33334}
@@ -7879,6 +7990,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: -21.21, y: 21.21, z: 66.66667}
               pathControlPointB: {x: -21.21, y: 21.21, z: 133.33334}
@@ -7924,6 +8036,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 5
               pathControlPointA: {x: 21.21, y: 21.21, z: 66.66667}
               pathControlPointB: {x: 21.21, y: 21.21, z: 133.33334}
@@ -7990,8 +8103,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -8011,6 +8124,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: -0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8071,6 +8185,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8106,8 +8221,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -8127,6 +8242,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8187,6 +8303,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8222,8 +8339,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -8243,6 +8360,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8303,6 +8421,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8338,8 +8457,8 @@ MonoBehaviour:
           - detectionDuration: 5.0000005
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -8359,6 +8478,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: -0.08748867, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8419,6 +8539,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8454,8 +8575,8 @@ MonoBehaviour:
           - detectionDuration: 0.033333335
             activationTime: 0
             activationMode: 0
-            intermittentActiveDuration: 0.1
-            intermittentIntervalDuration: 0.1
+            intermittentActiveDuration: 0.10000001
+            intermittentIntervalDuration: 0.10000001
             hitDeduplicationScope: 0
             detectionType: 0
             hitLayerName: Enemy
@@ -8475,6 +8596,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0.08748867, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8535,6 +8657,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8604,6 +8727,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: -0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8649,6 +8773,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8694,6 +8819,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0.1763, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8739,6 +8865,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: -0.087488666, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8784,6 +8911,7 @@ MonoBehaviour:
               mode: 0
               speed: 40
               direction: {x: 0.087488666, y: 0, z: 1}
+              useAimDirection: 1
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8836,6 +8964,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -8940,6 +9069,7 @@ MonoBehaviour:
               mode: 0
               speed: 6
               direction: {x: 0, y: 1, z: 0}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -9019,6 +9149,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -9123,6 +9254,7 @@ MonoBehaviour:
               mode: 1
               speed: 6
               direction: {x: 0, y: 1, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0.6, z: 0}
               pathControlPointB: {x: 0, y: 1.2, z: 0}
@@ -9175,6 +9307,7 @@ MonoBehaviour:
               mode: 0
               speed: 2
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -9277,6 +9410,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -9361,6 +9495,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.5
               pathControlPointA: {x: 0, y: 3, z: 2.3333335}
               pathControlPointB: {x: 0, y: 3, z: 4.666667}
@@ -9413,6 +9548,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -9516,6 +9652,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 1.5
               pathControlPointA: {x: -0.863, y: 0, z: 3.22}
               pathControlPointB: {x: -1.725, y: 0, z: 6.439}
@@ -9605,6 +9742,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 1.5
               pathControlPointA: {x: 0, y: 0, z: 3.3333335}
               pathControlPointB: {x: 0, y: 0, z: 6.666667}
@@ -9694,6 +9832,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 1.5
               pathControlPointA: {x: 0.863, y: 0, z: 3.22}
               pathControlPointB: {x: 1.725, y: 0, z: 6.439}
@@ -9796,6 +9935,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 1.5
               pathControlPointA: {x: -0.863, y: 0, z: 3.22}
               pathControlPointB: {x: -1.725, y: 0, z: 6.439}
@@ -9859,6 +9999,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 1.5
               pathControlPointA: {x: 0, y: 0, z: 3.3333335}
               pathControlPointB: {x: 0, y: 0, z: 6.666667}
@@ -9922,6 +10063,7 @@ MonoBehaviour:
               mode: 1
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 1.5
               pathControlPointA: {x: 0.863, y: 0, z: 3.22}
               pathControlPointB: {x: 1.725, y: 0, z: 6.439}
@@ -10029,6 +10171,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10116,6 +10259,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10203,6 +10347,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10290,6 +10435,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10382,6 +10528,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10434,6 +10581,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10486,6 +10634,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10538,6 +10687,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10672,6 +10822,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10737,6 +10888,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10815,6 +10967,7 @@ MonoBehaviour:
               mode: 0
               speed: 10
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10880,6 +11033,7 @@ MonoBehaviour:
               mode: 0
               speed: 10
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -10958,6 +11112,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11031,6 +11186,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11132,6 +11288,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11236,6 +11393,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11309,6 +11467,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11382,6 +11541,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11447,6 +11607,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11522,6 +11683,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11606,6 +11768,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11698,6 +11861,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11752,6 +11916,7 @@ MonoBehaviour:
                 mode: 0
                 speed: 0
                 direction: {x: 0, y: 0, z: 1}
+                useAimDirection: 0
                 duration: 0.3
                 pathControlPointA: {x: 0, y: 0, z: 0.4}
                 pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11821,6 +11986,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -11949,6 +12115,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12057,6 +12224,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12161,6 +12329,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12238,6 +12407,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12313,6 +12483,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12401,6 +12572,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12561,6 +12733,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12649,6 +12822,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12737,6 +12911,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -12890,6 +13065,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13004,6 +13180,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13092,6 +13269,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13206,6 +13384,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13331,6 +13510,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13432,6 +13612,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13533,6 +13714,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13693,6 +13875,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13794,6 +13977,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13882,6 +14066,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}
@@ -13996,6 +14181,7 @@ MonoBehaviour:
               mode: 0
               speed: 0
               direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
               duration: 0.3
               pathControlPointA: {x: 0, y: 0, z: 0.4}
               pathControlPointB: {x: 0, y: 0, z: 0.8}

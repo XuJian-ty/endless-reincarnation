@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using Game.GameFlow;
 using Game.UI;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace Game.Presentation
 {
@@ -20,20 +23,39 @@ namespace Game.Presentation
         [SerializeField] private float _distance = 5f;
         [SerializeField] private float _targetHeight = 1.5f;
 
+        [Header("Aim Zoom")]
+        [SerializeField] private bool _enableAimZoom = true;
+        [SerializeField] private float _aimFieldOfView = 46f;
+        [SerializeField] private float _aimZoomFieldOfView = 22f;
+        [SerializeField] private float _aimDistance = 5f;
+        [SerializeField] private float _aimTargetHeightOffset = 0.1f;
+        [SerializeField] private Vector3 _aimShoulderOffset = new Vector3(0.55f, 0.08f, 0f);
+        [SerializeField] [Range(0.05f, 1f)] private float _aimZoomStep = 0.25f;
+        [SerializeField] [Min(1f)] private float _aimZoomBoost = 1.45f;
+        [SerializeField] [Range(1f, 3f)] private float _aimCrosshairMaxScale = 1.85f;
+        [SerializeField] private float _aimTransitionSpeed = 8f;
+
         [Header("Collision")]
         [SerializeField] private LayerMask _collisionMask;
         [SerializeField] private float _collisionRadius = 0.2f;
 
+        private Camera _cameraComponent;
         private Transform _target;
         private PlayerInputHandler _inputHandler;
         private float _yaw;
         private float _pitch;
+        private float _defaultFieldOfView;
+        private float _targetAimBlend;
+        private float _currentAimBlend;
+        private float _targetAimZoomLevel;
+        private float _currentAimZoomLevel;
         private bool _anglesInitialized;
         private bool _loggedMissingTargetWarning;
         private bool _loggedMissingInputWarning;
 
         public static ThirdPersonCamera Active { get; private set; }
         public float Yaw => _yaw;
+        public float Pitch => _pitch;
 
         public float GetMovementYaw()
         {
@@ -41,7 +63,7 @@ namespace Game.Presentation
             bool lockLookInput = TryGetActiveCameraOverride(out SkillTimelineRunner.CameraOverrideRequest cameraOverride)
                                  && cameraOverride.LockLookInput;
             if (_inputHandler != null && !IsLookInputBlocked(lockLookInput))
-                yaw += _inputHandler.CurrentInput.LookDelta.x * _sensitivityX;
+                yaw += _inputHandler.CurrentInput.LookDelta.x * _sensitivityX * ResolveLookSensitivityMultiplier(GetCurrentFieldOfView());
             return yaw;
         }
 
@@ -54,13 +76,22 @@ namespace Game.Presentation
                 _inputHandler = _target.GetComponent<PlayerInputHandler>();
 
             _anglesInitialized = false;
+            _targetAimBlend = 0f;
+            _currentAimBlend = 0f;
+            _targetAimZoomLevel = 0f;
+            _currentAimZoomLevel = 0f;
             _loggedMissingTargetWarning = false;
             _loggedMissingInputWarning = false;
+
+            if (_cameraComponent != null)
+                _cameraComponent.fieldOfView = _defaultFieldOfView;
         }
 
         private void Awake()
         {
             Active = this;
+            _cameraComponent = GetComponent<Camera>();
+            _defaultFieldOfView = _cameraComponent != null ? _cameraComponent.fieldOfView : 60f;
         }
 
         private void OnEnable()
@@ -82,19 +113,31 @@ namespace Game.Presentation
             if (_target == null || _inputHandler == null)
                 return;
 
+            PlayerController player = _target.GetComponent<PlayerController>();
+            UpdateAimZoomState(player);
+            float targetFieldOfView = ResolveTargetFieldOfView();
+            float currentFieldOfView = ApplyAimFieldOfView(targetFieldOfView);
+
             bool hasCameraOverride = TryGetActiveCameraOverride(out SkillTimelineRunner.CameraOverrideRequest cameraOverride);
             bool lockLookInput = hasCameraOverride && cameraOverride.LockLookInput;
             if (!IsLookInputBlocked(lockLookInput))
             {
                 var input = _inputHandler.CurrentInput;
-                _yaw += input.LookDelta.x * _sensitivityX;
-                _pitch -= input.LookDelta.y * _sensitivityY;
+                float lookSensitivityMultiplier = ResolveLookSensitivityMultiplier(currentFieldOfView);
+                _yaw += input.LookDelta.x * _sensitivityX * lookSensitivityMultiplier;
+                _pitch -= input.LookDelta.y * _sensitivityY * lookSensitivityMultiplier;
                 _pitch = Mathf.Clamp(_pitch, _minPitch, _maxPitch);
             }
 
-            Vector3 pivotPos = _target.position + Vector3.up * _targetHeight;
+            float baseAimFieldOfView = Mathf.Lerp(_defaultFieldOfView, _aimFieldOfView, _currentAimBlend);
+            float cameraDistance = Mathf.Lerp(_distance, _aimDistance, _currentAimBlend);
+            cameraDistance *= ComputeZoomDistanceCompensation(baseAimFieldOfView, currentFieldOfView);
+            float targetHeight = _targetHeight + _aimTargetHeightOffset * _currentAimBlend;
+            Vector3 pivotPos = _target.position + Vector3.up * targetHeight;
             Quaternion rotation = Quaternion.Euler(_pitch, _yaw, 0f);
-            Vector3 desiredPos = pivotPos + rotation * (Vector3.back * _distance);
+            Vector3 desiredPos = pivotPos
+                                 + rotation * (_aimShoulderOffset * _currentAimBlend)
+                                 + rotation * (Vector3.back * cameraDistance);
             Vector3 resolvedBasePosition = ResolveCameraCollision(pivotPos, desiredPos);
 
             if (hasCameraOverride && cameraOverride.IsActive)
@@ -111,6 +154,89 @@ namespace Game.Presentation
 
             transform.position = resolvedBasePosition;
             transform.LookAt(pivotPos);
+        }
+
+        private void UpdateAimZoomState(PlayerController player)
+        {
+            _targetAimBlend = ShouldUseAimZoom(player) ? 1f : 0f;
+            if (_targetAimBlend <= 0f)
+                _targetAimZoomLevel = 0f;
+            else
+                UpdateAimZoomInput();
+
+            _currentAimBlend = Mathf.MoveTowards(_currentAimBlend, _targetAimBlend, _aimTransitionSpeed * Time.deltaTime);
+            _currentAimZoomLevel = Mathf.MoveTowards(_currentAimZoomLevel, _targetAimZoomLevel, _aimTransitionSpeed * Time.deltaTime);
+            PlayerAimCrosshairRuntime.SetZoomScale(Mathf.Lerp(1f, _aimCrosshairMaxScale, _currentAimZoomLevel * _currentAimBlend));
+        }
+
+        private bool ShouldUseAimZoom(PlayerController player)
+        {
+            return _enableAimZoom
+                   && player != null
+                   && player.IsAimModeActive
+                   && GameStateMachine.GetInstance()?.IsGameplayPaused != true;
+        }
+
+        private void UpdateAimZoomInput()
+        {
+            if (IsLookInputBlocked(false))
+                return;
+
+#if ENABLE_INPUT_SYSTEM
+            if (Mouse.current == null)
+                return;
+
+            float scroll = Mouse.current.scroll.ReadValue().y;
+            if (Mathf.Abs(scroll) <= 0.01f)
+                return;
+
+            _targetAimZoomLevel = Mathf.Clamp01(_targetAimZoomLevel + Mathf.Sign(scroll) * _aimZoomStep);
+#endif
+        }
+
+        private float ResolveTargetFieldOfView()
+        {
+            float zoomStrength = Mathf.LerpUnclamped(0f, _aimZoomBoost, _currentAimZoomLevel);
+            float aimFov = Mathf.LerpUnclamped(_aimFieldOfView, _aimZoomFieldOfView, zoomStrength);
+            aimFov = Mathf.Max(8f, aimFov);
+            return Mathf.Lerp(_defaultFieldOfView, aimFov, _currentAimBlend);
+        }
+
+        private float ResolveLookSensitivityMultiplier(float currentFieldOfView)
+        {
+            float baseTan = Mathf.Tan(_defaultFieldOfView * 0.5f * Mathf.Deg2Rad);
+            float currentTan = Mathf.Tan(currentFieldOfView * 0.5f * Mathf.Deg2Rad);
+            if (baseTan <= 0.0001f || currentTan <= 0.0001f)
+                return 1f;
+
+            return currentTan / baseTan;
+        }
+
+        private static float ComputeZoomDistanceCompensation(float baseFieldOfView, float targetFieldOfView)
+        {
+            if (targetFieldOfView >= baseFieldOfView - 0.01f)
+                return 1f;
+
+            float baseTan = Mathf.Tan(baseFieldOfView * 0.5f * Mathf.Deg2Rad);
+            float targetTan = Mathf.Tan(targetFieldOfView * 0.5f * Mathf.Deg2Rad);
+            if (targetTan <= 0.0001f)
+                return 1f;
+
+            return Mathf.Max(1f, baseTan / targetTan);
+        }
+
+        private float GetCurrentFieldOfView()
+        {
+            return _cameraComponent != null ? _cameraComponent.fieldOfView : _defaultFieldOfView;
+        }
+
+        private float ApplyAimFieldOfView(float targetFieldOfView)
+        {
+            if (_cameraComponent == null)
+                return targetFieldOfView;
+
+            _cameraComponent.fieldOfView = Mathf.Lerp(_cameraComponent.fieldOfView, targetFieldOfView, _aimTransitionSpeed * Time.deltaTime);
+            return _cameraComponent.fieldOfView;
         }
 
         private bool TryGetActiveCameraOverride(out SkillTimelineRunner.CameraOverrideRequest request)

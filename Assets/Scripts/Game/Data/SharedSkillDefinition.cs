@@ -165,6 +165,10 @@ namespace Game.Data
         [Tooltip("仅直线模式使用。相对施法者朝向的本地方向。(0,0,1) 表示朝前方移动。")]
         public Vector3 direction = Vector3.forward;
 
+        [InspectorLabel("使用瞄准朝向")]
+        [Tooltip("仅玩家且世界锚点时生效。开启后，运动和检测的朝向会优先使用当前鼠标/相机瞄准得到的三维方向；关闭则继续使用施法者当前朝向。适合枪弹道，不适合固定高度的剑气。")]
+        public bool useAimDirection = false;
+
         [InspectorLabel("路径时长(秒)")]
         [Tooltip("仅路径模式使用。达到该时长后会停在路径终点。")]
         [Min(0f)] public float duration = 0.3f;
