@@ -152,10 +152,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _sensitivityX: 0.3
   _sensitivityY: 0.3
-  _minPitch: -10
+  _minPitch: -25
   _maxPitch: 25
   _distance: 5
   _targetHeight: 1
+  _enableAimZoom: 1
+  _aimFieldOfView: 46
+  _aimZoomFieldOfView: 22
+  _aimDistance: 5
+  _aimTargetHeightOffset: 0.1
+  _aimShoulderOffset: {x: 0.55, y: 0.08, z: 0}
+  _aimZoomStep: 0.25
+  _aimZoomBoost: 1.45
+  _aimCrosshairMaxScale: 1.85
+  _aimTransitionSpeed: 8
   _collisionMask:
     serializedVersion: 2
     m_Bits: 0

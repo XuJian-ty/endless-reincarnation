@@ -3004,6 +3004,7 @@ namespace Game.Editor
                 mode = source.mode,
                 speed = source.speed,
                 direction = source.direction,
+                useAimDirection = source.useAimDirection,
                 duration = source.duration,
                 pathControlPointA = source.pathControlPointA,
                 pathControlPointB = source.pathControlPointB,
@@ -3024,6 +3025,7 @@ namespace Game.Editor
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
             motion.enabled = EditorGUILayout.Toggle("随时间移动", motion.enabled);
+            motion.useAimDirection = EditorGUILayout.Toggle("使用瞄准朝向", motion.useAimDirection);
             if (motion.enabled)
             {
                 motion.mode = (SkillMotionMode)EditorGUILayout.EnumPopup("运动模式", motion.mode);

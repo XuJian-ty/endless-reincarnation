@@ -611,6 +611,13 @@ namespace Game.Data
             if (onHitPhysicsEffects != null && onHitPhysicsEffects.Length > 0)
                 effect.onHitPhysicsEffects = new List<SkillPhysicsEffect>(onHitPhysicsEffects);
 
+            if (string.Equals(damageName, "Shoot", StringComparison.Ordinal)
+                || string.Equals(damageName, "ShootCharge", StringComparison.Ordinal)
+                || string.Equals(damageName, "Shoot_Charge", StringComparison.Ordinal))
+            {
+                effect.motion.useAimDirection = true;
+            }
+
             return effect;
         }
 

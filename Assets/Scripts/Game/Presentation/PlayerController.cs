@@ -14,6 +14,22 @@ using UnityEngine.InputSystem;
 
 namespace Game.Presentation
 {
+    public readonly struct SkillAimPose
+    {
+        public SkillAimPose(Vector3 origin, Vector3 targetPoint, Vector3 direction, Quaternion rotation)
+        {
+            Origin = origin;
+            TargetPoint = targetPoint;
+            Direction = direction;
+            Rotation = rotation;
+        }
+
+        public Vector3 Origin { get; }
+        public Vector3 TargetPoint { get; }
+        public Vector3 Direction { get; }
+        public Quaternion Rotation { get; }
+    }
+
     /// <summary>
     /// 玩家编排层（薄壳，Facade 模式）。
     ///
@@ -759,14 +775,19 @@ namespace Game.Presentation
         private void RefreshAimPresentation()
         {
             PlayerStateBase currentState = StateMachine?.CurrentState;
+            bool isRangedShootVisualState = PlayerModel != null
+                                            && PlayerModel.CurrentAttackMode == PlayerAttackMode.Ranged
+                                            && (currentState is ShootState
+                                                || currentState is ShootChargeState
+                                                || currentState is ChargeLoopState);
             bool isAimVisualState = (IsAimModeActive
                                      && (currentState is AimState
                                          || currentState is IdleState
                                          || currentState is MoveState
-                                         || currentState is AttackStateBase))
-                                    || (PlayerModel != null
-                                        && PlayerModel.CurrentAttackMode == PlayerAttackMode.Ranged
-                                        && currentState is ChargeLoopState);
+                                         || currentState is AttackStateBase
+                                         || currentState is ShootState
+                                         || currentState is ShootChargeState))
+                                    || isRangedShootVisualState;
             bool shouldShowCrosshair = isAimVisualState
                                        && GameStateMachine.GetInstance()?.IsGameplayPaused != true;
             PlayerAimCrosshairRuntime.SetVisible(shouldShowCrosshair);
@@ -782,6 +803,25 @@ namespace Game.Presentation
             }
 
             PlayerAimCrosshairRuntime.SetAimGuide(start, end, true);
+        }
+
+        public bool TryGetCurrentAimPose(out SkillAimPose aimPose)
+        {
+            aimPose = default;
+            if (!TryGetAimGuideSegment(out Vector3 start, out Vector3 end))
+                return false;
+
+            Vector3 direction = end - start;
+            if (direction.sqrMagnitude <= 0.0001f)
+                return false;
+
+            Vector3 normalizedDirection = direction.normalized;
+            aimPose = new SkillAimPose(
+                start,
+                end,
+                normalizedDirection,
+                Quaternion.LookRotation(normalizedDirection, Vector3.up));
+            return true;
         }
 
         private bool TryGetAimGuideSegment(out Vector3 start, out Vector3 end)

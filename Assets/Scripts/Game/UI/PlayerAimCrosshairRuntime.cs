@@ -5,11 +5,16 @@ namespace Game.UI
 {
     public static class PlayerAimCrosshairRuntime
     {
+        private const float BaseCrosshairSize = 84f;
+        private const int BaseCrosshairFontSize = 54;
+
         private static GameObject _rootObject;
+        private static RectTransform _crosshairRectTransform;
         private static Text _crosshairText;
         private static GameObject _guideLineObject;
         private static LineRenderer _guideLineRenderer;
         private static Material _guideLineMaterial;
+        private static float _currentZoomScale = 1f;
 
         public static void SetVisible(bool visible)
         {
@@ -18,6 +23,12 @@ namespace Game.UI
 
             if (_rootObject != null)
                 _rootObject.SetActive(visible);
+        }
+
+        public static void SetZoomScale(float zoomScale)
+        {
+            _currentZoomScale = Mathf.Max(1f, zoomScale);
+            ApplyCrosshairScale();
         }
 
         public static void SetAimGuide(Vector3 start, Vector3 end, bool visible)
@@ -54,24 +65,30 @@ namespace Game.UI
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
 
-            GameObject textObject = new GameObject("Crosshair", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            GameObject textObject = new GameObject("Crosshair", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text), typeof(Outline));
             textObject.transform.SetParent(_rootObject.transform, false);
 
-            RectTransform rectTransform = textObject.GetComponent<RectTransform>();
-            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            rectTransform.anchoredPosition = Vector2.zero;
-            rectTransform.sizeDelta = new Vector2(48f, 48f);
+            _crosshairRectTransform = textObject.GetComponent<RectTransform>();
+            _crosshairRectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            _crosshairRectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            _crosshairRectTransform.pivot = new Vector2(0.5f, 0.5f);
+            _crosshairRectTransform.anchoredPosition = Vector2.zero;
+            _crosshairRectTransform.sizeDelta = new Vector2(BaseCrosshairSize, BaseCrosshairSize);
 
             _crosshairText = textObject.GetComponent<Text>();
             _crosshairText.text = "+";
             _crosshairText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            _crosshairText.fontSize = 28;
+            _crosshairText.fontSize = BaseCrosshairFontSize;
+            _crosshairText.fontStyle = FontStyle.Bold;
             _crosshairText.alignment = TextAnchor.MiddleCenter;
-            _crosshairText.color = new Color(1f, 0.96f, 0.86f, 0.95f);
+            _crosshairText.color = new Color(1f, 0.12f, 0.12f, 0.98f);
             _crosshairText.raycastTarget = false;
 
+            Outline outline = textObject.GetComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            ApplyCrosshairScale();
             _rootObject.SetActive(false);
         }
 
@@ -91,10 +108,10 @@ namespace Game.UI
             _guideLineRenderer.receiveShadows = false;
             _guideLineRenderer.textureMode = LineTextureMode.Stretch;
             _guideLineRenderer.numCapVertices = 4;
-            _guideLineRenderer.startWidth = 0.03f;
-            _guideLineRenderer.endWidth = 0.015f;
-            _guideLineRenderer.startColor = new Color(1f, 0.18f, 0.12f, 0.95f);
-            _guideLineRenderer.endColor = new Color(1f, 0.18f, 0.12f, 0.25f);
+            _guideLineRenderer.startWidth = 0.04f;
+            _guideLineRenderer.endWidth = 0.02f;
+            _guideLineRenderer.startColor = new Color(1f, 0.12f, 0.12f, 0.98f);
+            _guideLineRenderer.endColor = new Color(1f, 0.12f, 0.12f, 0.3f);
             _guideLineRenderer.sortingOrder = 4096;
 
             Shader shader = Shader.Find("Sprites/Default");
@@ -107,12 +124,22 @@ namespace Game.UI
             {
                 _guideLineMaterial = new Material(shader)
                 {
-                    color = new Color(1f, 0.18f, 0.12f, 0.9f)
+                    color = new Color(1f, 0.12f, 0.12f, 0.95f)
                 };
                 _guideLineRenderer.material = _guideLineMaterial;
             }
 
             _guideLineObject.SetActive(false);
+        }
+
+        private static void ApplyCrosshairScale()
+        {
+            if (_crosshairRectTransform == null || _crosshairText == null)
+                return;
+
+            float size = BaseCrosshairSize * _currentZoomScale;
+            _crosshairRectTransform.sizeDelta = new Vector2(size, size);
+            _crosshairText.fontSize = Mathf.RoundToInt(BaseCrosshairFontSize * _currentZoomScale);
         }
     }
 }

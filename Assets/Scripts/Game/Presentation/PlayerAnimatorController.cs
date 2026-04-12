@@ -10,6 +10,17 @@ namespace Game.Presentation
     [RequireComponent(typeof(Animator))]
     public class PlayerAnimatorController : MonoBehaviour
     {
+        [Header("瞄准头部跟随")]
+        [SerializeField] private bool _enableAimHeadTracking = true;
+        [SerializeField] [Range(0f, 45f)] private float _maxAimUpAngle = 30f;
+        [SerializeField] [Range(0f, 45f)] private float _maxAimDownAngle = 22f;
+        [SerializeField] [Range(0f, 1f)] private float _upperChestAimWeight = 0.2f;
+        [SerializeField] [Range(0f, 1f)] private float _chestAimWeight = 0.25f;
+        [SerializeField] [Range(0f, 1f)] private float _neckAimWeight = 0.35f;
+        [SerializeField] [Range(0f, 1f)] private float _headAimWeight = 0.65f;
+        [SerializeField] private float _aimHeadTrackingBlendSpeed = 10f;
+        [SerializeField] [Range(-30f, 30f)] private float _aimNeutralCameraPitch = 12f;
+
         // ── Animator Parameter Hashes（在静态字段预计算，零 GC）──────────
         private static readonly int SpeedHash        = Animator.StringToHash("Speed");
         private static readonly int MoveXHash        = Animator.StringToHash("MoveX");
@@ -35,12 +46,27 @@ namespace Game.Presentation
         private static readonly string[] AttackTriggerNames = { "Attack0", "Attack1", "Attack2", "Attack3" };
 
         private Animator _animator;
+        private PlayerController _playerController;
         private int _aimLayerIndex = -1;
         private readonly HashSet<string> _parameterNames = new HashSet<string>();
+        private bool _aimBonesResolved;
+        private float _currentAimHeadTrackingWeight;
+        private Transform _spineBone;
+        private Transform _upperChestBone;
+        private Transform _chestBone;
+        private Transform _neckBone;
+        private Transform _headBone;
         private void Awake()
         {
             _animator = GetComponent<Animator>();
+            _playerController = GetComponent<PlayerController>();
             _aimLayerIndex = _animator != null ? _animator.GetLayerIndex("Aim Layer") : -1;
+            ResolveAimBones();
+        }
+
+        private void LateUpdate()
+        {
+            ApplyAimHeadTracking();
         }
 
         // ── 参数设置与查询 ───────────────────────────────────────────────
@@ -249,6 +275,74 @@ namespace Game.Presentation
                    && !string.Equals(triggerName, "Shoot")
                    && !string.Equals(triggerName, "ShootCharge")
                    && !string.Equals(triggerName, "Shoot_Charge");
+        }
+
+        private void ResolveAimBones()
+        {
+            if (_aimBonesResolved || _animator == null)
+                return;
+
+            if (!_animator.isHuman)
+            {
+                _aimBonesResolved = true;
+                return;
+            }
+
+            _spineBone = _animator.GetBoneTransform(HumanBodyBones.Spine);
+            _upperChestBone = _animator.GetBoneTransform(HumanBodyBones.UpperChest);
+            _chestBone = _animator.GetBoneTransform(HumanBodyBones.Chest);
+            _neckBone = _animator.GetBoneTransform(HumanBodyBones.Neck);
+            _headBone = _animator.GetBoneTransform(HumanBodyBones.Head);
+            _aimBonesResolved = _spineBone != null
+                                || _upperChestBone != null
+                                || _chestBone != null
+                                || _neckBone != null
+                                || _headBone != null;
+        }
+
+        private void ApplyAimHeadTracking()
+        {
+            if (!_enableAimHeadTracking || _animator == null || !_animator.isHuman)
+                return;
+
+            ResolveAimBones();
+
+            float targetWeight = 0f;
+            float clampedPitch = 0f;
+            if (_playerController != null && _playerController.IsAimModeActive)
+            {
+                ThirdPersonCamera cameraRig = ThirdPersonCamera.Active;
+                float rawPitch = cameraRig != null
+                    ? -cameraRig.Pitch + _aimNeutralCameraPitch
+                    : _aimNeutralCameraPitch;
+                clampedPitch = rawPitch >= 0f
+                    ? Mathf.Min(rawPitch, _maxAimUpAngle)
+                    : Mathf.Max(rawPitch, -_maxAimDownAngle);
+                targetWeight = 1f;
+            }
+
+            _currentAimHeadTrackingWeight = Mathf.MoveTowards(
+                _currentAimHeadTrackingWeight,
+                targetWeight,
+                _aimHeadTrackingBlendSpeed * Time.deltaTime);
+
+            ApplyAimPitchToBone(_spineBone, clampedPitch, _upperChestAimWeight * 0.35f);
+            ApplyAimPitchToBone(_upperChestBone, clampedPitch, _upperChestAimWeight);
+            ApplyAimPitchToBone(_chestBone, clampedPitch, _chestAimWeight);
+            ApplyAimPitchToBone(_neckBone, clampedPitch, _neckAimWeight);
+            ApplyAimPitchToBone(_headBone, clampedPitch, _headAimWeight);
+        }
+
+        private void ApplyAimPitchToBone(Transform bone, float clampedPitch, float weight)
+        {
+            if (bone == null)
+                return;
+
+            float finalPitch = clampedPitch * Mathf.Clamp01(weight) * _currentAimHeadTrackingWeight;
+            if (Mathf.Abs(finalPitch) <= 0.001f)
+                return;
+
+            bone.rotation = Quaternion.AngleAxis(-finalPitch, transform.right) * bone.rotation;
         }
     }
 }

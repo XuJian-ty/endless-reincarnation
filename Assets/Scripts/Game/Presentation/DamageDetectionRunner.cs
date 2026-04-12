@@ -232,7 +232,7 @@ namespace Game.Presentation
             if (!effect.motion.TryEvaluateRetargetedWorldPosition(motionOrigin, motionFrame.Value.OriginRotation, retargetPosition, motionFrame.Value.Elapsed, out origin))
                 return false;
 
-            rotation = attacker.rotation * Quaternion.Euler(effect.rotationEuler);
+            rotation = motionFrame.Value.OriginRotation * Quaternion.Euler(effect.rotationEuler);
             return true;
         }
 

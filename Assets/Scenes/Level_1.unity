@@ -3155,7 +3155,7 @@ Transform:
   m_GameObject: {fileID: 1418049635}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5668,6 +5668,16 @@ PrefabInstance:
         type: 3}
       propertyPath: _distance
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5794273412386189070, guid: 7787b5d8e9181c3488f4dd3b601888c9,
+        type: 3}
+      propertyPath: _maxPitch
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 5794273412386189070, guid: 7787b5d8e9181c3488f4dd3b601888c9,
+        type: 3}
+      propertyPath: _minPitch
+      value: -25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

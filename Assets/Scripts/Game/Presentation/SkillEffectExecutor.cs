@@ -1176,7 +1176,7 @@ namespace Game.Presentation
                 return;
 
             Vector3 originPosition = instance.transform.position;
-            Quaternion originRotation = caster.rotation;
+            Quaternion originRotation = ResolveWorldMotionBasisRotation(effect, caster);
             Quaternion lockedRotation = instance.transform.rotation;
 
             SkillCueMover mover = instance.GetComponent<SkillCueMover>();
@@ -1232,7 +1232,38 @@ namespace Game.Presentation
         {
             Transform basis = anchor != null ? anchor : caster;
             Quaternion basisRotation = basis != null ? basis.rotation : Quaternion.identity;
+            if (effect != null
+                && effect.anchor == CueAnchor.World
+                && TryResolveAimRotation(effect.motion, caster, out Quaternion aimRotation))
+            {
+                basisRotation = aimRotation;
+            }
+
             return basisRotation * Quaternion.Euler(effect.rotationEuler);
+        }
+
+        private static Quaternion ResolveWorldMotionBasisRotation(SkillVfxEffect effect, Transform caster)
+        {
+            if (TryResolveAimRotation(effect != null ? effect.motion : null, caster, out Quaternion aimRotation))
+                return aimRotation;
+
+            return caster != null ? caster.rotation : Quaternion.identity;
+        }
+
+        private static bool TryResolveAimRotation(SkillMotionSettings motion, Transform caster, out Quaternion aimRotation)
+        {
+            aimRotation = Quaternion.identity;
+            if (motion == null || !motion.useAimDirection || caster == null)
+                return false;
+
+            PlayerController player = caster.GetComponent<PlayerController>();
+            if (player == null
+                || !player.IsAimModeActive
+                || !player.TryGetCurrentAimPose(out SkillAimPose aimPose))
+                return false;
+
+            aimRotation = aimPose.Rotation;
+            return true;
         }
 
         private static List<Transform> ResolveTargets(

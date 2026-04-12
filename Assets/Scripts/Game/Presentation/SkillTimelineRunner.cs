@@ -852,6 +852,9 @@ namespace Game.Presentation
                 return;
             }
 
+            if (TryResolveAimRotation(effect.motion, out UnityEngine.Quaternion aimRotation))
+                currentRotation = aimRotation;
+
             if (evt != null
                 && evt.triggerMode == SkillEventTriggerMode.Repeated
                 && evt.repeatedAnchorMode == SkillDamageRepeatedAnchorMode.Fixed)
@@ -873,6 +876,26 @@ namespace Game.Presentation
 
             anchorPosition = currentPosition;
             anchorRotation = currentRotation;
+        }
+
+        private bool TryResolveAimRotation(SkillMotionSettings motion, out UnityEngine.Quaternion aimRotation)
+        {
+            aimRotation = UnityEngine.Quaternion.identity;
+            if (motion == null || !motion.useAimDirection)
+                return false;
+
+            UnityEngine.Transform caster = _context?.CasterTransform;
+            if (caster == null)
+                return false;
+
+            PlayerController player = caster.GetComponent<PlayerController>();
+            if (player == null
+                || !player.IsAimModeActive
+                || !player.TryGetCurrentAimPose(out SkillAimPose aimPose))
+                return false;
+
+            aimRotation = aimPose.Rotation;
+            return true;
         }
 
         private void EvaluateTrack<T>(List<T> events, EventState[] states, Action<T, ISkillExecutionContext, SkillCueRuntimeScope> executor)
