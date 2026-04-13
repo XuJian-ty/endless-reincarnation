@@ -8,7 +8,7 @@ namespace Game.Presentation
     /// 所有玩家状态可访问的上下文接口。
     /// 将状态与 PlayerController 具体实现解耦，便于测试和扩展。
     /// </summary>
-    public interface IPlayerContext
+    public interface IPlayerContext : ICombatActionReadable
     {
         // ── 组件引用 ──────────────────────────────────────────────────────
         PlayerMover              Mover        { get; }
@@ -29,12 +29,6 @@ namespace Game.Presentation
         // ── 当前状态查询（HUD / 调试 / UI 用）──────────────────────────────
         /// <summary>当前状态类名，如 "IdleState"、"DodgeState"</summary>
         string CurrentStateName { get; }
-        /// <summary>当前动作枚举；Idle/Move 为 None</summary>
-        GameAction CurrentActionId { get; }
-        /// <summary>带有时长状态（如受击硬直、闪避）的剩余时间（秒），否则 -1</summary>
-        float StateRemainingTime { get; }
-        /// <summary>带有时长状态的进度 0～1，否则 -1</summary>
-        float StateNormalizedProgress { get; }
 
         // ── 工具方法 ──────────────────────────────────────────────────────
         /// <summary>将 MoveInput（相机空间 XY）转换为世界空间水平移动方向</summary>

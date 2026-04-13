@@ -296,30 +296,19 @@ namespace Game.Presentation
         private void ResolveChaseSpeed(Vector3 targetPosition, ref float moveSpeed, ref float moveBlend)
         {
             float targetDistance = GetPlanarDistance(transform.position, targetPosition);
-            float innerRing = 4f;
-            float outerRing = 9f;
+            float walkThreshold = 2.5f;
 
             if (_controller.Archetype != null)
-            {
-                innerRing = _controller.Archetype.GetChaseInnerDistance();
-                outerRing = _controller.Archetype.GetChaseOuterDistance();
-            }
+                walkThreshold = _controller.Archetype.GetChaseInnerDistance();
 
-            if (targetDistance > outerRing)
-            {
-                moveBlend = RunBlendValue;
-                return;
-            }
-
-            if (targetDistance <= innerRing)
+            if (targetDistance <= walkThreshold)
             {
                 moveSpeed *= WalkSpeedRatio;
                 moveBlend = WalkBlendValue;
                 return;
             }
 
-            moveSpeed *= WalkSpeedRatio;
-            moveBlend = WalkBlendValue;
+            moveBlend = RunBlendValue;
         }
 
         private void RotateToward(Vector3 worldPosition)

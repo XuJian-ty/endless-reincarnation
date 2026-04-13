@@ -7,15 +7,15 @@ namespace Game.Presentation
     /// 进入时清空所有预输入（被打断时玩家之前的动作应作废）。
     /// 硬直期间忽略所有输入（GetPolicyFor 全部 Ignore）。
     /// </summary>
-    public class HitStunState : PlayerStateBase, IPlayerStateWithDuration
+    public class HitStunState : PlayerStateBase
     {
         /// <summary>由 PlayerController.OnHit 注入的硬直时长（秒）</summary>
         public float Duration { get; set; } = 0.3f;
 
         private float _timer;
 
-        public float RemainingTime => _timer;
-        public float NormalizedProgress => Duration > 0f ? 1f - _timer / Duration : 1f;
+        public override float RemainingTime => _timer;
+        public override float NormalizedProgress => Duration > 0f ? 1f - _timer / Duration : 1f;
 
         protected override void OnEnter()
         {

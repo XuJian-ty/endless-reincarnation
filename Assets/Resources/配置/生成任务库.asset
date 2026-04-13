@@ -18,14 +18,6 @@ MonoBehaviour:
     spawnRadius: 20
     countMode: 1
     fixedCount: 1
-    randomMinCount: 2
-    randomMaxCount: 3
-    spawnMinSpacing: 5
-  - spawnType: 0
-    specificSpawnId: 
-    spawnRadius: 20
-    countMode: 1
-    fixedCount: 1
     randomMinCount: 8
     randomMaxCount: 10
     spawnMinSpacing: 1

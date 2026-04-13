@@ -201,10 +201,7 @@ namespace Game.Presentation
         /// </summary>
         public bool IsCurrentStateNearEnd(float threshold = 0.9f, int layer = 0)
         {
-            if (_animator.IsInTransition(layer)) return false;
-            var info = _animator.GetCurrentAnimatorStateInfo(layer);
-            if (info.loop) return false;
-            return info.normalizedTime >= threshold;
+            return AnimatorStateTimingUtility.IsCurrentStatePastNormalizedTime(_animator, layer, threshold);
         }
 
         /// <summary>
@@ -212,8 +209,7 @@ namespace Game.Presentation
         /// </summary>
         public bool IsCurrentStateLooping(int layer = 0)
         {
-            if (_animator.IsInTransition(layer)) return false;
-            return _animator.GetCurrentAnimatorStateInfo(layer).loop;
+            return AnimatorStateTimingUtility.IsCurrentStateLooping(_animator, layer);
         }
 
         private void CacheParametersIfNeeded()
@@ -272,9 +268,7 @@ namespace Game.Presentation
             return !string.Equals(triggerName, "NormalLocomotion")
                    && !string.Equals(triggerName, "AimLocomotion")
                    && !string.Equals(triggerName, "Aim")
-                   && !string.Equals(triggerName, "Shoot")
-                   && !string.Equals(triggerName, "ShootCharge")
-                   && !string.Equals(triggerName, "Shoot_Charge");
+                   && !PlayerActionRouting.IsRangedActionName(triggerName);
         }
 
         private void ResolveAimBones()

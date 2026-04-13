@@ -1436,10 +1436,8 @@ namespace Game.Editor
                 {
                     cooldown = 1f,
                     castRange = 3f,
-                    castDuration = 0.6f,
                     rotateToTargetOnCast = true,
                     naturalExitNormalizedTime = 0.9f,
-                    naturalExitTarget = EnemyAnimationNaturalExitTarget.Locomotion,
                     phaseAvailability = EnemySkillPhaseAvailability.Always,
                 };
             }
@@ -1458,12 +1456,9 @@ namespace Game.Editor
                 punishWeight = template.punishWeight,
                 repeatPenalty = template.repeatPenalty,
                 canUseUnderThreat = template.canUseUnderThreat,
-                castDuration = template.castDuration,
-                enterIdleAfterCast = template.enterIdleAfterCast,
                 postCastIdleDuration = template.postCastIdleDuration,
                 rotateToTargetOnCast = template.rotateToTargetOnCast,
                 naturalExitNormalizedTime = template.naturalExitNormalizedTime,
-                naturalExitTarget = template.naturalExitTarget,
                 phaseAvailability = template.phaseAvailability,
             };
         }

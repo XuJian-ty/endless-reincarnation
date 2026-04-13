@@ -19,73 +19,63 @@ MonoBehaviour:
       taskCount: 40
     - taskIndex: 1
       taskCount: 40
-    - taskIndex: 2
+    - taskIndex: 6
       taskCount: 40
     - taskIndex: 7
-      taskCount: 40
-    - taskIndex: 8
       taskCount: 10
     spawnMode: 1
     taskCenterMinSpacing: 18
     initialTaskCount: 80
-    taskInterval: 8
+    taskInterval: 15
   - taskAssignments:
     - taskIndex: 0
       taskCount: 60
     - taskIndex: 1
       taskCount: 60
-    - taskIndex: 2
+    - taskIndex: 6
       taskCount: 60
     - taskIndex: 7
-      taskCount: 60
-    - taskIndex: 8
       taskCount: 12
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 120
-    taskInterval: 8
+    taskInterval: 15
   - taskAssignments:
     - taskIndex: 0
       taskCount: 80
     - taskIndex: 1
       taskCount: 80
-    - taskIndex: 2
+    - taskIndex: 6
       taskCount: 80
     - taskIndex: 7
-      taskCount: 80
-    - taskIndex: 8
       taskCount: 15
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 160
-    taskInterval: 8
+    taskInterval: 15
   - taskAssignments:
     - taskIndex: 0
       taskCount: 100
     - taskIndex: 1
       taskCount: 100
-    - taskIndex: 2
+    - taskIndex: 6
       taskCount: 100
     - taskIndex: 7
-      taskCount: 100
-    - taskIndex: 8
       taskCount: 18
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 200
-    taskInterval: 8
+    taskInterval: 15
   - taskAssignments:
     - taskIndex: 0
       taskCount: 120
     - taskIndex: 1
       taskCount: 120
-    - taskIndex: 2
+    - taskIndex: 6
       taskCount: 120
     - taskIndex: 7
-      taskCount: 120
-    - taskIndex: 8
       taskCount: 20
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 240
-    taskInterval: 8
+    taskInterval: 15

@@ -10,6 +10,7 @@ namespace Game.Presentation
     public static class PlayerActionRouting
     {
         public const string SkillSlotActionPrefix = "Skill";
+        public const string AttackComboActionPrefix = "Attack";
 
         public static string BuildSkillSlotActionName(int slotIndex)
         {
@@ -19,6 +20,77 @@ namespace Game.Presentation
         public static bool IsSkillSlotActionName(string actionId)
         {
             return TryParseSkillSlotIndex(actionId, out _);
+        }
+
+        public static bool IsAttackComboActionName(string actionId)
+        {
+            return !string.IsNullOrWhiteSpace(actionId)
+                   && actionId.StartsWith(AttackComboActionPrefix, StringComparison.Ordinal);
+        }
+
+        public static bool IsDodgeActionName(string actionId)
+        {
+            return string.Equals(actionId, "Dodge", StringComparison.Ordinal);
+        }
+
+        public static bool IsChargeStartActionName(string actionId)
+        {
+            return string.Equals(actionId, "ChargeStart", StringComparison.Ordinal);
+        }
+
+        public static bool IsChargeLoopActionName(string actionId)
+        {
+            return string.Equals(actionId, "ChargeLoop", StringComparison.Ordinal);
+        }
+
+        public static bool IsRangedChargeActionName(string actionId)
+        {
+            return string.Equals(actionId, "ShootCharge", StringComparison.Ordinal)
+                   || string.Equals(actionId, "Shoot_Charge", StringComparison.Ordinal);
+        }
+
+        public static bool IsRangedActionName(string actionId)
+        {
+            return string.Equals(actionId, "Shoot", StringComparison.Ordinal)
+                   || IsRangedChargeActionName(actionId);
+        }
+
+        public static GameAction ResolveGameAction(string actionId)
+        {
+            if (string.IsNullOrWhiteSpace(actionId))
+                return GameAction.None;
+
+            string normalizedActionId = actionId.Trim();
+            if (IsAttackComboActionName(normalizedActionId))
+                return GameAction.NormalAttack;
+            if (IsDodgeActionName(normalizedActionId))
+                return GameAction.Dodge;
+            if (IsChargeStartActionName(normalizedActionId))
+                return GameAction.ChargeStart;
+            if (IsChargeLoopActionName(normalizedActionId))
+                return GameAction.ChargeStart;
+            if (IsRangedChargeActionName(normalizedActionId))
+                return GameAction.ShootCharge;
+
+            return normalizedActionId switch
+            {
+                "ChargeRelease" => GameAction.ChargeRelease,
+                "Shoot" => GameAction.Shoot,
+                _ when IsSkillSlotActionName(normalizedActionId) => GameAction.Skill,
+                _ => GameAction.None,
+            };
+        }
+
+        public static bool TryParseAttackComboIndex(string actionId, out int index)
+        {
+            index = 0;
+            if (!IsAttackComboActionName(actionId))
+                return false;
+
+            string normalizedActionId = actionId.Trim();
+            string suffix = normalizedActionId.Substring(AttackComboActionPrefix.Length);
+            index = int.TryParse(suffix, out int parsedIndex) ? parsedIndex : 0;
+            return true;
         }
 
         public static bool TryParseSkillSlotIndex(string actionId, out int slotIndex)

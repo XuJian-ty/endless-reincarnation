@@ -37,7 +37,7 @@ MonoBehaviour:
   reactionMaxSeconds: 0.18
   decisionCommitSeconds: 0.22
   searchMemoryDuration: 1.8
-  aggression: 0.48
+  aggression: 0.857
   caution: 0.56
   dodgeBias: 0.52
   punishBias: 0.44

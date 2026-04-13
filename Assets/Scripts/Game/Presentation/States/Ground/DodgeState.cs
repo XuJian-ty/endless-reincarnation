@@ -10,7 +10,7 @@ namespace Game.Presentation
     ///   - 按当前 Move 输入执行相机相对闪避；无输入时默认前闪
     ///   - 仅当有缓存的 Walk/Run 预输入时在约 80% 提前结束并进入移动；否则在动画结束时自然退出
     /// </summary>
-    public class DodgeState : PlayerStateBase, IPlayerStateWithDuration
+    public class DodgeState : PlayerStateBase
     {
         private enum DodgeAnimationDirection
         {
@@ -21,8 +21,8 @@ namespace Game.Presentation
         }
 
         public bool IsInvincible => true;
-        public float RemainingTime => -1f;
-        public float NormalizedProgress => Ctx?.Anim != null ? Ctx.Anim.GetCurrentNormalizedTime() : -1f;
+        public override float RemainingTime => -1f;
+        public override float NormalizedProgress => Ctx?.Anim != null ? Ctx.Anim.GetCurrentNormalizedTime() : -1f;
 
         public override GameAction CurrentActionId => GameAction.Dodge;
 

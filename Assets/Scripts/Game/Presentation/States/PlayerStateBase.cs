@@ -18,7 +18,7 @@ namespace Game.Presentation
     ///   优先读取玩家动作及技能配置库中的动作策略表；
     ///   若当前状态没有对应配置，则回退为 Ignore。
     /// </summary>
-    public abstract class PlayerStateBase
+    public abstract class PlayerStateBase : IPlayerStateWithDuration
     {
         protected IPlayerContext Ctx { get; private set; }
         protected virtual string ActionId => TrimStateSuffix(GetType().Name);
@@ -69,6 +69,8 @@ namespace Game.Presentation
 
         /// <summary>当前状态对应的动作 ID，供 HUD/调试用；默认 None。</summary>
         public virtual GameAction CurrentActionId => GameAction.None;
+        public virtual float RemainingTime => -1f;
+        public virtual float NormalizedProgress => -1f;
 
         public bool TryGetCurrentCameraOverride(float lookTargetHeight, out SkillTimelineRunner.CameraOverrideRequest request)
         {
@@ -419,19 +421,11 @@ namespace Game.Presentation
             if (runner == null)
                 return;
 
-            runner.StopStateScopedCues();
-            if (runner.HasPendingWork)
-            {
-                var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
-                if (player != null)
-                    player.ContinueDetachedTimelineRunner(runner);
-                else
-                    runner.Stop();
-            }
+            var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
+            if (player != null)
+                player.DetachOrStopTimelineRunner(runner);
             else
-            {
                 runner.Stop();
-            }
 
             runner = null;
             runningActionId = null;
@@ -516,13 +510,7 @@ namespace Game.Presentation
 
         private static bool IsUpperBodyAttackAction(string actionId)
         {
-            if (string.IsNullOrWhiteSpace(actionId))
-                return false;
-
-            string normalizedActionId = actionId.Trim();
-            return string.Equals(normalizedActionId, "Shoot")
-                   || string.Equals(normalizedActionId, "ShootCharge")
-                   || string.Equals(normalizedActionId, "Shoot_Charge");
+            return PlayerActionRouting.IsRangedActionName(actionId?.Trim());
         }
     }
 }

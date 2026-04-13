@@ -16,11 +16,11 @@ MonoBehaviour:
   displayName: "\u7CBE\u82F12"
   enemyType: 2
   sectorAngle: 150
-  sectorRange: 17
+  sectorRange: 15
   chaseBreakDistance: 30
   patrolRadius: 12
   patrolHealPercentPerSecond: 0.05
-  chaseInnerDistance: 5.2
+  chaseInnerDistance: 3
   chaseOuterDistance: 15
   preferredSafetyDistanceOffset: 0.25
   combatDistanceTolerance: 0.75
@@ -37,7 +37,7 @@ MonoBehaviour:
   reactionMaxSeconds: 0.18
   decisionCommitSeconds: 0.24
   searchMemoryDuration: 1.7
-  aggression: 0.52
+  aggression: 0.94
   caution: 0.48
   dodgeBias: 0.5
   punishBias: 0.56
@@ -58,15 +58,15 @@ MonoBehaviour:
     skillId: elite_2Skill0
     displayName: "\u6280\u80FD0"
     cooldown: 2
-    castRange: 13
+    castRange: 3
     minCastRange: 0
-    idealCastRange: 11.5
-    skillRole: 5
+    idealCastRange: 2.5
+    skillRole: 2
     riskWeight: 0.28
     punishWeight: 0.3
     repeatPenalty: 0.22
     canUseUnderThreat: 1
-    castDuration: 1.2
+    castDuration: 1
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1
@@ -77,15 +77,15 @@ MonoBehaviour:
     skillId: elite_2Skill1
     displayName: "\u6280\u80FD1"
     cooldown: 3
-    castRange: 4
-    minCastRange: 1.5
-    idealCastRange: 3.4
+    castRange: 3
+    minCastRange: 0
+    idealCastRange: 2.7
     skillRole: 3
     riskWeight: 0.4
     punishWeight: 0.72
     repeatPenalty: 0.28
     canUseUnderThreat: 1
-    castDuration: 1.1
+    castDuration: 1
     enterIdleAfterCast: 0
     postCastIdleDuration: 0
     rotateToTargetOnCast: 1

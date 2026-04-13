@@ -42,6 +42,7 @@ namespace Game.AI
     public static class EnemyUtilityCombatPlanner
     {
         private const float SearchArrivalDistance = 1f;
+        private const float SkillRangeTolerance = 0.25f;
 
         private readonly struct Candidate
         {
@@ -309,7 +310,7 @@ namespace Game.AI
                 EnemyResolvedSkill skill = frame.Controller.ResolveSkillSlot(slot);
                 if (skill == null)
                     continue;
-                if (!IsSkillInRange(frame.Perception, frame.Archetype, skill))
+                if (!IsSkillInRange(frame.Perception, skill))
                     continue;
                 if (!frame.Perception.HasLineOfSight)
                     continue;
@@ -651,15 +652,14 @@ namespace Game.AI
             return bestSkill;
         }
 
-        private static bool IsSkillInRange(EnemyPerception perception, EnemyArchetypeSO archetype, EnemyResolvedSkill skill)
+        private static bool IsSkillInRange(EnemyPerception perception, EnemyResolvedSkill skill)
         {
             if (perception == null || skill == null)
                 return false;
 
-            float tolerance = archetype != null ? Mathf.Max(0f, archetype.castRangeTolerance) : 0f;
             float minRange = Mathf.Max(0f, skill.MinCastRange);
-            return perception.DistanceToPlayer + tolerance >= minRange &&
-                   perception.DistanceToPlayer <= skill.CastRange + tolerance;
+            return perception.DistanceToPlayer + SkillRangeTolerance >= minRange &&
+                   perception.DistanceToPlayer <= skill.CastRange + SkillRangeTolerance;
         }
 
         private static float GetRoleBonus(EnemyResolvedSkill skill, CombatFrame frame, EnemyCombatDecisionFocus focus)

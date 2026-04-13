@@ -12,6 +12,11 @@ namespace Game.Presentation
     public class EnemyPerception : MonoBehaviour
     {
         private const float CurrentTargetStickinessMultiplier = 0.82f;
+        private const float SkillRangeTolerance = 0.25f;
+        private const float DefaultLosProbeInterval = 0.1f;
+        private const float DefaultPathProbeInterval = 0.3f;
+        private const int DefaultObstacleMask = Physics.DefaultRaycastLayers;
+        private const float DefaultPerceptionEyeHeight = 1.6f;
 
         private Transform _mainPlayer;
         private Transform _player;
@@ -62,10 +67,9 @@ namespace Game.Presentation
 
             float range = skill.CastRange;
             float minRange = Mathf.Max(0f, skill.MinCastRange);
-            float tolerance = _controller.Archetype != null ? Mathf.Max(0f, _controller.Archetype.castRangeTolerance) : 0f;
             return range > 0.01f &&
-                   DistanceToPlayer + tolerance >= minRange &&
-                   DistanceToPlayer <= range + tolerance;
+                   DistanceToPlayer + SkillRangeTolerance >= minRange &&
+                   DistanceToPlayer <= range + SkillRangeTolerance;
         }
 
         public Vector3 PredictTargetPosition(float leadTime)
@@ -199,7 +203,7 @@ namespace Game.Presentation
             if (shouldProbeTarget && now >= _nextLosProbeTime)
             {
                 _hasLineOfSight = ProbeLineOfSight(transform.position, playerPos, archetype);
-                _nextLosProbeTime = now + Mathf.Max(0.01f, archetype.losProbeInterval);
+                _nextLosProbeTime = now + DefaultLosProbeInterval;
             }
             else if (!shouldProbeTarget)
             {
@@ -209,7 +213,7 @@ namespace Game.Presentation
             if (shouldProbeTarget && now >= _nextPathProbeTime)
             {
                 _hasReachablePath = ProbePathToTarget(playerPos);
-                _nextPathProbeTime = now + Mathf.Max(0.02f, archetype.pathProbeInterval);
+                _nextPathProbeTime = now + DefaultPathProbeInterval;
             }
             else if (!shouldProbeTarget)
             {
@@ -274,35 +278,30 @@ namespace Game.Presentation
             if (_targetCloneActor == null && _playerController == null && _player != null)
                 _playerController = _player.GetComponent<PlayerController>();
 
-            if (_targetCloneActor != null)
-            {
-                ApplyObservedCombatObservation(
-                    _targetCloneActor.CurrentActionId,
-                    _targetCloneActor.StateRemainingTime,
-                    _targetCloneActor.StateNormalizedProgress,
-                    archetype);
+            if (TryApplyObservedCombatObservation(_targetCloneActor, archetype))
                 return;
-            }
 
-            if (_playerController != null)
-            {
-                ApplyObservedCombatObservation(
-                    _playerController.CurrentActionId,
-                    _playerController.StateRemainingTime,
-                    _playerController.StateNormalizedProgress,
-                    archetype);
+            if (TryApplyObservedCombatObservation(_playerController, archetype))
                 return;
-            }
 
             ClearPlayerCombatObservation();
         }
 
-        private void ApplyObservedCombatObservation(GameAction action, float remainingTime, float normalizedProgress, EnemyArchetypeSO archetype)
+        private bool TryApplyObservedCombatObservation(ICombatActionReadable source, EnemyArchetypeSO archetype)
         {
-            ObservedPlayerAction = action;
-            ObservedPlayerStateRemainingTime = Mathf.Max(0f, remainingTime);
-            ObservedPlayerStateNormalizedProgress = normalizedProgress >= 0f
-                ? Mathf.Clamp01(normalizedProgress)
+            if (source == null)
+                return false;
+
+            ApplyObservedCombatObservation(CombatActionObservation.From(source), archetype);
+            return true;
+        }
+
+        private void ApplyObservedCombatObservation(CombatActionObservation observation, EnemyArchetypeSO archetype)
+        {
+            ObservedPlayerAction = observation.Action;
+            ObservedPlayerStateRemainingTime = Mathf.Max(0f, observation.RemainingTime);
+            ObservedPlayerStateNormalizedProgress = observation.NormalizedProgress >= 0f
+                ? Mathf.Clamp01(observation.NormalizedProgress)
                 : 0f;
 
             float threatWeight = ResolveActionThreatWeight(ObservedPlayerAction);
@@ -381,9 +380,9 @@ namespace Game.Presentation
             if (distance <= 0.05f)
                 return true;
 
-            int obstacleMask = archetype != null ? archetype.obstacleMask.value : Physics.DefaultRaycastLayers;
+            int obstacleMask = DefaultObstacleMask;
             if (obstacleMask == 0)
-                obstacleMask = Physics.DefaultRaycastLayers;
+                obstacleMask = DefaultObstacleMask;
 
             RaycastHit[] hits = Physics.RaycastAll(origin, dir / distance, distance, obstacleMask, QueryTriggerInteraction.Ignore);
             if (hits == null || hits.Length == 0)
@@ -426,7 +425,9 @@ namespace Game.Presentation
 
         private static Vector3 WithEyeHeight(Vector3 position, EnemyArchetypeSO archetype)
         {
-            float height = archetype != null ? Mathf.Max(0f, archetype.perceptionEyeHeight) : 1.2f;
+            float height = archetype != null
+                ? Mathf.Max(0f, archetype.perceptionEyeHeight)
+                : DefaultPerceptionEyeHeight;
             return position + Vector3.up * height;
         }
 

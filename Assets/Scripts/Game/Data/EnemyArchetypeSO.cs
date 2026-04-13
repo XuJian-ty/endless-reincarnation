@@ -11,6 +11,8 @@ namespace Game.Data
     [CreateAssetMenu(menuName = "游戏/配置/敌人行为", fileName = "敌人行为_")]
     public class EnemyArchetypeSO : ScriptableObject
     {
+        private const float DefaultDecisionCommitSeconds = 0.24f;
+
         [Header("基础标识")]
         [InspectorLabel("敌人ID")]
         [Tooltip("主键，必须唯一，例如：melee_minion / boss_1")]
@@ -42,54 +44,30 @@ namespace Game.Data
         [Min(0f)] public float patrolHealPercentPerSecond = 0.05f;
 
         [Header("战术战斗")]
-        [InspectorLabel("追击内圈(米)")]
-        [Min(0.1f)] public float chaseInnerDistance = 6f;
+        [InspectorLabel("步行追击阈值(米)")]
+        [Tooltip("与目标距离小于等于该值时，追击移动使用走路；大于该值时使用跑步。")]
+        [Min(0.1f)] public float chaseInnerDistance = 2.5f;
 
-        [InspectorLabel("追击外圈(米)")]
-        [Min(0.1f)] public float chaseOuterDistance = 12f;
-
-        [InspectorLabel("安全偏移(米)")]
-        [Tooltip("在技能施法距离基础上额外保持的安全距离")]
-        [Min(0f)] public float preferredSafetyDistanceOffset = 0.75f;
-
-        [InspectorLabel("距离容差(米)")]
+        [InspectorLabel("理想站位容差(米)")]
+        [Tooltip("相对理想施法距离允许偏离的范围。越大越容易接受当前站位，不会急着前进或后撤。")]
         [Min(0.05f)] public float combatDistanceTolerance = 0.9f;
 
-        [InspectorLabel("施法距离容差(米)")]
-        [Min(0f)] public float castRangeTolerance = 0.25f;
-
-        [InspectorLabel("后撤步长(米)")]
+        [InspectorLabel("战术位移步长(米)")]
+        [Tooltip("战术移动时的一步长度。它会同时影响后撤、绕步横移，以及施法后恢复时拉开的距离。")]
         [Min(0.1f)] public float retreatStepDistance = 3.5f;
 
         [InspectorLabel("接近预测提前量(秒)")]
         [Tooltip("玩家移动时，接近目标点的预测时间")]
         [Min(0f)] public float approachLeadTime = 0.2f;
 
-        [InspectorLabel("视线检测间隔(秒)")]
-        [Min(0.01f)] public float losProbeInterval = 0.1f;
-
-        [InspectorLabel("路径检测间隔(秒)")]
-        [Min(0.02f)] public float pathProbeInterval = 0.3f;
-
-        [InspectorLabel("遮挡层级")]
-        [Tooltip("用于阻挡视线检测的 Layer")]
-        public LayerMask obstacleMask = Physics.DefaultRaycastLayers;
-
         [InspectorLabel("感知视点高度(米)")]
-        [Min(0f)] public float perceptionEyeHeight = 1.2f;
+        [Tooltip("视线检测和感知射线使用的视点高度。体型更高的敌人可以适当调大。")]
+        [Min(0f)] public float perceptionEyeHeight = 1.6f;
 
         [Header("战斗人格")]
-        [InspectorLabel("反应最短延迟(秒)")]
-        [Tooltip("敌人在重新思考前至少要等待多久。更小会更灵敏，但也更像读输入。")]
-        [Min(0f)] public float reactionMinSeconds = 0.08f;
-
-        [InspectorLabel("反应最长延迟(秒)")]
-        [Tooltip("敌人在安全情况下重新决策的最长延迟。建议只比最短延迟略高。")]
-        [Min(0f)] public float reactionMaxSeconds = 0.18f;
-
-        [InspectorLabel("最短承诺时长(秒)")]
-        [Tooltip("一旦决定接近、绕步、闪避或压制，至少坚持这么久再重新评估，避免每帧来回改主意。")]
-        [Min(0f)] public float decisionCommitSeconds = 0.22f;
+        [InspectorLabel("反应延迟(秒)")]
+        [Tooltip("敌人每次重新评估决策前的等待时间。更小会更灵敏，更大则更迟缓。")]
+        [Min(0f)] public float reactionDelaySeconds = 0.12f;
 
         [InspectorLabel("目标记忆时长(秒)")]
         [Tooltip("短暂丢失视野后，敌人还会继续搜索玩家多久。")]
@@ -116,10 +94,6 @@ namespace Game.Data
         [Range(0f, 1f)] public float strafeBias = 0.45f;
 
         [Header("受击与协同")]
-        [InspectorLabel("最大压制人数")]
-        [Tooltip("同时允许多少个同阵营敌人进入正面压制/抢回合状态，其他敌人会更倾向绕步、持距或等待。")]
-        [Min(1)] public int maxPressureAllies = 2;
-
         [InspectorLabel("最大韧性")]
         [Tooltip("韧性归零才会触发明显破韧；值越高越不容易被连续小招打成木桩。")]
         [Min(0f)] public float poiseMax = 24f;
@@ -140,20 +114,6 @@ namespace Game.Data
         [Tooltip("开启后，敌人在施法过程中不会被普通受击直接打断，但韧性依然会被消耗。")]
         public bool superArmorWhileCasting;
 
-        [Header("动画自然退出")]
-        [InspectorLabel("受击自然退出进度")]
-        [Tooltip("一次性受击动画播放到该进度后，立即触发自然退出默认目标。动画仅负责表现，不影响受击逻辑。")]
-        [Range(0f, 1f)] public float hurtNaturalExitNormalizedTime = 0.9f;
-
-        [InspectorLabel("受击自然退出默认目标")]
-        [Tooltip("受击动画自然退出时要切回的循环状态。当前通常使用 Locomotion。")]
-        public EnemyAnimationNaturalExitTarget hurtNaturalExitTarget = EnemyAnimationNaturalExitTarget.Locomotion;
-
-        [Header("循环状态技能")]
-        [InspectorLabel("Locomotion技能ID")]
-        [Tooltip("敌人进入 Locomotion 循环状态时，自动从技能库启动一次该技能时间轴。留空则不触发。")]
-        public string locomotionSkillId = "EnemyLocomotion";
-
         [Header("技能作者化")]
         [InspectorLabel("专属动画控制器")]
         [Tooltip("敌人技能一键添加/删除时要同步更新的 AnimatorController。建议每个敌人使用独立控制器。")]
@@ -166,81 +126,24 @@ namespace Game.Data
 
         public float GetChaseInnerDistance()
         {
-            if (chaseInnerDistance > 0.1f)
-                return chaseInnerDistance;
-
-            EstimateSkillRangeBounds(out float minRange, out float maxRange);
-            bool isBossOrRanged = enemyType == EnemyType.Boss || enemyType == EnemyType.RangedMinion;
-            return Mathf.Max(1.5f, Mathf.Min(maxRange, minRange + (isBossOrRanged ? 2.5f : 1.2f)));
-        }
-
-        public float GetChaseOuterDistance()
-        {
-            float inner = GetChaseInnerDistance();
-            if (chaseOuterDistance > 0.1f)
-                return Mathf.Max(inner + 0.1f, chaseOuterDistance);
-
-            EstimateSkillRangeBounds(out _, out float maxRange);
-            bool isBossOrRanged = enemyType == EnemyType.Boss || enemyType == EnemyType.RangedMinion;
-            float fallbackOuter = maxRange + (isBossOrRanged ? 3.5f : 2f);
-            return Mathf.Max(inner + 0.1f, fallbackOuter);
+            return Mathf.Max(0.1f, chaseInnerDistance);
         }
 
         public float GetDesiredCombatDistance(float skillRange)
         {
             float targetRange = Mathf.Max(0.1f, skillRange);
-            bool isBossOrRanged = enemyType == EnemyType.Boss || enemyType == EnemyType.RangedMinion;
-            float safetyOffset = preferredSafetyDistanceOffset > 0f
-                ? preferredSafetyDistanceOffset
-                : (isBossOrRanged ? 0.9f : 0.25f);
-            float desired = targetRange + safetyOffset;
-            return Mathf.Clamp(desired, GetChaseInnerDistance(), GetChaseOuterDistance());
+            float maxCombatDistance = Mathf.Max(0.2f, chaseBreakDistance - 0.1f);
+            return Mathf.Clamp(targetRange, 0.1f, maxCombatDistance);
         }
 
         public float GetRandomReactionDelay()
         {
-            float min = Mathf.Max(0f, reactionMinSeconds);
-            float max = Mathf.Max(min, reactionMaxSeconds);
-            return Random.Range(min, max);
+            return Mathf.Max(0f, reactionDelaySeconds);
         }
 
         public float GetDecisionCommitDuration()
         {
-            return Mathf.Max(0f, decisionCommitSeconds);
-        }
-
-        private void EstimateSkillRangeBounds(out float minRange, out float maxRange)
-        {
-            minRange = float.MaxValue;
-            maxRange = 0f;
-
-            if (skillSlots != null)
-            {
-                for (int i = 0; i < skillSlots.Count; i++)
-                {
-                    var slot = skillSlots[i];
-                    if (slot == null)
-                        continue;
-
-                    float range = ResolveSlotRange(slot);
-                    minRange = Mathf.Min(minRange, range);
-                    maxRange = Mathf.Max(maxRange, range);
-                }
-            }
-
-            if (minRange == float.MaxValue)
-            {
-                minRange = 2.5f;
-                maxRange = 6f;
-            }
-        }
-
-        private static float ResolveSlotRange(EnemySkillSlotBinding slot)
-        {
-            if (slot == null)
-                return 3f;
-
-            return slot.castRange > 0.01f ? slot.castRange : 3f;
+            return DefaultDecisionCommitSeconds;
         }
 
         public string GetResolvedEnemyId()
