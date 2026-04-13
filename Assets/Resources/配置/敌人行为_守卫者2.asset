@@ -20,7 +20,7 @@ MonoBehaviour:
   chaseBreakDistance: 32
   patrolRadius: 14
   patrolHealPercentPerSecond: 0.05
-  chaseInnerDistance: 4.4
+  chaseInnerDistance: 3.2
   chaseOuterDistance: 7
   preferredSafetyDistanceOffset: 0.25
   combatDistanceTolerance: 0.75

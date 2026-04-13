@@ -209,10 +209,8 @@ namespace Game.Editor
                 repeatPenalty        = repeatPenalty,
                 canUseUnderThreat    = canUseUnderThreat,
                 cooldown             = cooldown,
-                castDuration         = castDuration,
                 phaseAvailability    = phaseAvailability,
                 postCastIdleDuration = postCastIdleDuration,
-                enterIdleAfterCast   = enterIdleAfterCast,
                 rotateToTargetOnCast = rotateToTargetOnCast,
             };
         }
@@ -270,27 +268,18 @@ namespace Game.Editor
 
             bool isBossOrRanged = enemyType == EnemyType.Boss || enemyType == EnemyType.RangedMinion;
 
-            archetype.chaseInnerDistance = Mathf.Max(1.5f, Mathf.Min(maxRange, minRange + (isBossOrRanged ? 2.5f : 1.2f)));
-            archetype.chaseOuterDistance = Mathf.Max(archetype.chaseInnerDistance + 2f, maxRange + (isBossOrRanged ? 3.5f : 2f));
-            archetype.preferredSafetyDistanceOffset = isBossOrRanged ? 0.9f : 0.25f;
+            archetype.chaseInnerDistance = Mathf.Max(1.5f, Mathf.Min(maxRange, minRange + (isBossOrRanged ? 0.6f : 0.3f)));
             archetype.combatDistanceTolerance = isBossOrRanged ? 1.1f : 0.75f;
-            archetype.castRangeTolerance = 0.25f;
             archetype.retreatStepDistance = isBossOrRanged ? 4.2f : 2.6f;
             archetype.approachLeadTime = isBossOrRanged ? 0.25f : 0.15f;
-            archetype.losProbeInterval = 0.1f;
-            archetype.pathProbeInterval = 0.3f;
-            archetype.perceptionEyeHeight = 1.2f;
-            archetype.obstacleMask = Physics.DefaultRaycastLayers;
-            archetype.reactionMinSeconds = isBossOrRanged ? 0.07f : 0.09f;
-            archetype.reactionMaxSeconds = isBossOrRanged ? 0.16f : 0.2f;
-            archetype.decisionCommitSeconds = isBossOrRanged ? 0.22f : 0.26f;
+            archetype.perceptionEyeHeight = 1.6f;
+            archetype.reactionDelaySeconds = isBossOrRanged ? 0.12f : 0.14f;
             archetype.searchMemoryDuration = isBossOrRanged ? 1.9f : 1.4f;
             archetype.aggression = isBossOrRanged ? 0.62f : 0.55f;
             archetype.caution = isBossOrRanged ? 0.45f : 0.38f;
             archetype.dodgeBias = isBossOrRanged ? 0.58f : 0.42f;
             archetype.punishBias = isBossOrRanged ? 0.62f : 0.5f;
             archetype.strafeBias = isBossOrRanged ? 0.52f : 0.38f;
-            archetype.maxPressureAllies = enemyType == EnemyType.MeleeMinion ? 1 : enemyType == EnemyType.Boss ? 3 : 2;
             archetype.poiseMax = enemyType switch
             {
                 EnemyType.MeleeMinion => 10f,

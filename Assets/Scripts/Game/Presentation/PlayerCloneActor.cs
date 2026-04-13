@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 
 namespace Game.Presentation
 {
-    public sealed class PlayerCloneActor : MonoBehaviour, ICombatHardControlReceiver
+    public sealed class PlayerCloneActor : MonoBehaviour, ICombatHardControlReceiver, ICombatActionReadable
     {
         private static readonly List<PlayerCloneActor> ActiveCloneActors = new List<PlayerCloneActor>();
         private enum CloneBufferedAction
@@ -74,7 +74,7 @@ namespace Game.Presentation
         private readonly List<float> _cooldownUpdateValues = new List<float>(4);
         private readonly List<string> _cooldownExpiredActionIds = new List<string>(4);
         private readonly List<RuntimeModifier> _runtimeModifiers = new List<RuntimeModifier>();
-        private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
+        private readonly TimelineRunnerCollection _detachedTimelines = new TimelineRunnerCollection();
         private readonly CloneCombatMemory _combatMemory = new CloneCombatMemory();
         private readonly PlayerCloneBrain _brain = new PlayerCloneBrain();
         private NavMeshPath _navMeshPath;
@@ -519,9 +519,7 @@ namespace Game.Presentation
 
         private static bool IsUpperBodyAttackAction(string actionId)
         {
-            return string.Equals(actionId, "Shoot", System.StringComparison.Ordinal)
-                   || string.Equals(actionId, "ShootCharge", System.StringComparison.Ordinal)
-                   || string.Equals(actionId, "Shoot_Charge", System.StringComparison.Ordinal);
+            return PlayerActionRouting.IsRangedActionName(actionId);
         }
 
         private void TickTimeline(float dt)
@@ -569,13 +567,13 @@ namespace Game.Presentation
             if (IsAttackComboAction(_activeActionId))
                 return TryResolveAttackTimelineExit(entry);
 
-            if (string.Equals(_activeActionId, "Dodge", System.StringComparison.Ordinal))
+            if (PlayerActionRouting.IsDodgeActionName(_activeActionId))
                 return TryResolveDodgeTimelineExit(entry);
 
             if (IsRangedSustainAction(_activeActionId))
                 return TryResolveRangedSustainActionExit();
 
-            if (string.Equals(_activeActionId, "ChargeStart", System.StringComparison.Ordinal))
+            if (PlayerActionRouting.IsChargeStartActionName(_activeActionId))
                 return TryResolveChargeStartExit(entry);
 
             if (ShouldKeepTimelineBoundToAction(_activeActionId))
@@ -685,11 +683,7 @@ namespace Game.Presentation
             if (_timelineRunner == null)
                 return;
 
-            _timelineRunner.StopStateScopedCues();
-            if (_timelineRunner.HasPendingWork)
-                _detachedTimelineRunners.Add(_timelineRunner);
-            else
-                _timelineRunner.Stop();
+            _detachedTimelines.DetachOrStop(_timelineRunner);
             _timelineRunner = null;
         }
 
@@ -705,33 +699,12 @@ namespace Game.Presentation
 
         private void TickDetachedTimelineRunners(float dt)
         {
-            if (_detachedTimelineRunners.Count <= 0)
-                return;
-
-            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
-            {
-                SkillTimelineRunner runner = _detachedTimelineRunners[i];
-                if (runner == null)
-                {
-                    _detachedTimelineRunners.RemoveAt(i);
-                    continue;
-                }
-
-                runner.Tick(dt);
-                if (runner.IsComplete)
-                    _detachedTimelineRunners.RemoveAt(i);
-            }
+            _detachedTimelines.Tick(dt);
         }
 
         private void StopDetachedTimelineRunners()
         {
-            if (_detachedTimelineRunners.Count <= 0)
-                return;
-
-            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
-                _detachedTimelineRunners[i]?.Stop();
-
-            _detachedTimelineRunners.Clear();
+            _detachedTimelines.StopAll();
         }
 
         private SkillConfigEntry ResolveActionConfigEntry(string actionId)
@@ -798,22 +771,11 @@ namespace Game.Presentation
 
         private bool IsCurrentActionPastThreshold(float threshold)
         {
-            if (_animator == null)
-                return false;
-
-            threshold = Mathf.Clamp01(threshold);
             if (_activeActionElapsed < MinActionExitValidationDelay)
                 return false;
 
             int layerIndex = ResolveActionTimingLayerIndex(_activeActionId);
-            if (_animator.IsInTransition(layerIndex))
-                return false;
-
-            AnimatorStateInfo currentInfo = _animator.GetCurrentAnimatorStateInfo(layerIndex);
-            if (currentInfo.loop)
-                return false;
-
-            return currentInfo.normalizedTime >= threshold;
+            return AnimatorStateTimingUtility.IsCurrentStatePastNormalizedTime(_animator, layerIndex, threshold);
         }
 
         private static int ResolveActionTimingLayerIndex(string actionId)
@@ -823,27 +785,23 @@ namespace Game.Presentation
 
         private static bool IsAttackComboAction(string actionId)
         {
-            return !string.IsNullOrWhiteSpace(actionId)
-                   && actionId.StartsWith("Attack", System.StringComparison.Ordinal);
+            return PlayerActionRouting.IsAttackComboActionName(actionId);
         }
 
         private static bool ShouldKeepTimelineBoundToAction(string actionId)
         {
-            return string.Equals(actionId, "ChargeLoop", System.StringComparison.Ordinal)
-                   || string.Equals(actionId, "ShootCharge", System.StringComparison.Ordinal)
-                   || string.Equals(actionId, "Shoot_Charge", System.StringComparison.Ordinal);
+            return PlayerActionRouting.IsChargeLoopActionName(actionId)
+                   || PlayerActionRouting.IsRangedChargeActionName(actionId);
         }
 
         private static bool IsRangedSustainAction(string actionId)
         {
-            return string.Equals(actionId, "ShootCharge", System.StringComparison.Ordinal)
-                   || string.Equals(actionId, "Shoot_Charge", System.StringComparison.Ordinal);
+            return PlayerActionRouting.IsRangedChargeActionName(actionId);
         }
 
         private static bool IsRangedMobileAction(string actionId)
         {
-            return string.Equals(actionId, "Shoot", System.StringComparison.Ordinal)
-                   || IsRangedSustainAction(actionId);
+            return PlayerActionRouting.IsRangedActionName(actionId);
         }
 
         private static bool ShouldDetachTimelineOnCompletion(string actionId)
@@ -853,8 +811,8 @@ namespace Game.Presentation
 
         private static bool ShouldForceCompleteOnTimelineEnd(string actionId)
         {
-            return string.Equals(actionId, "ChargeLoop", System.StringComparison.Ordinal)
-                   || IsRangedSustainAction(actionId);
+            return PlayerActionRouting.IsChargeLoopActionName(actionId)
+                   || PlayerActionRouting.IsRangedChargeActionName(actionId);
         }
 
         private bool TryResolveRangedSustainActionExit()
@@ -1383,7 +1341,7 @@ namespace Game.Presentation
                 return;
             }
 
-            if (IsAttackComboAction(actionId) || string.Equals(actionId, "ChargeStart", System.StringComparison.Ordinal))
+            if (IsAttackComboAction(actionId) || PlayerActionRouting.IsChargeStartActionName(actionId))
             {
                 Vector3 faceDirection = ResolveTargetFacingDirection();
                 if (faceDirection.sqrMagnitude > 0.0001f)
@@ -1978,7 +1936,7 @@ namespace Game.Presentation
 
         private void MaintainActionFacing(float dt)
         {
-            if (_target == null || !_target.IsAlive || _activeActionId == "Dodge")
+            if (_target == null || !_target.IsAlive || PlayerActionRouting.IsDodgeActionName(_activeActionId))
                 return;
 
             Vector3 toTarget = _target.transform.position - transform.position;
@@ -2027,11 +1985,7 @@ namespace Game.Presentation
 
         private static int ParseAttackComboIndex(string actionId)
         {
-            if (string.IsNullOrWhiteSpace(actionId) || !actionId.StartsWith("Attack", System.StringComparison.Ordinal))
-                return 0;
-
-            string suffix = actionId.Substring("Attack".Length);
-            return int.TryParse(suffix, out int index) ? index : 0;
+            return PlayerActionRouting.TryParseAttackComboIndex(actionId, out int index) ? index : 0;
         }
 
         private void OpenComboWindow(int nextAttackIndex)
@@ -2103,24 +2057,7 @@ namespace Game.Presentation
 
         private GameAction ResolveCurrentGameAction()
         {
-            if (string.IsNullOrWhiteSpace(_activeActionId))
-                return GameAction.None;
-
-            if (IsAttackComboAction(_activeActionId))
-                return GameAction.NormalAttack;
-
-            return _activeActionId switch
-            {
-                "Dodge" => GameAction.Dodge,
-                "ChargeStart" => GameAction.ChargeStart,
-                "ChargeLoop" => GameAction.ChargeStart,
-                "ChargeRelease" => GameAction.ChargeRelease,
-                "Shoot" => GameAction.Shoot,
-                "ShootCharge" => GameAction.ShootCharge,
-                "Shoot_Charge" => GameAction.ShootCharge,
-                _ when PlayerActionRouting.IsSkillSlotActionName(_activeActionId) => GameAction.Skill,
-                _ => GameAction.None,
-            };
+            return PlayerActionRouting.ResolveGameAction(_activeActionId);
         }
 
         private float ResolveStateRemainingTime()
@@ -2144,12 +2081,8 @@ namespace Game.Presentation
                 return -1f;
 
             int layerIndex = ResolveActionTimingLayerIndex(_activeActionId);
-            if (_animator != null && !_animator.IsInTransition(layerIndex))
-            {
-                AnimatorStateInfo info = _animator.GetCurrentAnimatorStateInfo(layerIndex);
-                if (!info.loop)
-                    return Mathf.Clamp01(info.normalizedTime);
-            }
+            if (AnimatorStateTimingUtility.TryGetCurrentNonLoopNormalizedTime(_animator, layerIndex, out float normalizedTime))
+                return normalizedTime;
 
             if (_timelineRunner != null && !_timelineRunner.IsComplete)
             {
@@ -2397,7 +2330,7 @@ namespace Game.Presentation
 
         public void OnHit(float damage, float stunDuration)
         {
-            if (!IsAlive || damage <= 0f || _temporaryInvincibleTimer > 0f || _stateScopedInvincibleCount > 0 || _dodgeMotionTimer > 0f || _activeActionId == "Dodge")
+            if (!IsAlive || damage <= 0f || _temporaryInvincibleTimer > 0f || _stateScopedInvincibleCount > 0 || _dodgeMotionTimer > 0f || PlayerActionRouting.IsDodgeActionName(_activeActionId))
                 return;
 
             _currentHp = Mathf.Max(0f, _currentHp - damage);

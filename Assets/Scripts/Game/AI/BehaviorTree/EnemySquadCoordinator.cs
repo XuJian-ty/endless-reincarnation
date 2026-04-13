@@ -114,9 +114,6 @@ namespace Game.AI
             if (archetype == null)
                 return 1;
 
-            if (archetype.maxPressureAllies > 0)
-                return archetype.maxPressureAllies;
-
             return archetype.enemyType switch
             {
                 EnemyType.MeleeMinion => 1,
@@ -133,8 +130,8 @@ namespace Game.AI
             if (archetype == null)
                 return 12f;
 
-            float chaseOuter = archetype.GetChaseOuterDistance();
-            return Mathf.Clamp(chaseOuter + 4f, 8f, 18f);
+            float chaseBreak = Mathf.Max(0.1f, archetype.chaseBreakDistance);
+            return Mathf.Clamp(chaseBreak + 4f, 8f, 18f);
         }
     }
 }

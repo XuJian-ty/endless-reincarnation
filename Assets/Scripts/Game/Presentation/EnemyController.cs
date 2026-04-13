@@ -536,8 +536,7 @@ namespace Game.Presentation
 
         public void CompleteActiveSkill()
         {
-            bool enterIdleAfterCast = _activeSkill != null && _activeSkill.EnterIdleAfterCast;
-            float postCastIdleDuration = (_activeSkill != null && enterIdleAfterCast)
+            float postCastIdleDuration = _activeSkill != null
                 ? Mathf.Max(0f, _activeSkill.PostCastIdleDuration)
                 : 0f;
             Vector3? targetPosition = _activeSkillTargetPosition;
@@ -546,7 +545,7 @@ namespace Game.Presentation
             _activeSkillTargetPosition = null;
             if (CurrentIntent.Type == EnemyIntentType.CastSkill)
             {
-                if (enterIdleAfterCast && postCastIdleDuration > 0f)
+                if (postCastIdleDuration > 0f)
                     EnterPostCastRecovery(postCastIdleDuration, targetPosition);
                 else
                 {

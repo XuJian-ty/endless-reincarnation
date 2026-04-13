@@ -219,7 +219,6 @@ namespace Game.Editor
                 DrawReadOnlyProperty(slotProperty, nameof(EnemySkillSlotBinding.skillId));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.displayName));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.naturalExitNormalizedTime));
-                DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.naturalExitTarget));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.phaseAvailability));
             }
 
@@ -235,8 +234,6 @@ namespace Game.Editor
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.punishWeight));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.repeatPenalty));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.canUseUnderThreat));
-                DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.castDuration));
-                DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.enterIdleAfterCast));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.postCastIdleDuration));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.rotateToTargetOnCast));
             }

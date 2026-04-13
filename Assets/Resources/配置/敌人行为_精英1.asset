@@ -16,12 +16,12 @@ MonoBehaviour:
   displayName: "\u7CBE\u82F11"
   enemyType: 2
   sectorAngle: 145
-  sectorRange: 16
+  sectorRange: 15
   chaseBreakDistance: 28
   patrolRadius: 12
   patrolHealPercentPerSecond: 0.05
   chaseInnerDistance: 3
-  chaseOuterDistance: 5
+  chaseOuterDistance: 15
   preferredSafetyDistanceOffset: 0.25
   combatDistanceTolerance: 0.75
   castRangeTolerance: 0.25
@@ -37,7 +37,7 @@ MonoBehaviour:
   reactionMaxSeconds: 0.18
   decisionCommitSeconds: 0.24
   searchMemoryDuration: 1.6
-  aggression: 0.58
+  aggression: 0.942
   caution: 0.42
   dodgeBias: 0.46
   punishBias: 0.58

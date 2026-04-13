@@ -1,8 +1,8 @@
 namespace Game.Presentation
 {
     /// <summary>
-    /// 带有时长或进度的状态可实现此接口，供 HUD 显示无敌条、硬直条等。
-    /// 非时长状态不实现，查询端用 StateRemainingTime &lt; 0 判断。
+    /// 玩家状态统一暴露剩余时长与归一化进度，供 HUD、调试和敌人观察层读取。
+    /// 无明确时长或进度概念时返回 -1。
     /// </summary>
     public interface IPlayerStateWithDuration
     {

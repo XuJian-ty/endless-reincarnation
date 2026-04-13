@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Game.Domain;
 using Game.Data;
@@ -95,7 +94,7 @@ namespace Game.Presentation
         private float              _manaPotionTickAccumulator;
         private PlayerCloneManager _cloneManager;
         private bool               _isAimModeActive;
-        private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
+        private readonly TimelineRunnerCollection _detachedTimelines = new TimelineRunnerCollection();
 
         // ── 连续受击保护状态 ──────────────────────────────────────────────
         private HitProtectionSystem _hitProtectionSystem;
@@ -201,7 +200,7 @@ namespace Game.Presentation
         {
             get
             {
-                if (StateMachine?.CurrentState is IPlayerStateWithDuration d) return d.RemainingTime;
+                if (StateMachine?.CurrentState != null) return StateMachine.CurrentState.RemainingTime;
                 return -1f;
             }
         }
@@ -210,7 +209,7 @@ namespace Game.Presentation
         {
             get
             {
-                if (StateMachine?.CurrentState is IPlayerStateWithDuration d) return d.NormalizedProgress;
+                if (StateMachine?.CurrentState != null) return StateMachine.CurrentState.NormalizedProgress;
                 return -1f;
             }
         }
@@ -398,62 +397,24 @@ namespace Game.Presentation
             StateMachine.ChangeState<PlayerDeathState>();
         }
 
-        public void ContinueDetachedTimelineRunner(SkillTimelineRunner runner)
+        public void DetachOrStopTimelineRunner(SkillTimelineRunner runner)
         {
-            if (runner == null || runner.IsComplete || _detachedTimelineRunners.Contains(runner))
-                return;
-
-            _detachedTimelineRunners.Add(runner);
+            _detachedTimelines.DetachOrStop(runner);
         }
 
         public bool TryGetDetachedCameraOverride(float lookTargetHeight, out SkillTimelineRunner.CameraOverrideRequest request)
         {
-            request = default;
-            if (_detachedTimelineRunners.Count <= 0)
-                return false;
-
-            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
-            {
-                SkillTimelineRunner runner = _detachedTimelineRunners[i];
-                if (runner != null && !runner.IsComplete && runner.TryGetCurrentCameraOverride(lookTargetHeight, out request))
-                    return request.IsActive;
-            }
-
-            return false;
+            return _detachedTimelines.TryGetCameraOverride(lookTargetHeight, out request);
         }
 
         private void TickDetachedTimelineRunners(float deltaTime)
         {
-            if (_detachedTimelineRunners.Count <= 0)
-                return;
-
-            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
-            {
-                SkillTimelineRunner runner = _detachedTimelineRunners[i];
-                if (runner == null || runner.IsComplete)
-                {
-                    _detachedTimelineRunners.RemoveAt(i);
-                    continue;
-                }
-
-                runner.Tick(deltaTime);
-                if (runner.IsComplete)
-                    _detachedTimelineRunners.RemoveAt(i);
-            }
+            _detachedTimelines.Tick(deltaTime);
         }
 
         private void StopDetachedTimelineRunners()
         {
-            if (_detachedTimelineRunners.Count <= 0)
-                return;
-
-            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
-            {
-                SkillTimelineRunner runner = _detachedTimelineRunners[i];
-                runner?.Stop();
-            }
-
-            _detachedTimelineRunners.Clear();
+            _detachedTimelines.StopAll();
         }
 
         public void CompleteDeathSequence()

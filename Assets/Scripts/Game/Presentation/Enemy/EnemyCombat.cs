@@ -17,6 +17,7 @@ namespace Game.Presentation
         private static readonly HashSet<string> MissingAnimationDamageWarnings  = new HashSet<string>();
         private static readonly HashSet<string> MissingAnimatorParameterWarnings = new HashSet<string>();
         private static readonly HashSet<string> MissingAnimatorActionWarnings    = new HashSet<string>();
+        private const float HurtNaturalExitNormalizedTime = 0.9f;
         private const string ParamMoveX      = "MoveX";
         private const string ParamMoveY      = "MoveY";
         private const string TriggerLocomotion = "Locomotion";
@@ -28,7 +29,7 @@ namespace Game.Presentation
         private EnemyPerception _perception;
         private readonly Collider[] _overlapBuffer = new Collider[32];
         private readonly HashSet<string> _animParameterNames = new HashSet<string>();
-        private readonly List<SkillTimelineRunner> _detachedTimelineRunners = new List<SkillTimelineRunner>();
+        private readonly TimelineRunnerCollection _detachedTimelines = new TimelineRunnerCollection();
 
         private EnemyResolvedSkill _runningSkill;
         private SkillTimelineRunner _timelineRunner = new SkillTimelineRunner();
@@ -116,7 +117,7 @@ namespace Game.Presentation
             TrackNaturalExit(
                 _runningSkill.AnimationTrigger,
                 _runningSkill.NaturalExitNormalizedTime,
-                _runningSkill.NaturalExitTarget);
+                EnemyAnimationNaturalExitTarget.Locomotion);
 
             var ctx = new EnemySkillExecutionContext(
                 _controller,
@@ -125,7 +126,7 @@ namespace Game.Presentation
 
             if (_timelineRunner == null)
                 _timelineRunner = new SkillTimelineRunner();
-            _timelineRunner.Begin(_runningSkill.Definition, ctx, _runningSkill.CastDuration);
+            _timelineRunner.Begin(_runningSkill.Definition, ctx);
         }
 
         private void TickRunningSkill()
@@ -159,13 +160,6 @@ namespace Game.Presentation
             if (IsCurrentStateNearEnd(_runningSkill.NaturalExitNormalizedTime))
                 return true;
 
-            if (_timelineRunner != null
-                && _runningSkill.CastDuration > 0f
-                && _timelineRunner.Elapsed >= _runningSkill.CastDuration)
-            {
-                return true;
-            }
-
             return _timelineRunner != null && _timelineRunner.IsComplete;
         }
 
@@ -174,44 +168,19 @@ namespace Game.Presentation
             if (_timelineRunner == null)
                 return;
 
-            _timelineRunner.StopStateScopedCues();
-            if (_timelineRunner.HasPendingWork)
-                _detachedTimelineRunners.Add(_timelineRunner);
-            else
-                _timelineRunner.Stop();
+            _detachedTimelines.DetachOrStop(_timelineRunner);
 
             _timelineRunner = new SkillTimelineRunner();
         }
 
         private void TickDetachedTimelineRunners(float deltaTime)
         {
-            if (_detachedTimelineRunners.Count <= 0)
-                return;
-
-            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
-            {
-                SkillTimelineRunner runner = _detachedTimelineRunners[i];
-                if (runner == null)
-                {
-                    _detachedTimelineRunners.RemoveAt(i);
-                    continue;
-                }
-
-                runner.Tick(deltaTime);
-                if (runner.IsComplete)
-                    _detachedTimelineRunners.RemoveAt(i);
-            }
+            _detachedTimelines.Tick(deltaTime);
         }
 
         private void StopDetachedTimelineRunners()
         {
-            if (_detachedTimelineRunners.Count <= 0)
-                return;
-
-            for (int i = _detachedTimelineRunners.Count - 1; i >= 0; i--)
-                _detachedTimelineRunners[i]?.Stop();
-
-            _detachedTimelineRunners.Clear();
+            _detachedTimelines.StopAll();
         }
 
         private void TickLoopStateTimeline()
@@ -300,27 +269,16 @@ namespace Game.Presentation
 
         private bool IsCurrentStateNearEnd(float threshold)
         {
-            if (_anim == null || _anim.IsInTransition(0))
-                return false;
-
-            AnimatorStateInfo info = _anim.GetCurrentAnimatorStateInfo(0);
-            if (info.loop)
-                return false;
-
-            return info.normalizedTime >= Mathf.Clamp01(threshold);
+            return AnimatorStateTimingUtility.IsCurrentStatePastNormalizedTime(_anim, 0, threshold);
         }
 
         private float ResolveHurtNaturalExitNormalizedTime()
         {
-            if (_controller != null && _controller.Archetype != null)
-                return _controller.Archetype.hurtNaturalExitNormalizedTime;
-            return 0.9f;
+            return HurtNaturalExitNormalizedTime;
         }
 
         private EnemyAnimationNaturalExitTarget ResolveHurtNaturalExitTarget()
         {
-            if (_controller != null && _controller.Archetype != null)
-                return _controller.Archetype.hurtNaturalExitTarget;
             return EnemyAnimationNaturalExitTarget.Locomotion;
         }
 
@@ -341,9 +299,7 @@ namespace Game.Presentation
 
         private string ResolveLocomotionLoopSkillId()
         {
-            if (_controller != null && _controller.Archetype != null)
-                return _controller.Archetype.locomotionSkillId;
-            return "EnemyLocomotion";
+            return string.Empty;
         }
 
         private static string ResolveNaturalExitTrigger(EnemyAnimationNaturalExitTarget target) => target switch

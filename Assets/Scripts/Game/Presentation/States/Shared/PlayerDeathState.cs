@@ -5,7 +5,7 @@ namespace Game.Presentation
     /// <summary>
     /// 玩家死亡状态：触发死亡动画，等待动画接近结束后再通知流程层。
     /// </summary>
-    public class PlayerDeathState : PlayerStateBase, IPlayerStateWithDuration
+    public class PlayerDeathState : PlayerStateBase
     {
         private const float FallbackDuration = 3f;
         private const float CompletionDelay = 1.5f;
@@ -15,8 +15,8 @@ namespace Game.Presentation
         private bool _awaitingCompletionDelay;
         protected override string ActionId => "PlayerDeath";
 
-        public float RemainingTime => Mathf.Max(0f, _timer) + Mathf.Max(0f, _completionDelayTimer);
-        public float NormalizedProgress => 1f - Mathf.Clamp01(RemainingTime / (FallbackDuration + CompletionDelay));
+        public override float RemainingTime => Mathf.Max(0f, _timer) + Mathf.Max(0f, _completionDelayTimer);
+        public override float NormalizedProgress => 1f - Mathf.Clamp01(RemainingTime / (FallbackDuration + CompletionDelay));
         public override GameAction CurrentActionId => GameAction.None;
 
         protected override void OnEnter()
