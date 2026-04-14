@@ -50,7 +50,6 @@ MonoBehaviour:
   superArmorWhileCasting: 0
   hurtNaturalExitNormalizedTime: 0.9
   hurtNaturalExitTarget: 0
-  locomotionSkillId: EnemyLocomotion
   dedicatedAnimatorController: {fileID: 9100000, guid: 5fed113eb77e38146922b8692f166023,
     type: 2}
   skillSlots:
