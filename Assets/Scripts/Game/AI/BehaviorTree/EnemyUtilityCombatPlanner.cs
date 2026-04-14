@@ -282,7 +282,9 @@ namespace Game.AI
             frame.TargetPosition = ctx.Perception.TargetPosition ?? ctx.Controller.transform.position;
             frame.Distance = ctx.Perception.DistanceToPlayer;
             frame.DesiredDistance = desiredDistance;
-            frame.Tolerance = Mathf.Max(0.1f, ctx.Archetype.combatDistanceTolerance);
+            frame.Tolerance = planningSkill != null
+                ? Mathf.Max(0.1f, planningSkill.IdealCastDistanceTolerance)
+                : 0.9f;
             frame.CanPressure = EnemySquadCoordinator.CanPressure(ctx.Controller, ctx.Archetype, now);
             int fallbackStrafeSign = EnemySquadCoordinator.GetPreferredStrafeSign(ctx.Controller);
             frame.PreferredStrafeSign = ctx.Memory.ResolvePreferredStrafeSign(fallbackStrafeSign, now);

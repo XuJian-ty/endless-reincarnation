@@ -1436,6 +1436,7 @@ namespace Game.Editor
                 {
                     cooldown = 1f,
                     castRange = 3f,
+                    idealCastDistanceTolerance = 0.9f,
                     rotateToTargetOnCast = true,
                     naturalExitNormalizedTime = 0.9f,
                     phaseAvailability = EnemySkillPhaseAvailability.Always,
@@ -1451,6 +1452,7 @@ namespace Game.Editor
                 castRange = template.castRange,
                 minCastRange = template.minCastRange,
                 idealCastRange = template.idealCastRange,
+                idealCastDistanceTolerance = template.idealCastDistanceTolerance,
                 skillRole = template.skillRole,
                 riskWeight = template.riskWeight,
                 punishWeight = template.punishWeight,

@@ -20,12 +20,14 @@ namespace Game.Presentation
 
         private NavMeshAgent _agent;
         private EnemyController _controller;
+        private EnemyCombat _combat;
         private EnemyPerception _perception;
 
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
             _controller = GetComponent<EnemyController>();
+            _combat = GetComponent<EnemyCombat>();
             _perception = GetComponent<EnemyPerception>();
 
             if (_agent != null)
@@ -91,6 +93,9 @@ namespace Game.Presentation
 
             float moveSpeed = _controller.MoveSpeed;
             float moveBlend = RunBlendValue;
+            float timelineMoveSpeedMultiplier = _combat != null
+                ? Mathf.Max(0f, _combat.CurrentMovementSpeedMultiplier)
+                : 1f;
 
             switch (intent.Type)
             {
@@ -119,6 +124,8 @@ namespace Game.Presentation
                     moveBlend = WalkBlendValue;
                     break;
             }
+
+            moveSpeed *= timelineMoveSpeedMultiplier;
 
             _agent.isStopped = false;
             _agent.speed = moveSpeed;
@@ -212,7 +219,10 @@ namespace Game.Presentation
             }
 
             _agent.isStopped = false;
-            _agent.speed = _controller.MoveSpeed * WalkSpeedRatio;
+            float timelineMoveSpeedMultiplier = _combat != null
+                ? Mathf.Max(0f, _combat.CurrentMovementSpeedMultiplier)
+                : 1f;
+            _agent.speed = _controller.MoveSpeed * WalkSpeedRatio * timelineMoveSpeedMultiplier;
             _agent.SetDestination(retreatDestination);
 
             Vector3 facingPoint = ResolveCurrentThreatPosition();

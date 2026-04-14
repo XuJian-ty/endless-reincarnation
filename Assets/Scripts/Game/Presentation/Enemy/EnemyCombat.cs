@@ -42,6 +42,27 @@ namespace Game.Presentation
         private float _trackedNaturalExitNormalizedTime = 0.9f;
         private EnemyAnimationNaturalExitTarget _trackedNaturalExitTarget = EnemyAnimationNaturalExitTarget.Locomotion;
         private bool _trackedNaturalExitTriggered;
+        private float _localCastSpeedOverrideTimer;
+        private float _localCastSpeedOverrideMultiplier = 1f;
+
+        public float CurrentMovementSpeedMultiplier
+        {
+            get
+            {
+                float multiplier = 1f;
+                if (_timelineRunner != null && _timelineRunner.IsRunning)
+                    multiplier *= Mathf.Max(0f, _timelineRunner.CurrentMovementSpeedMultiplier);
+
+                if (_loopStateTimelineRunner != null && _loopStateTimelineRunner.IsRunning)
+                    multiplier *= Mathf.Max(0f, _loopStateTimelineRunner.CurrentMovementSpeedMultiplier);
+
+                return multiplier;
+            }
+        }
+
+        public float LocalCastSpeedMultiplier => _localCastSpeedOverrideTimer > 0f
+            ? Mathf.Clamp(_localCastSpeedOverrideMultiplier, 0f, 1f)
+            : 1f;
 
         private void Awake()
         {
@@ -56,6 +77,7 @@ namespace Game.Presentation
             if (_controller == null) return;
             if (GameStateMachine.GetInstance()?.IsGameplayPaused == true) return;
 
+            TickLocalHitStop(Time.deltaTime);
             UpdateAnimatorSpeed();
             TickDetachedTimelineRunners(Time.deltaTime);
 
@@ -126,7 +148,12 @@ namespace Game.Presentation
 
             if (_timelineRunner == null)
                 _timelineRunner = new SkillTimelineRunner();
-            _timelineRunner.Begin(_runningSkill.Definition, ctx);
+            _timelineRunner.Begin(
+                _runningSkill.Definition,
+                ctx,
+                -1f,
+                1f,
+                () => LocalCastSpeedMultiplier);
         }
 
         private void TickRunningSkill()
@@ -217,7 +244,12 @@ namespace Game.Presentation
                 _perception,
                 _overlapBuffer);
 
-            _loopStateTimelineRunner.Begin(definition, ctx);
+            _loopStateTimelineRunner.Begin(
+                definition,
+                ctx,
+                -1f,
+                1f,
+                () => LocalCastSpeedMultiplier);
         }
 
         private void StopLoopStateTimeline()
@@ -346,6 +378,26 @@ namespace Game.Presentation
                 playbackSpeed = Mathf.Max(0.01f, _timelineRunner.CurrentCastSpeedMultiplier);
 
             _anim.speed = playbackSpeed;
+        }
+
+        public void ApplyLocalHitStop(float duration, float castSpeedMultiplier)
+        {
+            if (duration <= 0f)
+                return;
+
+            _localCastSpeedOverrideTimer = Mathf.Max(_localCastSpeedOverrideTimer, duration);
+            _localCastSpeedOverrideMultiplier = Mathf.Clamp01(
+                Mathf.Min(_localCastSpeedOverrideMultiplier, castSpeedMultiplier));
+        }
+
+        private void TickLocalHitStop(float deltaTime)
+        {
+            if (_localCastSpeedOverrideTimer <= 0f)
+                return;
+
+            _localCastSpeedOverrideTimer = Mathf.Max(0f, _localCastSpeedOverrideTimer - deltaTime);
+            if (_localCastSpeedOverrideTimer <= 0f)
+                _localCastSpeedOverrideMultiplier = 1f;
         }
 
         private void RotateToward(Vector3 worldPos)

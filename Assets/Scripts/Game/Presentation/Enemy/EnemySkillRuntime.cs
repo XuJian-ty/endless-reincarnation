@@ -30,6 +30,7 @@ namespace Game.Presentation
         public float CastRange => Binding != null ? Binding.castRange : 3f;
         public float MinCastRange => Binding != null ? Binding.minCastRange : 0f;
         public float IdealCastRange => Binding != null && Binding.idealCastRange > 0.01f ? Binding.idealCastRange : CastRange;
+        public float IdealCastDistanceTolerance => Binding != null ? Mathf.Max(0.05f, Binding.idealCastDistanceTolerance) : 0.9f;
         public float NaturalExitNormalizedTime => Binding != null ? Binding.naturalExitNormalizedTime : 0.9f;
         public EnemySkillRole SkillRole => Binding != null ? Binding.skillRole : EnemySkillRole.Flexible;
         public float RiskWeight => Binding != null ? Binding.riskWeight : 0.35f;
