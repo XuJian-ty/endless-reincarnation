@@ -254,7 +254,7 @@ MonoBehaviour:
     - animationId: ranged_minionSkill0
       clip: {fileID: 7400000, guid: 046fec2750acc374aa375724597404c8, type: 2}
   - groupId: elite_1
-    groupName: "\u7CBE\u82F11"
+    groupName: "\u7CBE\u82F1\u602A1"
     skillGroups:
     - groupName: elite_1Skill0
       entries:
@@ -270,7 +270,7 @@ MonoBehaviour:
     - animationId: elite_1Skill1
       clip: {fileID: 7400000, guid: 34310fd8759ff8249a113dd86f633904, type: 2}
   - groupId: elite_2
-    groupName: "\u7CBE\u82F12"
+    groupName: "\u7CBE\u82F1\u602A2"
     skillGroups:
     - groupName: elite_2Skill0
       entries:
@@ -457,6 +457,26 @@ MonoBehaviour:
       clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
     - animationId: boss_5Skill3
       clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  - groupId: elite_fly
+    groupName: "\u7CBE\u82F1\u602A_\u98DE\u884C"
+    skillGroups:
+    - groupName: elite_flySkill0
+      entries:
+      - animationId: elite_flySkill0
+        clip: {fileID: -623603649343465320, guid: dff297169c36898469311521c94057d8,
+          type: 3}
+    - groupName: elite_flySkill1
+      entries:
+      - animationId: elite_flySkill1
+        clip: {fileID: -623603649343465320, guid: 8cde33d9aa1b3744588a96b476a684e1,
+          type: 3}
+    entries:
+    - animationId: elite_flySkill0
+      clip: {fileID: -623603649343465320, guid: dff297169c36898469311521c94057d8,
+        type: 3}
+    - animationId: elite_flySkill1
+      clip: {fileID: -623603649343465320, guid: 8cde33d9aa1b3744588a96b476a684e1,
+        type: 3}
   entries:
   - animationId: NormalIdle
     clip: {fileID: 7400000, guid: 979fd354997c06a46ad48ffd58abbb2f, type: 2}
@@ -596,3 +616,7 @@ MonoBehaviour:
     clip: {fileID: 7400000, guid: 79e941ef92399b8448b2fa8b1dfaa769, type: 2}
   - animationId: boss_5Skill3
     clip: {fileID: 7400000, guid: b1da844717d33ed478971f8de98fb62b, type: 2}
+  - animationId: elite_flySkill0
+    clip: {fileID: -623603649343465320, guid: dff297169c36898469311521c94057d8, type: 3}
+  - animationId: elite_flySkill1
+    clip: {fileID: -623603649343465320, guid: 8cde33d9aa1b3744588a96b476a684e1, type: 3}

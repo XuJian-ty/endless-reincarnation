@@ -37,7 +37,8 @@ namespace Game.AI
                 : 2.5f;
             float retreatDistance = Mathf.Max(stepDistance, desiredDistance - currentDistance);
             Vector3 rawCandidate = selfPos + away * retreatDistance;
-            return TryGetReachablePoint(selfPos, rawCandidate, out retreatPoint);
+            rawCandidate.y = targetPos.y;
+            return TryResolveTacticalPoint(controller, archetype, selfPos, rawCandidate, out retreatPoint);
         }
 
         public static bool TryFindRepositionPoint(
@@ -65,7 +66,7 @@ namespace Game.AI
             {
                 Vector3 rotatedDir = Quaternion.Euler(0f, angles[i], 0f) * fromPlayerToSelf;
                 Vector3 rawCandidate = targetPos + rotatedDir * desiredDistance;
-                if (!TryGetReachablePoint(selfPos, rawCandidate, out Vector3 candidate))
+                if (!TryResolveTacticalPoint(controller, archetype, selfPos, rawCandidate, out Vector3 candidate))
                     continue;
                 if (!perception.HasLineOfSightFrom(candidate, targetPos))
                     continue;
@@ -103,7 +104,7 @@ namespace Game.AI
                 : 2.1f;
 
             Vector3 rawCandidate = targetPos + radial * desiredDistance + tangential.normalized * lateralStep;
-            if (!TryGetReachablePoint(selfPos, rawCandidate, out Vector3 candidate))
+            if (!TryResolveTacticalPoint(controller, archetype, selfPos, rawCandidate, out Vector3 candidate))
                 return false;
             if (!perception.HasLineOfSightFrom(candidate, targetPos))
                 return false;
@@ -153,6 +154,23 @@ namespace Game.AI
 
             sampled = hit.position;
             return true;
+        }
+
+        private static bool TryResolveTacticalPoint(
+            EnemyController controller,
+            EnemyArchetypeSO archetype,
+            Vector3 from,
+            Vector3 rawCandidate,
+            out Vector3 sampled)
+        {
+            sampled = Vector3.zero;
+            if (controller != null && archetype != null && archetype.UsesAerialMovement())
+            {
+                sampled = controller.ResolveFlightAnchorPosition(rawCandidate);
+                return true;
+            }
+
+            return TryGetReachablePoint(from, rawCandidate, out sampled);
         }
     }
 }

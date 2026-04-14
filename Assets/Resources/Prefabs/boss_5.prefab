@@ -1155,7 +1155,7 @@ GameObject:
   - component: {fileID: 2725293423769412358}
   - component: {fileID: 8068969317955421171}
   - component: {fileID: 6402901278944855812}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Text_HP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1799,7 +1799,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2783706571759198512}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2133,7 +2133,7 @@ GameObject:
   - component: {fileID: 2142565230781095967}
   - component: {fileID: 4545125654424219359}
   - component: {fileID: 6439224061555434630}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}

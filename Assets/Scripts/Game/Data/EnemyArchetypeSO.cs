@@ -5,6 +5,12 @@ using Game;
 
 namespace Game.Data
 {
+    public enum EnemyMovementMode
+    {
+        Grounded = 0,
+        Flying = 1,
+    }
+
     /// <summary>
     /// 敌人行为配置：身份、感知、巡逻与战术技能槽。
     /// </summary>
@@ -24,6 +30,47 @@ namespace Game.Data
         [InspectorLabel("敌人类型")]
         [Tooltip("用于类型回退与奖励分组")]
         public EnemyType enemyType = EnemyType.MeleeMinion;
+
+        [Header("移动模式")]
+        [InspectorLabel("移动模式")]
+        [Tooltip("Grounded 使用地面寻路；Flying 使用代码驱动的三维飞行位移。")]
+        public EnemyMovementMode movementMode = EnemyMovementMode.Grounded;
+
+        [InspectorLabel("允许绕步")]
+        [Tooltip("关闭后，战术决策不会选择左右绕步。")]
+        public bool allowStrafe = true;
+
+        [InspectorLabel("允许后撤")]
+        [Tooltip("关闭后，战术决策不会选择后撤。")]
+        public bool allowRetreat = true;
+
+        [InspectorLabel("允许换位")]
+        [Tooltip("关闭后，战术决策不会选择 Reposition。")]
+        public bool allowReposition = true;
+
+        [InspectorLabel("允许闪避")]
+        [Tooltip("关闭后，战术决策不会选择 Dodge。")]
+        public bool allowDodge = true;
+
+        [InspectorLabel("飞行高度偏移(米)")]
+        [Tooltip("仅 Flying 模式生效。基础移动目标会优先维持在目标点上方的这个高度。")]
+        public float flightHeightOffset = 3.5f;
+
+        [InspectorLabel("飞行高度摆动幅度(米)")]
+        [Tooltip("仅 Flying 模式生效。用于让基础飞行状态带一点上下起伏。")]
+        [Min(0f)] public float flightHeightBobAmplitude = 0.35f;
+
+        [InspectorLabel("飞行高度摆动频率")]
+        [Tooltip("仅 Flying 模式生效。控制上下起伏频率。")]
+        [Min(0f)] public float flightHeightBobFrequency = 1.4f;
+
+        [InspectorLabel("飞行垂直速度")]
+        [Tooltip("仅 Flying 模式生效。控制基础移动时上下跟随的速度。")]
+        [Min(0.1f)] public float flightVerticalSpeed = 4.5f;
+
+        [InspectorLabel("飞行转向速度")]
+        [Tooltip("仅 Flying 模式生效。控制基础移动和瞄准时朝向目标的速度。")]
+        [Min(0.1f)] public float flightTurnSpeed = 6f;
 
         [Header("感知（前方扇形发现 + 圆形追击丢失）")]
         [InspectorLabel("扇形视角(度)")]
@@ -136,6 +183,11 @@ namespace Game.Data
         public float GetDecisionCommitDuration()
         {
             return DefaultDecisionCommitSeconds;
+        }
+
+        public bool UsesAerialMovement()
+        {
+            return movementMode == EnemyMovementMode.Flying;
         }
 
         public string GetResolvedEnemyId()

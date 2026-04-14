@@ -6,6 +6,7 @@ using Game.Presentation;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Game.Editor
 {
@@ -27,7 +28,8 @@ namespace Game.Editor
         private const string EnemyStatsDatabasePath = "Assets/Resources/配置/敌人属性库.asset";
         private const string SkillEffectDatabasePath = "Assets/Resources/配置/技能效果库.asset";
         private const string AnimationLibraryPath = "Assets/Resources/配置/动画库.asset";
-        private const string EnemyAnimatorTemplatePath = "Assets/外部导入/Animator/EnemyAnimator.controller";
+        private const string EnemyAnimatorTemplatePath = "Assets/Animator/EnemyAnimator_melee_minion.controller";
+        private const string EnemyAnimatorControllerFolder = "Assets/Animator";
         private const string EnemyPrefabFolder = "Assets/Resources/Prefabs";
         private const string EnemyConfigFolder = "Assets/Resources/配置";
 
@@ -174,6 +176,54 @@ namespace Game.Editor
             List<UnityEngine.Object> dirtyAssets = BuildDirtyAssetList(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
             Undo.RecordObjects(dirtyAssets.ToArray(), "规范化敌人技能资源");
             NormalizeEnemySkillAuthoring(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
+            FinalizeChanges(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
+            return true;
+        }
+
+        public static bool TrySyncEnemyMetadata(EnemyArchetypeSO archetype, out string errorMessage)
+        {
+            errorMessage = null;
+
+            EnemyStatsDatabaseSO enemyStatsDatabase = AssetDatabase.LoadAssetAtPath<EnemyStatsDatabaseSO>(EnemyStatsDatabasePath);
+            SkillEffectDatabaseSO sharedSkillDatabase = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
+            CharacterAnimationLibrarySO animationLibrary = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(AnimationLibraryPath);
+            if (archetype == null)
+            {
+                errorMessage = "未找到敌人行为资产。";
+                return false;
+            }
+
+            if (enemyStatsDatabase == null)
+            {
+                errorMessage = $"未找到敌人属性库：{EnemyStatsDatabasePath}";
+                return false;
+            }
+
+            if (sharedSkillDatabase == null)
+            {
+                errorMessage = $"未找到技能效果库：{SkillEffectDatabasePath}";
+                return false;
+            }
+
+            if (animationLibrary == null)
+            {
+                errorMessage = $"未找到动画库：{AnimationLibraryPath}";
+                return false;
+            }
+
+            if (!TryGetOrCreateDedicatedAnimatorController(archetype, false, out AnimatorController animatorController, out errorMessage))
+                return false;
+
+            List<UnityEngine.Object> dirtyAssets = BuildDirtyAssetList(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
+            Undo.RecordObjects(dirtyAssets.ToArray(), "同步敌人元数据");
+
+            EnsureEnemyStatsEntry(enemyStatsDatabase, archetype);
+            FindOrCreateSharedSkillGroup(sharedSkillDatabase, archetype);
+            FindOrCreateAnimationGroup(animationLibrary, archetype);
+            animationLibrary.Synchronize();
+            enemyStatsDatabase.SyncFlatEntries();
+            RebuildSharedSkillFlatEntries(sharedSkillDatabase);
+
             FinalizeChanges(archetype, enemyStatsDatabase, sharedSkillDatabase, animationLibrary, animatorController);
             return true;
         }
@@ -340,6 +390,9 @@ namespace Game.Editor
             string explicitEnemyId = archetype.enemyId != null ? archetype.enemyId.Trim() : string.Empty;
             if (string.IsNullOrWhiteSpace(explicitEnemyId))
             {
+                if (CanDeleteUnlinkedArchetypeAsset(archetype))
+                    return true;
+
                 errorMessage = "敌人ID为空。删除前无法安全定位归属资源。请先填写唯一敌人ID，再执行删除。";
                 return false;
             }
@@ -379,6 +432,12 @@ namespace Game.Editor
             if (!TryPrecheckDeletedEnemyArchetypeArtifacts(archetype, out errorMessage))
                 return false;
 
+            if (CanDeleteUnlinkedArchetypeAsset(archetype))
+            {
+                errorMessage = null;
+                return true;
+            }
+
             string enemyId = ResolveEnemyId(archetype);
             if (string.IsNullOrWhiteSpace(enemyId))
             {
@@ -412,6 +471,20 @@ namespace Game.Editor
 
             DeleteDedicatedAnimatorControllerIfOwned(archetype, dedicatedAnimatorController);
             return true;
+        }
+
+        private static bool CanDeleteUnlinkedArchetypeAsset(EnemyArchetypeSO archetype)
+        {
+            if (archetype == null)
+                return false;
+
+            if (!string.IsNullOrWhiteSpace(archetype.enemyId))
+                return false;
+
+            if (archetype.dedicatedAnimatorController != null)
+                return false;
+
+            return archetype.skillSlots == null || archetype.skillSlots.Count == 0;
         }
 
         private static bool HasConflictingEnemyStatsResources(EnemyStatsDatabaseSO enemyStatsDatabase, string previousEnemyId, string newEnemyId)
@@ -897,7 +970,7 @@ namespace Game.Editor
                 return null;
 
             string sanitizedEnemyId = SanitizeFileName(enemyId);
-            return $"Assets/外部导入/Animator/EnemyAnimator_{sanitizedEnemyId}.controller";
+            return $"{EnemyAnimatorControllerFolder}/EnemyAnimator_{sanitizedEnemyId}.controller";
         }
 
         private static string ResolveEnemyId(EnemyArchetypeSO archetype)
@@ -1300,7 +1373,7 @@ namespace Game.Editor
 
                 EnemyController enemyController = prefabRoot.GetComponentInChildren<EnemyController>(true);
                 Animator animator = prefabRoot.GetComponentInChildren<Animator>(true);
-                if (enemyController == null || animator == null)
+                if (enemyController == null)
                     continue;
 
                 SerializedObject enemySerializedObject = new SerializedObject(enemyController);
@@ -1313,14 +1386,179 @@ namespace Game.Editor
                 if (!matchesArchetype && !matchesEnemyId)
                     continue;
 
-                if (animator.runtimeAnimatorController == animatorController)
+                bool changed = EnsureEnemyPrefabRuntimeComponents(archetype, enemyController, animator, out Animator resolvedAnimator);
+                if (resolvedAnimator == null)
+                {
+                    Debug.LogWarning(
+                        $"[EnemySkillAuthoringUtility] 预制件 {prefabRoot.name} 已匹配到敌人行为资产，但未找到也未能自动创建 Animator，已跳过专属 AnimatorController 绑定。",
+                        prefabRoot);
+                    if (changed)
+                        PrefabUtility.SavePrefabAsset(prefabRoot);
                     continue;
+                }
 
-                Undo.RecordObject(animator, "绑定敌人专属动画控制器");
-                animator.runtimeAnimatorController = animatorController;
-                EditorUtility.SetDirty(animator);
-                PrefabUtility.SavePrefabAsset(prefabRoot);
+                if (resolvedAnimator.runtimeAnimatorController == animatorController)
+                {
+                    if (changed)
+                        PrefabUtility.SavePrefabAsset(prefabRoot);
+                    continue;
+                }
+
+                Undo.RecordObject(resolvedAnimator, "绑定敌人专属动画控制器");
+                resolvedAnimator.runtimeAnimatorController = animatorController;
+                EditorUtility.SetDirty(resolvedAnimator);
+                changed = true;
+                if (changed)
+                    PrefabUtility.SavePrefabAsset(prefabRoot);
             }
+        }
+
+        private static bool EnsureEnemyPrefabRuntimeComponents(
+            EnemyArchetypeSO archetype,
+            EnemyController enemyController,
+            Animator matchedAnimator,
+            out Animator resolvedAnimator)
+        {
+            resolvedAnimator = null;
+            if (archetype == null || enemyController == null)
+                return false;
+
+            bool changed = false;
+            GameObject hostObject = enemyController.gameObject;
+
+            if (hostObject.GetComponent<Collider>() == null)
+            {
+                Undo.AddComponent<CapsuleCollider>(hostObject);
+                changed = true;
+            }
+
+            if (hostObject.GetComponent<EnemyAI>() == null)
+            {
+                Undo.AddComponent<EnemyAI>(hostObject);
+                changed = true;
+            }
+
+            if (hostObject.GetComponent<EnemyPerception>() == null)
+            {
+                Undo.AddComponent<EnemyPerception>(hostObject);
+                changed = true;
+            }
+
+            if (hostObject.GetComponent<EnemyMover>() == null)
+            {
+                Undo.AddComponent<EnemyMover>(hostObject);
+                changed = true;
+            }
+
+            if (!archetype.UsesAerialMovement() && hostObject.GetComponent<NavMeshAgent>() == null)
+            {
+                Undo.AddComponent<NavMeshAgent>(hostObject);
+                changed = true;
+            }
+
+            Animator hostAnimator = hostObject.GetComponent<Animator>();
+            if (hostAnimator == null && matchedAnimator == null)
+            {
+                hostAnimator = Undo.AddComponent<Animator>(hostObject);
+                changed = true;
+
+                Avatar autoAvatar = ResolveEnemyPrefabAnimatorAvatar(hostObject);
+                if (autoAvatar != null && hostAnimator.avatar != autoAvatar)
+                {
+                    Undo.RecordObject(hostAnimator, "配置敌人 Animator Avatar");
+                    hostAnimator.avatar = autoAvatar;
+                    EditorUtility.SetDirty(hostAnimator);
+                }
+                else if (autoAvatar == null)
+                {
+                    Debug.LogWarning(
+                        $"[EnemySkillAuthoringUtility] 预制件 {hostObject.name} 已自动添加 Animator，但未能自动找到 Avatar，请手动指定。",
+                        hostObject);
+                }
+            }
+            else if (hostAnimator != null && hostAnimator.avatar == null)
+            {
+                Avatar autoAvatar = ResolveEnemyPrefabAnimatorAvatar(hostObject);
+                if (autoAvatar != null)
+                {
+                    Undo.RecordObject(hostAnimator, "配置敌人 Animator Avatar");
+                    hostAnimator.avatar = autoAvatar;
+                    EditorUtility.SetDirty(hostAnimator);
+                    changed = true;
+                }
+            }
+
+            resolvedAnimator = hostAnimator != null ? hostAnimator : matchedAnimator;
+            if (hostAnimator != null)
+            {
+                if (hostObject.GetComponent<EnemyCombat>() == null)
+                {
+                    Undo.AddComponent<EnemyCombat>(hostObject);
+                    changed = true;
+                }
+            }
+            else if (matchedAnimator != null && matchedAnimator.gameObject != hostObject)
+            {
+                Debug.LogWarning(
+                    $"[EnemySkillAuthoringUtility] 预制件 {hostObject.name} 的 EnemyController 与 Animator 不在同一个 GameObject 上，已跳过自动添加 EnemyCombat。请将 Animator 放到同一对象，或手动补齐。",
+                    hostObject);
+            }
+
+            if (changed)
+                EditorUtility.SetDirty(hostObject);
+
+            return changed;
+        }
+
+        private static Avatar ResolveEnemyPrefabAnimatorAvatar(GameObject hostObject)
+        {
+            if (hostObject == null)
+                return null;
+
+            Animator existingAnimator = hostObject.GetComponentInChildren<Animator>(true);
+            if (existingAnimator != null && existingAnimator.avatar != null)
+                return existingAnimator.avatar;
+
+            SkinnedMeshRenderer skinnedMeshRenderer = hostObject.GetComponentInChildren<SkinnedMeshRenderer>(true);
+            if (skinnedMeshRenderer != null && skinnedMeshRenderer.sharedMesh != null)
+            {
+                Avatar avatar = LoadFirstAvatarAtPath(AssetDatabase.GetAssetPath(skinnedMeshRenderer.sharedMesh));
+                if (avatar != null)
+                    return avatar;
+            }
+
+            MeshFilter meshFilter = hostObject.GetComponentInChildren<MeshFilter>(true);
+            if (meshFilter != null && meshFilter.sharedMesh != null)
+            {
+                Avatar avatar = LoadFirstAvatarAtPath(AssetDatabase.GetAssetPath(meshFilter.sharedMesh));
+                if (avatar != null)
+                    return avatar;
+            }
+
+            GameObject sourceObject = PrefabUtility.GetCorrespondingObjectFromSource(hostObject);
+            if (sourceObject != null)
+            {
+                Avatar avatar = LoadFirstAvatarAtPath(AssetDatabase.GetAssetPath(sourceObject));
+                if (avatar != null)
+                    return avatar;
+            }
+
+            return null;
+        }
+
+        private static Avatar LoadFirstAvatarAtPath(string assetPath)
+        {
+            if (string.IsNullOrWhiteSpace(assetPath))
+                return null;
+
+            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
+            for (int i = 0; i < assets.Length; i++)
+            {
+                if (assets[i] is Avatar avatar)
+                    return avatar;
+            }
+
+            return null;
         }
 
         private static void CleanupEnemyPrefabReferences(EnemyArchetypeSO archetype, AnimatorController dedicatedAnimatorController)

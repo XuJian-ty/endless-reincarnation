@@ -112,7 +112,7 @@ namespace Game.AI
             controller.CurrentIntent = new EnemyIntent
             {
                 Type = EnemyIntentType.Patrol,
-                TargetPosition = randomPoint,
+                TargetPosition = controller.ResolveFlightAnchorPosition(randomPoint),
             };
             return TaskStatus.Success;
         }

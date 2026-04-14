@@ -11,12 +11,14 @@ namespace Game.Editor
     public sealed class EnemyArchetypeSOEditor : UnityEditor.Editor
     {
         private SerializedProperty _enemyIdProperty;
+        private SerializedProperty _displayNameProperty;
         private SerializedProperty _skillSlotsProperty;
         private bool _pendingExitGui;
 
         private void OnEnable()
         {
             _enemyIdProperty = serializedObject.FindProperty(nameof(EnemyArchetypeSO.enemyId));
+            _displayNameProperty = serializedObject.FindProperty(nameof(EnemyArchetypeSO.displayName));
             _skillSlotsProperty = serializedObject.FindProperty(nameof(EnemyArchetypeSO.skillSlots));
         }
 
@@ -26,10 +28,16 @@ namespace Game.Editor
             _pendingExitGui = false;
 
             DrawIdentitySection();
+            if (_pendingExitGui)
+            {
+                GUIUtility.ExitGUI();
+                return;
+            }
             DrawPropertiesExcluding(
                 serializedObject,
                 "m_Script",
                 nameof(EnemyArchetypeSO.enemyId),
+                nameof(EnemyArchetypeSO.displayName),
                 nameof(EnemyArchetypeSO.dedicatedAnimatorController),
                 nameof(EnemyArchetypeSO.skillSlots));
             EditorGUILayout.Space(8f);
@@ -66,7 +74,23 @@ namespace Game.Editor
                     currentEnemyId);
 
                 if (_enemyIdProperty != null && !string.Equals(nextEnemyId, currentEnemyId, StringComparison.Ordinal))
+                {
                     ApplyEnemyIdChange(archetype, nextEnemyId);
+                    _pendingExitGui = true;
+                    return;
+                }
+
+                string currentDisplayName = _displayNameProperty != null ? _displayNameProperty.stringValue : string.Empty;
+                string nextDisplayName = EditorGUILayout.DelayedTextField(
+                    new GUIContent("显示名称", "用于同步属性库、技能效果库、动画库中的敌人分组名称"),
+                    currentDisplayName);
+
+                if (_displayNameProperty != null && !string.Equals(nextDisplayName, currentDisplayName, StringComparison.Ordinal))
+                {
+                    ApplyDisplayNameChange(archetype, nextDisplayName);
+                    _pendingExitGui = true;
+                    return;
+                }
 
                 if (_enemyIdProperty != null && string.IsNullOrWhiteSpace(_enemyIdProperty.stringValue))
                     EditorGUILayout.HelpBox("敌人ID建议保持非空且唯一。修改后会同步更新属性库、技能效果库、动画库以及相关引用。", MessageType.Info);
@@ -203,6 +227,30 @@ namespace Game.Editor
             {
                 EditorUtility.DisplayDialog("敌人ID同步失败", errorMessage, "确定");
                 archetype.enemyId = previousExplicitEnemyId;
+                EditorUtility.SetDirty(archetype);
+                AssetDatabase.SaveAssetIfDirty(archetype);
+            }
+
+            serializedObject.Update();
+        }
+
+        private void ApplyDisplayNameChange(EnemyArchetypeSO archetype, string newDisplayName)
+        {
+            if (archetype == null || _displayNameProperty == null)
+                return;
+
+            string previousDisplayName = archetype.displayName;
+            string trimmedDisplayName = string.IsNullOrWhiteSpace(newDisplayName) ? string.Empty : newDisplayName.Trim();
+            if (string.Equals(previousDisplayName, trimmedDisplayName, StringComparison.Ordinal))
+                return;
+
+            _displayNameProperty.stringValue = trimmedDisplayName;
+            serializedObject.ApplyModifiedProperties();
+
+            if (!EnemySkillAuthoringUtility.TrySyncEnemyMetadata(archetype, out string errorMessage))
+            {
+                EditorUtility.DisplayDialog("显示名称同步失败", errorMessage, "确定");
+                archetype.displayName = previousDisplayName;
                 EditorUtility.SetDirty(archetype);
                 AssetDatabase.SaveAssetIfDirty(archetype);
             }

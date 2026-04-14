@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3c73c8af58434a48bc6926cc13cc993, type: 3}
+  m_Name: "\u654C\u4EBA\u884C\u4E3A_\u7CBE\u82F1\u602A_\u98DE\u884C"
+  m_EditorClassIdentifier: 
+  enemyId: elite_fly
+  displayName: "\u7CBE\u82F1\u602A_\u98DE\u884C"
+  enemyType: 2
+  movementMode: 1
+  allowStrafe: 1
+  allowRetreat: 1
+  allowReposition: 1
+  allowDodge: 1
+  flightHeightOffset: 3.5
+  flightHeightBobAmplitude: 0.35
+  flightHeightBobFrequency: 1.4
+  flightVerticalSpeed: 4.5
+  flightTurnSpeed: 6
+  sectorAngle: 120
+  sectorRange: 15
+  chaseBreakDistance: 25
+  patrolRadius: 10
+  patrolHealPercentPerSecond: 0.05
+  chaseInnerDistance: 6
+  retreatStepDistance: 3.5
+  approachLeadTime: 0.2
+  perceptionEyeHeight: 1.2
+  reactionDelaySeconds: 0.12
+  searchMemoryDuration: 1.6
+  aggression: 0.55
+  caution: 0.45
+  dodgeBias: 0.5
+  punishBias: 0.55
+  strafeBias: 0.45
+  poiseMax: 24
+  poiseRecoveryPerSecond: 10
+  poiseBreakStunDuration: 0.35
+  allowLightHitFlinch: 1
+  dedicatedAnimatorController: {fileID: 9100000, guid: 459f44f265ba9094bb48225b4fe75fc7,
+    type: 2}
+  skillSlots:
+  - slotIndex: 0
+    skillId: elite_flySkill0
+    displayName: "\u6280\u80FD0"
+    cooldown: 1
+    castRange: 3
+    minCastRange: 0
+    idealCastRange: 0
+    idealCastDistanceTolerance: 0.9
+    skillRole: 0
+    riskWeight: 0.35
+    punishWeight: 0.5
+    repeatPenalty: 0.2
+    canUseUnderThreat: 0
+    postCastIdleDuration: 0
+    rotateToTargetOnCast: 1
+    naturalExitNormalizedTime: 0.9
+    phaseAvailability: 0
+  - slotIndex: 1
+    skillId: elite_flySkill1
+    displayName: "\u6280\u80FD1"
+    cooldown: 1
+    castRange: 3
+    minCastRange: 0
+    idealCastRange: 0
+    idealCastDistanceTolerance: 0.9
+    skillRole: 0
+    riskWeight: 0.35
+    punishWeight: 0.5
+    repeatPenalty: 0.2
+    canUseUnderThreat: 0
+    postCastIdleDuration: 0
+    rotateToTargetOnCast: 1
+    naturalExitNormalizedTime: 0.9
+    phaseAvailability: 0

@@ -403,9 +403,15 @@ namespace Game.Presentation
         private void RotateToward(Vector3 worldPos)
         {
             Vector3 dir = worldPos - transform.position;
-            dir.y = 0f;
+            if (_controller == null || !_controller.UsesAerialMovement)
+                dir.y = 0f;
             if (dir.sqrMagnitude > 0.0001f)
-                transform.rotation = Quaternion.LookRotation(dir.normalized);
+            {
+                Vector3 upAxis = Mathf.Abs(Vector3.Dot(dir.normalized, Vector3.up)) > 0.98f
+                    ? Vector3.forward
+                    : Vector3.up;
+                transform.rotation = Quaternion.LookRotation(dir.normalized, upAxis);
+            }
         }
 
         private void PlayAnimatorAction(string action)

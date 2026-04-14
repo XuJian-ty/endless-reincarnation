@@ -98,7 +98,8 @@ namespace Game.Presentation
                 return false;
 
             Vector3 delta = intent.TargetPosition.Value - _controller.transform.position;
-            delta.y = 0f;
+            if (!_controller.UsesAerialMovement)
+                delta.y = 0f;
             return delta.sqrMagnitude <= 0.75f * 0.75f;
         }
 
