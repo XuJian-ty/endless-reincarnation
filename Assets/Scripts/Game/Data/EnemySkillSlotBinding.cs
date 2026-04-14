@@ -12,11 +12,17 @@ namespace Game.Data
 
     public enum EnemySkillRole
     {
+        [InspectorName("通用")]
         Flexible,
+        [InspectorName("贴近")]
         GapClose,
+        [InspectorName("压制")]
         Pressure,
+        [InspectorName("抓后摇")]
         Punish,
+        [InspectorName("脱压")]
         Escape,
+        [InspectorName("区域压制")]
         AreaControl,
     }
 
@@ -49,17 +55,21 @@ namespace Game.Data
         [Tooltip("该槽位再次可用前需要等待的时间。")]
         [Min(0f)] public float cooldown = 1f;
 
-        [InspectorLabel("AI最大起手距离(米)")]
-        [Tooltip("AI 允许从多远开始起手这招。它不是技能真实命中范围；真实攻击范围仍由技能时间轴里的伤害检测决定。")]
+        [InspectorLabel("技能最远释放距离(米)")]
+        [Tooltip("AI 最远能从多远开始或继续释放这招。它不是技能真实命中范围；真实攻击范围仍由技能时间轴里的伤害检测决定。")]
         [Min(0.1f)] public float castRange = 3f;
 
-        [InspectorLabel("AI最小起手距离(米)")]
-        [Tooltip("AI 低于这个距离时不会起手这招。填 0 表示没有最小起手距离限制。")]
+        [InspectorLabel("技能最近释放距离(米)")]
+        [Tooltip("AI 低于这个距离时不会释放这招。填 0 表示没有最近释放距离限制。")]
         [Min(0f)] public float minCastRange = 0f;
 
-        [InspectorLabel("AI理想起手距离(米)")]
-        [Tooltip("AI 希望站在这个距离附近起手这招；填 0 时回退到“AI最大起手距离”。")]
+        [InspectorLabel("技能理想释放距离(米)")]
+        [Tooltip("AI 更偏好在这个距离附近释放这招；越接近这里，这招在决策打分时越容易被选中。填 0 时回退到“技能最远释放距离”。")]
         [Min(0f)] public float idealCastRange = 0f;
+
+        [InspectorLabel("技能理想释放距离容差(米)")]
+        [Tooltip("围绕“技能理想释放距离”允许偏离的范围。越大越容易接受当前站位，不会频繁前后修距离。")]
+        [Min(0.05f)] public float idealCastDistanceTolerance = 0.9f;
 
         [InspectorLabel("技能定位")]
         [Tooltip("Flexible=通用；GapClose=贴近；Pressure=持续压制；Punish=抓后摇；Escape=脱离压力；AreaControl=区域压制。")]

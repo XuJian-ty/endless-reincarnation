@@ -73,6 +73,10 @@ namespace Game.Presentation
         private bool _loggedMissingArchetypeError;
         private float _currentPoise;
         private bool _poiseInitialized;
+        private float _temporarySuperArmorTimer;
+        private float _temporaryInvincibleTimer;
+        private int _stateScopedSuperArmorCount;
+        private int _stateScopedInvincibleCount;
 
         public float Defense
         {
@@ -215,7 +219,8 @@ namespace Game.Presentation
             }
         }
         public bool IsInPatrolState => !_dead && !IsInCombatState;
-        public bool HasCastingSuperArmor => IsCastingSkill && Archetype != null && Archetype.superArmorWhileCasting;
+        public bool HasSuperArmor => _temporarySuperArmorTimer > 0f || _stateScopedSuperArmorCount > 0;
+        public bool HasInvincibility => _temporaryInvincibleTimer > 0f || _stateScopedInvincibleCount > 0;
         public float AnimatorMoveBlend => _animatorMoveBlend;
         public float AnimatorMoveSigned => _animatorMoveSigned;
         public float AnimatorMoveForward => _animatorMoveSigned;
@@ -326,6 +331,12 @@ namespace Game.Presentation
 
             if (_hurtRemainingTime > 0f)
                 _hurtRemainingTime = Mathf.Max(0f, _hurtRemainingTime - Time.deltaTime);
+
+            if (_temporarySuperArmorTimer > 0f)
+                _temporarySuperArmorTimer = Mathf.Max(0f, _temporarySuperArmorTimer - Time.deltaTime);
+
+            if (_temporaryInvincibleTimer > 0f)
+                _temporaryInvincibleTimer = Mathf.Max(0f, _temporaryInvincibleTimer - Time.deltaTime);
 
             if (_isInPostCastRecovery && Time.time >= _idleUntilTime)
                 ClearPostCastRecoveryState();
@@ -597,6 +608,42 @@ namespace Game.Presentation
             SetHurt(validDuration);
         }
 
+        public void ApplyTemporarySuperArmor(float duration)
+        {
+            if (duration <= 0f)
+                return;
+
+            _temporarySuperArmorTimer = Mathf.Max(_temporarySuperArmorTimer, duration);
+        }
+
+        public void AddStateScopedSuperArmor()
+        {
+            _stateScopedSuperArmorCount++;
+        }
+
+        public void RemoveStateScopedSuperArmor()
+        {
+            _stateScopedSuperArmorCount = Mathf.Max(0, _stateScopedSuperArmorCount - 1);
+        }
+
+        public void ApplyTemporaryInvincibility(float duration)
+        {
+            if (duration <= 0f)
+                return;
+
+            _temporaryInvincibleTimer = Mathf.Max(_temporaryInvincibleTimer, duration);
+        }
+
+        public void AddStateScopedInvincibility()
+        {
+            _stateScopedInvincibleCount++;
+        }
+
+        public void RemoveStateScopedInvincibility()
+        {
+            _stateScopedInvincibleCount = Mathf.Max(0, _stateScopedInvincibleCount - 1);
+        }
+
         public void EnterIdle(float duration, bool lockDecision)
         {
             EnsureInitialized();
@@ -694,7 +741,7 @@ namespace Game.Presentation
         public bool ApplyDamage(float amount)
         {
             EnsureInitialized();
-            if (_dead) return false;
+            if (_dead || HasInvincibility) return false;
 
             _stats = _stats.WithDamageApplied(amount);
             if (_stats.IsDead)
@@ -733,6 +780,10 @@ namespace Game.Presentation
             _animatorMoveStrafe = 0f;
             _currentPoise = 0f;
             _poiseInitialized = false;
+            _temporarySuperArmorTimer = 0f;
+            _temporaryInvincibleTimer = 0f;
+            _stateScopedSuperArmorCount = 0;
+            _stateScopedInvincibleCount = 0;
             _modifierCacheDirty = true;
             CurrentIntent = EnemyIntent.None;
         }
@@ -1094,7 +1145,7 @@ namespace Game.Presentation
             float breakStunDuration = Mathf.Max(0.05f, Archetype.poiseBreakStunDuration);
             if (maxPoise <= 0f)
             {
-                if (!HasCastingSuperArmor)
+                if (!HasSuperArmor)
                     ApplyHardControl(breakStunDuration);
                 return;
             }
@@ -1103,12 +1154,12 @@ namespace Game.Presentation
             if (_currentPoise <= 0.01f)
             {
                 _currentPoise = maxPoise;
-                if (!HasCastingSuperArmor)
+                if (!HasSuperArmor)
                     ApplyHardControl(breakStunDuration);
                 return;
             }
 
-            if (!Archetype.allowLightHitFlinch || HasCastingSuperArmor)
+            if (!Archetype.allowLightHitFlinch || HasSuperArmor)
                 return;
 
             float heavyHitThreshold = Mathf.Max(4f, maxPoise * 0.45f);

@@ -3642,14 +3642,14 @@ MonoBehaviour:
         ignoreAnimationDamageEvents: 1
         damageEvents:
         - eventId: evt_4
-          startTime: 0
+          startTime: 0.23333335
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
           repeatedAnchorMode: 0
           damageEffects:
-          - detectionDuration: 2
+          - detectionDuration: 0.5
             activationTime: 0
             activationMode: 0
             intermittentActiveDuration: 0.1
@@ -3658,10 +3658,10 @@ MonoBehaviour:
             detectionType: 0
             hitLayerName: Enemy
             anchor: 0
-            shape: 0
-            centerOffset: {x: 0, y: 1.8052559, z: 5.1355877}
-            rotationEuler: {x: 347.20093, y: 0, z: 0}
-            sphereRadius: 1.5
+            shape: 1
+            centerOffset: {x: 0.05, y: 0, z: 1.5}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 2
             sectorAngle: 180
             boxSize: {x: 1, y: 1, z: 1}
             colliderNodeName: 
@@ -3703,14 +3703,25 @@ MonoBehaviour:
                 m_PostInfinity: 2
                 m_RotationOrder: 4
               retargetOnDescendingPath: 0
-            companionVfxEffects:
-            - particlePrefab: {fileID: 0}
-              anchor: 0
+            companionVfxEffects: []
+            onHitDamageEffects:
+            - onHitTriggerDelay: 0
+              damageMagnitude: 3
+            onHitStopEffect:
+              hitStopDuration: 0.1
+              hitStopTimeScale: 0.5
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects:
+            - particlePrefab: {fileID: 6285963876809029399, guid: 7c34e78ec38ef1c4180dae5578f77392,
+                type: 3}
+              anchor: 1
               useFollowDuration: 0
               followDuration: 0
-              offset: {x: 0, y: 0, z: 0}
+              offset: {x: -0.08045721, y: 0.97179085, z: -0.7401718}
               rotationEuler: {x: 0, y: 0, z: 0}
-              scale: {x: 1, y: 1, z: 1}
+              scale: {x: 0.5, y: 0.5, z: 0.5}
               onHitTriggerDelay: 0
               motion:
                 enabled: 0
@@ -3749,61 +3760,91 @@ MonoBehaviour:
                 retargetOnDescendingPath: 0
               destroyMode: 0
               duration: 0
-            onHitDamageEffects:
-            - onHitTriggerDelay: 0
-              damageMagnitude: 1
-            onHitStopEffect:
-              hitStopDuration: 0
-              hitStopTimeScale: 0
-              pauseCameraLookDuringHitStop: 0
-            onHitPhysicsEffects: []
-            onHitAttributeEffects: []
-            onHitVfxEffects: []
-            onHitSfxEffects: []
+            onHitSfxEffects:
+            - audioClip: {fileID: 8300000, guid: 5f26ef4a9a235e642a8f1b12b3c2c1cb,
+                type: 3}
+              anchor: 1
+              offset: {x: 0, y: 0, z: 0}
+              onHitTriggerDelay: 0
+              loop: 0
+              destroyMode: 0
+              duration: 0
         physicsEvents:
-        - eventId: evt_3
+        - eventId: evt_8
           startTime: 0
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
           physicsEffects:
-          - effectType: 3
+          - effectType: 6
             onHitTriggerDelay: 0
             distance: 1
             height: 1
-            durationMode: 0
-            duration: 0.2
-        attributeEvents:
-        - eventId: evt_2
-          startTime: 0
+            durationMode: 1
+            duration: 8.766667
+        attributeEvents: []
+        vfxEvents:
+        - eventId: evt_0
+          startTime: 0.26666668
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
           repeatInterval: 0.1
-          attributeEffects:
-          - statField: 2
-            targetMode: 0
-            onHitTriggerDelay: 0
-            magnitude: 50
-            usePercent: 0
-            durationMode: 0
-            duration: 10
-        vfxEvents:
-        - eventId: evt_0
-          startTime: 0
-          triggerMode: 1
-          activeDuration: 0.20000002
-          activeDurationMode: 0
-          repeatInterval: 0.10000001
           vfxEffects:
           - particlePrefab: {fileID: 7714061244768427628, guid: d46442fe2f2aabe4bb7827c1723296b9,
               type: 3}
             anchor: 0
             useFollowDuration: 0
             followDuration: 0
-            offset: {x: 0, y: 0, z: 0}
-            rotationEuler: {x: 0, y: 0, z: 0}
+            offset: {x: 0, y: 0.7, z: 0.5}
+            rotationEuler: {x: 315, y: 16, z: 67}
+            scale: {x: 1, y: 1, z: 1}
+            onHitTriggerDelay: 0
+            motion:
+              enabled: 0
+              mode: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0, z: 0.4}
+              pathControlPointB: {x: 0, y: 0, z: 0.8}
+              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+              retargetOnDescendingPath: 0
+            destroyMode: 0
+            duration: 0
+          - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
+              type: 3}
+            anchor: 0
+            useFollowDuration: 0
+            followDuration: 0
+            offset: {x: 0, y: 0.7, z: 0}
+            rotationEuler: {x: 73.34457, y: 296.40793, z: 25.44244}
             scale: {x: 1, y: 1, z: 1}
             onHitTriggerDelay: 0
             motion:
@@ -3844,14 +3885,28 @@ MonoBehaviour:
             destroyMode: 0
             duration: 0
         sfxEvents:
-        - eventId: evt_1
+        - eventId: evt_2
           startTime: 0
-          triggerMode: 1
-          activeDuration: 0.20000002
+          triggerMode: 0
+          activeDuration: 0
           activeDurationMode: 0
-          repeatInterval: 0.10000001
+          repeatInterval: 0.1
           sfxEffects:
-          - audioClip: {fileID: 8300000, guid: adf33c66aff63aa4781dc3e0c28c4667, type: 3}
+          - audioClip: {fileID: 8300000, guid: 5cd28d5e48263824589bb092c7c55f44, type: 3}
+            anchor: 0
+            offset: {x: 0, y: 0, z: 0}
+            onHitTriggerDelay: 0
+            loop: 0
+            destroyMode: 0
+            duration: 0
+        - eventId: evt_7
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          sfxEffects:
+          - audioClip: {fileID: 8300000, guid: 8800b5aa2cc5e734a8cfc37e10242347, type: 3}
             anchor: 0
             offset: {x: 0, y: 0, z: 0}
             onHitTriggerDelay: 0
@@ -10864,7 +10919,20 @@ MonoBehaviour:
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
-        physicsEvents: []
+        physicsEvents:
+        - eventId: evt_2
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            onHitTriggerDelay: 0
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
         attributeEvents: []
         vfxEvents:
         - eventId: evt_1
@@ -11583,7 +11651,20 @@ MonoBehaviour:
             onHitAttributeEffects: []
             onHitVfxEffects: []
             onHitSfxEffects: []
-        physicsEvents: []
+        physicsEvents:
+        - eventId: evt_4
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            onHitTriggerDelay: 0
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
         attributeEvents: []
         vfxEvents:
         - eventId: evt_1

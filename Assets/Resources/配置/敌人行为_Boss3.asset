@@ -61,6 +61,7 @@ MonoBehaviour:
     castRange: 4
     minCastRange: 0
     idealCastRange: 3.5
+    idealCastDistanceTolerance: 1.1
     skillRole: 3
     riskWeight: 0.32
     punishWeight: 0.68
@@ -80,6 +81,7 @@ MonoBehaviour:
     castRange: 15
     minCastRange: 0
     idealCastRange: 13.5
+    idealCastDistanceTolerance: 1.1
     skillRole: 5
     riskWeight: 0.26
     punishWeight: 0.2
@@ -99,6 +101,7 @@ MonoBehaviour:
     castRange: 5.8
     minCastRange: 2.4
     idealCastRange: 4.9
+    idealCastDistanceTolerance: 1.1
     skillRole: 1
     riskWeight: 0.44
     punishWeight: 0.6
@@ -118,6 +121,7 @@ MonoBehaviour:
     castRange: 8.5
     minCastRange: 0
     idealCastRange: 7.6
+    idealCastDistanceTolerance: 1.1
     skillRole: 4
     riskWeight: 0.18
     punishWeight: 0.18

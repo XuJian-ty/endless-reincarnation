@@ -61,6 +61,7 @@ MonoBehaviour:
     castRange: 3
     minCastRange: 0
     idealCastRange: 2.5
+    idealCastDistanceTolerance: 0.75
     skillRole: 2
     riskWeight: 0.22
     punishWeight: 0.3

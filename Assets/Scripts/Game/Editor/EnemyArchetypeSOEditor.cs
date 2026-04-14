@@ -229,6 +229,7 @@ namespace Game.Editor
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.castRange));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.minCastRange));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.idealCastRange));
+                DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.idealCastDistanceTolerance));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.skillRole));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.riskWeight));
                 DrawProperty(slotProperty, nameof(EnemySkillSlotBinding.punishWeight));

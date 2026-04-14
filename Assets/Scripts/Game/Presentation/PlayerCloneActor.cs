@@ -35,6 +35,8 @@ namespace Game.Presentation
         private const float FollowPatrolAnchorTolerance = 1.6f;
         private const float WalkLocomotionSpeed = 0.5f;
         private const float RunLocomotionSpeed = 1f;
+        private const float SharedDodgeSpeed = 12f;
+        private const float DefaultDodgeDuration = 0.22f;
         private const float FinalBossAssistRadius = 48f;
         private const float MinActionExitValidationDelay = 0.05f;
         private const float AttackComboWindowDuration = PlayerStateMachine.ComboWindowDuration;
@@ -98,8 +100,6 @@ namespace Game.Presentation
         private float _targetRefreshTimer;
         private float _actionLockTimer;
         private float _decisionTimer;
-        private float _dodgeCooldownTimer;
-        private float _chargeCooldownTimer;
         private float _dodgeMotionTimer;
         private float _hardControlTimer;
         private float _temporarySuperArmorTimer;
@@ -131,7 +131,6 @@ namespace Game.Presentation
         private int _bufferedAttackComboIndex = -1;
         private float _activeActionElapsed;
         private float _comboWindowTimer;
-        private float _attackModeSwitchCooldownTimer;
         private float _currentAttackModeElapsed;
         private int _lastAttackModeDecisionSecond = -1;
         private PlayerAttackMode _currentAttackMode = PlayerAttackMode.Melee;
@@ -168,8 +167,6 @@ namespace Game.Presentation
             _orbitSign = ResolveOrbitSign(formationIndex);
             _targetRefreshTimer = 0f;
             _decisionTimer = 0f;
-            _dodgeCooldownTimer = 0f;
-            _chargeCooldownTimer = 0f;
             _dodgeMotionTimer = 0f;
             _hardControlTimer = 0f;
             _temporarySuperArmorTimer = 0f;
@@ -205,7 +202,6 @@ namespace Game.Presentation
             _bufferedAttackComboIndex = -1;
             _activeActionElapsed = 0f;
             _comboWindowTimer = 0f;
-            _attackModeSwitchCooldownTimer = 0f;
             _currentAttackModeElapsed = 0f;
             _currentAttackMode = PlayerAttackMode.Melee;
             _lastAttackModeDecisionSecond = -1;
@@ -438,8 +434,8 @@ namespace Game.Presentation
             bool shouldMove = moveDelta.sqrMagnitude > orbitArrivalDistance * orbitArrivalDistance;
             float preferredAttackDistance = usingRangedAttackMode
                 ? (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredRangedDistance) : 6.5f)
-                : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredMeleeDistance) : PreferredAttackDistance);
-            float attackDistanceTolerance = _aiConfig != null ? Mathf.Max(0.05f, _aiConfig.meleeDistanceTolerance) : AttackDistanceTolerance;
+                : ResolvePreferredMeleeDistance();
+            float attackDistanceTolerance = usingRangedAttackMode ? AttackDistanceTolerance : ResolveMeleeDistanceTolerance(preferredAttackDistance);
             float chaseDistanceThreshold = _aiConfig != null ? Mathf.Max(0.1f, _aiConfig.chaseDistanceThreshold) : 1.6f;
             bool isChasing = distanceToTarget > preferredAttackDistance + attackDistanceTolerance + chaseDistanceThreshold;
             bool useRun = isChasing || moveDelta.sqrMagnitude > 1.4f * 1.4f;
@@ -733,6 +729,46 @@ namespace Game.Presentation
                 : entry.ResolveSkillEffectDefinition();
         }
 
+        private float ResolveConfiguredActionDuration(string actionId, float fallbackDuration)
+        {
+            SkillConfigEntry entry = ResolveActionConfigEntry(actionId);
+            SharedSkillDefinition definition = ResolveRuntimeSkillDefinition(entry);
+            if (definition == null)
+                return fallbackDuration;
+
+            SharedSkillDefinition runtimeDefinition = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(transform, definition, actionId);
+            float playbackSpeed = PlayerBuffRuntimeUtility.GetActionCastSpeedMultiplier(_combatStats, actionId);
+            float timelineDuration = runtimeDefinition.GetTimelineDuration();
+            if (timelineDuration <= 0f)
+                return fallbackDuration;
+
+            return Mathf.Max(0.05f, timelineDuration / Mathf.Max(0.1f, playbackSpeed));
+        }
+
+        private float ResolvePreferredMeleeDistance()
+        {
+            return _aiConfig != null
+                ? Mathf.Max(0.5f, _aiConfig.attackCastRange)
+                : PreferredAttackDistance;
+        }
+
+        private float ResolveMeleeDistanceTolerance(float preferredMeleeDistance)
+        {
+            if (_aiConfig == null)
+                return AttackDistanceTolerance;
+
+            return Mathf.Clamp(preferredMeleeDistance * 0.12f, 0.25f, AttackDistanceTolerance);
+        }
+
+        private float ResolveTooCloseDistance(float preferredMeleeDistance)
+        {
+            if (_aiConfig == null)
+                return TooCloseDistance;
+
+            float maxTooCloseDistance = Mathf.Max(0.9f, preferredMeleeDistance - 0.35f);
+            return Mathf.Clamp(preferredMeleeDistance * 0.45f, 0.9f, maxTooCloseDistance);
+        }
+
         private string ResolveRuntimeAnimationTrigger(SkillConfigEntry entry, string fallbackActionId)
         {
             if (entry != null)
@@ -989,8 +1025,6 @@ namespace Game.Presentation
 
             if (!force)
             {
-                if (_attackModeSwitchCooldownTimer > 0f)
-                    return false;
                 if (!CanSwitchAttackModeNow())
                     return false;
             }
@@ -999,7 +1033,6 @@ namespace Game.Presentation
             _currentAttackModeElapsed = 0f;
             _lastAttackModeDecisionSecond = -1;
             _plannedAttackMode = attackMode;
-            _attackModeSwitchCooldownTimer = _aiConfig != null ? Mathf.Max(0f, _aiConfig.attackModeSwitchCooldownSeconds) : 0.45f;
 
             ClearComboWindow();
             _comboStage = 0;
@@ -1397,12 +1430,12 @@ namespace Game.Presentation
         {
             float preferredAttackDistance = usingRangedAttackMode
                 ? (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredRangedDistance) : 6.5f)
-                : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredMeleeDistance) : PreferredAttackDistance);
+                : ResolvePreferredMeleeDistance();
             float attackCastRange = usingRangedAttackMode
                 ? (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedAttackCastRange) : 9f)
                 : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange);
-            float attackDistanceTolerance = _aiConfig != null ? Mathf.Max(0.05f, _aiConfig.meleeDistanceTolerance) : AttackDistanceTolerance;
-            float tooCloseDistance = _aiConfig != null ? Mathf.Max(0.3f, _aiConfig.tooCloseDistance) : TooCloseDistance;
+            float attackDistanceTolerance = usingRangedAttackMode ? AttackDistanceTolerance : ResolveMeleeDistanceTolerance(preferredAttackDistance);
+            float tooCloseDistance = usingRangedAttackMode ? TooCloseDistance : ResolveTooCloseDistance(preferredAttackDistance);
             float orbitOffsetDistance = usingRangedAttackMode
                 ? preferredAttackDistance
                 : (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.orbitDistance) : OrbitOffsetDistance);
@@ -1469,8 +1502,7 @@ namespace Game.Presentation
             if (baseDir.sqrMagnitude <= 0.0001f)
                 baseDir = -facingToTarget;
 
-            float orbitWeight = _aiConfig != null ? Mathf.Clamp01(_aiConfig.orbitBias) : 0.85f;
-            Vector3 orbitDir = Quaternion.Euler(0f, orbitAngle * _orbitSign * Mathf.Lerp(0.75f, 1.15f, orbitWeight), 0f) * baseDir;
+            Vector3 orbitDir = Quaternion.Euler(0f, orbitAngle * _orbitSign, 0f) * baseDir;
             return targetPosition + orbitDir.normalized * (targetRadius + orbitOffsetDistance);
         }
 
@@ -1557,7 +1589,7 @@ namespace Game.Presentation
                 float nextScore = 0.16f + (_aiConfig != null ? _aiConfig.skillBias : 0.78f) * 0.2f;
                 if (_target.IsHurt || _target.IsInPostCastRecovery)
                     nextScore += 0.32f;
-                if (distanceToTarget > ((_aiConfig != null ? _aiConfig.preferredMeleeDistance : PreferredAttackDistance) + 0.9f))
+                if (distanceToTarget > (ResolvePreferredMeleeDistance() + 0.9f))
                     nextScore += 0.14f;
                 nextScore += Random.Range(0f, 0.15f);
                 if (nextScore > bestScore)
@@ -1575,7 +1607,7 @@ namespace Game.Presentation
 
         private float EvaluateDodgeScore(float distanceToTarget)
         {
-            if (_target == null || !_target.IsAlive || _dodgeCooldownTimer > 0f)
+            if (_target == null || !_target.IsAlive)
                 return 0f;
 
             if (IsMeleeComboLocked())
@@ -1606,7 +1638,7 @@ namespace Game.Presentation
 
         private float EvaluateChargeScore(float distanceToTarget)
         {
-            if (_target == null || !_target.IsAlive || _chargeCooldownTimer > 0f)
+            if (_target == null || !_target.IsAlive)
                 return 0f;
 
             if (IsMeleeComboLocked())
@@ -1628,18 +1660,18 @@ namespace Game.Presentation
                     return 0f;
 
                 float rangedScore = 0.08f + (_aiConfig != null ? _aiConfig.rangedBias : 0.22f) * 0.18f;
-                if (distanceToTarget >= (_aiConfig != null ? Mathf.Max(0.5f, _aiConfig.rangedEnterDistance) : 4.8f))
+                float preferredRangedDistance = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.preferredRangedDistance) : 6.5f;
+                float rangedChargeBonusDistance = Mathf.Max(0.5f, preferredRangedDistance - 1.5f);
+                if (distanceToTarget >= rangedChargeBonusDistance)
                     rangedScore += 0.08f;
                 if (_target.IsHurt || _target.IsInPostCastRecovery)
                     rangedScore += 0.1f;
                 return rangedScore;
             }
 
-            float chargeEnterRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.chargeEnterRange) : 4.8f;
-            if (distanceToTarget > chargeEnterRange)
-                return 0f;
             float meleeAttackCastRange = _aiConfig != null ? Mathf.Max(0.5f, _aiConfig.attackCastRange) : AttackCastRange;
-            if (distanceToTarget > meleeAttackCastRange + 0.35f)
+            float meleeChargeEnterDistance = meleeAttackCastRange + 0.35f;
+            if (distanceToTarget > meleeChargeEnterDistance)
                 return 0f;
             if (skillDb.GetEntryByActionId("ChargeStart") == null || skillDb.GetEntryByActionId("ChargeRelease") == null)
                 return 0f;
@@ -1648,7 +1680,7 @@ namespace Game.Presentation
 
             float score = 0.18f + (_aiConfig != null ? _aiConfig.chargeBias : 0.68f) * 0.22f;
             score += 0.22f;
-            if (distanceToTarget > ((_aiConfig != null ? _aiConfig.preferredMeleeDistance : PreferredAttackDistance) + 0.45f))
+            if (distanceToTarget > (ResolvePreferredMeleeDistance() + 0.45f))
                 score += 0.06f;
             return score;
         }
@@ -1832,7 +1864,6 @@ namespace Game.Presentation
                 if (distanceToTarget < preferredRangedDistance - 0.9f || IsTargetThreatening(distanceToTarget))
                     return false;
 
-                _chargeCooldownTimer = _aiConfig != null ? Mathf.Max(0f, _aiConfig.chargeCooldownSeconds) : 3f;
                 ClearComboWindow();
                 float burstMin = _aiConfig != null ? Mathf.Max(0.45f, _aiConfig.chargeHoldMinSeconds * 2f) : 0.45f;
                 float burstMax = _aiConfig != null ? Mathf.Max(burstMin, _aiConfig.chargeHoldMaxSeconds * 3f) : 1.2f;
@@ -1842,7 +1873,6 @@ namespace Game.Presentation
             if (skillDb.GetEntryByActionId("ChargeStart") == null || skillDb.GetEntryByActionId("ChargeRelease") == null)
                 return false;
 
-            _chargeCooldownTimer = _aiConfig != null ? Mathf.Max(0f, _aiConfig.chargeCooldownSeconds) : 3f;
             return BeginConfiguredAction("ChargeStart");
         }
 
@@ -1855,11 +1885,9 @@ namespace Game.Presentation
             if (dodgeDirection.sqrMagnitude <= 0.0001f)
                 return false;
 
-            float dodgeDuration = _aiConfig != null ? Mathf.Max(0.05f, _aiConfig.dodgeDuration) : 0.22f;
-            float dodgeDistance = _aiConfig != null ? Mathf.Max(0.2f, _aiConfig.dodgeDistance) : 3.5f;
-            _dodgeVelocity = dodgeDirection.normalized * (dodgeDistance / dodgeDuration);
+            float dodgeDuration = ResolveConfiguredActionDuration("Dodge", DefaultDodgeDuration);
+            _dodgeVelocity = dodgeDirection.normalized * SharedDodgeSpeed;
             _dodgeMotionTimer = dodgeDuration;
-            _dodgeCooldownTimer = _aiConfig != null ? Mathf.Max(0f, _aiConfig.dodgeCooldownSeconds) : 1.2f;
             return BeginConfiguredAction("Dodge", dodgeDuration);
         }
 
@@ -1885,12 +1913,6 @@ namespace Game.Presentation
                 return;
 
             _decisionTimer = Mathf.Max(0f, _decisionTimer - dt);
-            if (_dodgeCooldownTimer > 0f)
-                _dodgeCooldownTimer = Mathf.Max(0f, _dodgeCooldownTimer - dt);
-            if (_chargeCooldownTimer > 0f)
-                _chargeCooldownTimer = Mathf.Max(0f, _chargeCooldownTimer - dt);
-            if (_attackModeSwitchCooldownTimer > 0f)
-                _attackModeSwitchCooldownTimer = Mathf.Max(0f, _attackModeSwitchCooldownTimer - dt);
         }
 
         private void TickAttackModeElapsed(float dt, PlayerCloneCombatPlan combatPlan)

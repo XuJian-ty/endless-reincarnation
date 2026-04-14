@@ -31,42 +31,29 @@ MonoBehaviour:
   regroupDistance: 50
   perceptionRadius: 40
   targetStickiness: 0.18
-  targetMemoryDuration: 0.9
-  preferredMeleeDistance: 3
-  meleeDistanceTolerance: 0.35
-  tooCloseDistance: 1.35
-  orbitDistance: 1.9
+  targetMemoryDuration: 1
+  orbitDistance: 2
   orbitAngle: 42
   orbitArrivalDistance: 0.2
-  combatMoveSpeedRatio: 0.5
   patrolMoveSpeedRatio: 0.5
   combatWalkSpeedRatio: 0.5
   combatRunSpeedRatio: 1
-  chaseDistanceThreshold: 1.6
-  attackCastRange: 3
+  chaseDistanceThreshold: 5
+  attackCastRange: 2
   skillCastRange: 5
-  chargeEnterRange: 4.8
-  dodgeThreatDistance: 4.2
-  rangedEnterDistance: 4.8
-  rangedExitDistance: 2.8
-  preferredRangedDistance: 6.5
-  rangedAttackCastRange: 9
-  dodgeCooldownSeconds: 1.2
-  dodgeDistance: 3.5
-  dodgeDuration: 0.22
-  chargeCooldownSeconds: 3
-  chargeHoldMinSeconds: 0.18
-  chargeHoldMaxSeconds: 0.4
-  attackModeSwitchCooldownSeconds: 0.45
+  dodgeThreatDistance: 4
+  rangedExitDistance: 5
+  preferredRangedDistance: 10
+  rangedAttackCastRange: 15
+  chargeHoldMinSeconds: 0.4
+  chargeHoldMaxSeconds: 1
   attackModeMaxContinuousSeconds: 10
-  aggression: 1
+  aggression: 0.8
   dodgeBias: 0.5
-  skillBias: 1
-  chargeBias: 0.2
-  rangedBias: 0.22
-  comboBias: 1
-  orbitBias: 0.85
+  skillBias: 0.4
+  chargeBias: 0.6
+  rangedBias: 0.8
   dodgeDecisionPenalty: 0.18
-  skillDecisionPenalty: 0.12
-  chargeDecisionPenalty: 0.15
+  skillDecisionPenalty: 0.3
+  chargeDecisionPenalty: 0.1
   attackDecisionPenalty: 0.06

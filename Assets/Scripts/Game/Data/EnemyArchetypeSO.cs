@@ -48,10 +48,6 @@ namespace Game.Data
         [Tooltip("与目标距离小于等于该值时，追击移动使用走路；大于该值时使用跑步。")]
         [Min(0.1f)] public float chaseInnerDistance = 2.5f;
 
-        [InspectorLabel("理想站位容差(米)")]
-        [Tooltip("相对理想施法距离允许偏离的范围。越大越容易接受当前站位，不会急着前进或后撤。")]
-        [Min(0.05f)] public float combatDistanceTolerance = 0.9f;
-
         [InspectorLabel("战术位移步长(米)")]
         [Tooltip("战术移动时的一步长度。它会同时影响后撤、绕步横移，以及施法后恢复时拉开的距离。")]
         [Min(0.1f)] public float retreatStepDistance = 3.5f;
@@ -109,10 +105,6 @@ namespace Game.Data
         [InspectorLabel("允许强击轻硬直")]
         [Tooltip("开启后，伤害较大的单次攻击即使没有打空韧性，也可能造成一次短硬直。")]
         public bool allowLightHitFlinch = true;
-
-        [InspectorLabel("施法时霸体")]
-        [Tooltip("开启后，敌人在施法过程中不会被普通受击直接打断，但韧性依然会被消耗。")]
-        public bool superArmorWhileCasting;
 
         [Header("技能作者化")]
         [InspectorLabel("专属动画控制器")]

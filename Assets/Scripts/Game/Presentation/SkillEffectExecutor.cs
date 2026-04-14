@@ -309,6 +309,9 @@ namespace Game.Presentation
             var enemy = target.GetComponentInParent<EnemyController>();
             if (enemy != null)
             {
+                if (enemy.HasInvincibility)
+                    return;
+
                 float damage = CalculatePlayerSideDamage(ctx, damageMultiplier, enemy, out bool isCrit);
                 enemy.ApplyDamage(damage);
                 CombatNumberDispatcher.PublishDamage(enemy.transform, damage, isCrit);
@@ -369,20 +372,26 @@ namespace Game.Presentation
             PlayerController player = ctx?.CasterTransform != null
                 ? ctx.CasterTransform.GetComponent<PlayerController>()
                 : null;
-            if (player == null)
-                return;
-
-            player.ApplyLocalHitStop(duration, clampedScale);
-
-            if (_hitStopRunner == null)
+            if (player != null)
             {
-                var go = new GameObject("[SkillHitStopRunner]");
-                go.hideFlags = HideFlags.HideAndDontSave;
-                UnityObject.DontDestroyOnLoad(go);
-                _hitStopRunner = go.AddComponent<HitStopRunner>();
+                player.ApplyLocalHitStop(duration, clampedScale);
+
+                if (_hitStopRunner == null)
+                {
+                    var go = new GameObject("[SkillHitStopRunner]");
+                    go.hideFlags = HideFlags.HideAndDontSave;
+                    UnityObject.DontDestroyOnLoad(go);
+                    _hitStopRunner = go.AddComponent<HitStopRunner>();
+                }
+
+                _hitStopRunner.Apply(duration, pauseCameraLookDuringHitStop);
+                return;
             }
 
-            _hitStopRunner.Apply(duration, pauseCameraLookDuringHitStop);
+            EnemyCombat enemyCombat = ctx?.CasterTransform != null
+                ? ctx.CasterTransform.GetComponent<EnemyCombat>()
+                : null;
+            enemyCombat?.ApplyLocalHitStop(duration, clampedScale);
         }
 
         private static void ApplyOnHitEffects(
@@ -640,6 +649,18 @@ namespace Game.Presentation
                         if (stateScopedClone != null)
                             stateScopedClone.RemoveStateScopedSuperArmor();
                     });
+                    return;
+                }
+
+                EnemyController stateScopedEnemy = ctx.CasterTransform.GetComponent<EnemyController>();
+                if (stateScopedEnemy != null)
+                {
+                    stateScopedEnemy.AddStateScopedSuperArmor();
+                    cueRuntime.RegisterStateExitCallback(() =>
+                    {
+                        if (stateScopedEnemy != null)
+                            stateScopedEnemy.RemoveStateScopedSuperArmor();
+                    });
                 }
                 return;
             }
@@ -654,7 +675,14 @@ namespace Game.Presentation
             }
 
             PlayerCloneActor clone = ctx.CasterTransform.GetComponent<PlayerCloneActor>();
-            clone?.ApplyTemporarySuperArmor(effect.duration);
+            if (clone != null)
+            {
+                clone.ApplyTemporarySuperArmor(effect.duration);
+                return;
+            }
+
+            EnemyController enemy = ctx.CasterTransform.GetComponent<EnemyController>();
+            enemy?.ApplyTemporarySuperArmor(effect.duration);
         }
 
         private static void ApplySelfInvincibility(SkillPhysicsEffect effect, ISkillExecutionContext ctx, SkillCueRuntimeScope cueRuntime)
@@ -685,6 +713,18 @@ namespace Game.Presentation
                         if (stateScopedClone != null)
                             stateScopedClone.RemoveStateScopedInvincibility();
                     });
+                    return;
+                }
+
+                EnemyController stateScopedEnemy = ctx.CasterTransform.GetComponent<EnemyController>();
+                if (stateScopedEnemy != null)
+                {
+                    stateScopedEnemy.AddStateScopedInvincibility();
+                    cueRuntime.RegisterStateExitCallback(() =>
+                    {
+                        if (stateScopedEnemy != null)
+                            stateScopedEnemy.RemoveStateScopedInvincibility();
+                    });
                 }
                 return;
             }
@@ -699,7 +739,14 @@ namespace Game.Presentation
             }
 
             PlayerCloneActor clone = ctx.CasterTransform.GetComponent<PlayerCloneActor>();
-            clone?.ApplyTemporaryInvincibility(effect.duration);
+            if (clone != null)
+            {
+                clone.ApplyTemporaryInvincibility(effect.duration);
+                return;
+            }
+
+            EnemyController enemy = ctx.CasterTransform.GetComponent<EnemyController>();
+            enemy?.ApplyTemporaryInvincibility(effect.duration);
         }
 
         private static void ApplyTargetPhysicsEffect(
