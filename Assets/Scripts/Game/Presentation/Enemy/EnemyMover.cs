@@ -8,7 +8,6 @@ namespace Game.Presentation
     /// <summary>
     /// Enemy movement execution layer driven by CurrentIntent.
     /// </summary>
-    [RequireComponent(typeof(NavMeshAgent))]
     public class EnemyMover : MonoBehaviour
     {
         private const float WalkSpeedRatio = 0.55f;
@@ -17,6 +16,7 @@ namespace Game.Presentation
         private const float RepositionSpeedRatio = 0.85f;
         private const float DodgeSpeedRatio = 1.15f;
         private const float RetreatArrivalDistance = 0.2f;
+        private const float AerialArrivalDistance = 0.3f;
 
         private NavMeshAgent _agent;
         private EnemyController _controller;
@@ -127,6 +127,18 @@ namespace Game.Presentation
 
             moveSpeed *= timelineMoveSpeedMultiplier;
 
+            if (_controller.UsesAerialMovement)
+            {
+                ExecuteAerialMoveIntent(intent, moveSpeed, moveBlend);
+                return;
+            }
+
+            if (_agent == null)
+            {
+                StopMoving();
+                return;
+            }
+
             _agent.isStopped = false;
             _agent.speed = moveSpeed;
             _agent.SetDestination(intent.TargetPosition.Value);
@@ -135,6 +147,16 @@ namespace Game.Presentation
             RotateToward(facingPoint);
 
             ApplyDirectionalAnimatorMotion(intent, moveBlend, facingPoint);
+        }
+
+        private void ExecuteAerialMoveIntent(EnemyIntent intent, float moveSpeed, float moveBlend)
+        {
+            Vector3 destination = _controller.ResolveFlightMoveDestination(intent.TargetPosition.Value);
+            MoveAerialToDestination(destination, moveSpeed);
+
+            Vector3 facingPoint = ResolveFacingPoint(intent);
+            RotateToward(facingPoint);
+            ApplyAerialAnimatorMotion(destination, moveBlend);
         }
 
         private Vector3 ResolveFacingPoint(EnemyIntent intent)
@@ -165,10 +187,13 @@ namespace Game.Presentation
             Vector3 moveDir = GetPlanarDirection(transform.position, intent.TargetPosition.Value);
             if (moveDir.sqrMagnitude < 0.0001f)
             {
-                moveDir = _agent.desiredVelocity;
-                moveDir.y = 0f;
-                if (moveDir.sqrMagnitude > 0.0001f)
-                    moveDir.Normalize();
+                if (_agent != null)
+                {
+                    moveDir = _agent.desiredVelocity;
+                    moveDir.y = 0f;
+                    if (moveDir.sqrMagnitude > 0.0001f)
+                        moveDir.Normalize();
+                }
             }
 
             Vector3 faceDir = GetPlanarDirection(transform.position, facingPoint);
@@ -211,11 +236,20 @@ namespace Game.Presentation
                     return false;
             }
 
+            if (_controller.UsesAerialMovement)
+                return ExecuteAerialPostCastRecoveryMovement(retreatDestination);
+
             float planarDistance = GetPlanarDistance(transform.position, retreatDestination);
             if (planarDistance <= RetreatArrivalDistance)
             {
                 StopMoving();
                 return true;
+            }
+
+            if (_agent == null)
+            {
+                StopMoving();
+                return false;
             }
 
             _agent.isStopped = false;
@@ -234,6 +268,28 @@ namespace Game.Presentation
                 TargetPosition = retreatDestination,
             };
             ApplyDirectionalAnimatorMotion(retreatIntent, WalkBlendValue, facingPoint);
+            return true;
+        }
+
+        private bool ExecuteAerialPostCastRecoveryMovement(Vector3 retreatDestination)
+        {
+            float distance = Vector3.Distance(transform.position, _controller.ResolveFlightMoveDestination(retreatDestination));
+            if (distance <= AerialArrivalDistance)
+            {
+                StopMoving();
+                return true;
+            }
+
+            float timelineMoveSpeedMultiplier = _combat != null
+                ? Mathf.Max(0f, _combat.CurrentMovementSpeedMultiplier)
+                : 1f;
+            float moveSpeed = _controller.MoveSpeed * WalkSpeedRatio * timelineMoveSpeedMultiplier;
+            Vector3 destination = _controller.ResolveFlightMoveDestination(retreatDestination);
+            MoveAerialToDestination(destination, moveSpeed);
+
+            Vector3 facingPoint = ResolveCurrentThreatPosition();
+            RotateToward(facingPoint);
+            ApplyAerialAnimatorMotion(destination, WalkBlendValue);
             return true;
         }
 
@@ -305,7 +361,9 @@ namespace Game.Presentation
 
         private void ResolveChaseSpeed(Vector3 targetPosition, ref float moveSpeed, ref float moveBlend)
         {
-            float targetDistance = GetPlanarDistance(transform.position, targetPosition);
+            float targetDistance = _controller != null && _controller.UsesAerialMovement
+                ? Vector3.Distance(transform.position, targetPosition)
+                : GetPlanarDistance(transform.position, targetPosition);
             float walkThreshold = 2.5f;
 
             if (_controller.Archetype != null)
@@ -324,12 +382,19 @@ namespace Game.Presentation
         private void RotateToward(Vector3 worldPosition)
         {
             Vector3 dir = worldPosition - transform.position;
-            dir.y = 0f;
+            if (_controller == null || !_controller.UsesAerialMovement)
+                dir.y = 0f;
             if (dir.sqrMagnitude < 0.01f)
                 return;
 
-            Quaternion targetRot = Quaternion.LookRotation(dir.normalized);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 10f);
+            float turnSpeed = _controller != null && _controller.UsesAerialMovement && _controller.Archetype != null
+                ? Mathf.Max(0.1f, _controller.Archetype.flightTurnSpeed)
+                : 10f;
+            Vector3 upAxis = Mathf.Abs(Vector3.Dot(dir.normalized, Vector3.up)) > 0.98f
+                ? Vector3.forward
+                : Vector3.up;
+            Quaternion targetRot = Quaternion.LookRotation(dir.normalized, upAxis);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * turnSpeed);
         }
 
         public void SetStopped(bool stopped)
@@ -341,8 +406,54 @@ namespace Game.Presentation
         private void StopMoving()
         {
             if (_agent != null)
+            {
                 _agent.isStopped = true;
+                if (_controller != null && _controller.UsesAerialMovement && _agent.enabled && _agent.isOnNavMesh)
+                    _agent.nextPosition = transform.position;
+            }
             _controller.SetAnimatorMove(0f, 0f, 0f);
+        }
+
+        private void MoveAerialToDestination(Vector3 destination, float moveSpeed)
+        {
+            if (_agent != null && _agent.enabled)
+            {
+                _agent.isStopped = true;
+                if (_agent.isOnNavMesh)
+                    _agent.nextPosition = transform.position;
+            }
+
+            float verticalSpeed = _controller != null && _controller.Archetype != null
+                ? Mathf.Max(0.1f, _controller.Archetype.flightVerticalSpeed)
+                : moveSpeed;
+
+            Vector3 delta = destination - transform.position;
+            Vector3 horizontalDelta = new Vector3(delta.x, 0f, delta.z);
+
+            float horizontalStep = moveSpeed * Time.deltaTime;
+            float verticalStep = verticalSpeed * Time.deltaTime;
+
+            Vector3 nextPosition = transform.position;
+            if (horizontalDelta.sqrMagnitude > 0.0001f)
+            {
+                Vector3 horizontalMove = horizontalDelta.normalized * Mathf.Min(horizontalStep, horizontalDelta.magnitude);
+                nextPosition += new Vector3(horizontalMove.x, 0f, horizontalMove.z);
+            }
+
+            nextPosition.y = Mathf.MoveTowards(transform.position.y, destination.y, verticalStep);
+            transform.position = nextPosition;
+        }
+
+        private void ApplyAerialAnimatorMotion(Vector3 destination, float moveBlend)
+        {
+            Vector3 delta = destination - transform.position;
+            if (delta.sqrMagnitude <= AerialArrivalDistance * AerialArrivalDistance)
+            {
+                _controller.SetAnimatorMove(0f, 0f, 0f);
+                return;
+            }
+
+            _controller.SetAnimatorMove(moveBlend, moveBlend, 0f);
         }
 
         private static bool IsMoveIntent(EnemyIntentType type)

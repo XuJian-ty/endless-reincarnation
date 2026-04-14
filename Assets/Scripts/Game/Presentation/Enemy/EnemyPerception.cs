@@ -78,7 +78,8 @@ namespace Game.Presentation
                 return transform.position;
 
             Vector3 predicted = TargetPosition.Value + TargetVelocity * Mathf.Max(0f, leadTime);
-            predicted.y = TargetPosition.Value.y;
+            if (!UsesAerialDistance())
+                predicted.y = TargetPosition.Value.y;
             return predicted;
         }
 
@@ -162,8 +163,8 @@ namespace Game.Presentation
 
             Vector3 playerPos = _player.position;
             Vector3 toPlayer = playerPos - transform.position;
-            toPlayer.y = 0f;
-            DistanceToPlayer = toPlayer.magnitude;
+            Vector3 combatDelta = ResolveCombatDelta(toPlayer, archetype);
+            DistanceToPlayer = combatDelta.magnitude;
 
             float sectorRange = archetype.sectorRange;
             float chaseBreakDistance = archetype.chaseBreakDistance;
@@ -171,9 +172,17 @@ namespace Game.Presentation
 
             bool inRange = DistanceToPlayer <= sectorRange;
             Vector3 forward = transform.forward;
-            if (toPlayer.sqrMagnitude < 0.0001f)
-                toPlayer = forward;
-            Vector3 toPlayerDir = toPlayer.normalized;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f)
+                forward = Vector3.forward;
+            else
+                forward.Normalize();
+
+            Vector3 sectorToPlayer = toPlayer;
+            sectorToPlayer.y = 0f;
+            if (sectorToPlayer.sqrMagnitude < 0.0001f)
+                sectorToPlayer = forward;
+            Vector3 toPlayerDir = sectorToPlayer.normalized;
             float minDot = Mathf.Cos(sectorAngle * 0.5f * Mathf.Deg2Rad);
             bool inSector = inRange && Vector3.Dot(forward, toPlayerDir) >= minDot;
 
@@ -232,7 +241,8 @@ namespace Game.Presentation
                 if (dt > 0.0001f)
                 {
                     Vector3 velocity = (playerPos - _lastPlayerSamplePosition) / dt;
-                    velocity.y = 0f;
+                    if (!UsesAerialDistance())
+                        velocity.y = 0f;
                     TargetVelocity = velocity;
                 }
                 else
@@ -411,6 +421,9 @@ namespace Game.Presentation
 
         private bool ProbePathToTarget(Vector3 targetPos)
         {
+            if (UsesAerialDistance())
+                return true;
+
             if (_pathBuffer == null)
                 _pathBuffer = new NavMeshPath();
 
@@ -429,6 +442,18 @@ namespace Game.Presentation
                 ? Mathf.Max(0f, archetype.perceptionEyeHeight)
                 : DefaultPerceptionEyeHeight;
             return position + Vector3.up * height;
+        }
+
+        private bool UsesAerialDistance()
+        {
+            return _controller != null && _controller.UsesAerialMovement;
+        }
+
+        private static Vector3 ResolveCombatDelta(Vector3 delta, EnemyArchetypeSO archetype)
+        {
+            if (archetype == null || !archetype.UsesAerialMovement())
+                delta.y = 0f;
+            return delta;
         }
 
         private void ClearTargetState()

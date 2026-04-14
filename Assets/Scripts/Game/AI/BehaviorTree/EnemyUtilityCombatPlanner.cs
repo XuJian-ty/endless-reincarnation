@@ -139,9 +139,12 @@ namespace Game.AI
             CombatFrame frame = BuildCombatFrame(ctx, now);
             Candidate best = default;
 
-            TryTakeBetterCandidate(ref best, BuildDodgeCandidate(frame));
-            TryTakeBetterCandidate(ref best, BuildRetreatCandidate(frame, EnemyCombatDecisionFocus.ThreatResponse));
-            TryTakeBetterCandidate(ref best, BuildRepositionCandidate(frame, EnemyCombatDecisionFocus.ThreatResponse));
+            if (CanUseDodge(ctx.Archetype))
+                TryTakeBetterCandidate(ref best, BuildDodgeCandidate(frame));
+            if (CanUseRetreat(ctx.Archetype))
+                TryTakeBetterCandidate(ref best, BuildRetreatCandidate(frame, EnemyCombatDecisionFocus.ThreatResponse));
+            if (CanUseReposition(ctx.Archetype))
+                TryTakeBetterCandidate(ref best, BuildRepositionCandidate(frame, EnemyCombatDecisionFocus.ThreatResponse));
             TryTakeBetterCandidate(ref best, BuildHoldCandidate(frame, EnemyCombatDecisionFocus.ThreatResponse));
 
             return best.IsValid ? best.Decision : default;
@@ -157,8 +160,11 @@ namespace Game.AI
 
             TryTakeBetterCandidate(ref best, BuildCastSkillCandidate(frame, EnemyCombatDecisionFocus.Punish));
             TryTakeBetterCandidate(ref best, BuildPunishApproachCandidate(frame));
-            TryTakeBetterCandidate(ref best, BuildStrafeCandidate(frame, frame.PreferredStrafeSign, EnemyCombatDecisionFocus.Punish));
-            TryTakeBetterCandidate(ref best, BuildStrafeCandidate(frame, -frame.PreferredStrafeSign, EnemyCombatDecisionFocus.Punish));
+            if (CanUseStrafe(ctx.Archetype))
+            {
+                TryTakeBetterCandidate(ref best, BuildStrafeCandidate(frame, frame.PreferredStrafeSign, EnemyCombatDecisionFocus.Punish));
+                TryTakeBetterCandidate(ref best, BuildStrafeCandidate(frame, -frame.PreferredStrafeSign, EnemyCombatDecisionFocus.Punish));
+            }
 
             return best.IsValid ? best.Decision : default;
         }
@@ -169,7 +175,7 @@ namespace Game.AI
                 return default;
 
             EnemyCombatMemory memory = ctx.Memory;
-            Vector3 searchAnchor = ctx.Perception.LastKnownTargetPosition;
+            Vector3 searchAnchor = ResolveIntentAnchor(ctx.Controller, ctx.Perception.LastKnownTargetPosition);
             memory.SyncSearchAnchor(searchAnchor);
 
             Vector3 selfPosition = ctx.Controller.transform.position;
@@ -177,7 +183,8 @@ namespace Game.AI
             float sweepDistance = ResolveSearchSweepDistance(ctx.Archetype);
             Vector3 searchPos = ResolveSearchPoint(selfPosition, ctx.Controller.transform.forward, searchAnchor, preferredSign, memory.SearchStep, sweepDistance);
             Vector3 delta = searchPos - selfPosition;
-            delta.y = 0f;
+            if (!ctx.Controller.UsesAerialMovement)
+                delta.y = 0f;
 
             if (memory.SearchStep < 3 && delta.sqrMagnitude <= SearchArrivalDistance * SearchArrivalDistance)
             {
@@ -257,10 +264,15 @@ namespace Game.AI
             TryTakeBetterCandidate(ref best, BuildCastSkillCandidate(frame, EnemyCombatDecisionFocus.Standard));
             TryTakeBetterCandidate(ref best, BuildApproachCandidate(frame));
             TryTakeBetterCandidate(ref best, BuildPunishApproachCandidate(frame));
-            TryTakeBetterCandidate(ref best, BuildStrafeCandidate(frame, frame.PreferredStrafeSign, EnemyCombatDecisionFocus.Standard));
-            TryTakeBetterCandidate(ref best, BuildStrafeCandidate(frame, -frame.PreferredStrafeSign, EnemyCombatDecisionFocus.Standard));
-            TryTakeBetterCandidate(ref best, BuildRetreatCandidate(frame, EnemyCombatDecisionFocus.Standard));
-            TryTakeBetterCandidate(ref best, BuildRepositionCandidate(frame, EnemyCombatDecisionFocus.Standard));
+            if (CanUseStrafe(ctx.Archetype))
+            {
+                TryTakeBetterCandidate(ref best, BuildStrafeCandidate(frame, frame.PreferredStrafeSign, EnemyCombatDecisionFocus.Standard));
+                TryTakeBetterCandidate(ref best, BuildStrafeCandidate(frame, -frame.PreferredStrafeSign, EnemyCombatDecisionFocus.Standard));
+            }
+            if (CanUseRetreat(ctx.Archetype))
+                TryTakeBetterCandidate(ref best, BuildRetreatCandidate(frame, EnemyCombatDecisionFocus.Standard));
+            if (CanUseReposition(ctx.Archetype))
+                TryTakeBetterCandidate(ref best, BuildRepositionCandidate(frame, EnemyCombatDecisionFocus.Standard));
             TryTakeBetterCandidate(ref best, BuildHoldCandidate(frame, EnemyCombatDecisionFocus.Standard));
 
             return best.IsValid ? best.Decision : default;
@@ -370,7 +382,7 @@ namespace Game.AI
             EnemyIntent intent = new EnemyIntent
             {
                 Type = EnemyIntentType.Approach,
-                TargetPosition = predicted
+                TargetPosition = ResolveIntentAnchor(frame.Controller, predicted)
             };
 
             return new Candidate(score, new EnemyUtilityDecision(
@@ -398,7 +410,7 @@ namespace Game.AI
             EnemyIntent intent = new EnemyIntent
             {
                 Type = EnemyIntentType.Punish,
-                TargetPosition = predicted
+                TargetPosition = ResolveIntentAnchor(frame.Controller, predicted)
             };
 
             return new Candidate(score, new EnemyUtilityDecision(
@@ -577,7 +589,9 @@ namespace Game.AI
             EnemyIntent intent = new EnemyIntent
             {
                 Type = EnemyIntentType.Hold,
-                TargetPosition = frame.Perception.TargetPosition
+                TargetPosition = frame.Perception.TargetPosition.HasValue
+                    ? ResolveIntentAnchor(frame.Controller, frame.Perception.TargetPosition.Value)
+                    : (Vector3?)null
             };
 
             return new Candidate(score, new EnemyUtilityDecision(
@@ -705,6 +719,33 @@ namespace Game.AI
         private static float GetIntentRepeatPenalty(CombatFrame frame, EnemyIntentType intentType, float basePenalty)
         {
             return frame.Memory != null ? frame.Memory.GetIntentRepeatPenalty(intentType, basePenalty) : 0f;
+        }
+
+        private static Vector3 ResolveIntentAnchor(EnemyController controller, Vector3 targetPosition)
+        {
+            return controller != null
+                ? controller.ResolveFlightAnchorPosition(targetPosition)
+                : targetPosition;
+        }
+
+        private static bool CanUseStrafe(EnemyArchetypeSO archetype)
+        {
+            return archetype == null || archetype.allowStrafe;
+        }
+
+        private static bool CanUseRetreat(EnemyArchetypeSO archetype)
+        {
+            return archetype == null || archetype.allowRetreat;
+        }
+
+        private static bool CanUseReposition(EnemyArchetypeSO archetype)
+        {
+            return archetype == null || archetype.allowReposition;
+        }
+
+        private static bool CanUseDodge(EnemyArchetypeSO archetype)
+        {
+            return archetype == null || archetype.allowDodge;
         }
 
         private static void TryTakeBetterCandidate(ref Candidate best, Candidate candidate)

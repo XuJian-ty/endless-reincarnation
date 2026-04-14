@@ -15,7 +15,6 @@ namespace Game.Presentation
     /// <summary>
     /// Enemy presentation facade: stats, damage/death, runtime modifiers, and skill-slot casting state.
     /// </summary>
-    [RequireComponent(typeof(Collider))]
     public class EnemyController : MonoBehaviour, ICombatHardControlReceiver
     {
         private static readonly List<EnemyController> ActiveEnemyControllers = new List<EnemyController>();
@@ -77,6 +76,12 @@ namespace Game.Presentation
         private float _temporaryInvincibleTimer;
         private int _stateScopedSuperArmorCount;
         private int _stateScopedInvincibleCount;
+
+        private void Reset()
+        {
+            if (GetComponent<Collider>() == null)
+                gameObject.AddComponent<CapsuleCollider>();
+        }
 
         public float Defense
         {
@@ -185,6 +190,7 @@ namespace Game.Presentation
         public float HurtRemainingTime => _hurtRemainingTime;
         public bool IsHurt => _hurtRemainingTime > 0f;
         public EnemyArchetypeSO Archetype { get; private set; }
+        public bool UsesAerialMovement => Archetype != null && Archetype.UsesAerialMovement();
         public EnemyResolvedSkill ActiveSkill => _activeSkill;
         public Vector3? ActiveSkillTargetPosition => _activeSkillTargetPosition;
         public int ActiveSkillSequence => _activeSkillSequence;
@@ -233,6 +239,32 @@ namespace Game.Presentation
                 EnsureInitialized();
                 return _stats.maxHp > 0.01f ? _stats.currentHp / _stats.maxHp : 0f;
             }
+        }
+
+        public Vector3 ResolveFlightAnchorPosition(Vector3 baseTargetPosition)
+        {
+            EnsureInitialized();
+            if (!UsesAerialMovement || Archetype == null)
+                return baseTargetPosition;
+
+            baseTargetPosition.y += Archetype.flightHeightOffset;
+            return baseTargetPosition;
+        }
+
+        public Vector3 ResolveFlightMoveDestination(Vector3 anchorPosition)
+        {
+            EnsureInitialized();
+            if (!UsesAerialMovement || Archetype == null)
+                return anchorPosition;
+
+            float amplitude = Mathf.Max(0f, Archetype.flightHeightBobAmplitude);
+            float frequency = Mathf.Max(0f, Archetype.flightHeightBobFrequency);
+            if (amplitude <= 0f || frequency <= 0f)
+                return anchorPosition;
+
+            float phase = (GetInstanceID() & 255) * 0.173f;
+            anchorPosition.y += Mathf.Sin(Time.time * frequency + phase) * amplitude;
+            return anchorPosition;
         }
 
         private void Awake()
@@ -1078,27 +1110,24 @@ namespace Game.Presentation
             if (!hasThreatPos)
                 return false;
 
-            Vector3 away = selfPos - threatPos;
-            away.y = 0f;
-            if (away.sqrMagnitude < 0.0001f)
-                away = -transform.forward;
-            away.Normalize();
-
             float stepDistance = Archetype != null
                 ? Mathf.Max(0.5f, Archetype.retreatStepDistance)
                 : 2f;
 
-            Vector3 rawDestination = selfPos + away * stepDistance;
-            if (!NavMesh.SamplePosition(rawDestination, out NavMeshHit sampled, 2f, NavMesh.AllAreas))
-                return false;
+            float currentDistance = UsesAerialMovement
+                ? Vector3.Distance(selfPos, threatPos)
+                : Vector3.Distance(
+                    new Vector3(selfPos.x, 0f, selfPos.z),
+                    new Vector3(threatPos.x, 0f, threatPos.z));
 
-            var path = new NavMeshPath();
-            bool hasPath = NavMesh.CalculatePath(selfPos, sampled.position, NavMesh.AllAreas, path);
-            if (!hasPath || path.status != NavMeshPathStatus.PathComplete)
-                return false;
-
-            destination = sampled.position;
-            return true;
+            float desiredDistance = currentDistance + stepDistance;
+            return EnemyTacticalNavigation.TryFindRetreatPoint(
+                this,
+                Archetype,
+                threatPos,
+                desiredDistance,
+                currentDistance,
+                out destination);
         }
 
         private void ClearPostCastRecoveryState()

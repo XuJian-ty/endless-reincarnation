@@ -40,10 +40,10 @@ MonoBehaviour:
       goldMax: 10
       baseExp: 10
   - groupId: elite_1
-    groupName: "\u7CBE\u82F11"
+    groupName: "\u7CBE\u82F1\u602A1"
     entries:
     - enemyId: elite_1
-      displayName: "\u7CBE\u82F11"
+      displayName: "\u7CBE\u82F1\u602A1"
       type: 2
       baseHp: 1000
       baseAttack: 20
@@ -53,10 +53,10 @@ MonoBehaviour:
       goldMax: 30
       baseExp: 30
   - groupId: elite_2
-    groupName: "\u7CBE\u82F12"
+    groupName: "\u7CBE\u82F1\u602A2"
     entries:
     - enemyId: elite_2
-      displayName: "\u7CBE\u82F12"
+      displayName: "\u7CBE\u82F1\u602A2"
       type: 2
       baseHp: 1000
       baseAttack: 20
@@ -156,6 +156,19 @@ MonoBehaviour:
       goldMin: 0
       goldMax: 0
       baseExp: 0
+  - groupId: elite_fly
+    groupName: "\u7CBE\u82F1\u602A_\u98DE\u884C"
+    entries:
+    - enemyId: elite_fly
+      displayName: "\u7CBE\u82F1\u602A_\u98DE\u884C"
+      type: 2
+      baseHp: 1000
+      baseAttack: 20
+      baseDefense: 8
+      baseMoveSpeed: 2
+      goldMin: 30
+      goldMax: 30
+      baseExp: 30
   entries:
   - enemyId: melee_minion
     displayName: "\u8FD1\u6218\u5C0F\u602A"
@@ -178,7 +191,7 @@ MonoBehaviour:
     goldMax: 10
     baseExp: 10
   - enemyId: elite_1
-    displayName: "\u7CBE\u82F11"
+    displayName: "\u7CBE\u82F1\u602A1"
     type: 2
     baseHp: 1000
     baseAttack: 20
@@ -188,7 +201,7 @@ MonoBehaviour:
     goldMax: 30
     baseExp: 30
   - enemyId: elite_2
-    displayName: "\u7CBE\u82F12"
+    displayName: "\u7CBE\u82F1\u602A2"
     type: 2
     baseHp: 1000
     baseAttack: 20
@@ -267,3 +280,13 @@ MonoBehaviour:
     goldMin: 0
     goldMax: 0
     baseExp: 0
+  - enemyId: elite_fly
+    displayName: "\u7CBE\u82F1\u602A_\u98DE\u884C"
+    type: 2
+    baseHp: 1000
+    baseAttack: 20
+    baseDefense: 8
+    baseMoveSpeed: 2
+    goldMin: 30
+    goldMax: 30
+    baseExp: 30

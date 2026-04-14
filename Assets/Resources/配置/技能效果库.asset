@@ -11137,7 +11137,7 @@ MonoBehaviour:
         speedEvents: []
         cameraEvents: []
   - groupId: elite_1
-    groupName: "\u7CBE\u82F11"
+    groupName: "\u7CBE\u82F1\u602A1"
     skillGroups:
     - groupName: elite_1Skill0
       entries:
@@ -11418,7 +11418,7 @@ MonoBehaviour:
         speedEvents: []
         cameraEvents: []
   - groupId: elite_2
-    groupName: "\u7CBE\u82F12"
+    groupName: "\u7CBE\u82F1\u602A2"
     skillGroups:
     - groupName: elite_2Skill0
       entries:
@@ -14347,6 +14347,111 @@ MonoBehaviour:
             usePercent: 0
             durationMode: 0
             duration: 4.5
+        vfxEvents: []
+        sfxEvents: []
+        speedEvents: []
+        cameraEvents: []
+  - groupId: elite_fly
+    groupName: "\u7CBE\u82F1\u602A_\u98DE\u884C"
+    skillGroups:
+    - groupName: elite_flySkill0
+      entries:
+      - skillId: elite_flySkill0
+        effectDescription: 
+        mutationTalentCost: 0
+        displayName: "\u6280\u80FD0"
+        animationTrigger: Skill0
+        ignoreAnimationDamageEvents: 1
+        damageEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          repeatedAnchorMode: 0
+          damageEffects:
+          - detectionDuration: 0
+            activationTime: 0
+            activationMode: 0
+            intermittentActiveDuration: 0.1
+            intermittentIntervalDuration: 0.1
+            hitDeduplicationScope: 0
+            detectionType: 0
+            hitLayerName: Enemy
+            anchor: 0
+            shape: 1
+            centerOffset: {x: 0, y: 0, z: 0}
+            rotationEuler: {x: 0, y: 0, z: 0}
+            sphereRadius: 1.5
+            sectorAngle: 180
+            boxSize: {x: 1, y: 1, z: 1}
+            colliderNodeName: 
+            rayOriginOffset: {x: 0, y: 0, z: 0}
+            rayMaxDistance: 50
+            rayRadius: 0
+            motion:
+              enabled: 0
+              mode: 0
+              speed: 0
+              direction: {x: 0, y: 0, z: 1}
+              useAimDirection: 0
+              duration: 0.3
+              pathControlPointA: {x: 0, y: 0, z: 0.4}
+              pathControlPointB: {x: 0, y: 0, z: 0.8}
+              pathEndOffset: {x: 0, y: 0, z: 1.2}
+              pathProgressCurve:
+                serializedVersion: 2
+                m_Curve:
+                - serializedVersion: 3
+                  time: 0
+                  value: 0
+                  inSlope: 0
+                  outSlope: 1
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                - serializedVersion: 3
+                  time: 1
+                  value: 1
+                  inSlope: 1
+                  outSlope: 0
+                  tangentMode: 0
+                  weightedMode: 0
+                  inWeight: 0
+                  outWeight: 0
+                m_PreInfinity: 2
+                m_PostInfinity: 2
+                m_RotationOrder: 4
+              retargetOnDescendingPath: 0
+            companionVfxEffects: []
+            onHitDamageEffects: []
+            onHitStopEffect:
+              hitStopDuration: 0
+              hitStopTimeScale: 0
+              pauseCameraLookDuringHitStop: 0
+            onHitPhysicsEffects: []
+            onHitAttributeEffects: []
+            onHitVfxEffects: []
+            onHitSfxEffects: []
+        physicsEvents: []
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+        speedEvents: []
+        cameraEvents: []
+    - groupName: elite_flySkill1
+      entries:
+      - skillId: elite_flySkill1
+        effectDescription: 
+        mutationTalentCost: 0
+        displayName: "\u6280\u80FD1"
+        animationTrigger: Skill1
+        ignoreAnimationDamageEvents: 1
+        damageEvents: []
+        physicsEvents: []
+        attributeEvents: []
         vfxEvents: []
         sfxEvents: []
         speedEvents: []
