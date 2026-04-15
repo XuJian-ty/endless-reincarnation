@@ -4,6 +4,7 @@ using Game.Data;
 using Game.Domain;
 using Game.Presentation;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
@@ -90,6 +91,7 @@ namespace Game.GameFlow
                 return;
             }
 
+            ValidateBlockingSetup();
             EnsurePromptInstance();
             SetPromptVisible(false);
         }
@@ -577,6 +579,45 @@ namespace Game.GameFlow
                 if (colliders[i] != null)
                     colliders[i].enabled = false;
             }
+
+            NavMeshObstacle[] obstacles = GetComponentsInChildren<NavMeshObstacle>(true);
+            for (int i = 0; i < obstacles.Length; i++)
+            {
+                if (obstacles[i] != null)
+                    obstacles[i].enabled = false;
+            }
+        }
+
+        private void ValidateBlockingSetup()
+        {
+            Collider[] colliders = GetComponentsInChildren<Collider>(true);
+            bool hasBlockingCollider = false;
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider collider = colliders[i];
+                if (collider != null && !collider.isTrigger)
+                {
+                    hasBlockingCollider = true;
+                    break;
+                }
+            }
+
+            if (!hasBlockingCollider)
+                Debug.LogWarning($"[ChestInteractable:{name}] 缺少实体 Collider，玩家将无法被宝箱阻挡。请直接在宝箱 prefab 上配置阻挡碰撞体。", this);
+
+            NavMeshObstacle[] obstacles = GetComponentsInChildren<NavMeshObstacle>(true);
+            bool hasNavMeshObstacle = false;
+            for (int i = 0; i < obstacles.Length; i++)
+            {
+                if (obstacles[i] != null)
+                {
+                    hasNavMeshObstacle = true;
+                    break;
+                }
+            }
+
+            if (!hasNavMeshObstacle)
+                Debug.LogWarning($"[ChestInteractable:{name}] 缺少 NavMeshObstacle，敌人可能不会绕开宝箱。请直接在宝箱 prefab 上配置导航障碍。", this);
         }
 
         private Transform ResolvePlayerTransform()

@@ -69,11 +69,3 @@ MonoBehaviour:
     randomMinCount: 2
     randomMaxCount: 3
     spawnMinSpacing: 3
-  - spawnType: 6
-    specificSpawnId: 
-    spawnRadius: 10
-    countMode: 0
-    fixedCount: 1
-    randomMinCount: 0
-    randomMaxCount: 0
-    spawnMinSpacing: 0

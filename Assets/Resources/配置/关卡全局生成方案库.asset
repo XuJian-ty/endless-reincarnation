@@ -21,8 +21,6 @@ MonoBehaviour:
       taskCount: 40
     - taskIndex: 6
       taskCount: 40
-    - taskIndex: 7
-      taskCount: 10
     spawnMode: 1
     taskCenterMinSpacing: 18
     initialTaskCount: 80
@@ -34,8 +32,6 @@ MonoBehaviour:
       taskCount: 60
     - taskIndex: 6
       taskCount: 60
-    - taskIndex: 7
-      taskCount: 12
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 120
@@ -47,8 +43,6 @@ MonoBehaviour:
       taskCount: 80
     - taskIndex: 6
       taskCount: 80
-    - taskIndex: 7
-      taskCount: 15
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 160
@@ -60,8 +54,6 @@ MonoBehaviour:
       taskCount: 100
     - taskIndex: 6
       taskCount: 100
-    - taskIndex: 7
-      taskCount: 18
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 200
@@ -73,8 +65,6 @@ MonoBehaviour:
       taskCount: 120
     - taskIndex: 6
       taskCount: 120
-    - taskIndex: 7
-      taskCount: 20
     spawnMode: 1
     taskCenterMinSpacing: 16
     initialTaskCount: 240
