@@ -13,16 +13,16 @@ MonoBehaviour:
   m_Name: "\u4E3B\u83DC\u5355BGM\u66F2\u76EE\u5217\u8868"
   m_EditorClassIdentifier: 
   tracks:
-  - displayName: "\u4E3B\u83DC\u53551"
-    clip: {fileID: 0}
-  - displayName: "\u4E3B\u83DC\u53552"
-    clip: {fileID: 0}
-  - displayName: "\u4E3B\u83DC\u53553"
-    clip: {fileID: 8300000, guid: 74e13c117190cc34f8ee0e9256ea43c6, type: 3}
-  - displayName: "\u4E3B\u83DC\u53554"
-    clip: {fileID: 8300000, guid: 74e13c117190cc34f8ee0e9256ea43c6, type: 3}
-  - displayName: "\u4E3B\u83DC\u53553"
-    clip: {fileID: 8300000, guid: 74e13c117190cc34f8ee0e9256ea43c6, type: 3}
+  - displayName: 1
+    clip: {fileID: 8300000, guid: 01d6ddfac40c08d47b16bc9f740349bf, type: 3}
+  - displayName: 2
+    clip: {fileID: 8300000, guid: 23db4e48780662b4fb9c3f3efd7a16e6, type: 3}
+  - displayName: 3
+    clip: {fileID: 8300000, guid: be560f43344ec1f438502a278b7044f9, type: 3}
+  - displayName: 4
+    clip: {fileID: 8300000, guid: 01d6ddfac40c08d47b16bc9f740349bf, type: 3}
+  - displayName: 5
+    clip: {fileID: 8300000, guid: 23db4e48780662b4fb9c3f3efd7a16e6, type: 3}
   - displayName: "\u4E3B\u83DC\u53553"
     clip: {fileID: 8300000, guid: 74e13c117190cc34f8ee0e9256ea43c6, type: 3}
   - displayName: "\u4E3B\u83DC\u53553"
