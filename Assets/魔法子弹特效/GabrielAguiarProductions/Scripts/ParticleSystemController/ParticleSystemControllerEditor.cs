@@ -1,4 +1,4 @@
-﻿namespace GAP_ParticleSystemController{
+namespace GAP_ParticleSystemController{
 	using System.Collections;
 	using System.Collections.Generic;
 	using UnityEngine;

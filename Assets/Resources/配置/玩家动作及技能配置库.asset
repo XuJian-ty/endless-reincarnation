@@ -635,7 +635,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u84C4\u529B\u5F00\u59CB"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: 979bcfe54d6623044afa3f96c43ccb1e, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 3
@@ -673,7 +673,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u84C4\u529B\u5FAA\u73AF"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: 979bcfe54d6623044afa3f96c43ccb1e, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 3
@@ -711,7 +711,7 @@ MonoBehaviour:
     passiveSkillEffectDatabase: {fileID: 0}
     displayName: "\u8FD1\u6218\u84C4\u529B\u91CA\u653E"
     description: 
-    skillIcon: {fileID: 0}
+    skillIcon: {fileID: 21300000, guid: 979bcfe54d6623044afa3f96c43ccb1e, type: 3}
     isPassive: 0
     entryGroup: 0
     supportedAttackModes: 3
