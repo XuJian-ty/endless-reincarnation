@@ -97,7 +97,11 @@ public class EventCenter : BaseManager<EventCenter>
         {
             var info = eventDic[name] as EventInfo<T>;
             if (info != null)
+            {
                 info.actions -= action;
+                if (info.actions == null)
+                    eventDic.Remove(name);
+            }
         }
     }
 
@@ -107,7 +111,11 @@ public class EventCenter : BaseManager<EventCenter>
         {
             var info = eventDic[name] as EventInfo;
             if (info != null)
+            {
                 info.actions -= action;
+                if (info.actions == null)
+                    eventDic.Remove(name);
+            }
         }
     }
 
@@ -146,6 +154,12 @@ public class EventCenter : BaseManager<EventCenter>
     public void Clear()
     {
         eventDic.Clear();
+    }
+
+    public void Clear(string name)
+    {
+        if (!string.IsNullOrEmpty(name))
+            eventDic.Remove(name);
     }
 }
 }

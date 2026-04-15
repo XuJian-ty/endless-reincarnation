@@ -38,6 +38,11 @@ namespace Game.UI
             _runtime?.OnDisable();
         }
 
+        private void OnDestroy()
+        {
+            _runtime?.Dispose();
+        }
+
         public void HandleNodeSelected(SkillTreeNodeView nodeView)
         {
             _runtime?.HandleNodeSelected(nodeView);

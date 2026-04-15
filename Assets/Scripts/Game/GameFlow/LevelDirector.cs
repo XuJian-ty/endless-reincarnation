@@ -502,11 +502,14 @@ namespace Game.GameFlow
                 return null;
 
             GameObject spawnerObject = new GameObject("LevelEnemySpawner");
-            Transform parent = transform.parent;
+            Transform parent = LevelRuntimeHierarchy.GetSystemsRoot();
+            if (parent == null)
+                parent = transform.parent;
             if (parent != null)
                 spawnerObject.transform.SetParent(parent, false);
 
             _enemySpawner = spawnerObject.AddComponent<LevelEnemySpawner>();
+            _enemySpawner.ConfigureRuntimePlan(levelConfig.globalSpawnPlanLibrary, levelConfig.globalSpawnPlanIndex);
             return _enemySpawner;
         }
 

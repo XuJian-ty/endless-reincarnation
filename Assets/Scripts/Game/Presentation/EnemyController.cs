@@ -70,6 +70,7 @@ namespace Game.Presentation
         private bool _loggedAmbiguousVariantError;
         private bool _loggedMissingStatsError;
         private bool _loggedMissingArchetypeError;
+        private GameObject _poolSourcePrefab;
         private float _currentPoise;
         private bool _poiseInitialized;
         private float _temporarySuperArmorTimer;
@@ -577,6 +578,29 @@ namespace Game.Presentation
             _countsAsLevelBoss = value;
         }
 
+        public void PrepareForSpawn(GameObject poolSourcePrefab)
+        {
+            _poolSourcePrefab = poolSourcePrefab;
+            _runtimeStateInitialized = false;
+            _poiseInitialized = false;
+            _loggedAmbiguousVariantError = false;
+            _loggedMissingStatsError = false;
+            _loggedMissingArchetypeError = false;
+            Archetype = null;
+            _stats = default;
+
+            InitializeRuntimeState();
+            EnsureInitialized();
+            _stats.currentHp = Mathf.Max(1f, _stats.maxHp);
+            EnsurePoiseInitialized();
+            if (Archetype != null)
+                _currentPoise = Mathf.Max(0f, Archetype.poiseMax);
+
+            CurrentIntent = EnemyIntent.None;
+            EnsureHeadHealthBar();
+            UpdateHeadHealthBar();
+        }
+
         public void CompleteActiveSkill()
         {
             float postCastIdleDuration = _activeSkill != null
@@ -986,6 +1010,12 @@ namespace Game.Presentation
                 return;
 
             _deathFinalized = true;
+            if (_poolSourcePrefab != null)
+            {
+                PoolMgr.GetInstance().PushObj(_poolSourcePrefab, gameObject);
+                return;
+            }
+
             Destroy(gameObject);
         }
 

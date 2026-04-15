@@ -44,6 +44,10 @@ namespace Game.GameFlow
 
         private void Start()
         {
+            PoolMgr.GetInstance().EnsureInitialized();
+            LevelRuntimeHierarchy.EnsureSceneRoots();
+            LevelRuntimeHierarchy.OrganizeSceneRuntimeObjects();
+
             var gsm = GameStateMachine.GetInstance();
             var run = gsm?.CurrentRun;
             var playerModel = gsm?.Player;

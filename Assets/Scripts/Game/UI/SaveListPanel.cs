@@ -27,6 +27,7 @@ namespace Game.UI
         [SerializeField] private Transform contentRoot;
 
         private LevelGrowthSO _levelGrowth;
+        private readonly UiGameObjectPool _rowPool = new UiGameObjectPool();
         private readonly List<GameObject> _rows = new List<GameObject>();
         private GameObject _contextMenuPanel;
         private Button _btnReset;
@@ -223,18 +224,14 @@ namespace Game.UI
 
         private void RefreshList()
         {
-            Transform content = contentRoot != null ? contentRoot : transform.Find("Content");
+            Transform content = ResolveContentRoot();
             if (content == null)
             {
                 Debug.LogWarning("[SaveListPanel] 未找到 Content，请指定 Content Root 或在面板下建 Content");
                 return;
             }
 
-            foreach (var go in _rows)
-            {
-                if (go != null) Destroy(go);
-            }
-            _rows.Clear();
+            ReleaseRows(content);
 
             var entries = SaveSystem.GetInstance().GetAllSaveEntries();
             if (entries == null || entries.Count == 0) return;
@@ -248,7 +245,10 @@ namespace Game.UI
             for (int i = 0; i < entries.Count; i++)
             {
                 var entry = entries[i];
-                GameObject row = Instantiate(rowPrefab, content);
+                GameObject row = _rowPool.Acquire(rowPrefab, content);
+                if (row == null)
+                    continue;
+
                 row.SetActive(true);
                 _rows.Add(row);
 
@@ -268,6 +268,7 @@ namespace Game.UI
 
                 var trigger = row.GetComponent<EventTrigger>();
                 if (trigger == null) trigger = row.AddComponent<EventTrigger>();
+                else trigger.triggers.Clear();
                 var rightClick = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
                 rightClick.callback.AddListener(data =>
                 {
@@ -304,6 +305,24 @@ namespace Game.UI
         {
             HideSaveContextMenu();
             gameObject.SetActive(false);
+        }
+
+        private Transform ResolveContentRoot()
+        {
+            return contentRoot != null ? contentRoot : transform.Find("Content");
+        }
+
+        private void ReleaseRows(Transform content)
+        {
+            for (int i = 0; i < _rows.Count; i++)
+                _rowPool.Release(_rows[i], content);
+
+            _rows.Clear();
+        }
+
+        private void OnDestroy()
+        {
+            _rowPool.Clear();
         }
     }
 }

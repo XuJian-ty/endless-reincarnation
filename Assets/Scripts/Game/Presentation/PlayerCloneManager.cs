@@ -113,6 +113,9 @@ namespace Game.Presentation
 
             GameObject cloneObject = Instantiate(_clonePrefab, _owner.transform.position, _owner.transform.rotation);
             cloneObject.name = $"PlayerClone_{cloneIndex}";
+            Transform summonsRoot = LevelRuntimeHierarchy.GetSummonsRoot();
+            if (summonsRoot != null)
+                cloneObject.transform.SetParent(summonsRoot, true);
 
             cloneObject.transform.position = _owner.transform.position;
             cloneObject.transform.rotation = _owner.transform.rotation;

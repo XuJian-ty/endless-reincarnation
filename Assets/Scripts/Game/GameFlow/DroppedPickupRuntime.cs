@@ -182,6 +182,9 @@ namespace Game.GameFlow
         private static DroppedPickupRuntime CreateRuntimeObject(Vector3 position, System.Random rng)
         {
             var go = new GameObject("DroppedPickup");
+            Transform pickupsRoot = LevelRuntimeHierarchy.GetPickupsRoot();
+            if (pickupsRoot != null)
+                go.transform.SetParent(pickupsRoot, false);
             var pickup = go.AddComponent<DroppedPickupRuntime>();
             pickup.ConfigureRuntimeComponents();
             pickup.ResetPosition(position, rng);
