@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Game.Data;
 using Game.Domain;
+using Game.GameFlow;
+using MasterStylizedProjectile;
+using ProjectBase;
 using UnityObject = UnityEngine.Object;
 using UnityRandom = UnityEngine.Random;
 
@@ -1013,7 +1016,7 @@ namespace Game.Presentation
 
             Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
             GameObject instance = CreateVfxInstance(effect, caster, anchor);
-            RegisterCueLifetime(instance, effect.destroyMode, effect.duration, cueRuntime);
+            RegisterCueLifetime(instance, effect.particlePrefab, effect.destroyMode, effect.duration, cueRuntime);
         }
 
         private static void PlaySfxEffects(
@@ -1052,39 +1055,64 @@ namespace Game.Presentation
             float rangeScale = PlayerBuffRuntimeUtility.GetDamageRangeScale(caster);
             bool useWorldMotion = ShouldUseWorldCueMotion(effect);
             bool followAnchor = effect.anchor != CueAnchor.World && anchor != null;
+            bool usePool = true;
+            Transform worldVfxRoot = LevelRuntimeHierarchy.GetWorldVfxRoot();
             GameObject instance;
             if (followAnchor)
             {
-                instance = UnityObject.Instantiate(effect.particlePrefab, anchor);
-                instance.transform.localPosition = effect.offset;
-                instance.transform.localRotation = Quaternion.Euler(effect.rotationEuler);
+                instance = usePool
+                    ? PoolMgr.GetInstance().GetObjSync(effect.particlePrefab, worldVfxRoot)
+                    : (worldVfxRoot != null
+                        ? UnityObject.Instantiate(effect.particlePrefab, worldVfxRoot)
+                        : UnityObject.Instantiate(effect.particlePrefab));
+                if (instance != null)
+                {
+                    instance.transform.position = anchor.TransformPoint(effect.offset);
+                    instance.transform.rotation = anchor.rotation * Quaternion.Euler(effect.rotationEuler);
+                }
             }
             else
             {
                 Vector3 position = ResolveCueSpawnPosition(effect, caster, anchor);
                 Quaternion rotation = ResolveCueSpawnRotation(effect, caster, anchor);
-                instance = UnityObject.Instantiate(effect.particlePrefab, position, rotation);
+                instance = usePool
+                    ? PoolMgr.GetInstance().GetObjSync(effect.particlePrefab, worldVfxRoot)
+                    : (worldVfxRoot != null
+                        ? UnityObject.Instantiate(effect.particlePrefab, position, rotation, worldVfxRoot)
+                        : UnityObject.Instantiate(effect.particlePrefab, position, rotation));
+
+                if (instance != null)
+                {
+                    instance.transform.position = position;
+                    instance.transform.rotation = rotation;
+                }
             }
 
+            ResetReusableVfxState(instance, effect.particlePrefab, usePool);
             SanitizeSpawnedVfxInstance(instance);
             instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
-            ConfigureCueFollowDuration(instance, effect, followAnchor);
+            ConfigureCueFollow(instance, effect, anchor, followAnchor);
             ConfigureVfxMotion(instance, effect.motion, useWorldMotion);
             ApplyCueMotion(instance, effect, caster, useWorldMotion);
             EnsureCuePauseProxy(instance);
             return instance;
         }
 
-        private static void ConfigureCueFollowDuration(GameObject instance, SkillVfxEffect effect, bool followAnchor)
+        private static void ConfigureCueFollow(GameObject instance, SkillVfxEffect effect, Transform anchor, bool followAnchor)
         {
-            if (instance == null || effect == null || !followAnchor || !effect.useFollowDuration)
+            if (instance == null || effect == null)
                 return;
 
             SkillCueFollowDetachProxy detachProxy = instance.GetComponent<SkillCueFollowDetachProxy>();
+            if (!followAnchor || anchor == null)
+            {
+                detachProxy?.StopFollowing();
+                return;
+            }
+
             if (detachProxy == null)
                 detachProxy = instance.AddComponent<SkillCueFollowDetachProxy>();
-
-            detachProxy.Configure(effect.followDuration);
+            detachProxy.Configure(anchor, effect.offset, Quaternion.Euler(effect.rotationEuler), effect.useFollowDuration, effect.followDuration);
         }
 
         private static void SanitizeSpawnedVfxInstance(GameObject instance)
@@ -1092,13 +1120,14 @@ namespace Game.Presentation
             if (instance == null)
                 return;
 
-            ProjectileMover[] projectileMovers = instance.GetComponentsInChildren<ProjectileMover>(true);
-            for (int i = 0; i < projectileMovers.Length; i++)
-            {
-                ProjectileMover projectileMover = projectileMovers[i];
-                if (projectileMover != null)
-                    projectileMover.enabled = false;
-            }
+            DisableBehaviours<ProjectileMover>(instance);
+            DisableBehaviours<ProjectileMoveScript>(instance);
+            DisableBehaviours<Projectile>(instance);
+            DisableBehaviours<ExplodingProjectile>(instance);
+            DisableBehaviours<Bullet>(instance);
+            DisableBehaviours<AutoDestroyPS>(instance);
+            DisableBehaviours<AudioTrigger>(instance);
+            DisableBehaviours<destroyMe>(instance);
 
             Rigidbody[] rigidbodies = instance.GetComponentsInChildren<Rigidbody>(true);
             for (int i = 0; i < rigidbodies.Length; i++)
@@ -1134,6 +1163,7 @@ namespace Game.Presentation
 
             var go = new GameObject($"[SkillSfx]{effect.audioClip.name}");
             var audioSource = go.AddComponent<AudioSource>();
+            MusicMgr.GetInstance().RegisterExternalSoundSource(audioSource);
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 1f;
             audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
@@ -1165,19 +1195,35 @@ namespace Game.Presentation
                 : TopLevelSfxPriority;
         }
 
-        private static void RegisterCueLifetime(GameObject instance, SkillCueDestroyMode destroyMode, float duration, SkillCueRuntimeScope cueRuntime)
+        private static void RegisterCueLifetime(GameObject instance, GameObject sourcePrefab, SkillCueDestroyMode destroyMode, float duration, SkillCueRuntimeScope cueRuntime)
         {
             if (instance == null)
                 return;
 
+            PooledObjectReturner pooledReturner = sourcePrefab != null ? BindPooledReturner(instance, sourcePrefab) : null;
             switch (destroyMode)
             {
+                case SkillCueDestroyMode.NaturalDestroy:
+                    float naturalDestroyDuration = ResolveNaturalDestroyDuration(instance);
+                    if (pooledReturner != null)
+                        pooledReturner.ScheduleReturn(naturalDestroyDuration);
+                    else
+                        UnityObject.Destroy(instance, naturalDestroyDuration);
+                    break;
                 case SkillCueDestroyMode.Timed:
                     if (duration > 0f)
-                        UnityObject.Destroy(instance, duration);
+                    {
+                        if (pooledReturner != null)
+                            pooledReturner.ScheduleReturn(duration);
+                        else
+                            UnityObject.Destroy(instance, duration);
+                    }
                     break;
                 case SkillCueDestroyMode.OnStateExit:
-                    cueRuntime?.RegisterStateExitInstance(instance);
+                    if (pooledReturner != null)
+                        cueRuntime?.RegisterStateExitCallback(pooledReturner.ReturnNow);
+                    else
+                        cueRuntime?.RegisterStateExitInstance(instance);
                     break;
             }
         }
@@ -1219,14 +1265,21 @@ namespace Game.Presentation
         private static void ApplyCueMotion(GameObject instance, SkillVfxEffect effect, Transform caster, bool useWorldMotion)
         {
             SkillMotionSettings motion = effect != null ? effect.motion : null;
-            if (instance == null || caster == null || motion == null || !useWorldMotion || !motion.IsActive)
+            if (instance == null)
                 return;
+
+            SkillCueMover mover = instance.GetComponent<SkillCueMover>();
+            if (caster == null || motion == null || !useWorldMotion || !motion.IsActive)
+            {
+                if (mover != null)
+                    mover.Initialize(instance.transform.position, instance.transform.rotation, null, false, false, instance.transform.rotation, null, Vector3.zero);
+                return;
+            }
 
             Vector3 originPosition = instance.transform.position;
             Quaternion originRotation = ResolveWorldMotionBasisRotation(effect, caster);
             Quaternion lockedRotation = instance.transform.rotation;
 
-            SkillCueMover mover = instance.GetComponent<SkillCueMover>();
             if (mover == null)
                 mover = instance.AddComponent<SkillCueMover>();
             mover.Initialize(originPosition, originRotation, motion, false, true, lockedRotation, caster, effect != null ? effect.offset : Vector3.zero);
@@ -1256,6 +1309,122 @@ namespace Game.Presentation
                 if (main.simulationSpace == ParticleSystemSimulationSpace.World)
                     main.simulationSpace = ParticleSystemSimulationSpace.Local;
             }
+        }
+
+        private static void ResetReusableVfxState(GameObject instance, GameObject sourcePrefab, bool usePool)
+        {
+            if (instance == null)
+                return;
+
+            if (usePool)
+                BindPooledReturner(instance, sourcePrefab);
+
+            if (sourcePrefab != null)
+                instance.transform.localScale = sourcePrefab.transform.localScale;
+
+            TrailRenderer[] trailRenderers = instance.GetComponentsInChildren<TrailRenderer>(true);
+            for (int i = 0; i < trailRenderers.Length; i++)
+            {
+                TrailRenderer trailRenderer = trailRenderers[i];
+                if (trailRenderer != null)
+                    trailRenderer.Clear();
+            }
+
+            ParticleSystem[] particleSystems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            for (int i = 0; i < particleSystems.Length; i++)
+            {
+                ParticleSystem particleSystem = particleSystems[i];
+                if (particleSystem == null)
+                    continue;
+
+                particleSystem.Clear(true);
+                particleSystem.Play(true);
+            }
+        }
+
+        private static PooledObjectReturner BindPooledReturner(GameObject instance, GameObject sourcePrefab)
+        {
+            if (instance == null || sourcePrefab == null)
+                return null;
+
+            PooledObjectReturner returner = instance.GetComponent<PooledObjectReturner>();
+            if (returner == null)
+                returner = instance.AddComponent<PooledObjectReturner>();
+            returner.Bind(sourcePrefab);
+            return returner;
+        }
+
+        private static void DisableBehaviours<T>(GameObject instance) where T : Behaviour
+        {
+            T[] behaviours = instance.GetComponentsInChildren<T>(true);
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                T behaviour = behaviours[i];
+                if (behaviour != null)
+                    behaviour.enabled = false;
+            }
+        }
+
+        private static float ResolveNaturalDestroyDuration(GameObject instance)
+        {
+            if (instance == null)
+                return 0.1f;
+
+            float duration = 0.1f;
+
+            ParticleSystem[] particleSystems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            for (int i = 0; i < particleSystems.Length; i++)
+            {
+                ParticleSystem particleSystem = particleSystems[i];
+                if (particleSystem == null)
+                    continue;
+
+                var main = particleSystem.main;
+                duration = Mathf.Max(duration, ResolveCurveMaxDuration(main.startDelay) + main.duration + ResolveCurveMaxDuration(main.startLifetime));
+            }
+
+            TrailRenderer[] trailRenderers = instance.GetComponentsInChildren<TrailRenderer>(true);
+            for (int i = 0; i < trailRenderers.Length; i++)
+            {
+                TrailRenderer trailRenderer = trailRenderers[i];
+                if (trailRenderer != null)
+                    duration = Mathf.Max(duration, trailRenderer.time);
+            }
+
+            AudioSource[] audioSources = instance.GetComponentsInChildren<AudioSource>(true);
+            for (int i = 0; i < audioSources.Length; i++)
+            {
+                AudioSource audioSource = audioSources[i];
+                if (audioSource != null && audioSource.clip != null)
+                    duration = Mathf.Max(duration, audioSource.clip.length);
+            }
+
+            return duration;
+        }
+
+        private static float ResolveCurveMaxDuration(ParticleSystem.MinMaxCurve curve)
+        {
+            switch (curve.mode)
+            {
+                case ParticleSystemCurveMode.TwoConstants:
+                    return Mathf.Max(curve.constantMin, curve.constantMax);
+                case ParticleSystemCurveMode.Curve:
+                    return ResolveAnimationCurveMaxTime(curve.curve) * curve.curveMultiplier;
+                case ParticleSystemCurveMode.TwoCurves:
+                    return Mathf.Max(
+                        ResolveAnimationCurveMaxTime(curve.curveMin),
+                        ResolveAnimationCurveMaxTime(curve.curveMax)) * curve.curveMultiplier;
+                default:
+                    return curve.constant;
+            }
+        }
+
+        private static float ResolveAnimationCurveMaxTime(AnimationCurve curve)
+        {
+            if (curve == null || curve.length <= 0)
+                return 0f;
+
+            return curve.keys[curve.length - 1].time;
         }
 
         private static bool ShouldUseWorldCueMotion(SkillVfxEffect effect)

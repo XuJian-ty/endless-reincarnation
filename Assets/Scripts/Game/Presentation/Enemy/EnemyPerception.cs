@@ -107,6 +107,15 @@ namespace Game.Presentation
             RefreshPlayerRef();
         }
 
+        private void OnEnable()
+        {
+            _nextLosProbeTime = 0f;
+            _nextPathProbeTime = 0f;
+            _hasLastPlayerSample = false;
+            ClearTargetState();
+            RefreshPlayerRef();
+        }
+
         private void RefreshPlayerRef()
         {
             var gsm = GameStateMachine.GetInstance();

@@ -36,6 +36,8 @@ namespace Game.UI
         [SerializeField] private ToggleGroup _optionsGroup;
         [SerializeField] private GameObject _replyOptionPrefab;
 
+        private readonly UiGameObjectPool _replyOptionPool = new UiGameObjectPool();
+        private readonly List<GameObject> _activeOptionObjects = new List<GameObject>();
         private readonly List<Toggle> _spawnedOptionToggles = new List<Toggle>();
         private readonly List<Text> _spawnedOptionTexts = new List<Text>();
 
@@ -156,9 +158,9 @@ namespace Game.UI
             Toggle firstToggle = null;
             for (int i = 0; i < options.Count; i++)
             {
-                GameObject optionObject = Instantiate(_replyOptionPrefab, _optionsRoot);
-                optionObject.name = $"ReplyOption_{i + 1}";
-                optionObject.SetActive(true);
+                GameObject optionObject = _replyOptionPool.Acquire(_replyOptionPrefab, _optionsRoot, $"ReplyOption_{i + 1}");
+                if (optionObject == null)
+                    continue;
 
                 Toggle toggle = optionObject.GetComponent<Toggle>();
                 Text text = FindText(optionObject.transform, "ReplyText") ?? optionObject.GetComponentInChildren<Text>(true);
@@ -172,6 +174,7 @@ namespace Game.UI
                 }
 
                 SetText(text, options[i]?.replyText);
+                _activeOptionObjects.Add(optionObject);
                 _spawnedOptionToggles.Add(toggle);
                 _spawnedOptionTexts.Add(text);
             }
@@ -302,27 +305,19 @@ namespace Game.UI
 
         private void ClearReplyOptions()
         {
-            if (_optionsRoot != null)
-            {
-                for (int i = _optionsRoot.childCount - 1; i >= 0; i--)
-                {
-                    Transform child = _optionsRoot.GetChild(i);
-                    if (child != null && child.GetComponent<Toggle>() != null)
-                        Destroy(child.gameObject);
-                }
-            }
+            for (int i = 0; i < _activeOptionObjects.Count; i++)
+                _replyOptionPool.Release(_activeOptionObjects[i], _optionsRoot);
 
-            for (int i = 0; i < _spawnedOptionToggles.Count; i++)
-            {
-                Toggle toggle = _spawnedOptionToggles[i];
-                if (toggle != null)
-                    Destroy(toggle.gameObject);
-            }
-
+            _activeOptionObjects.Clear();
             _spawnedOptionToggles.Clear();
             _spawnedOptionTexts.Clear();
             _lastNavigateInputY = 0f;
             _nextNavigateAllowedTime = 0f;
+        }
+
+        private void OnDestroy()
+        {
+            _replyOptionPool.Clear();
         }
 
         private bool WasInteractPressedThisFrame()

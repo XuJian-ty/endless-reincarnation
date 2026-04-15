@@ -35,6 +35,12 @@ namespace Game.UI
         private readonly Dictionary<string, SkillTreeNodeView> _nodeViews = new Dictionary<string, SkillTreeNodeView>(StringComparer.Ordinal);
         private readonly List<SkillTreeSlotView> _slotViews = new List<SkillTreeSlotView>(PlayerModel.SkillSlotCount);
         private readonly List<Graphic> _edgeGraphics = new List<Graphic>();
+        private readonly UiGameObjectPool _nodePool = new UiGameObjectPool();
+        private readonly UiGameObjectPool _slotPool = new UiGameObjectPool();
+        private readonly Stack<GameObject> _availableMutationOptionObjects = new Stack<GameObject>();
+        private readonly List<GameObject> _activeMutationOptionObjects = new List<GameObject>();
+        private readonly Stack<GameObject> _availableEdgeObjects = new Stack<GameObject>();
+        private readonly List<GameObject> _activeEdgeObjects = new List<GameObject>();
 
         private RectTransform _windowRoot;
         private RectTransform _graphViewport;
@@ -137,6 +143,18 @@ namespace Game.UI
             }
 
             CancelDragVisual();
+        }
+
+        public void Dispose()
+        {
+            ReleaseNodeViews();
+            ReleaseSlotViews();
+            ReleaseMutationOptionObjects();
+            ReleaseEdgeObjects();
+            _nodePool.Clear();
+            _slotPool.Clear();
+            ClearReusableObjects(_availableMutationOptionObjects);
+            ClearReusableObjects(_availableEdgeObjects);
         }
 
         public void HandleNodeSelected(SkillTreeNodeView nodeView)
@@ -424,10 +442,8 @@ namespace Game.UI
         private void RebuildGraph()
         {
             string selectedNodeId = _selectedNodeId;
-            _nodeViews.Clear();
-            ClearChildren(_nodesRoot);
-            ClearChildren(_edgesRoot);
-            _edgeGraphics.Clear();
+            ReleaseNodeViews();
+            ReleaseEdgeObjects();
             _selectedNodeView = null;
 
             if (_graphContent != null && _graphConfig != null)
@@ -472,8 +488,7 @@ namespace Game.UI
 
         private void RebuildSlots()
         {
-            _slotViews.Clear();
-            ClearChildren(_slotsContent);
+            ReleaseSlotViews();
             if (_slotsContent == null)
                 return;
 
@@ -526,8 +541,7 @@ namespace Game.UI
 
         private void RefreshEdges(PlayerModel player)
         {
-            ClearChildren(_edgesRoot);
-            _edgeGraphics.Clear();
+            ReleaseEdgeObjects();
 
             if (_graphConfig?.nodes == null)
                 return;
@@ -585,12 +599,17 @@ namespace Game.UI
 
         private void CreateEdgeSegment(Vector2 start, Vector2 end, Color color)
         {
-            RectTransform segment = CreateRect(_edgesRoot, "EdgeSegment");
+            Image image = AcquireEdgeImage();
+            if (image == null)
+                return;
+
+            RectTransform segment = image.transform as RectTransform;
+            if (segment == null)
+                return;
+
             segment.anchorMin = new Vector2(0f, 1f);
             segment.anchorMax = new Vector2(0f, 1f);
             segment.pivot = new Vector2(0.5f, 0.5f);
-            segment.gameObject.AddComponent<CanvasRenderer>();
-            Image image = segment.gameObject.AddComponent<Image>();
             image.color = color;
             image.raycastTarget = false;
 
@@ -754,7 +773,7 @@ namespace Game.UI
                 return;
 
             EnsureMutationOptionsLayout();
-            ClearChildren(_mutationOptionsRoot);
+            ReleaseMutationOptionObjects();
 
             if (_mutationTitleText != null)
                 _mutationTitleText.text = $"{GetDisplayName(entry)} 变异";
@@ -961,12 +980,11 @@ namespace Game.UI
             if (_mutationOptionsRoot == null || option == null)
                 return;
 
-            GameObject buttonObject = CreateMutationOptionObject();
+            GameObject buttonObject = AcquireMutationOptionObject();
             if (buttonObject == null)
                 return;
 
             buttonObject.name = $"Mutation_{option.skillId}";
-            buttonObject.transform.SetParent(_mutationOptionsRoot, false);
 
             Image background = buttonObject.GetComponent<Image>();
             if (background != null)
@@ -1012,6 +1030,14 @@ namespace Game.UI
                 ? new Color(0.98f, 0.96f, 0.88f, 1f)
                 : new Color(0.92f, 0.94f, 0.96f, 1f);
             text.text = BuildMutationOptionButtonText(option);
+        }
+
+        private GameObject AcquireMutationOptionObject()
+        {
+            GameObject buttonObject = AcquireReusableObject(_availableMutationOptionObjects, _mutationOptionsRoot, CreateMutationOptionObject);
+            if (buttonObject != null)
+                _activeMutationOptionObjects.Add(buttonObject);
+            return buttonObject;
         }
 
         private GameObject CreateMutationOptionObject()
@@ -1214,7 +1240,10 @@ namespace Game.UI
                 return null;
             }
 
-            GameObject instance = UnityEngine.Object.Instantiate(_nodePrefab, parent, false);
+            GameObject instance = _nodePool.Acquire(_nodePrefab, parent);
+            if (instance == null)
+                return null;
+
             SkillTreeNodeView prefabView = instance.GetComponent<SkillTreeNodeView>();
             if (prefabView == null)
             {
@@ -1235,7 +1264,10 @@ namespace Game.UI
                 return null;
             }
 
-            GameObject instance = UnityEngine.Object.Instantiate(_slotPrefab, parent, false);
+            GameObject instance = _slotPool.Acquire(_slotPrefab, parent);
+            if (instance == null)
+                return null;
+
             SkillTreeSlotView prefabView = instance.GetComponent<SkillTreeSlotView>();
             if (prefabView == null)
             {
@@ -1248,26 +1280,110 @@ namespace Game.UI
             return prefabView;
         }
 
-        private static RectTransform CreateRect(Transform parent, string name)
+        private Image AcquireEdgeImage()
         {
-            GameObject obj = new GameObject(name, typeof(RectTransform));
-            obj.transform.SetParent(parent, false);
-            return obj.GetComponent<RectTransform>();
+            GameObject edgeObject = AcquireReusableObject(_availableEdgeObjects, _edgesRoot, CreateEdgeObject);
+            if (edgeObject == null)
+                return null;
+
+            edgeObject.name = "EdgeSegment";
+            _activeEdgeObjects.Add(edgeObject);
+            return edgeObject.GetComponent<Image>();
         }
 
-        private static void ClearChildren(RectTransform root)
+        private static GameObject CreateEdgeObject()
         {
-            if (root == null)
-                return;
+            return new GameObject("EdgeSegment", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        }
 
-            for (int i = root.childCount - 1; i >= 0; i--)
+        private static GameObject AcquireReusableObject(Stack<GameObject> pool, RectTransform parent, Func<GameObject> factory)
+        {
+            if (parent == null)
+                return null;
+
+            while (pool.Count > 0)
             {
-                Transform child = root.GetChild(i);
-                if (child == null)
+                GameObject instance = pool.Pop();
+                if (instance == null)
                     continue;
 
-                child.SetParent(null, false);
-                UnityEngine.Object.Destroy(child.gameObject);
+                instance.transform.SetParent(parent, false);
+                instance.SetActive(true);
+                return instance;
+            }
+
+            GameObject created = factory != null ? factory() : null;
+            if (created == null)
+                return null;
+
+            created.transform.SetParent(parent, false);
+            created.SetActive(true);
+            return created;
+        }
+
+        private void ReleaseNodeViews()
+        {
+            foreach (KeyValuePair<string, SkillTreeNodeView> pair in _nodeViews)
+            {
+                if (pair.Value != null)
+                    _nodePool.Release(pair.Value.gameObject, _nodesRoot);
+            }
+
+            _nodeViews.Clear();
+        }
+
+        private void ReleaseSlotViews()
+        {
+            for (int i = 0; i < _slotViews.Count; i++)
+            {
+                SkillTreeSlotView slotView = _slotViews[i];
+                if (slotView != null)
+                    _slotPool.Release(slotView.gameObject, _slotsContent);
+            }
+
+            _slotViews.Clear();
+        }
+
+        private void ReleaseMutationOptionObjects()
+        {
+            for (int i = 0; i < _activeMutationOptionObjects.Count; i++)
+                ReleaseReusableObject(_availableMutationOptionObjects, _activeMutationOptionObjects[i], _mutationOptionsRoot);
+
+            _activeMutationOptionObjects.Clear();
+        }
+
+        private void ReleaseEdgeObjects()
+        {
+            for (int i = 0; i < _activeEdgeObjects.Count; i++)
+                ReleaseReusableObject(_availableEdgeObjects, _activeEdgeObjects[i], _edgesRoot);
+
+            _activeEdgeObjects.Clear();
+            _edgeGraphics.Clear();
+        }
+
+        private static void ReleaseReusableObject(Stack<GameObject> pool, GameObject instance, RectTransform parent)
+        {
+            if (instance == null)
+                return;
+
+            if (parent == null)
+            {
+                UnityEngine.Object.Destroy(instance);
+                return;
+            }
+
+            instance.SetActive(false);
+            instance.transform.SetParent(parent, false);
+            pool.Push(instance);
+        }
+
+        private static void ClearReusableObjects(Stack<GameObject> pool)
+        {
+            while (pool.Count > 0)
+            {
+                GameObject instance = pool.Pop();
+                if (instance != null)
+                    UnityEngine.Object.Destroy(instance);
             }
         }
 

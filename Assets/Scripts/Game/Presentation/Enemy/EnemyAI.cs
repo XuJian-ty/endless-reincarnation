@@ -37,6 +37,25 @@ namespace Game.Presentation
             EnsureBehaviorTree();
         }
 
+        private void OnEnable()
+        {
+            _patrolOrigin = transform.position;
+            _nextPatrolTime = 0f;
+
+            if (_ctx == null)
+            {
+                _ctx = new EnemyAIContext();
+                _ctx.Memory = new EnemyCombatMemory();
+            }
+            else
+            {
+                _ctx.Memory ??= new EnemyCombatMemory();
+                _ctx.Memory.Clear();
+            }
+
+            EnsureBehaviorTree();
+        }
+
         private void Update()
         {
             _controller?.EnsureInitialized();

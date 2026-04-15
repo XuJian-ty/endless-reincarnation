@@ -17,6 +17,7 @@ namespace Game.UI
         private const string ContentRootName = "Content";
         private const string EmptyTextName = "Txt_Empty";
 
+        private readonly UiGameObjectPool _rowPool = new UiGameObjectPool();
         private readonly List<GameObject> _spawnedRows = new List<GameObject>();
         private readonly Dictionary<string, string> _bossDisplayNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -69,8 +70,9 @@ namespace Game.UI
             for (int i = 0; i < options.Count; i++)
             {
                 BattleMemoryBossOption option = options[i];
-                GameObject rowObject = UnityEngine.Object.Instantiate(_rowPrefab, _contentRoot);
-                rowObject.name = $"BossRow_{option.bossId}";
+                GameObject rowObject = _rowPool.Acquire(_rowPrefab, _contentRoot, $"BossRow_{option.bossId}");
+                if (rowObject == null)
+                    continue;
 
                 BattleMemoryBossRow row = rowObject.GetComponent<BattleMemoryBossRow>();
                 if (row != null)
@@ -167,13 +169,14 @@ namespace Game.UI
         private void ClearRows()
         {
             for (int i = 0; i < _spawnedRows.Count; i++)
-            {
-                GameObject row = _spawnedRows[i];
-                if (row != null)
-                    UnityEngine.Object.Destroy(row);
-            }
+                _rowPool.Release(_spawnedRows[i], _contentRoot);
 
             _spawnedRows.Clear();
+        }
+
+        private void OnDestroy()
+        {
+            _rowPool.Clear();
         }
 
         private struct BattleMemoryBossOption

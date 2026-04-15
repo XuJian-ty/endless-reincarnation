@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,6 +12,8 @@ namespace ProjectBase
 public class MonoController : MonoBehaviour {
 
     private event UnityAction updateEvent;
+    private event UnityAction lateUpdateEvent;
+    private event UnityAction fixedUpdateEvent;
 
 	private void Awake()
     {
@@ -21,9 +21,21 @@ public class MonoController : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+    void Update () {
         if (updateEvent != null)
             updateEvent();
+    }
+
+    private void LateUpdate()
+    {
+        if (lateUpdateEvent != null)
+            lateUpdateEvent();
+    }
+
+    private void FixedUpdate()
+    {
+        if (fixedUpdateEvent != null)
+            fixedUpdateEvent();
     }
 
     /// <summary>
@@ -42,6 +54,48 @@ public class MonoController : MonoBehaviour {
     public void RemoveUpdateListener(UnityAction fun)
     {
         updateEvent -= fun;
+    }
+
+    public void AddLateUpdateListener(UnityAction fun)
+    {
+        lateUpdateEvent += fun;
+    }
+
+    public void RemoveLateUpdateListener(UnityAction fun)
+    {
+        lateUpdateEvent -= fun;
+    }
+
+    public void AddFixedUpdateListener(UnityAction fun)
+    {
+        fixedUpdateEvent += fun;
+    }
+
+    public void RemoveFixedUpdateListener(UnityAction fun)
+    {
+        fixedUpdateEvent -= fun;
+    }
+
+    public Coroutine RunCoroutine(System.Collections.IEnumerator routine)
+    {
+        return routine != null ? StartCoroutine(routine) : null;
+    }
+
+    public void StopManagedCoroutine(Coroutine routine)
+    {
+        if (routine != null)
+            StopCoroutine(routine);
+    }
+
+    public void StopManagedCoroutine(string methodName)
+    {
+        if (!string.IsNullOrEmpty(methodName))
+            StopCoroutine(methodName);
+    }
+
+    public void StopAllManagedCoroutines()
+    {
+        StopAllCoroutines();
     }
 }
 }

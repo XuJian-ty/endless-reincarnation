@@ -71,6 +71,16 @@ namespace Game.GameFlow
             TickProgressiveSpawning(Time.deltaTime);
         }
 
+        /// <summary>
+        /// 运行时创建生成器时，显式写入当前关卡选择的全局生成方案，
+        /// 便于在 Play 模式下直接从 Inspector 看见实际生效的配置。
+        /// </summary>
+        public void ConfigureRuntimePlan(LevelEnemySpawnPlanSO planLibrary, int planIndex)
+        {
+            _planLibrary = planLibrary;
+            _planIndex = Mathf.Max(0, planIndex);
+        }
+
         public int GetPlannedGuardianCount()
         {
             if (!TryResolveSpawnPlan(ResolveCurrentLevelConfig(), out EnemySpawnTaskDatabaseSO taskDatabase, out LevelEnemyGlobalSpawnPlanDefinition plan))

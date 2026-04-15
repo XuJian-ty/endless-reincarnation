@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Data;
 using Game.Presentation;
 using Game.Saving;
+using ProjectBase;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -347,7 +348,10 @@ namespace Game.GameFlow
                 return false;
             }
 
-            GameObject instance = UnityEngine.Object.Instantiate(prefab, position, ResolveStaticSpawnRotation(prefab, position));
+            Transform interactablesRoot = LevelRuntimeHierarchy.GetInteractablesRoot();
+            GameObject instance = interactablesRoot != null
+                ? UnityEngine.Object.Instantiate(prefab, position, ResolveStaticSpawnRotation(prefab, position), interactablesRoot)
+                : UnityEngine.Object.Instantiate(prefab, position, ResolveStaticSpawnRotation(prefab, position));
             instance.name = prefab.name;
             if (spawnType == EnemySpawnCategory.Chest && instance.GetComponentInChildren<ChestInteractable>(true) == null)
                 ChestInteractable.EnsureOn(instance);
@@ -376,9 +380,24 @@ namespace Game.GameFlow
                 return null;
             }
 
-            GameObject instance = UnityEngine.Object.Instantiate(prefab, position, rotation);
+            bool usePool = type != EnemyType.Boss;
+            Transform enemiesRoot = LevelRuntimeHierarchy.GetEnemiesRoot();
+            GameObject instance = usePool
+                ? PoolMgr.GetInstance().GetObjSync(prefab, enemiesRoot)
+                : (enemiesRoot != null
+                    ? UnityEngine.Object.Instantiate(prefab, position, rotation, enemiesRoot)
+                    : UnityEngine.Object.Instantiate(prefab, position, rotation));
+            if (instance == null)
+                return null;
+
             instance.name = prefab.name;
+            instance.transform.position = position;
+            instance.transform.rotation = rotation;
+            instance.transform.localScale = prefab.transform.localScale;
             EnemyController controller = instance.GetComponent<EnemyController>();
+            if (controller != null)
+                controller.PrepareForSpawn(usePool ? prefab : null);
+
             if (controller != null && type == EnemyType.Boss)
                 ApplyBossVisuals(instance, controller, countsAsLevelBoss);
 
