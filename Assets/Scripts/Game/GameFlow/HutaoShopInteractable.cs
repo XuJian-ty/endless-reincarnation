@@ -6,6 +6,7 @@ using Game.Saving;
 using Game.UI;
 using ProjectBase;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
 #if ENABLE_INPUT_SYSTEM
@@ -96,6 +97,7 @@ namespace Game.GameFlow
         private void Awake()
         {
             ApplySnapshotIfAvailable();
+            ValidateBlockingSetup();
             EnsurePromptInstance();
             SetPromptVisible(false);
         }
@@ -179,6 +181,38 @@ namespace Game.GameFlow
                     panel.BeginSession(_dialogueConfig, OnDialogueFinished);
                     GameplayUIInputBridge.RequestStateRefresh();
                 });
+        }
+
+        private void ValidateBlockingSetup()
+        {
+            Collider[] colliders = GetComponentsInChildren<Collider>(true);
+            bool hasBlockingCollider = false;
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider collider = colliders[i];
+                if (collider != null && !collider.isTrigger)
+                {
+                    hasBlockingCollider = true;
+                    break;
+                }
+            }
+
+            if (!hasBlockingCollider)
+                Debug.LogWarning($"[HutaoShopInteractable:{name}] 缺少实体 Collider，玩家和敌人将无法被商店阻挡。请直接在商店 prefab 上配置阻挡碰撞体。", this);
+
+            NavMeshObstacle[] obstacles = GetComponentsInChildren<NavMeshObstacle>(true);
+            bool hasNavMeshObstacle = false;
+            for (int i = 0; i < obstacles.Length; i++)
+            {
+                if (obstacles[i] != null)
+                {
+                    hasNavMeshObstacle = true;
+                    break;
+                }
+            }
+
+            if (!hasNavMeshObstacle)
+                Debug.LogWarning($"[HutaoShopInteractable:{name}] 缺少 NavMeshObstacle，敌人可能不会绕开商店。请直接在商店 prefab 上配置导航障碍。", this);
         }
 
         private void OnDialogueFinished(bool openShop)
