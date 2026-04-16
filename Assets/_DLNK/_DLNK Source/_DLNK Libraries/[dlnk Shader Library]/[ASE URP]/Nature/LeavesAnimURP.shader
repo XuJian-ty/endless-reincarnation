@@ -1904,7 +1904,6 @@ Shader "DLNK Shaders/ASE URP/Nature/LeavesAnim"
 		
 	}
 	/*ase_lod*/
-	CustomEditor "UnityEditor.ShaderGraph.PBRMasterGUI"
 	Fallback "Hidden/InternalErrorShader"
 	
 }

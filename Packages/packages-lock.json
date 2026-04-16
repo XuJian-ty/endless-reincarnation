@@ -68,13 +68,6 @@
       },
       "url": "https://packages.unity.cn"
     },
-    "com.unity.ide.vscode": {
-      "version": "1.2.4",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://packages.unity.cn"
-    },
     "com.unity.inputsystem": {
       "version": "1.7.0",
       "depth": 0,
@@ -150,14 +143,14 @@
     },
     "com.unity.searcher": {
       "version": "4.9.2",
-      "depth": 2,
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.cn"
     },
     "com.unity.shadergraph": {
       "version": "16.0.6",
-      "depth": 1,
+      "depth": 0,
       "source": "builtin",
       "dependencies": {
         "com.unity.render-pipelines.core": "16.0.6",

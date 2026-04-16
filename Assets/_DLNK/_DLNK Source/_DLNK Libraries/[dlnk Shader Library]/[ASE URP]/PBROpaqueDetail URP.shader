@@ -1730,7 +1730,6 @@ Shader "DLNK Shaders/ASE URP/PBROpaqueDetail"
 		
 	}
 	/*ase_lod*/
-	CustomEditor "UnityEditor.ShaderGraph.PBRMasterGUI"
 	Fallback "Hidden/InternalErrorShader"
 	
 }

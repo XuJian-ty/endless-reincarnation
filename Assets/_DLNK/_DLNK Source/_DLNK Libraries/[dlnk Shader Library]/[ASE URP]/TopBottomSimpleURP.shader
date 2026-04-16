@@ -1938,7 +1938,6 @@ Shader "DLNK Shaders/ASE URP/TopBottomSimple"
 		
 	}
 	/*ase_lod*/
-	CustomEditor "UnityEditor.ShaderGraph.PBRMasterGUI"
 	Fallback "Hidden/InternalErrorShader"
 	
 }
