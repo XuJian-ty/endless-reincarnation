@@ -6,7 +6,6 @@ using Game.Saving;
 using Game.UI;
 using ProjectBase;
 using UnityEngine;
-using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
 #if ENABLE_INPUT_SYSTEM
@@ -186,6 +185,9 @@ namespace Game.GameFlow
         private void ValidateBlockingSetup()
         {
             Collider[] colliders = GetComponentsInChildren<Collider>(true);
+            if (colliders == null || colliders.Length == 0)
+                colliders = GetComponentsInParent<Collider>(true);
+
             bool hasBlockingCollider = false;
             for (int i = 0; i < colliders.Length; i++)
             {
@@ -200,7 +202,10 @@ namespace Game.GameFlow
             if (!hasBlockingCollider)
                 Debug.LogWarning($"[HutaoShopInteractable:{name}] 缺少实体 Collider，玩家和敌人将无法被商店阻挡。请直接在商店 prefab 上配置阻挡碰撞体。", this);
 
-            NavMeshObstacle[] obstacles = GetComponentsInChildren<NavMeshObstacle>(true);
+            UnityEngine.AI.NavMeshObstacle[] obstacles = GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true);
+            if (obstacles == null || obstacles.Length == 0)
+                obstacles = GetComponentsInParent<UnityEngine.AI.NavMeshObstacle>(true);
+
             bool hasNavMeshObstacle = false;
             for (int i = 0; i < obstacles.Length; i++)
             {

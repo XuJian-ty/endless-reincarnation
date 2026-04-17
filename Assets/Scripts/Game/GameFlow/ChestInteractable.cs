@@ -580,11 +580,25 @@ namespace Game.GameFlow
                     colliders[i].enabled = false;
             }
 
+            Collider[] parentColliders = GetComponentsInParent<Collider>(true);
+            for (int i = 0; i < parentColliders.Length; i++)
+            {
+                if (parentColliders[i] != null)
+                    parentColliders[i].enabled = false;
+            }
+
             NavMeshObstacle[] obstacles = GetComponentsInChildren<NavMeshObstacle>(true);
             for (int i = 0; i < obstacles.Length; i++)
             {
                 if (obstacles[i] != null)
                     obstacles[i].enabled = false;
+            }
+
+            NavMeshObstacle[] parentObstacles = GetComponentsInParent<NavMeshObstacle>(true);
+            for (int i = 0; i < parentObstacles.Length; i++)
+            {
+                if (parentObstacles[i] != null)
+                    parentObstacles[i].enabled = false;
             }
         }
 
@@ -603,6 +617,20 @@ namespace Game.GameFlow
             }
 
             if (!hasBlockingCollider)
+            {
+                Collider[] parentColliders = GetComponentsInParent<Collider>(true);
+                for (int i = 0; i < parentColliders.Length; i++)
+                {
+                    Collider collider = parentColliders[i];
+                    if (collider != null && !collider.isTrigger)
+                    {
+                        hasBlockingCollider = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasBlockingCollider)
                 Debug.LogWarning($"[ChestInteractable:{name}] 缺少实体 Collider，玩家将无法被宝箱阻挡。请直接在宝箱 prefab 上配置阻挡碰撞体。", this);
 
             NavMeshObstacle[] obstacles = GetComponentsInChildren<NavMeshObstacle>(true);
@@ -613,6 +641,19 @@ namespace Game.GameFlow
                 {
                     hasNavMeshObstacle = true;
                     break;
+                }
+            }
+
+            if (!hasNavMeshObstacle)
+            {
+                NavMeshObstacle[] parentObstacles = GetComponentsInParent<NavMeshObstacle>(true);
+                for (int i = 0; i < parentObstacles.Length; i++)
+                {
+                    if (parentObstacles[i] != null)
+                    {
+                        hasNavMeshObstacle = true;
+                        break;
+                    }
                 }
             }
 
