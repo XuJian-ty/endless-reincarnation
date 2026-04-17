@@ -1136,8 +1136,12 @@ namespace Game.Presentation
                 if (rigidbody == null)
                     continue;
 
-                rigidbody.velocity = Vector3.zero;
-                rigidbody.angularVelocity = Vector3.zero;
+                if (!rigidbody.isKinematic)
+                {
+                    rigidbody.velocity = Vector3.zero;
+                    rigidbody.angularVelocity = Vector3.zero;
+                }
+
                 rigidbody.isKinematic = true;
                 rigidbody.detectCollisions = false;
             }

@@ -3393,6 +3393,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8651494764176624590}
   - component: {fileID: 3553160562931461201}
+  - component: {fileID: 3553160562931461202}
   m_Layer: 0
   m_Name: "\u80E1\u6843"
   m_TagString: Untagged
@@ -3430,10 +3431,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interactDistance: 3
-  _promptCanvasPrefab: {fileID: 100100000, guid: c57040dadff84f28bae88cb0ac661e72, type: 3}
-  _promptPrefab: {fileID: 100100000, guid: 2ccb18d3a9fb4dffa0ac172b9cffba88, type: 3}
   _promptHeightOffset: 1.6
   _dialogueConfig: {fileID: 11400000, guid: 11a33b6975ce4ab7a2614d3daea0b27f, type: 2}
+--- !u!136 &3553160562931461202
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4746745738120890110}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.35
+  m_Height: 1.7
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.75, z: 0}
 --- !u!1 &4989842690600662540
 GameObject:
   m_ObjectHideFlags: 0
@@ -5923,11 +5945,11 @@ NavMeshObstacle:
   m_Enabled: 1
   serializedVersion: 3
   m_Shape: 1
-  m_Extents: {x: 2.6, y: 3, z: 2.6}
+  m_Extents: {x: 0.052, y: 0.06, z: 0.052}
   m_MoveThreshold: 0.1
   m_Carve: 1
   m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 3, z: 0}
+  m_Center: {x: 0, y: 0.06, z: 0}
   m_TimeToStationary: 0.5
 --- !u!1 &8750422259411419958
 GameObject:
