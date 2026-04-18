@@ -1,6 +1,7 @@
 using Game.Data;
 using Game.Domain;
 using Game.Saving;
+using Game.UI;
 using ProjectBase;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -58,11 +59,14 @@ namespace Game.GameFlow
                 run = SaveSystem.CloneRunData(sourceRun),
             };
             _battle = CreateBattleSnapshot(sourceRun, gsm.CurrentPlayerName, bossId, bossDisplayName);
-            if (AdoptBattleContext(gsm))
-                return true;
+            if (!AdoptBattleContext(gsm))
+            {
+                Clear();
+                return false;
+            }
 
-            Clear();
-            return false;
+            LoadSceneWithMainMenuStyleTransition(SceneName);
+            return true;
         }
 
         public static bool EnsurePreviewContext()
@@ -99,7 +103,7 @@ namespace Game.GameFlow
             if (!AdoptBattleContext(gsm))
                 return false;
 
-            ScenesMgr.GetInstance().LoadSceneAsyn(SceneName, null);
+            LoadSceneWithMainMenuStyleTransition(SceneName);
             return true;
         }
 
@@ -121,7 +125,7 @@ namespace Game.GameFlow
                 string sceneName = !string.IsNullOrWhiteSpace(origin.sceneName)
                     ? origin.sceneName
                     : GameStateMachine.GetLevelSceneName(restoredRun.levelIndex);
-                ScenesMgr.GetInstance().LoadSceneAsyn(sceneName, null);
+                LoadSceneWithMainMenuStyleTransition(sceneName);
                 return true;
             }
 
@@ -194,6 +198,31 @@ namespace Game.GameFlow
         {
             _origin = null;
             _battle = null;
+        }
+
+        /// <summary>
+        /// 场景切换时复用主菜单同款加载表现：MainMenuBackground + LoadingPanel。
+        /// PromptClickToContinue 仅首次进入主菜单显示，这里不显示。
+        /// </summary>
+        private static void LoadSceneWithMainMenuStyleTransition(string sceneName)
+        {
+            UIManager ui = UIManager.GetInstance();
+            if (ui == null)
+            {
+                ScenesMgr.GetInstance().LoadSceneAsyn(sceneName, null);
+                return;
+            }
+
+            MainMenuBackgroundPanel.RequestLoadingTransitionShow();
+            ui.ShowPanel<MainMenuBackgroundPanel>(PanelNames.MainMenuBackground, PanelLayers.MainMenuBackground);
+            ui.ShowPanel<LoadingPanel>(PanelNames.Loading, PanelLayers.Loading, _ =>
+            {
+                ScenesMgr.GetInstance().LoadSceneAsyn(sceneName, () =>
+                {
+                    ui.HidePanel(PanelNames.Loading);
+                    ui.HidePanel(PanelNames.MainMenuBackground);
+                });
+            });
         }
     }
 }

@@ -26,5 +26,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/BattleMemoryScene.unity
     guid: c1a9b703e20b4c8fa743970520f3c052
+  - enabled: 1
+    path: Assets/Scenes/FinalBossDuelScene.unity
+    guid: d7a4f1d9b8ec4f44a9e2c99701ea4be1
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

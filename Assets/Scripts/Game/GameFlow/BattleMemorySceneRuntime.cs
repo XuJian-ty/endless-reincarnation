@@ -16,8 +16,8 @@ namespace Game.GameFlow
     /// </summary>
     public static class BattleMemorySceneRuntime
     {
-        private const string VictoryNotice = "回忆完成，即将返回原场景";
-        private const string RetryNotice = "回忆破碎，重新开始";
+        private const string VictoryNotice = "回忆成功，即将返回原场景";
+        private const string RetryNotice = "回忆破碎，即将返回原场景";
         private const float NoticeDuration = 1.5f;
 
         private static bool _transitioning;
@@ -110,13 +110,6 @@ namespace Game.GameFlow
             yield return new WaitForSecondsRealtime(NoticeDuration);
             _transitioning = false;
             BattleMemoryRuntimeContext.ExitToOrigin();
-        }
-
-        private static IEnumerator RestartAfterDelay()
-        {
-            yield return new WaitForSecondsRealtime(NoticeDuration);
-            _transitioning = false;
-            BattleMemoryRuntimeContext.RestartChallenge();
         }
 
         private static void RegisterBossListener()
@@ -225,7 +218,7 @@ namespace Game.GameFlow
                 _transitioning = true;
                 ShowNotice(RetryNotice, NoticeDuration);
                 CleanupListeners();
-                MonoMgr.GetInstance().StartCoroutine(RestartAfterDelay());
+                MonoMgr.GetInstance().StartCoroutine(ReturnToOriginAfterDelay());
             }
         }
     }

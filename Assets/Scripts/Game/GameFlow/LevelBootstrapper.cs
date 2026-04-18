@@ -62,6 +62,7 @@ namespace Game.GameFlow
             }
 
             BattleMemorySceneRuntime.TryAdoptPreviewContext(gsm, ref run, ref playerModel);
+            FinalBossDuelSceneRuntime.TryAdoptPreviewContext(gsm, ref run, ref playerModel);
 
             ResolveSceneReferences();
             EnsurePlayerInstance(run);
@@ -109,7 +110,8 @@ namespace Game.GameFlow
             DropdownScrollForwarder.EnsureExistsInScene();
 
             bool isBattleMemoryScene = BattleMemorySceneRuntime.TryPrepareScene(this);
-            if (!isBattleMemoryScene && run.levelSnapshot != null)
+            bool isFinalBossDuelScene = FinalBossDuelSceneRuntime.TryPrepareScene(this);
+            if (!isBattleMemoryScene && !isFinalBossDuelScene && run.levelSnapshot != null)
                 StartCoroutine(RestoreLevelSnapshotState(run.levelSnapshot));
 
             Debug.Log($"[LevelBootstrapper] Level {run.levelIndex} initialized. Difficulty {run.difficulty}.");

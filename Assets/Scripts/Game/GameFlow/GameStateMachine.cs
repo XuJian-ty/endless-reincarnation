@@ -6,6 +6,7 @@ using Game;
 using Game.Domain;
 using Game.Data;
 using Game.Saving;
+using Game.UI;
 using ProjectBase;
 
 namespace Game.GameFlow
@@ -273,10 +274,11 @@ namespace Game.GameFlow
             Debug.Log($"[GameStateMachine] 仙露复活，回滚至 Checkpoint，难度提升至 {_currentRun.difficulty}");
             Time.timeScale = 1f;
             SetState(State.InLevel);
-            ScenesMgr.GetInstance().LoadSceneAsyn(GetLevelSceneName(_currentRun.levelIndex), ApplyLevelBgm);
+            FinalBossDuelRuntimeContext.ClearChallenge();
+            LoadLevelWithMainMenuStyleTransition(GetLevelSceneName(_currentRun.levelIndex), ApplyLevelBgm);
         }
 
-        public void RecordBossDefeat(string bossId)
+        public void RecordBossDefeat(string bossId, bool captureRuntimeSnapshot = true)
         {
             if (_currentRun == null)
                 return;
@@ -288,7 +290,7 @@ namespace Game.GameFlow
             if (!HasLoadableNextLevel())
                 _currentRun.isGameCleared = true;
 
-            SaveCurrent();
+            SaveCurrent(captureRuntimeSnapshot);
         }
 
         public bool RestartCurrentLevelAtEntrance()
@@ -327,6 +329,7 @@ namespace Game.GameFlow
             _currentRun       = null;
             _playerModel      = null;
             SetLevelPlayerTransform(null);
+            FinalBossDuelRuntimeContext.ClearChallenge();
             Time.timeScale = 1f;
             LevelUIModelLocator.Set(null);
             SetState(State.MainMenu);
@@ -370,6 +373,7 @@ namespace Game.GameFlow
             _currentRun        = null;
             _playerModel       = null;
             SetLevelPlayerTransform(null);
+            FinalBossDuelRuntimeContext.ClearChallenge();
             Time.timeScale = 1f;
             LevelUIModelLocator.Set(null);
             SetState(State.MainMenu);
@@ -410,8 +414,34 @@ namespace Game.GameFlow
 
             Time.timeScale = 1f;
             SetState(State.InLevel);
-            ScenesMgr.GetInstance().LoadSceneAsyn(GetLevelSceneName(levelIndex), ApplyLevelBgm);
+            LoadLevelWithMainMenuStyleTransition(GetLevelSceneName(levelIndex), ApplyLevelBgm);
             return true;
+        }
+
+        /// <summary>
+        /// 关卡切换时复用主菜单同款加载表现：MainMenuBackground + LoadingPanel。
+        /// PromptClickToContinue 仅在初次进入主菜单时显示，此处作为过渡加载不显示。
+        /// </summary>
+        private void LoadLevelWithMainMenuStyleTransition(string sceneName, UnityAction onSceneLoaded)
+        {
+            UIManager ui = UIManager.GetInstance();
+            if (ui == null)
+            {
+                ScenesMgr.GetInstance().LoadSceneAsyn(sceneName, onSceneLoaded);
+                return;
+            }
+
+            MainMenuBackgroundPanel.RequestLoadingTransitionShow();
+            ui.ShowPanel<MainMenuBackgroundPanel>(PanelNames.MainMenuBackground, PanelLayers.MainMenuBackground);
+            ui.ShowPanel<LoadingPanel>(PanelNames.Loading, PanelLayers.Loading, _ =>
+            {
+                ScenesMgr.GetInstance().LoadSceneAsyn(sceneName, () =>
+                {
+                    ui.HidePanel(PanelNames.Loading);
+                    ui.HidePanel(PanelNames.MainMenuBackground);
+                    onSceneLoaded?.Invoke();
+                });
+            });
         }
 
         private void SetState(State newState)

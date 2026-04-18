@@ -17,7 +17,6 @@ namespace Game.GameFlow
     {
         private const float GuardianStateCheckInterval = 0.2f;
         private const float BossResultPanelDelay = 1.5f;
-        private const string BossArrivalNoticeMessage = "最终Boss即将降临！";
 
         // 配置由 ConfigManager 单例提供，无需挂载
         [Header("Boss 流程")]
@@ -137,7 +136,7 @@ namespace Game.GameFlow
             }
             _bossSpawnReadyTime = -1f;
 
-            if (BattleMemorySceneRuntime.IsBattleMemoryScene())
+            if (BattleMemorySceneRuntime.IsBattleMemoryScene() || FinalBossDuelSceneRuntime.IsFinalBossDuelScene())
                 return;
 
             ScheduleBossResultPanel(_defeatedBossId, BossResultPanelDelay);
@@ -320,7 +319,7 @@ namespace Game.GameFlow
             if (TrySpawnBoss())
                 _bossSpawned = true;
             else
-                Debug.LogWarning("[LevelDirector] Boss 生成失败。");
+                Debug.LogWarning("[LevelDirector] Boss 决战场景切换失败。");
 
             _bossSpawnRoutine = null;
             _bossSpawnReadyTime = -1f;
@@ -387,7 +386,7 @@ namespace Game.GameFlow
             ui.ShowPanel<BossArrivalNoticePanel>(
                 PanelNames.BossArrivalNotice,
                 PanelLayers.BossArrivalNotice,
-                panel => panel.ShowNotice(BossArrivalNoticeMessage, Mathf.Max(0.1f, duration)));
+                panel => panel.ShowNotice(null, Mathf.Max(0.1f, duration)));
         }
 
         private bool TrySpawnBoss()
@@ -399,10 +398,7 @@ namespace Game.GameFlow
             if (string.IsNullOrEmpty(bossId))
                 return false;
 
-            if (!TrySampleBossNearPlayer(out Vector3 position))
-                return false;
-
-            return EnemySpawnRuntime.TrySpawnSingleEnemy(bossId, EnemyType.Boss, position, _bossVariantCatalog, true);
+            return FinalBossDuelRuntimeContext.BeginChallenge(bossId, bossId);
         }
 
         private bool HasLivingBoss()
