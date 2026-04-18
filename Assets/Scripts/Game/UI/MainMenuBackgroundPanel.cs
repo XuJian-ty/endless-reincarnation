@@ -14,15 +14,31 @@ namespace Game.UI
     {
         [SerializeField] private GameObject promptClickToContinue;
 
+        private static bool _useLoadingTransitionForNextShow;
         private bool _mainMenuShown;
+
+        /// <summary>
+        /// 将下一次 ShowMe 设为“加载过渡模式”：
+        /// 不显示「点击任意键继续...」，也不播放主菜单 BGM。
+        /// </summary>
+        public static void RequestLoadingTransitionShow()
+        {
+            _useLoadingTransitionForNextShow = true;
+        }
 
         public override void ShowMe()
         {
             gameObject.SetActive(true);
-            ApplyMainMenuBgm();
+
+            bool isLoadingTransition = _useLoadingTransitionForNextShow;
+            _useLoadingTransitionForNextShow = false;
+
+            if (!isLoadingTransition)
+                ApplyMainMenuBgm();
+
             if (promptClickToContinue != null)
-                promptClickToContinue.SetActive(true);
-            _mainMenuShown = false;
+                promptClickToContinue.SetActive(!isLoadingTransition);
+            _mainMenuShown = isLoadingTransition;
         }
 
         private static void ApplyMainMenuBgm()

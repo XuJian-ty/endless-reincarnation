@@ -12,33 +12,30 @@ using UnityEngine.SceneManagement;
 namespace Game.GameFlow
 {
     /// <summary>
-    /// 战斗回忆场景运行时辅助：清空普通关卡玩法对象、刷出选中的 Boss，并处理回忆战结束流转。
+    /// 最终 Boss 决战场景运行时辅助：清空普通关卡玩法对象、刷出指定 Boss，并处理击败后的流转。
     /// </summary>
-    public static class BattleMemorySceneRuntime
+    public static class FinalBossDuelSceneRuntime
     {
-        private const string VictoryNotice = "回忆成功，即将返回原场景";
-        private const string RetryNotice = "回忆破碎，即将返回原场景";
-        private const float NoticeDuration = 1.5f;
-
+        private const float BossResultPanelDelay = 1.5f;
         private static bool _transitioning;
 
-        public static bool IsBattleMemoryScene()
+        public static bool IsFinalBossDuelScene()
         {
-            return IsBattleMemorySceneName(SceneManager.GetActiveScene().name);
+            return IsFinalBossDuelSceneName(SceneManager.GetActiveScene().name);
         }
 
-        public static bool IsBattleMemorySceneName(string sceneName)
+        public static bool IsFinalBossDuelSceneName(string sceneName)
         {
-            return string.Equals(sceneName, BattleMemoryRuntimeContext.SceneName, System.StringComparison.OrdinalIgnoreCase);
+            return string.Equals(sceneName, FinalBossDuelRuntimeContext.SceneName, System.StringComparison.OrdinalIgnoreCase);
         }
 
         public static void TryAdoptPreviewContext(GameStateMachine gsm, ref RunData run, ref PlayerModel playerModel)
         {
-            if (!IsBattleMemoryScene())
+            if (!IsFinalBossDuelScene())
                 return;
 
-            if (!BattleMemoryRuntimeContext.IsActive)
-                BattleMemoryRuntimeContext.EnsurePreviewContext();
+            if (!FinalBossDuelRuntimeContext.IsActive)
+                FinalBossDuelRuntimeContext.EnsurePreviewContext();
 
             if (gsm == null)
                 return;
@@ -49,45 +46,38 @@ namespace Game.GameFlow
 
         public static bool TryPrepareScene(MonoBehaviour host)
         {
-            if (!IsBattleMemoryScene())
+            if (!IsFinalBossDuelScene())
                 return false;
 
             _transitioning = false;
             StripRegularLevelGameplayObjects();
             RegisterBossListener();
-            GameStateMachine.GetInstance()?.SetDeathChoiceHandler(new BattleMemoryDeathChoiceHandler());
             host.StartCoroutine(SpawnSelectedBossNextFrame());
             return true;
-        }
-
-        public static bool ExitToOrigin()
-        {
-            CleanupListeners();
-            return BattleMemoryRuntimeContext.ExitToOrigin();
         }
 
         private static IEnumerator SpawnSelectedBossNextFrame()
         {
             yield return null;
 
-            if (_transitioning || HasLivingMemoryBoss())
+            if (_transitioning || HasLivingFinalBoss())
                 yield break;
 
             if (!TryResolveBossSpawnPosition(out Vector3 position))
             {
-                Debug.LogWarning("[BattleMemorySceneRuntime] 未能找到战斗回忆 Boss 的有效生成点。");
+                Debug.LogWarning("[FinalBossDuelSceneRuntime] 未能找到决战 Boss 的有效生成点。");
                 yield break;
             }
 
             EnemySpawnVariantCatalog catalog = EnemySpawnRuntime.BuildVariantCatalog();
             if (!EnemySpawnRuntime.TrySpawnSingleEnemy(
-                    BattleMemoryRuntimeContext.CurrentBossId,
+                    FinalBossDuelRuntimeContext.CurrentBossId,
                     EnemyType.Boss,
                     position,
                     catalog,
                     true))
             {
-                Debug.LogWarning($"[BattleMemorySceneRuntime] 战斗回忆 Boss 生成失败：{BattleMemoryRuntimeContext.CurrentBossId}");
+                Debug.LogWarning($"[FinalBossDuelSceneRuntime] 决战 Boss 生成失败：{FinalBossDuelRuntimeContext.CurrentBossId}");
             }
         }
 
@@ -96,20 +86,61 @@ namespace Game.GameFlow
             if (_transitioning)
                 return;
 
-            if (!string.Equals(bossId, BattleMemoryRuntimeContext.CurrentBossId, System.StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(bossId, FinalBossDuelRuntimeContext.CurrentBossId, System.StringComparison.OrdinalIgnoreCase))
                 return;
 
             _transitioning = true;
-            ShowNotice(VictoryNotice, NoticeDuration);
             CleanupListeners();
-            MonoMgr.GetInstance().StartCoroutine(ReturnToOriginAfterDelay());
+            MonoMgr.GetInstance().StartCoroutine(ShowBossResultPanelAfterDelay(bossId));
         }
 
-        private static IEnumerator ReturnToOriginAfterDelay()
+        private static IEnumerator ShowBossResultPanelAfterDelay(string bossId)
         {
-            yield return new WaitForSecondsRealtime(NoticeDuration);
+            if (BossResultPanelDelay > 0f)
+                yield return new WaitForSecondsRealtime(BossResultPanelDelay);
+
+            ShowBossResultPanel(bossId);
             _transitioning = false;
-            BattleMemoryRuntimeContext.ExitToOrigin();
+        }
+
+        private static void ShowBossResultPanel(string bossId)
+        {
+            GameStateMachine gsm = GameStateMachine.GetInstance();
+            UIManager ui = UIManager.GetInstance();
+            if (gsm == null || ui == null)
+                return;
+
+            bool hasNextLevel = gsm.HasLoadableNextLevel();
+            int clearedLevel = gsm.CurrentRun?.levelIndex ?? 1;
+
+            ui.ShowPanel<BossResultPanel>(
+                PanelNames.BossResult,
+                PanelLayers.BossResult,
+                panel => panel.ShowResult(
+                    clearedLevel,
+                    bossId,
+                    hasNextLevel,
+                    () =>
+                    {
+                        FinalBossDuelRuntimeContext.ClearChallenge();
+                        gsm.RestartCurrentLevelAtEntrance();
+                    },
+                    hasNextLevel
+                        ? () =>
+                        {
+                            gsm.RecordBossDefeat(bossId, false);
+                            FinalBossDuelRuntimeContext.ClearChallenge();
+                            gsm.TryAdvanceToNextLevel();
+                        }
+                        : () =>
+                        {
+                            gsm.RecordBossDefeat(bossId, false);
+                            if (!FinalBossDuelRuntimeContext.ExitToOrigin())
+                            {
+                                FinalBossDuelRuntimeContext.ClearChallenge();
+                                Debug.LogWarning("[FinalBossDuelSceneRuntime] 返回原场景失败，未能完成继续探索。");
+                            }
+                        }));
         }
 
         private static void RegisterBossListener()
@@ -147,7 +178,7 @@ namespace Game.GameFlow
             }
         }
 
-        private static bool HasLivingMemoryBoss()
+        private static bool HasLivingFinalBoss()
         {
             EnemyController[] enemies = Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int i = 0; i < enemies.Length; i++)
@@ -194,32 +225,6 @@ namespace Game.GameFlow
 
             position = player.position + player.forward * 12f;
             return true;
-        }
-
-        private static void ShowNotice(string message, float duration)
-        {
-            UIManager ui = UIManager.GetInstance();
-            if (ui == null)
-                return;
-
-            ui.ShowPanel<BossArrivalNoticePanel>(
-                PanelNames.BossArrivalNotice,
-                PanelLayers.BossArrivalNotice,
-                panel => panel.ShowNotice(message, duration));
-        }
-
-        private sealed class BattleMemoryDeathChoiceHandler : IDeathChoiceHandler
-        {
-            public void RequestDeathChoice(System.Action onReviveWithNectar, System.Action onGiveUp)
-            {
-                if (_transitioning)
-                    return;
-
-                _transitioning = true;
-                ShowNotice(RetryNotice, NoticeDuration);
-                CleanupListeners();
-                MonoMgr.GetInstance().StartCoroutine(ReturnToOriginAfterDelay());
-            }
         }
     }
 }

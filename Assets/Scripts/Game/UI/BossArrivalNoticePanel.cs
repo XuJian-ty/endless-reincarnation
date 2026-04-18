@@ -28,7 +28,8 @@ namespace Game.UI
             if (_messageText == null)
                 return;
 
-            _messageText.text = message;
+            if (!string.IsNullOrWhiteSpace(message))
+                _messageText.text = message;
             ShowMe();
 
             if (_hideRoutine != null)
@@ -86,7 +87,7 @@ namespace Game.UI
 
             Text text = messageObject.GetComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.text = "最终Boss即将降临！";
+            text.text = "即将进入决战最终Boss场景！";
             text.fontSize = 36;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = new Color(0.9f, 0.18f, 0.18f, 1f);

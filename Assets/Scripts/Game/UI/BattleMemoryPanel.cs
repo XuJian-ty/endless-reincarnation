@@ -99,7 +99,6 @@ namespace Game.UI
 
             UIManager.GetInstance().HidePanel(PanelNames.BattleMemory);
             UIManager.GetInstance().HidePanel(PanelNames.Menu);
-            ScenesMgr.GetInstance().LoadSceneAsyn(BattleMemoryRuntimeContext.SceneName, null);
         }
 
         private List<BattleMemoryBossOption> BuildBossOptions()
