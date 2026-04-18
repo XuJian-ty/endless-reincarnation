@@ -441,7 +441,7 @@ MonoBehaviour:
               retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
-          - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
+          - particlePrefab: {fileID: 2484178646995868412, guid: ec66cb85c4f294e48b685e699709adee,
               type: 3}
             anchor: 0
             useFollowDuration: 0
@@ -862,7 +862,7 @@ MonoBehaviour:
               retargetOnDescendingPath: 0
             destroyMode: 0
             duration: 0
-          - particlePrefab: {fileID: 2484178646995868412, guid: 837572601089f5243ab1822b14c9c38c,
+          - particlePrefab: {fileID: 2484178646995868412, guid: ec66cb85c4f294e48b685e699709adee,
               type: 3}
             anchor: 0
             useFollowDuration: 0
