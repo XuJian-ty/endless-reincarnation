@@ -41,6 +41,7 @@ namespace Game.Presentation
 
         // ── 候选动作缓冲区（避免每帧 GC）────────────────────────────────
         private readonly List<PendingActionData> _candidates = new List<PendingActionData>(16);
+        private bool _airJumpConsumedThisAirborne;
 
         public PlayerStateMachine(IPlayerContext ctx) => _ctx = ctx;
 
@@ -59,6 +60,7 @@ namespace Game.Presentation
         public void Tick(float dt, in PlayerInputData input)
         {
             if (CurrentState == null) return;
+            RefreshAirJumpCycleState();
             TickActiveSkillCooldowns(dt);
             if (_comboTimer > 0f)
             {
@@ -96,7 +98,26 @@ namespace Game.Presentation
                 case GameAction.Shoot:         ChangeState<ShootState>();           break;
                 case GameAction.AirAttack:     ChangeState<AirAttackState>();       break;
                 case GameAction.FallAttack:    ChangeState<FallAttackStartState>(); break;
-                case GameAction.Jump:          ChangeState<JumpState>();            break;
+                case GameAction.Jump:
+                {
+                    bool executeAsAirJump = ShouldExecuteAsAirJump();
+                    if (executeAsAirJump)
+                    {
+                        _airJumpConsumedThisAirborne = true;
+                        ChangeState<AirJumpState>();
+                        break;
+                    }
+
+                    ChangeState<JumpState>();
+                    break;
+                }
+                case GameAction.AirJump:
+                    if (!ShouldExecuteAsAirJump())
+                        break;
+
+                    _airJumpConsumedThisAirborne = true;
+                    ChangeState<AirJumpState>();
+                    break;
                 case GameAction.Walk:          ChangeState<MoveState>(s => s.InitialIsRunning = false); break;
                 case GameAction.Run:           ChangeState<MoveState>(s => s.InitialIsRunning = true);  break;
             }
@@ -208,7 +229,23 @@ namespace Game.Presentation
             if (CurrentState == null)
                 return TransitionPolicy.Ignore;
 
-            return CurrentState.GetPolicyFor(action);
+            return CurrentState.GetPolicyFor(ResolveRequestedPolicyAction(action));
+        }
+
+        private GameAction ResolveRequestedPolicyAction(GameAction action)
+        {
+            if (action == GameAction.Jump && ShouldExecuteAsAirJump())
+                return GameAction.AirJump;
+
+            return action;
+        }
+
+        public GameAction ResolvePendingRuleAction(GameAction action)
+        {
+            if (action == GameAction.Jump && ShouldExecuteAsAirJump())
+                return GameAction.AirJump;
+
+            return action;
         }
 
         private void CollectCandidateActions(in PlayerInputData input)
@@ -225,16 +262,14 @@ namespace Game.Presentation
 
                 _candidates.Add(new PendingActionData(GameAction.Skill, skillIndex));
             }
-            if (input.ChargeReleasePressed && !isRangedAttackMode)
-                _candidates.Add(new PendingActionData(GameAction.ChargeRelease));
             if (input.AltAttackPressed)     _candidates.Add(new PendingActionData(GameAction.FallAttack));
-            if (input.ChargeStartPressed && !inAir)
+            if (input.ChargeStartPressed)
                 _candidates.Add(new PendingActionData(isRangedAttackMode ? GameAction.ShootCharge : GameAction.ChargeStart));
 
             if (input.AttackTapPressed)
             {
                 _candidates.Add(new PendingActionData(
-                    inAir ? GameAction.AirAttack : isRangedAttackMode ? GameAction.Shoot : GameAction.NormalAttack));
+                    isRangedAttackMode ? GameAction.Shoot : inAir ? GameAction.AirAttack : GameAction.NormalAttack));
             }
 
             if (input.JumpPressed) _candidates.Add(new PendingActionData(GameAction.Jump));
@@ -246,10 +281,34 @@ namespace Game.Presentation
 
         private static bool IsAirState(PlayerStateBase state) =>
             state is JumpState
+            or AirJumpState
             or FallState
             or AirAttackState
             or FallAttackStartState
             or FallAttackLoopState;
+
+        private void RefreshAirJumpCycleState()
+        {
+            if (_ctx?.Mover != null && _ctx.Mover.IsGrounded)
+                _airJumpConsumedThisAirborne = false;
+        }
+
+        private bool ShouldExecuteAsAirJump()
+        {
+            if (_ctx?.Mover == null || _ctx.Mover.IsGrounded)
+                return false;
+            if (IsGroundJumpGraceState(CurrentState))
+                return false;
+
+            return !_airJumpConsumedThisAirborne;
+        }
+
+        private static bool IsGroundJumpGraceState(PlayerStateBase state)
+        {
+            return state is IdleState
+                   or MoveState
+                   or AimState;
+        }
 
         private bool IsRangedAttackMode()
         {

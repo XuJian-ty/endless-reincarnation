@@ -13,7 +13,7 @@ namespace Game.Editor
         {
             "NormalIdle", "NormalWalk", "NormalRun",
             "AimIdle", "AimWalk", "AimRun",
-            "Jump", "Dodge", "Fall", "Land",
+            "Jump", "AirJump", "Dodge", "Fall", "Land",
             "Attack0", "Attack1", "Attack2", "Attack3",
             "AirAttack", "ChargeStart", "ChargeLoop", "ChargeRelease",
             "FallAttackStart", "FallAttackLoop", "FallAttackLand",
@@ -26,6 +26,7 @@ namespace Game.Editor
 
         private void OnEnable()
         {
+            SkillEffectAnimationLibrarySyncUtility.TryEnsurePlayerAuthoringAssets(saveAssets: true);
             _entriesProp = serializedObject.FindProperty(nameof(SkillConfigDatabaseSO.entries));
             _formActionMappingsProp = serializedObject.FindProperty(nameof(SkillConfigDatabaseSO.formActionMappings));
         }
@@ -427,6 +428,7 @@ namespace Game.Editor
                 {
                     AddActionPolicy(actionPolicies, GameAction.Walk, TransitionPolicy.Buffer);
                     AddActionPolicy(actionPolicies, GameAction.Jump, TransitionPolicy.Buffer);
+                    AddActionPolicy(actionPolicies, GameAction.AirJump, TransitionPolicy.Buffer);
                     AddActionPolicy(actionPolicies, GameAction.Dodge, TransitionPolicy.Interrupt);
                     AddActionPolicy(actionPolicies, GameAction.NormalAttack, TransitionPolicy.Ignore);
                     AddActionPolicy(actionPolicies, GameAction.AirAttack, TransitionPolicy.Buffer);

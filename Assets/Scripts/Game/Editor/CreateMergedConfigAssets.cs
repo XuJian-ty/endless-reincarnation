@@ -864,6 +864,7 @@ namespace Game.Editor
                 CreateBaseActionEntry("AimWalk", "射击走路", supportedAttackModes: PlayerAttackModeMask.Ranged),
                 CreateBaseActionEntry("AimRun", "射击跑步", supportedAttackModes: PlayerAttackModeMask.Ranged),
                 CreateBaseActionEntry("Jump", "跳跃"),
+                CreateBaseActionEntry("AirJump", "空中跳跃"),
                 CreateBaseActionEntry("Dodge", "闪避"),
                 CreateBaseActionEntry("Fall", "坠落"),
                 CreateBaseActionEntry("Land", "着陆"),
@@ -1048,9 +1049,11 @@ namespace Game.Editor
 
             if (existing.actionPolicies == null || existing.actionPolicies.Count == 0)
                 existing.actionPolicies = CloneActionPolicies(defaults.actionPolicies);
+            EnsureMirroredAirJumpPolicy(existing.actionPolicies);
 
             if (existing.pendingReleaseRules == null || existing.pendingReleaseRules.Count == 0)
                 existing.pendingReleaseRules = ClonePendingReleaseRules(defaults.pendingReleaseRules);
+            EnsureMirroredAirJumpPendingRule(existing.pendingReleaseRules);
 
             if (existing.supportedAttackModes == PlayerAttackModeMask.None
                 && defaults.supportedAttackModes != PlayerAttackModeMask.None)
@@ -1241,6 +1244,7 @@ namespace Game.Editor
                     AddPolicy(entry, GameAction.Walk, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Run, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Interrupt);
@@ -1250,6 +1254,7 @@ namespace Game.Editor
                 case "AimWalk":
                 case "AimRun":
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Interrupt);
@@ -1263,6 +1268,22 @@ namespace Game.Editor
                     AddPolicy(entry, GameAction.AirAttack, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.FallAttack, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Walk, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.Run, TransitionPolicy.Ignore);
+                    break;
+                case "AirJump":
+                    AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.AirAttack, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.FallAttack, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.Jump, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
@@ -1291,6 +1312,7 @@ namespace Game.Editor
                 case "Attack2":
                 case "Attack3":
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Interrupt);
                     AddPending(entry, GameAction.NormalAttack, entry.actionId == "Attack3" ? 0.60f : 0.70f);
                     AddPending(entry, GameAction.Walk, entry.actionId == "Attack3" ? 0.70f : 0.80f);
                     AddPending(entry, GameAction.Run, entry.actionId == "Attack3" ? 0.70f : 0.80f);
@@ -1300,6 +1322,7 @@ namespace Game.Editor
                     break;
                 case "Shoot":
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Interrupt);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Interrupt);
                     AddPending(entry, GameAction.Shoot, 0.70f);
                     AddPending(entry, GameAction.Walk, 0.80f);
                     AddPending(entry, GameAction.Run, 0.80f);
@@ -1316,6 +1339,7 @@ namespace Game.Editor
                     AddPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Ignore);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Ignore);
                     entry.overrideNaturalExitNormalizedTime = true;
                     entry.naturalExitNormalizedTime = 0.90f;
                     break;
@@ -1356,6 +1380,7 @@ namespace Game.Editor
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Shoot, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Walk, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Run, TransitionPolicy.Buffer);
                     entry.overrideNaturalExitNormalizedTime = true;
@@ -1373,6 +1398,7 @@ namespace Game.Editor
                     AddPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Interrupt);
                     AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Jump, TransitionPolicy.Buffer);
+                    AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Walk, TransitionPolicy.Buffer);
                     AddPolicy(entry, GameAction.Run, TransitionPolicy.Buffer);
                     entry.overrideNaturalExitNormalizedTime = true;
@@ -1384,6 +1410,7 @@ namespace Game.Editor
                     {
                         AddPolicy(entry, GameAction.Walk, TransitionPolicy.Buffer);
                         AddPolicy(entry, GameAction.Jump, TransitionPolicy.Buffer);
+                        AddPolicy(entry, GameAction.AirJump, TransitionPolicy.Buffer);
                         AddPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
                         AddPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
                         AddPolicy(entry, GameAction.AirAttack, TransitionPolicy.Buffer);
@@ -1419,6 +1446,124 @@ namespace Game.Editor
             }
 
             entry.actionPolicies.Add(new PlayerStateActionPolicyRule { action = action, policy = policy });
+        }
+
+        private static void EnsureMirroredAirJumpPolicy(List<PlayerStateActionPolicyRule> actionPolicies)
+        {
+            if (actionPolicies == null || actionPolicies.Count == 0)
+                return;
+
+            int jumpIndex = FindActionPolicyIndex(actionPolicies, GameAction.Jump);
+            if (jumpIndex < 0)
+                return;
+
+            int airJumpIndex = FindActionPolicyIndex(actionPolicies, GameAction.AirJump);
+            PlayerStateActionPolicyRule airJumpRule;
+            if (airJumpIndex >= 0)
+            {
+                airJumpRule = actionPolicies[airJumpIndex];
+                if (airJumpRule == null)
+                {
+                    airJumpRule = new PlayerStateActionPolicyRule();
+                    actionPolicies[airJumpIndex] = airJumpRule;
+                }
+            }
+            else
+            {
+                TransitionPolicy mirroredPolicy = actionPolicies[jumpIndex] != null
+                    ? actionPolicies[jumpIndex].policy
+                    : TransitionPolicy.Ignore;
+                actionPolicies.Insert(jumpIndex + 1, new PlayerStateActionPolicyRule
+                {
+                    action = GameAction.AirJump,
+                    policy = mirroredPolicy,
+                });
+                return;
+            }
+
+            airJumpRule.action = GameAction.AirJump;
+            int expectedIndex = jumpIndex + 1;
+            if (airJumpIndex == expectedIndex)
+                return;
+
+            actionPolicies.RemoveAt(airJumpIndex);
+            if (airJumpIndex < expectedIndex)
+                expectedIndex--;
+            actionPolicies.Insert(expectedIndex, airJumpRule);
+        }
+
+        private static int FindActionPolicyIndex(List<PlayerStateActionPolicyRule> actionPolicies, GameAction action)
+        {
+            if (actionPolicies == null)
+                return -1;
+
+            for (int i = 0; i < actionPolicies.Count; i++)
+            {
+                PlayerStateActionPolicyRule rule = actionPolicies[i];
+                if (rule != null && rule.action == action)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private static void EnsureMirroredAirJumpPendingRule(List<PlayerStatePendingReleaseRule> pendingReleaseRules)
+        {
+            if (pendingReleaseRules == null || pendingReleaseRules.Count == 0)
+                return;
+
+            int jumpIndex = FindPendingRuleIndex(pendingReleaseRules, GameAction.Jump);
+            if (jumpIndex < 0)
+                return;
+
+            int airJumpIndex = FindPendingRuleIndex(pendingReleaseRules, GameAction.AirJump);
+            PlayerStatePendingReleaseRule airJumpRule;
+            if (airJumpIndex >= 0)
+            {
+                airJumpRule = pendingReleaseRules[airJumpIndex];
+                if (airJumpRule == null)
+                {
+                    airJumpRule = new PlayerStatePendingReleaseRule();
+                    pendingReleaseRules[airJumpIndex] = airJumpRule;
+                }
+            }
+            else
+            {
+                float mirroredTime = pendingReleaseRules[jumpIndex] != null
+                    ? pendingReleaseRules[jumpIndex].normalizedTime
+                    : 0.9f;
+                pendingReleaseRules.Insert(jumpIndex + 1, new PlayerStatePendingReleaseRule
+                {
+                    pendingAction = GameAction.AirJump,
+                    normalizedTime = mirroredTime,
+                });
+                return;
+            }
+
+            airJumpRule.pendingAction = GameAction.AirJump;
+            int expectedIndex = jumpIndex + 1;
+            if (airJumpIndex == expectedIndex)
+                return;
+
+            pendingReleaseRules.RemoveAt(airJumpIndex);
+            if (airJumpIndex < expectedIndex)
+                expectedIndex--;
+            pendingReleaseRules.Insert(expectedIndex, airJumpRule);
+        }
+
+        private static int FindPendingRuleIndex(List<PlayerStatePendingReleaseRule> pendingReleaseRules, GameAction action)
+        {
+            if (pendingReleaseRules == null)
+                return -1;
+
+            for (int i = 0; i < pendingReleaseRules.Count; i++)
+            {
+                PlayerStatePendingReleaseRule rule = pendingReleaseRules[i];
+                if (rule != null && rule.pendingAction == action)
+                    return i;
+            }
+
+            return -1;
         }
 
         private static void AddPending(SkillConfigEntry entry, GameAction action, float normalizedTime)

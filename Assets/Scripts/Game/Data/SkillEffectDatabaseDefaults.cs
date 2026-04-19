@@ -39,6 +39,7 @@ namespace Game.Data
             return new List<SharedSkillDefinition>
             {
                 PlayerSkill("Jump", "跳跃"),
+                CreatePlayerAirJump(),
                 PlayerSkill("Dodge", "闪避"),
                 PlayerSkill("Land", "着陆"),
                 PlayerSkill("Skill0", "主动技能0"),
@@ -258,6 +259,7 @@ namespace Game.Data
 
             if (PlayerActionRouting.IsSkillSlotActionName(skillId) ||
                 string.Equals(skillId, "Jump", StringComparison.Ordinal) ||
+                string.Equals(skillId, "AirJump", StringComparison.Ordinal) ||
                 string.Equals(skillId, "Dodge", StringComparison.Ordinal) ||
                 string.Equals(skillId, "Land", StringComparison.Ordinal) ||
                 skillId.StartsWith("Attack", StringComparison.Ordinal) ||
@@ -352,9 +354,9 @@ namespace Game.Data
             return result;
         }
 
-        private static SharedSkillDefinition PlayerSkill(string skillId, string displayName, string animationTrigger = null)
+        private static SharedSkillDefinition PlayerSkill(string skillId, string displayName, string animationTrigger = null, params DefaultEventSpec[] events)
         {
-            return new SharedSkillDefinition
+            var definition = new SharedSkillDefinition
             {
                 skillId = skillId,
                 displayName = displayName,
@@ -366,6 +368,18 @@ namespace Game.Data
                 vfxEvents = new List<SkillVfxEvent>(),
                 sfxEvents = new List<SkillSfxEvent>(),
             };
+
+            ApplySpecs(definition, events);
+            return definition;
+        }
+
+        private static SharedSkillDefinition CreatePlayerAirJump()
+        {
+            return PlayerSkill(
+                "AirJump",
+                "空中跳跃",
+                "AirJump",
+                Event("evt_air_jump_guard", 0f, physicsEffects: new[] { SuperArmorUntilStateExit(0.2f) }));
         }
 
         private static SharedSkillDefinition Skill(string skillId, string displayName, params DefaultEventSpec[] events)
@@ -739,6 +753,16 @@ namespace Game.Data
             return new SkillPhysicsEffect
             {
                 effectType = PhysicsEffectType.Stun,
+                duration = duration,
+            };
+        }
+
+        private static SkillPhysicsEffect SuperArmorUntilStateExit(float duration)
+        {
+            return new SkillPhysicsEffect
+            {
+                effectType = PhysicsEffectType.SuperArmor,
+                durationMode = SkillEffectDurationMode.UntilStateExit,
                 duration = duration,
             };
         }

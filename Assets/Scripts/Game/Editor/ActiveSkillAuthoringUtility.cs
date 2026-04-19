@@ -583,6 +583,7 @@ namespace Game.Editor
                 {
                     new PlayerStateActionPolicyRule { action = GameAction.Walk, policy = TransitionPolicy.Buffer },
                     new PlayerStateActionPolicyRule { action = GameAction.Jump, policy = TransitionPolicy.Buffer },
+                    new PlayerStateActionPolicyRule { action = GameAction.AirJump, policy = TransitionPolicy.Buffer },
                     new PlayerStateActionPolicyRule { action = GameAction.Dodge, policy = TransitionPolicy.Interrupt },
                     new PlayerStateActionPolicyRule { action = GameAction.NormalAttack, policy = TransitionPolicy.Ignore },
                     new PlayerStateActionPolicyRule { action = GameAction.AirAttack, policy = TransitionPolicy.Buffer },

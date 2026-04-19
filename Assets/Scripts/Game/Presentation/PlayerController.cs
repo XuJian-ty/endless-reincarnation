@@ -565,6 +565,7 @@ namespace Game.Presentation
                    || currentState is MoveState
                    || currentState is AimState
                    || currentState is JumpState
+                   || currentState is AirJumpState
                    || currentState is FallState
                    || currentState is LandState;
         }

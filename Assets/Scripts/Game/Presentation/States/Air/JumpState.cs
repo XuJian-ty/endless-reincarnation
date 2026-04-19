@@ -6,6 +6,8 @@ namespace Game.Presentation
     /// </summary>
     public class JumpState : PlayerStateBase
     {
+        public override GameAction CurrentActionId => GameAction.Jump;
+
         protected override void OnEnter()
         {
             Ctx.Mover.Jump(Ctx.JumpHeight);

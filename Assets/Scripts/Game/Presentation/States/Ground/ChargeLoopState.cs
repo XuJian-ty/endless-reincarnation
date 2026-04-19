@@ -21,15 +21,7 @@ namespace Game.Presentation
         protected override void OnTick(float dt, in PlayerInputData input)
         {
             if (!input.IsLmbHeld)
-            {
-                if (!IsGrounded)
-                {
-                    GoTo<FallState>();
-                    return;
-                }
-
                 GoTo<ChargeReleaseState>();
-            }
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action)
