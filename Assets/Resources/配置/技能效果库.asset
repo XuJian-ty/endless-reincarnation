@@ -227,7 +227,20 @@ MonoBehaviour:
         animationTrigger: Dodge
         ignoreAnimationDamageEvents: 0
         damageEvents: []
-        physicsEvents: []
+        physicsEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 7
+            onHitTriggerDelay: 0
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
         attributeEvents: []
         vfxEvents: []
         sfxEvents: []
@@ -257,7 +270,20 @@ MonoBehaviour:
         animationTrigger: Land
         ignoreAnimationDamageEvents: 0
         damageEvents: []
-        physicsEvents: []
+        physicsEvents:
+        - eventId: evt_0
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            onHitTriggerDelay: 0
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
         attributeEvents: []
         vfxEvents: []
         sfxEvents: []
