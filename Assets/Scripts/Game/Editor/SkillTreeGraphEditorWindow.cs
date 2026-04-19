@@ -35,7 +35,7 @@ namespace Game.Editor
         private bool _shouldCenterCanvasView = true;
         private Vector2 _runtimeViewportReferenceSize = new Vector2(1440f, 720f);
 
-        [MenuItem("游戏/技能树/打开技能树图编辑器")]
+        [MenuItem("游戏/技能树图编辑器")]
         private static void OpenWindow()
         {
             SkillTreeGraphEditorWindow window = GetWindow<SkillTreeGraphEditorWindow>("技能树图编辑器");
