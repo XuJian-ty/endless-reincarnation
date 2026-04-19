@@ -47,7 +47,7 @@ MonoBehaviour:
     - groupName: AirJump
       entries:
       - animationId: AirJump
-        clip: {fileID: 7400000, guid: 9975b3be32e3410691ebb448bd90f486, type: 2}
+        clip: {fileID: 7400000, guid: 0d9df5a6826c6074fa806a75ecfad74d, type: 2}
     - groupName: Dodge
       entries:
       - animationId: Dodge
@@ -174,7 +174,7 @@ MonoBehaviour:
     - animationId: Jump
       clip: {fileID: 7400000, guid: f12a1411fbc93ee4c87bd9028c34ba47, type: 2}
     - animationId: AirJump
-      clip: {fileID: 7400000, guid: 9975b3be32e3410691ebb448bd90f486, type: 2}
+      clip: {fileID: 7400000, guid: 0d9df5a6826c6074fa806a75ecfad74d, type: 2}
     - animationId: Dodge
       clip: {fileID: 7400000, guid: adb609935636eb5429339ef52f155e36, type: 2}
     - animationId: Fall
@@ -499,7 +499,7 @@ MonoBehaviour:
   - animationId: Jump
     clip: {fileID: 7400000, guid: f12a1411fbc93ee4c87bd9028c34ba47, type: 2}
   - animationId: AirJump
-    clip: {fileID: 7400000, guid: 9975b3be32e3410691ebb448bd90f486, type: 2}
+    clip: {fileID: 7400000, guid: 0d9df5a6826c6074fa806a75ecfad74d, type: 2}
   - animationId: Dodge
     clip: {fileID: 7400000, guid: adb609935636eb5429339ef52f155e36, type: 2}
   - animationId: Fall

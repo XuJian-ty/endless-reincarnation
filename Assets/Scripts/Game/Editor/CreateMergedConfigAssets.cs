@@ -10,7 +10,7 @@ namespace Game.Editor
     /// <summary>
     /// Creates config assets under Resources/配置 for one-click setup.
     /// Existing config assets are treated as the default source of truth; code defaults are only used when assets are missing.
-    /// Menu: 游戏/一键创建全部配置（需求书默认数据）
+    /// Menu: 游戏/一键创建全部配置
     /// </summary>
     public static class CreateMergedConfigAssets
     {
@@ -703,7 +703,7 @@ namespace Game.Editor
             CreateOrUpdateAsset(so, $"{ResourcesConfigDir}/玩家成长属性库.asset");
             AssetDatabase.SaveAssets();
         }
-        [MenuItem("游戏/一键创建全部配置（需求书默认数据）", false, 0)]
+        [MenuItem("游戏/一键创建全部配置", false, 0)]
         public static void CreateAll()
         {
             EnsureConfigFolder();

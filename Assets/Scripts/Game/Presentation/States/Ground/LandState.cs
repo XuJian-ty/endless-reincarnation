@@ -10,6 +10,7 @@ namespace Game.Presentation
     {
         protected override void OnEnter()
         {
+            Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
             Ctx.Anim.SetGrounded(true);
             TriggerConfiguredBaseAction("Land", "Land");
             StartConfiguredBaseActionTimeline("Land");
@@ -17,6 +18,7 @@ namespace Game.Presentation
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
+            Ctx.Mover.SetHorizontalVelocity(Vector3.zero);
             if (AnimNearConfiguredEnd())
             {
                 CompleteWithPending(() =>
