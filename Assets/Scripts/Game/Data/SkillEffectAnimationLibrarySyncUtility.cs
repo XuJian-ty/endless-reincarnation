@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using Game.Presentation;
 
 namespace Game.Data
 {
@@ -15,8 +16,38 @@ namespace Game.Data
         private const string PlayerGroupId = "player";
         private const string PlayerGroupName = "玩家";
         private const string VariantSuffix = "_Variant";
+        private const string JumpActionId = "Jump";
+        private const string AirJumpActionId = "AirJump";
+        private const string AirJumpDisplayName = "空中跳跃";
 
         private static bool s_isSyncing;
+
+        public static bool TryEnsurePlayerAuthoringAssets(bool saveAssets = false)
+        {
+            if (s_isSyncing)
+                return false;
+
+            SkillConfigDatabaseSO skillConfig = AssetDatabase.LoadAssetAtPath<SkillConfigDatabaseSO>(SkillConfigDatabasePath);
+            SkillEffectDatabaseSO database = AssetDatabase.LoadAssetAtPath<SkillEffectDatabaseSO>(SkillEffectDatabasePath);
+            CharacterAnimationLibrarySO animationLibrary = AssetDatabase.LoadAssetAtPath<CharacterAnimationLibrarySO>(AnimationLibraryPath);
+            if (skillConfig == null || database == null || animationLibrary == null)
+                return false;
+
+            bool skillConfigChanged = EnsurePlayerAirJumpEntry(skillConfig);
+            if (EnsureMirroredAirJumpPolicies(skillConfig))
+                skillConfigChanged = true;
+            if (EnsureMirroredAirJumpPendingRules(skillConfig))
+                skillConfigChanged = true;
+            if (skillConfigChanged)
+            {
+                EditorUtility.SetDirty(skillConfig);
+                if (saveAssets)
+                    AssetDatabase.SaveAssetIfDirty(skillConfig);
+            }
+
+            bool syncChanged = TrySync(skillConfig, database, animationLibrary, saveAssets);
+            return skillConfigChanged || syncChanged;
+        }
 
         public static bool TrySyncAll(bool saveAssets = false)
         {
@@ -118,6 +149,326 @@ namespace Game.Data
             {
                 s_isSyncing = false;
             }
+        }
+
+        private static bool EnsurePlayerAirJumpEntry(SkillConfigDatabaseSO skillConfig)
+        {
+            if (skillConfig?.entries == null)
+                return false;
+
+            int jumpIndex = FindBaseEntryIndex(skillConfig, JumpActionId);
+            if (jumpIndex < 0)
+            {
+                Debug.LogError("[SkillEffectAnimationLibrarySyncUtility] 玩家动作及技能配置库缺少 Jump 基础动作，无法补齐 AirJump。");
+                return false;
+            }
+
+            int airJumpIndex = FindBaseEntryIndex(skillConfig, AirJumpActionId);
+            bool changed = false;
+            SkillConfigEntry airJumpEntry;
+            if (airJumpIndex >= 0)
+            {
+                airJumpEntry = skillConfig.entries[airJumpIndex];
+            }
+            else
+            {
+                airJumpEntry = CreateDefaultAirJumpEntry();
+                skillConfig.entries.Insert(jumpIndex + 1, airJumpEntry);
+                airJumpIndex = jumpIndex + 1;
+                changed = true;
+            }
+
+            if (EnsureAirJumpEntryIdentity(airJumpEntry))
+                changed = true;
+
+            int expectedIndex = jumpIndex + 1;
+            if (airJumpIndex != expectedIndex)
+            {
+                skillConfig.entries.RemoveAt(airJumpIndex);
+                if (airJumpIndex < expectedIndex)
+                    expectedIndex--;
+                skillConfig.entries.Insert(expectedIndex, airJumpEntry);
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        private static SkillConfigEntry CreateDefaultAirJumpEntry()
+        {
+            SkillConfigEntry entry = new SkillConfigEntry
+            {
+                actionId = AirJumpActionId,
+                skillId = AirJumpActionId,
+                displayName = AirJumpDisplayName,
+                description = "空中跳跃，用于玩家空中二段跳表现。",
+                isPassive = false,
+                entryGroup = PlayerSkillEntryGroup.BaseSkill,
+                supportedAttackModes = PlayerAttackModeMask.All,
+                talentCost = 0,
+                mpCost = 0,
+                cooldownSeconds = 0f,
+                actionPolicies = new List<PlayerStateActionPolicyRule>(),
+                pendingReleaseRules = new List<PlayerStatePendingReleaseRule>(),
+                overrideNaturalExitNormalizedTime = false,
+                naturalExitNormalizedTime = 0.9f,
+                naturalExitTarget = PlayerStateNaturalExitTarget.None,
+            };
+
+            AddActionPolicy(entry, GameAction.Dodge, TransitionPolicy.Interrupt);
+            AddActionPolicy(entry, GameAction.Skill, TransitionPolicy.Interrupt);
+            AddActionPolicy(entry, GameAction.AirAttack, TransitionPolicy.Interrupt);
+            AddActionPolicy(entry, GameAction.FallAttack, TransitionPolicy.Interrupt);
+            AddActionPolicy(entry, GameAction.Jump, TransitionPolicy.Ignore);
+            AddActionPolicy(entry, GameAction.AirJump, TransitionPolicy.Ignore);
+            AddActionPolicy(entry, GameAction.ChargeStart, TransitionPolicy.Ignore);
+            AddActionPolicy(entry, GameAction.ChargeRelease, TransitionPolicy.Ignore);
+            AddActionPolicy(entry, GameAction.NormalAttack, TransitionPolicy.Ignore);
+            AddActionPolicy(entry, GameAction.Shoot, TransitionPolicy.Ignore);
+            AddActionPolicy(entry, GameAction.ShootCharge, TransitionPolicy.Ignore);
+            AddActionPolicy(entry, GameAction.Walk, TransitionPolicy.Ignore);
+            AddActionPolicy(entry, GameAction.Run, TransitionPolicy.Ignore);
+            return entry;
+        }
+
+        private static int FindBaseEntryIndex(SkillConfigDatabaseSO skillConfig, string actionId)
+        {
+            if (skillConfig?.entries == null || string.IsNullOrWhiteSpace(actionId))
+                return -1;
+
+            string normalizedActionId = actionId.Trim();
+            for (int i = 0; i < skillConfig.entries.Count; i++)
+            {
+                SkillConfigEntry entry = skillConfig.entries[i];
+                if (entry == null || entry.entryGroup != PlayerSkillEntryGroup.BaseSkill)
+                    continue;
+
+                if (string.Equals(entry.GetResolvedActionId(), normalizedActionId, StringComparison.Ordinal)
+                    || string.Equals(entry.GetResolvedSkillId(), normalizedActionId, StringComparison.Ordinal))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static bool EnsureAirJumpEntryIdentity(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return false;
+
+            bool changed = false;
+            if (entry.entryGroup != PlayerSkillEntryGroup.BaseSkill)
+            {
+                entry.entryGroup = PlayerSkillEntryGroup.BaseSkill;
+                changed = true;
+            }
+
+            if (entry.isPassive)
+            {
+                entry.isPassive = false;
+                changed = true;
+            }
+
+            if (!string.Equals(entry.actionId?.Trim(), AirJumpActionId, StringComparison.Ordinal))
+            {
+                entry.actionId = AirJumpActionId;
+                changed = true;
+            }
+
+            if (!string.Equals(entry.skillId?.Trim(), AirJumpActionId, StringComparison.Ordinal))
+            {
+                entry.skillId = AirJumpActionId;
+                changed = true;
+            }
+
+            if (!string.Equals(entry.displayName?.Trim(), AirJumpDisplayName, StringComparison.Ordinal))
+            {
+                entry.displayName = AirJumpDisplayName;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        private static void AddActionPolicy(SkillConfigEntry entry, GameAction action, TransitionPolicy policy)
+        {
+            if (entry == null)
+                return;
+
+            if (entry.actionPolicies == null)
+                entry.actionPolicies = new List<PlayerStateActionPolicyRule>();
+
+            entry.actionPolicies.Add(new PlayerStateActionPolicyRule
+            {
+                action = action,
+                policy = policy,
+            });
+        }
+
+        private static bool EnsureMirroredAirJumpPolicies(SkillConfigDatabaseSO skillConfig)
+        {
+            if (skillConfig?.entries == null)
+                return false;
+
+            bool changed = false;
+            for (int i = 0; i < skillConfig.entries.Count; i++)
+            {
+                SkillConfigEntry entry = skillConfig.entries[i];
+                if (entry == null || entry.isPassive)
+                    continue;
+
+                if (EnsureMirroredAirJumpPolicy(entry.actionPolicies))
+                    changed = true;
+            }
+
+            return changed;
+        }
+
+        private static bool EnsureMirroredAirJumpPendingRules(SkillConfigDatabaseSO skillConfig)
+        {
+            if (skillConfig?.entries == null)
+                return false;
+
+            bool changed = false;
+            for (int i = 0; i < skillConfig.entries.Count; i++)
+            {
+                SkillConfigEntry entry = skillConfig.entries[i];
+                if (entry == null || entry.isPassive)
+                    continue;
+
+                if (EnsureMirroredAirJumpPendingRule(entry.pendingReleaseRules))
+                    changed = true;
+            }
+
+            return changed;
+        }
+
+        private static bool EnsureMirroredAirJumpPolicy(List<PlayerStateActionPolicyRule> actionPolicies)
+        {
+            if (actionPolicies == null || actionPolicies.Count == 0)
+                return false;
+
+            int jumpIndex = FindActionPolicyIndex(actionPolicies, GameAction.Jump);
+            if (jumpIndex < 0)
+                return false;
+
+            int airJumpIndex = FindActionPolicyIndex(actionPolicies, GameAction.AirJump);
+            if (airJumpIndex < 0)
+            {
+                TransitionPolicy mirroredPolicy = actionPolicies[jumpIndex] != null
+                    ? actionPolicies[jumpIndex].policy
+                    : TransitionPolicy.Ignore;
+                actionPolicies.Insert(jumpIndex + 1, new PlayerStateActionPolicyRule
+                {
+                    action = GameAction.AirJump,
+                    policy = mirroredPolicy,
+                });
+                return true;
+            }
+
+            PlayerStateActionPolicyRule airJumpRule = actionPolicies[airJumpIndex];
+            if (airJumpRule == null)
+            {
+                airJumpRule = new PlayerStateActionPolicyRule();
+                actionPolicies[airJumpIndex] = airJumpRule;
+            }
+
+            bool changed = false;
+            if (airJumpRule.action != GameAction.AirJump)
+            {
+                airJumpRule.action = GameAction.AirJump;
+                changed = true;
+            }
+
+            int expectedIndex = jumpIndex + 1;
+            if (airJumpIndex == expectedIndex)
+                return changed;
+
+            actionPolicies.RemoveAt(airJumpIndex);
+            if (airJumpIndex < expectedIndex)
+                expectedIndex--;
+            actionPolicies.Insert(expectedIndex, airJumpRule);
+            return true;
+        }
+
+        private static int FindActionPolicyIndex(List<PlayerStateActionPolicyRule> actionPolicies, GameAction action)
+        {
+            if (actionPolicies == null)
+                return -1;
+
+            for (int i = 0; i < actionPolicies.Count; i++)
+            {
+                PlayerStateActionPolicyRule rule = actionPolicies[i];
+                if (rule != null && rule.action == action)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private static bool EnsureMirroredAirJumpPendingRule(List<PlayerStatePendingReleaseRule> pendingReleaseRules)
+        {
+            if (pendingReleaseRules == null || pendingReleaseRules.Count == 0)
+                return false;
+
+            int jumpIndex = FindPendingRuleIndex(pendingReleaseRules, GameAction.Jump);
+            if (jumpIndex < 0)
+                return false;
+
+            int airJumpIndex = FindPendingRuleIndex(pendingReleaseRules, GameAction.AirJump);
+            if (airJumpIndex < 0)
+            {
+                float mirroredTime = pendingReleaseRules[jumpIndex] != null
+                    ? pendingReleaseRules[jumpIndex].normalizedTime
+                    : 0.9f;
+                pendingReleaseRules.Insert(jumpIndex + 1, new PlayerStatePendingReleaseRule
+                {
+                    pendingAction = GameAction.AirJump,
+                    normalizedTime = mirroredTime,
+                });
+                return true;
+            }
+
+            PlayerStatePendingReleaseRule airJumpRule = pendingReleaseRules[airJumpIndex];
+            if (airJumpRule == null)
+            {
+                airJumpRule = new PlayerStatePendingReleaseRule();
+                pendingReleaseRules[airJumpIndex] = airJumpRule;
+            }
+
+            bool changed = false;
+            if (airJumpRule.pendingAction != GameAction.AirJump)
+            {
+                airJumpRule.pendingAction = GameAction.AirJump;
+                changed = true;
+            }
+
+            int expectedIndex = jumpIndex + 1;
+            if (airJumpIndex == expectedIndex)
+                return changed;
+
+            pendingReleaseRules.RemoveAt(airJumpIndex);
+            if (airJumpIndex < expectedIndex)
+                expectedIndex--;
+            pendingReleaseRules.Insert(expectedIndex, airJumpRule);
+            return true;
+        }
+
+        private static int FindPendingRuleIndex(List<PlayerStatePendingReleaseRule> pendingReleaseRules, GameAction action)
+        {
+            if (pendingReleaseRules == null)
+                return -1;
+
+            for (int i = 0; i < pendingReleaseRules.Count; i++)
+            {
+                PlayerStatePendingReleaseRule rule = pendingReleaseRules[i];
+                if (rule != null && rule.pendingAction == action)
+                    return i;
+            }
+
+            return -1;
         }
 
         private static bool SyncPlayerSkillEffectGroup(SkillConfigDatabaseSO skillConfig, SkillEffectDatabaseSO database)

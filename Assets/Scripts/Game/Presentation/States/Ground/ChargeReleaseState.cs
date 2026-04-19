@@ -25,8 +25,8 @@ namespace Game.Presentation
             {
                 CompleteWithPending(() =>
                 {
-                    if (IsGrounded)
-                        GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
+                    if (IsGrounded || Ctx.Mover.IsNearGround(0.3f))
+                        GoTo<LandState>();
                     else
                         GoTo<FallState>();
                 });

@@ -16,6 +16,7 @@ namespace Game.Editor
 
         private void OnEnable()
         {
+            SkillEffectAnimationLibrarySyncUtility.TryEnsurePlayerAuthoringAssets(saveAssets: true);
             _groupsProperty = serializedObject.FindProperty(nameof(CharacterAnimationLibrarySO.groups));
             _skillConfigDatabase = AssetDatabase.LoadAssetAtPath<SkillConfigDatabaseSO>(SkillConfigDatabasePath);
         }

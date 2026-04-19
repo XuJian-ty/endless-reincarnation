@@ -13,6 +13,7 @@ namespace Game.Editor
         {
             GameAction.Walk,
             GameAction.Jump,
+            GameAction.AirJump,
             GameAction.Dodge,
             GameAction.NormalAttack,
             GameAction.AirAttack,
@@ -27,6 +28,7 @@ namespace Game.Editor
         {
             "Move",
             "Jump",
+            "AirJump",
             "Dodge",
             "NormalAttack",
             "AirAttack",

@@ -23,7 +23,14 @@ namespace Game.Presentation
         protected override void OnTick(float dt, in PlayerInputData input)
         {
             if (AnimNearConfiguredEnd())
-                GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.ChargeLoopState);
+            {
+                if (input.IsLmbHeld)
+                    GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.ChargeLoopState);
+                else if (IsGrounded || Ctx.Mover.IsNearGround(0.3f))
+                    GoTo<LandState>();
+                else
+                    GoTo<FallState>();
+            }
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action)

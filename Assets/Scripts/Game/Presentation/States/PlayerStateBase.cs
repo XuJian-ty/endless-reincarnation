@@ -252,11 +252,27 @@ namespace Game.Presentation
 
         protected float GetConfiguredPendingReleaseThreshold(GameAction pendingAction, float fallbackThreshold)
         {
-            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
-            if (entry != null && entry.TryGetPendingReleaseThreshold(pendingAction, out float configured))
+            if (TryGetConfiguredPendingReleaseThreshold(pendingAction, out float configured))
                 return configured;
 
             return fallbackThreshold;
+        }
+
+        protected bool TryGetConfiguredPendingReleaseThreshold(GameAction pendingAction, out float threshold)
+        {
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
+            GameAction resolvedPendingAction = Ctx?.StateMachine != null
+                ? Ctx.StateMachine.ResolvePendingRuleAction(pendingAction)
+                : pendingAction;
+
+            if (entry != null && entry.TryGetPendingReleaseThreshold(resolvedPendingAction, out float configured))
+            {
+                threshold = configured;
+                return true;
+            }
+
+            threshold = 0f;
+            return false;
         }
 
         protected float GetConfiguredNaturalExitThreshold(float fallbackThreshold)

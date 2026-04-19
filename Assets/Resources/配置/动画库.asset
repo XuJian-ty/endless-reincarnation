@@ -43,7 +43,11 @@ MonoBehaviour:
     - groupName: Jump
       entries:
       - animationId: Jump
-        clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+        clip: {fileID: 7400000, guid: f12a1411fbc93ee4c87bd9028c34ba47, type: 2}
+    - groupName: AirJump
+      entries:
+      - animationId: AirJump
+        clip: {fileID: 7400000, guid: 9975b3be32e3410691ebb448bd90f486, type: 2}
     - groupName: Dodge
       entries:
       - animationId: Dodge
@@ -168,7 +172,9 @@ MonoBehaviour:
     - animationId: AimRun
       clip: {fileID: 7400000, guid: dcb0e90ea2d6e6b4d8286cef343613a7, type: 2}
     - animationId: Jump
-      clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+      clip: {fileID: 7400000, guid: f12a1411fbc93ee4c87bd9028c34ba47, type: 2}
+    - animationId: AirJump
+      clip: {fileID: 7400000, guid: 9975b3be32e3410691ebb448bd90f486, type: 2}
     - animationId: Dodge
       clip: {fileID: 7400000, guid: adb609935636eb5429339ef52f155e36, type: 2}
     - animationId: Fall
@@ -491,7 +497,9 @@ MonoBehaviour:
   - animationId: AimRun
     clip: {fileID: 7400000, guid: dcb0e90ea2d6e6b4d8286cef343613a7, type: 2}
   - animationId: Jump
-    clip: {fileID: 7400000, guid: a69020e149d2ba8479c5c99c5aa2377a, type: 2}
+    clip: {fileID: 7400000, guid: f12a1411fbc93ee4c87bd9028c34ba47, type: 2}
+  - animationId: AirJump
+    clip: {fileID: 7400000, guid: 9975b3be32e3410691ebb448bd90f486, type: 2}
   - animationId: Dodge
     clip: {fileID: 7400000, guid: adb609935636eb5429339ef52f155e36, type: 2}
   - animationId: Fall

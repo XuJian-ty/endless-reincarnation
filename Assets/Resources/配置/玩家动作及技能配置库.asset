@@ -31,6 +31,8 @@ MonoBehaviour:
       policy: 0
     - action: 3
       policy: 0
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -69,6 +71,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 0
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -107,6 +111,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 0
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -145,6 +151,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 0
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -183,6 +191,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 0
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -221,6 +231,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 0
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -259,6 +271,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 0
     - action: 9
       policy: 0
     - action: 4
@@ -266,7 +280,47 @@ MonoBehaviour:
     - action: 7
       policy: 0
     - action: 5
+      policy: 0
+    - action: 8
+      policy: 0
+    - action: 11
       policy: 2
+    - action: 12
+      policy: 2
+    - action: 10
+      policy: 0
+    pendingReleaseRules: []
+    overrideNaturalExitNormalizedTime: 0
+    naturalExitNormalizedTime: 0.9
+    naturalExitTarget: 0
+  - actionId: AirJump
+    skillId: AirJump
+    skillEffectDatabase: {fileID: 0}
+    passiveSkillEffectDatabase: {fileID: 0}
+    displayName: "\u7A7A\u4E2D\u8DF3\u8DC3"
+    description: "\u7A7A\u4E2D\u8DF3\u8DC3\uFF0C\u7528\u4E8E\u73A9\u5BB6\u7A7A\u4E2D\u4E8C\u6BB5\u8DF3\u8868\u73B0\u3002"
+    skillIcon: {fileID: 0}
+    isPassive: 0
+    entryGroup: 0
+    supportedAttackModes: 3
+    talentCost: 0
+    mpCost: 0
+    cooldownSeconds: 0
+    actionPolicies:
+    - action: 1
+      policy: 2
+    - action: 3
+      policy: 2
+    - action: 13
+      policy: 2
+    - action: 9
+      policy: 0
+    - action: 4
+      policy: 2
+    - action: 7
+      policy: 0
+    - action: 5
+      policy: 0
     - action: 8
       policy: 0
     - action: 11
@@ -296,6 +350,8 @@ MonoBehaviour:
     - action: 1
       policy: 1
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 2
@@ -347,6 +403,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 0
     - action: 9
       policy: 0
     - action: 4
@@ -354,7 +412,7 @@ MonoBehaviour:
     - action: 7
       policy: 0
     - action: 5
-      policy: 2
+      policy: 0
     - action: 8
       policy: 0
     - action: 11
@@ -384,6 +442,8 @@ MonoBehaviour:
     - action: 1
       policy: 1
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0
@@ -433,6 +493,8 @@ MonoBehaviour:
       policy: 1
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -476,6 +538,8 @@ MonoBehaviour:
     - action: 1
       policy: 1
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0
@@ -521,6 +585,8 @@ MonoBehaviour:
       policy: 1
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -564,6 +630,8 @@ MonoBehaviour:
     - action: 1
       policy: 1
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0
@@ -609,6 +677,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 1
     - action: 9
       policy: 0
     - action: 4
@@ -625,7 +695,9 @@ MonoBehaviour:
       policy: 2
     - action: 10
       policy: 0
-    pendingReleaseRules: []
+    pendingReleaseRules:
+    - pendingAction: 13
+      normalizedTime: 0.9
     overrideNaturalExitNormalizedTime: 1
     naturalExitNormalizedTime: 0.9
     naturalExitTarget: 0
@@ -646,6 +718,8 @@ MonoBehaviour:
     - action: 1
       policy: 2
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0
@@ -685,6 +759,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -722,6 +798,8 @@ MonoBehaviour:
     - action: 1
       policy: 1
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0
@@ -767,6 +845,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -805,6 +885,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -842,6 +924,8 @@ MonoBehaviour:
     - action: 1
       policy: 1
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0
@@ -891,6 +975,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 1
     - action: 4
@@ -933,6 +1019,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 2
     - action: 4
@@ -970,6 +1058,8 @@ MonoBehaviour:
     - action: 1
       policy: 2
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0
@@ -1013,6 +1103,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -1051,6 +1143,8 @@ MonoBehaviour:
       policy: 2
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -1088,6 +1182,8 @@ MonoBehaviour:
     - action: 1
       policy: 1
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0
@@ -1139,6 +1235,8 @@ MonoBehaviour:
       policy: 1
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -1189,6 +1287,8 @@ MonoBehaviour:
       policy: 1
     - action: 3
       policy: 2
+    - action: 13
+      policy: 2
     - action: 9
       policy: 0
     - action: 4
@@ -1238,6 +1338,8 @@ MonoBehaviour:
     - action: 1
       policy: 1
     - action: 3
+      policy: 2
+    - action: 13
       policy: 2
     - action: 9
       policy: 0

@@ -190,6 +190,34 @@ MonoBehaviour:
         sfxEvents: []
         speedEvents: []
         cameraEvents: []
+    - groupName: AirJump
+      entries:
+      - skillId: AirJump
+        effectDescription: 
+        mutationTalentCost: 0
+        displayName: "\u7A7A\u4E2D\u8DF3\u8DC3"
+        animationTrigger: AirJump
+        ignoreAnimationDamageEvents: 0
+        damageEvents: []
+        physicsEvents:
+        - eventId: evt_air_jump_guard
+          startTime: 0
+          triggerMode: 0
+          activeDuration: 0
+          activeDurationMode: 0
+          repeatInterval: 0.1
+          physicsEffects:
+          - effectType: 6
+            onHitTriggerDelay: 0
+            distance: 1
+            height: 1
+            durationMode: 1
+            duration: 0.2
+        attributeEvents: []
+        vfxEvents: []
+        sfxEvents: []
+        speedEvents: []
+        cameraEvents: []
     - groupName: Dodge
       entries:
       - skillId: Dodge
