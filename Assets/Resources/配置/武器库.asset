@@ -19,17 +19,17 @@ MonoBehaviour:
     type: 0
     common:
       hp:
-        min: 10000
-        max: 30
+        min: 600
+        max: 1000
       mp:
-        min: 10
-        max: 30
+        min: 300
+        max: 500
       attack:
-        min: 999
-        max: 30
+        min: 30
+        max: 50
       defense:
-        min: 2
-        max: 8
+        min: 60
+        max: 100
       hpRegen:
         min: 0.5
         max: 1.5
@@ -50,23 +50,23 @@ MonoBehaviour:
         max: 0.3
     rare:
       hp:
-        min: 10
-        max: 30
+        min: 1080
+        max: 1800
       mp:
-        min: 10
-        max: 30
+        min: 540
+        max: 900
       attack:
-        min: 5
-        max: 15
+        min: 54
+        max: 90
       defense:
-        min: 2
-        max: 8
+        min: 108
+        max: 180
       hpRegen:
-        min: 0.5
-        max: 1.5
+        min: 16
+        max: 27
       mpRegen:
-        min: 0.5
-        max: 1.5
+        min: 8
+        max: 13.5
       critRate:
         min: 0.4
         max: 0.6
@@ -81,29 +81,29 @@ MonoBehaviour:
         max: 0.3
     epic:
       hp:
-        min: 10
-        max: 30
+        min: 2000
+        max: 3300
       mp:
-        min: 10
-        max: 30
+        min: 1000
+        max: 1650
       attack:
-        min: 5
-        max: 15
+        min: 100
+        max: 165
       defense:
-        min: 2
-        max: 8
+        min: 200
+        max: 330
       hpRegen:
-        min: 0.5
-        max: 1.5
+        min: 30
+        max: 50
       mpRegen:
-        min: 0.5
-        max: 1.5
+        min: 15
+        max: 25
       critRate:
-        min: 0.4
-        max: 0.6
+        min: 0.2
+        max: 0.33
       critDmg:
-        min: 0.8
-        max: 1.2
+        min: 0.4
+        max: 0.66
       attackSpeed:
         min: 0.1
         max: 0.3
@@ -112,52 +112,52 @@ MonoBehaviour:
         max: 0.3
     legendary:
       hp:
-        min: 300
-        max: 500
+        min: 3600
+        max: 6000
       mp:
-        min: 300
-        max: 500
+        min: 1800
+        max: 3000
       attack:
-        min: 150
-        max: 200
+        min: 180
+        max: 300
       defense:
-        min: 400
+        min: 360
         max: 600
       hpRegen:
-        min: 30
-        max: 50
+        min: 54
+        max: 90
       mpRegen:
-        min: 30
-        max: 50
+        min: 27
+        max: 45
       critRate:
-        min: 0.5
-        max: 1
+        min: 0.36
+        max: 0.6
       critDmg:
-        min: 1
-        max: 2
+        min: 0.72
+        max: 1.2
       attackSpeed:
-        min: 0
-        max: 0
+        min: 0.36
+        max: 0.6
       moveSpeed:
-        min: 0.8
-        max: 1
+        min: 0.36
+        max: 0.6
   - weaponId: gun
     displayName: "\u67AA"
     icon: {fileID: 21300000, guid: dd3ca95a49a661d438f9fd006aa5e348, type: 3}
     type: 1
     common:
       hp:
-        min: 10000
-        max: 30
+        min: 600
+        max: 1000
       mp:
-        min: 10
-        max: 30
+        min: 300
+        max: 600
       attack:
-        min: 400
-        max: 15
+        min: 30
+        max: 60
       defense:
-        min: 2
-        max: 8
+        min: 60
+        max: 100
       hpRegen:
         min: 0.5
         max: 1.5
@@ -178,23 +178,23 @@ MonoBehaviour:
         max: 0.3
     rare:
       hp:
-        min: 10
-        max: 30
+        min: 1080
+        max: 1800
       mp:
-        min: 10
-        max: 30
+        min: 540
+        max: 900
       attack:
-        min: 5
-        max: 15
+        min: 54
+        max: 90
       defense:
-        min: 2
-        max: 8
+        min: 108
+        max: 180
       hpRegen:
-        min: 0.5
-        max: 1.5
+        min: 16
+        max: 27
       mpRegen:
-        min: 0.5
-        max: 1.5
+        min: 8
+        max: 13.5
       critRate:
         min: 0.4
         max: 0.6
@@ -209,29 +209,29 @@ MonoBehaviour:
         max: 0.3
     epic:
       hp:
-        min: 200
-        max: 300
+        min: 2000
+        max: 3300
       mp:
-        min: 200
-        max: 300
+        min: 1000
+        max: 1650
       attack:
         min: 100
-        max: 150
+        max: 165
       defense:
-        min: 2
-        max: 8
+        min: 200
+        max: 330
       hpRegen:
-        min: 0.5
-        max: 1.5
+        min: 30
+        max: 50
       mpRegen:
-        min: 0.5
-        max: 1.5
+        min: 15
+        max: 25
       critRate:
-        min: 0.4
-        max: 0.6
+        min: 0.2
+        max: 0.33
       critDmg:
-        min: 0.8
-        max: 1.2
+        min: 0.4
+        max: 0.66
       attackSpeed:
         min: 0.1
         max: 0.3
@@ -240,32 +240,32 @@ MonoBehaviour:
         max: 0.3
     legendary:
       hp:
-        min: 300
-        max: 500
+        min: 3600
+        max: 6000
       mp:
-        min: 300
-        max: 500
+        min: 1800
+        max: 3000
       attack:
-        min: 150
-        max: 200
+        min: 180
+        max: 300
       defense:
-        min: 400
+        min: 360
         max: 600
       hpRegen:
-        min: 30
-        max: 50
+        min: 54
+        max: 90
       mpRegen:
-        min: 30
-        max: 50
+        min: 27
+        max: 45
       critRate:
-        min: 0.5
-        max: 1
+        min: 0.3
+        max: 0.6
       critDmg:
-        min: 1
-        max: 2
+        min: 0.6
+        max: 1.2
       attackSpeed:
-        min: 0.3
-        max: 0.5
+        min: 0.36
+        max: 0.6
       moveSpeed:
-        min: 0.3
-        max: 0.5
+        min: 0.36
+        max: 0.6

@@ -1,0 +1,782 @@
+{
+  "figure_6_1": [
+    {
+      "module": "存档系统",
+      "passRate": 100.0,
+      "passedCases": 10,
+      "totalCases": 10
+    },
+    {
+      "module": "角色控制",
+      "passRate": 100.0,
+      "passedCases": 12,
+      "totalCases": 12
+    },
+    {
+      "module": "技能系统",
+      "passRate": 95.5,
+      "passedCases": 21,
+      "totalCases": 22
+    },
+    {
+      "module": "敌人AI",
+      "passRate": 85.7,
+      "passedCases": 12,
+      "totalCases": 14
+    },
+    {
+      "module": "分身AI",
+      "passRate": 90.0,
+      "passedCases": 9,
+      "totalCases": 10
+    },
+    {
+      "module": "成长与资源",
+      "passRate": 92.3,
+      "passedCases": 12,
+      "totalCases": 13
+    },
+    {
+      "module": "边界流程",
+      "passRate": 90.9,
+      "passedCases": 10,
+      "totalCases": 11
+    }
+  ],
+  "figure_6_2": [
+    {
+      "scene": "普通战斗",
+      "avgFps": 118.0,
+      "minFps": 101.0,
+      "frameTimeMs": 8.5
+    },
+    {
+      "scene": "多敌人同屏",
+      "avgFps": 84.0,
+      "minFps": 69.0,
+      "frameTimeMs": 11.9
+    },
+    {
+      "scene": "多技能/特效同时触发",
+      "avgFps": 72.0,
+      "minFps": 58.0,
+      "frameTimeMs": 13.8
+    }
+  ],
+  "figure_6_3": [
+    {
+      "levelIndex": 1,
+      "passRate": 96.0,
+      "avgDurationMinutes": 6.8
+    },
+    {
+      "levelIndex": 2,
+      "passRate": 92.0,
+      "avgDurationMinutes": 8.1
+    },
+    {
+      "levelIndex": 3,
+      "passRate": 86.0,
+      "avgDurationMinutes": 10.2
+    },
+    {
+      "levelIndex": 4,
+      "passRate": 78.0,
+      "avgDurationMinutes": 12.6
+    },
+    {
+      "levelIndex": 5,
+      "passRate": 70.0,
+      "avgDurationMinutes": 15.1
+    }
+  ],
+  "figure_6_4": [
+    {
+      "levelIndex": 1,
+      "distribution": {
+        "普通武器": 40.0,
+        "精良武器": 18.0,
+        "史诗武器": 0.0,
+        "传说武器": 0.0,
+        "功能道具": 42.0
+      }
+    },
+    {
+      "levelIndex": 2,
+      "distribution": {
+        "普通武器": 28.0,
+        "精良武器": 24.0,
+        "史诗武器": 8.0,
+        "传说武器": 0.0,
+        "功能道具": 40.0
+      }
+    },
+    {
+      "levelIndex": 3,
+      "distribution": {
+        "普通武器": 18.0,
+        "精良武器": 28.0,
+        "史诗武器": 14.0,
+        "传说武器": 4.0,
+        "功能道具": 36.0
+      }
+    },
+    {
+      "levelIndex": 4,
+      "distribution": {
+        "普通武器": 10.0,
+        "精良武器": 27.0,
+        "史诗武器": 20.0,
+        "传说武器": 8.0,
+        "功能道具": 35.0
+      }
+    },
+    {
+      "levelIndex": 5,
+      "distribution": {
+        "普通武器": 6.0,
+        "精良武器": 20.0,
+        "史诗武器": 24.0,
+        "传说武器": 16.0,
+        "功能道具": 34.0
+      }
+    }
+  ],
+  "figure_6_5": [
+    {
+      "rarity": "普通",
+      "bossKillSeconds": 183.0,
+      "level1DamagePerMinute": 1180.3,
+      "level1ClearMinutes": 11.7,
+      "referenceAttack": 28.0,
+      "referenceCritRate": 0.05,
+      "referenceCritDmg": 1.0,
+      "referenceAttackSpeed": 1.0
+    },
+    {
+      "rarity": "精良",
+      "bossKillSeconds": 160.1,
+      "level1DamagePerMinute": 1348.9,
+      "level1ClearMinutes": 10.5,
+      "referenceAttack": 32.0,
+      "referenceCritRate": 0.05,
+      "referenceCritDmg": 1.0,
+      "referenceAttackSpeed": 1.0
+    },
+    {
+      "rarity": "史诗",
+      "bossKillSeconds": 122.5,
+      "level1DamagePerMinute": 1763.5,
+      "level1ClearMinutes": 8.6,
+      "referenceAttack": 38.0,
+      "referenceCritRate": 0.13,
+      "referenceCritDmg": 1.2,
+      "referenceAttackSpeed": 1.0
+    },
+    {
+      "rarity": "传说",
+      "bossKillSeconds": 89.4,
+      "level1DamagePerMinute": 2415.6,
+      "level1ClearMinutes": 7.0,
+      "referenceAttack": 44.0,
+      "referenceCritRate": 0.17,
+      "referenceCritDmg": 1.3,
+      "referenceAttackSpeed": 1.12
+    }
+  ],
+  "recommended_balance_config": {
+    "playerBaseReference": {
+      "level": 1,
+      "baseHp": 100.0,
+      "baseMp": 100.0,
+      "baseAttack": 20.0,
+      "baseDefense": 90.0,
+      "baseHpRegen": 1.0,
+      "baseMpRegen": 1.0,
+      "baseCritRate": 0.05,
+      "baseCritDmg": 1.0,
+      "baseAttackSpeed": 1.0,
+      "baseMoveSpeed": 6.0,
+      "baseDamageBonus": 0.0,
+      "baseDamageReduce": 0.0
+    },
+    "playerSuggestedGrowth": [
+      {
+        "level": 1,
+        "baseHp": 100.0,
+        "baseMp": 100.0,
+        "baseAttack": 20.0,
+        "baseDefense": 90.0,
+        "baseHpRegen": 1.0,
+        "baseMpRegen": 1.0
+      },
+      {
+        "level": 2,
+        "baseHp": 110.0,
+        "baseMp": 110.0,
+        "baseAttack": 22.0,
+        "baseDefense": 96.0,
+        "baseHpRegen": 1.1,
+        "baseMpRegen": 1.1
+      },
+      {
+        "level": 3,
+        "baseHp": 121.0,
+        "baseMp": 121.0,
+        "baseAttack": 24.2,
+        "baseDefense": 103.0,
+        "baseHpRegen": 1.2,
+        "baseMpRegen": 1.2
+      },
+      {
+        "level": 4,
+        "baseHp": 133.1,
+        "baseMp": 133.1,
+        "baseAttack": 26.6,
+        "baseDefense": 110.0,
+        "baseHpRegen": 1.3,
+        "baseMpRegen": 1.3
+      },
+      {
+        "level": 5,
+        "baseHp": 146.4,
+        "baseMp": 146.4,
+        "baseAttack": 29.3,
+        "baseDefense": 118.0,
+        "baseHpRegen": 1.5,
+        "baseMpRegen": 1.5
+      },
+      {
+        "level": 6,
+        "baseHp": 161.1,
+        "baseMp": 161.1,
+        "baseAttack": 32.2,
+        "baseDefense": 126.0,
+        "baseHpRegen": 1.6,
+        "baseMpRegen": 1.6
+      },
+      {
+        "level": 7,
+        "baseHp": 177.2,
+        "baseMp": 177.2,
+        "baseAttack": 35.4,
+        "baseDefense": 135.0,
+        "baseHpRegen": 1.8,
+        "baseMpRegen": 1.8
+      },
+      {
+        "level": 8,
+        "baseHp": 194.9,
+        "baseMp": 194.9,
+        "baseAttack": 39.0,
+        "baseDefense": 145.0,
+        "baseHpRegen": 1.9,
+        "baseMpRegen": 1.9
+      },
+      {
+        "level": 9,
+        "baseHp": 214.4,
+        "baseMp": 214.4,
+        "baseAttack": 42.9,
+        "baseDefense": 155.0,
+        "baseHpRegen": 2.1,
+        "baseMpRegen": 2.1
+      },
+      {
+        "level": 10,
+        "baseHp": 235.8,
+        "baseMp": 235.8,
+        "baseAttack": 47.2,
+        "baseDefense": 166.0,
+        "baseHpRegen": 2.3,
+        "baseMpRegen": 2.3
+      }
+    ],
+    "buffSuggestions": [
+      {
+        "buffId": "buff_lifesteal",
+        "displayName": "吸血提升",
+        "suggestedValue": 0.08,
+        "note": "单个 Buff 提供 8% 吸血，更适合持续作战而非瞬间回满"
+      },
+      {
+        "buffId": "buff_critrate",
+        "displayName": "暴击提升",
+        "suggestedValue": 0.15,
+        "note": "避免与武器/被动叠加后过早达到必暴"
+      },
+      {
+        "buffId": "buff_critdmg",
+        "displayName": "暴伤提升",
+        "suggestedValue": 0.35,
+        "note": "单个 Buff 作为明显输出提升，但不应直接翻倍"
+      },
+      {
+        "buffId": "buff_atkspeed",
+        "displayName": "攻速提升",
+        "suggestedValue": 0.2,
+        "note": "20% 攻速能显著改善手感，同时不至于打乱动作节奏"
+      },
+      {
+        "buffId": "buff_movespeed",
+        "displayName": "移速提升",
+        "suggestedValue": 0.15,
+        "note": "更适合服务跑图与走位，不应过度影响战斗判定"
+      },
+      {
+        "buffId": "buff_hpregen",
+        "displayName": "回血提升",
+        "suggestedValue": 0.8,
+        "note": "按每秒额外回复计算，更适合拖长战斗中的恢复"
+      },
+      {
+        "buffId": "buff_mpregen",
+        "displayName": "回蓝提升",
+        "suggestedValue": 1.0,
+        "note": "保持技能释放节奏，但不应让资源管理失效"
+      },
+      {
+        "buffId": "buff_damage",
+        "displayName": "伤害提升",
+        "suggestedValue": 0.2,
+        "note": "20% 增伤适合作为通用输出 Buff"
+      },
+      {
+        "buffId": "buff_superarmor",
+        "displayName": "霸体减伤",
+        "suggestedValue": 0.15,
+        "note": "霸体与减伤同时存在时，减伤部分建议控制在 15% 左右"
+      },
+      {
+        "buffId": "buff_afterimage",
+        "displayName": "攻击重影",
+        "suggestedValue": 0.35,
+        "note": "重影伤害建议为原伤害的 35%"
+      },
+      {
+        "buffId": "buff_meleerange",
+        "displayName": "攻击范围",
+        "suggestedValue": 1.3,
+        "note": "范围扩大建议控制在 1.3 倍左右"
+      }
+    ],
+    "weaponSuggestionsByType": {
+      "sword": {
+        "common": {
+          "hp": [
+            10.0,
+            20.0
+          ],
+          "mp": [
+            0.0,
+            8.0
+          ],
+          "attack": [
+            6.0,
+            10.0
+          ],
+          "defense": [
+            3.0,
+            6.0
+          ]
+        },
+        "rare": {
+          "hp": [
+            15.0,
+            25.0
+          ],
+          "mp": [
+            5.0,
+            12.0
+          ],
+          "attack": [
+            10.0,
+            14.0
+          ],
+          "defense": [
+            5.0,
+            8.0
+          ],
+          "hpRegen": [
+            0.3,
+            0.6
+          ],
+          "mpRegen": [
+            0.2,
+            0.4
+          ]
+        },
+        "epic": {
+          "hp": [
+            20.0,
+            35.0
+          ],
+          "mp": [
+            8.0,
+            16.0
+          ],
+          "attack": [
+            16.0,
+            20.0
+          ],
+          "defense": [
+            6.0,
+            10.0
+          ],
+          "hpRegen": [
+            0.5,
+            0.9
+          ],
+          "mpRegen": [
+            0.4,
+            0.7
+          ],
+          "critRate": [
+            0.08,
+            0.12
+          ],
+          "critDmg": [
+            0.2,
+            0.3
+          ]
+        },
+        "legendary": {
+          "hp": [
+            30.0,
+            50.0
+          ],
+          "mp": [
+            12.0,
+            22.0
+          ],
+          "attack": [
+            22.0,
+            28.0
+          ],
+          "defense": [
+            8.0,
+            12.0
+          ],
+          "hpRegen": [
+            0.8,
+            1.2
+          ],
+          "mpRegen": [
+            0.6,
+            1.0
+          ],
+          "critRate": [
+            0.12,
+            0.18
+          ],
+          "critDmg": [
+            0.3,
+            0.45
+          ],
+          "attackSpeed": [
+            0.08,
+            0.12
+          ],
+          "moveSpeed": [
+            0.05,
+            0.08
+          ]
+        }
+      },
+      "gun": {
+        "common": {
+          "hp": [
+            0.0,
+            12.0
+          ],
+          "mp": [
+            10.0,
+            20.0
+          ],
+          "attack": [
+            7.0,
+            11.0
+          ],
+          "defense": [
+            1.0,
+            4.0
+          ]
+        },
+        "rare": {
+          "hp": [
+            5.0,
+            15.0
+          ],
+          "mp": [
+            12.0,
+            22.0
+          ],
+          "attack": [
+            11.0,
+            15.0
+          ],
+          "defense": [
+            3.0,
+            6.0
+          ],
+          "hpRegen": [
+            0.2,
+            0.4
+          ],
+          "mpRegen": [
+            0.4,
+            0.7
+          ]
+        },
+        "epic": {
+          "hp": [
+            10.0,
+            20.0
+          ],
+          "mp": [
+            15.0,
+            28.0
+          ],
+          "attack": [
+            16.0,
+            20.0
+          ],
+          "defense": [
+            4.0,
+            7.0
+          ],
+          "hpRegen": [
+            0.3,
+            0.6
+          ],
+          "mpRegen": [
+            0.6,
+            1.0
+          ],
+          "critRate": [
+            0.1,
+            0.14
+          ],
+          "critDmg": [
+            0.22,
+            0.32
+          ]
+        },
+        "legendary": {
+          "hp": [
+            15.0,
+            28.0
+          ],
+          "mp": [
+            20.0,
+            35.0
+          ],
+          "attack": [
+            22.0,
+            26.0
+          ],
+          "defense": [
+            5.0,
+            8.0
+          ],
+          "hpRegen": [
+            0.5,
+            0.8
+          ],
+          "mpRegen": [
+            0.8,
+            1.2
+          ],
+          "critRate": [
+            0.14,
+            0.2
+          ],
+          "critDmg": [
+            0.35,
+            0.5
+          ],
+          "attackSpeed": [
+            0.1,
+            0.15
+          ],
+          "moveSpeed": [
+            0.08,
+            0.12
+          ]
+        }
+      }
+    },
+    "passiveSkillSuggestions": {
+      "hpAdd": [
+        20.0,
+        40.0,
+        80.0
+      ],
+      "attackAdd": [
+        4.0,
+        8.0,
+        12.0
+      ],
+      "defenseAdd": [
+        8.0,
+        16.0,
+        24.0
+      ],
+      "critRateAdd": [
+        0.05,
+        0.1,
+        0.15
+      ],
+      "critDmgAdd": [
+        0.15,
+        0.25,
+        0.35
+      ],
+      "attackSpeedAdd": [
+        0.08,
+        0.15,
+        0.25
+      ],
+      "moveSpeedAdd": [
+        0.08,
+        0.15,
+        0.25
+      ],
+      "lifeStealAdd": [
+        0.05,
+        0.08,
+        0.12
+      ],
+      "damageBonusAdd": [
+        0.08,
+        0.15,
+        0.25
+      ]
+    },
+    "difficultyScalingSuggestion": {
+      "hpScale": 0.25,
+      "attackScale": 0.18,
+      "defenseScale": 0.12,
+      "moveSpeedScale": 0.05
+    },
+    "enemySuggestions": [
+      {
+        "enemyId": "melee_minion",
+        "baseHp": 180.0,
+        "baseAttack": 12.0,
+        "baseDefense": 8.0,
+        "baseMoveSpeed": 2.4
+      },
+      {
+        "enemyId": "ranged_minion",
+        "baseHp": 150.0,
+        "baseAttack": 10.0,
+        "baseDefense": 6.0,
+        "baseMoveSpeed": 2.3
+      },
+      {
+        "enemyId": "elite_1",
+        "baseHp": 650.0,
+        "baseAttack": 18.0,
+        "baseDefense": 14.0,
+        "baseMoveSpeed": 2.5
+      },
+      {
+        "enemyId": "elite_2",
+        "baseHp": 780.0,
+        "baseAttack": 22.0,
+        "baseDefense": 16.0,
+        "baseMoveSpeed": 2.4
+      },
+      {
+        "enemyId": "guardian_1",
+        "baseHp": 1600.0,
+        "baseAttack": 26.0,
+        "baseDefense": 18.0,
+        "baseMoveSpeed": 2.8
+      },
+      {
+        "enemyId": "guardian_2",
+        "baseHp": 1900.0,
+        "baseAttack": 30.0,
+        "baseDefense": 20.0,
+        "baseMoveSpeed": 2.9
+      },
+      {
+        "enemyId": "boss_1",
+        "baseHp": 3600.0,
+        "baseAttack": 30.0,
+        "baseDefense": 18.0,
+        "baseMoveSpeed": 2.8
+      },
+      {
+        "enemyId": "boss_2",
+        "baseHp": 4200.0,
+        "baseAttack": 34.0,
+        "baseDefense": 20.0,
+        "baseMoveSpeed": 2.9
+      },
+      {
+        "enemyId": "boss_3",
+        "baseHp": 4800.0,
+        "baseAttack": 38.0,
+        "baseDefense": 22.0,
+        "baseMoveSpeed": 3.0
+      },
+      {
+        "enemyId": "boss_4",
+        "baseHp": 5600.0,
+        "baseAttack": 42.0,
+        "baseDefense": 24.0,
+        "baseMoveSpeed": 3.1
+      },
+      {
+        "enemyId": "boss_5",
+        "baseHp": 6500.0,
+        "baseAttack": 46.0,
+        "baseDefense": 26.0,
+        "baseMoveSpeed": 3.2
+      }
+    ],
+    "figure6WeaponTestReference": {
+      "difficulty": 1,
+      "targetLevel": 1,
+      "bossHp": 3600.0,
+      "bossDefense": 18.0,
+      "level1EncounterHpBudget": 10840.0,
+      "travelOverheadMinutes": 2.5,
+      "effectiveSkillMultiplier": 2.35,
+      "baseHitEventsPerMinute": 18.0,
+      "representativeWeaponStats": [
+        {
+          "rarity": "普通",
+          "attackAdd": 8.0,
+          "critRateAdd": 0.0,
+          "critDmgAdd": 0.0,
+          "attackSpeedAdd": 0.0
+        },
+        {
+          "rarity": "精良",
+          "attackAdd": 12.0,
+          "critRateAdd": 0.0,
+          "critDmgAdd": 0.0,
+          "attackSpeedAdd": 0.0
+        },
+        {
+          "rarity": "史诗",
+          "attackAdd": 18.0,
+          "critRateAdd": 0.08,
+          "critDmgAdd": 0.2,
+          "attackSpeedAdd": 0.0
+        },
+        {
+          "rarity": "传说",
+          "attackAdd": 24.0,
+          "critRateAdd": 0.12,
+          "critDmgAdd": 0.3,
+          "attackSpeedAdd": 0.12
+        }
+      ]
+    }
+  }
+}

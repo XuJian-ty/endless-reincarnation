@@ -20,9 +20,9 @@ MonoBehaviour:
       type: 2}
     globalSpawnPlanIndex: 0
     minionGoldReward: 10
-    minionExpReward: 10
+    minionExpReward: 5
     eliteGoldReward: 30
-    eliteExpReward: 30
+    eliteExpReward: 15
     eliteDropEntries:
     - itemType: weapon_common
       weight: 0.3
@@ -46,8 +46,8 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0
     guardianGoldReward: 50
-    guardianExpReward: 50
-    guardianTalentReward: 1
+    guardianExpReward: 25
+    guardianTalentReward: 2
     guardianDropEntries:
     - itemType: weapon_common
       weight: 0.3
@@ -60,7 +60,7 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     bossGoldReward: 200
-    bossExpReward: 200
+    bossExpReward: 50
     bossDropEntries:
     - itemType: weapon_common
       weight: 0.3
@@ -79,14 +79,14 @@ MonoBehaviour:
       weaponRarity: 0
       spawnChance: 0.65
       minCount: 1
-      maxCount: 1
+      maxCount: 2
     - goodsType: 1
       itemId: 
       weaponId: gun
       weaponRarity: 0
       spawnChance: 0.45
       minCount: 1
-      maxCount: 1
+      maxCount: 2
     - goodsType: 0
       itemId: potion_hp
       weaponId: 
@@ -115,9 +115,9 @@ MonoBehaviour:
       type: 2}
     globalSpawnPlanIndex: 1
     minionGoldReward: 10
-    minionExpReward: 10
+    minionExpReward: 5
     eliteGoldReward: 30
-    eliteExpReward: 30
+    eliteExpReward: 15
     eliteDropEntries:
     - itemType: weapon_common
       weight: 0.15
@@ -145,8 +145,8 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     guardianGoldReward: 0
-    guardianExpReward: 0
-    guardianTalentReward: 1
+    guardianExpReward: 25
+    guardianTalentReward: 2
     guardianDropEntries:
     - itemType: weapon_common
       weight: 0.15
@@ -161,7 +161,7 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     bossGoldReward: 0
-    bossExpReward: 0
+    bossExpReward: 50
     bossDropEntries:
     - itemType: weapon_common
       weight: 0.15
@@ -218,9 +218,9 @@ MonoBehaviour:
       type: 2}
     globalSpawnPlanIndex: 2
     minionGoldReward: 10
-    minionExpReward: 10
+    minionExpReward: 5
     eliteGoldReward: 30
-    eliteExpReward: 30
+    eliteExpReward: 15
     eliteDropEntries:
     - itemType: weapon_rare
       weight: 0.2
@@ -244,8 +244,8 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     guardianGoldReward: 0
-    guardianExpReward: 0
-    guardianTalentReward: 1
+    guardianExpReward: 25
+    guardianTalentReward: 2
     guardianDropEntries:
     - itemType: weapon_rare
       weight: 0.2
@@ -258,7 +258,7 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     bossGoldReward: 0
-    bossExpReward: 0
+    bossExpReward: 50
     bossDropEntries:
     - itemType: weapon_rare
       weight: 0.2
@@ -313,9 +313,9 @@ MonoBehaviour:
       type: 2}
     globalSpawnPlanIndex: 3
     minionGoldReward: 10
-    minionExpReward: 10
+    minionExpReward: 5
     eliteGoldReward: 30
-    eliteExpReward: 30
+    eliteExpReward: 15
     eliteDropEntries:
     - itemType: weapon_epic
       weight: 0.3
@@ -339,8 +339,8 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     guardianGoldReward: 0
-    guardianExpReward: 0
-    guardianTalentReward: 1
+    guardianExpReward: 25
+    guardianTalentReward: 2
     guardianDropEntries:
     - itemType: weapon_epic
       weight: 0.3
@@ -353,7 +353,7 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     bossGoldReward: 0
-    bossExpReward: 0
+    bossExpReward: 50
     bossDropEntries:
     - itemType: weapon_epic
       weight: 0.3
@@ -408,9 +408,9 @@ MonoBehaviour:
       type: 2}
     globalSpawnPlanIndex: 4
     minionGoldReward: 10
-    minionExpReward: 10
+    minionExpReward: 5
     eliteGoldReward: 30
-    eliteExpReward: 30
+    eliteExpReward: 15
     eliteDropEntries:
     - itemType: weapon_legendary
       weight: 0.4
@@ -430,8 +430,8 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     guardianGoldReward: 0
-    guardianExpReward: 0
-    guardianTalentReward: 1
+    guardianExpReward: 25
+    guardianTalentReward: 2
     guardianDropEntries:
     - itemType: weapon_legendary
       weight: 0.4
@@ -442,7 +442,7 @@ MonoBehaviour:
     - itemType: nectar
       weight: 0.1
     bossGoldReward: 0
-    bossExpReward: 0
+    bossExpReward: 50
     bossDropEntries:
     - itemType: weapon_legendary
       weight: 0.4
