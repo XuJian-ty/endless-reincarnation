@@ -215,10 +215,9 @@ namespace Game.Presentation
                         ExecuteAction(candidate);
                         return;
                     case TransitionPolicy.Buffer:
-                        // 只保留优先级最高（最先遇到）的缓存动作，
-                        // 防止低优先级的 Walk/Run 覆盖已缓存的 NormalAttack。
-                        if (_pending.IsEmpty)
-                            _pending = candidate;
+                        // 预输入只保留一条，后来的覆盖先来的，
+                        // 让玩家在缓存窗口内能用最新一次输入修正先前意图。
+                        _pending = candidate;
                         break;
                 }
             }

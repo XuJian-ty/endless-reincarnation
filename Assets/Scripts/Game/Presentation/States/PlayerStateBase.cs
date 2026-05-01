@@ -115,6 +115,11 @@ namespace Game.Presentation
 
         protected bool IsGrounded => Ctx.Mover.IsGrounded;
 
+        protected bool HasExceededFallTransitionDelay(float dt)
+        {
+            return Ctx?.Mover != null && Ctx.Mover.HasExceededFallTransitionDelay(dt);
+        }
+
         protected SkillConfigEntry ResolvePlayerActionEntry(string actionId = null)
         {
             string resolvedActionId = string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim();

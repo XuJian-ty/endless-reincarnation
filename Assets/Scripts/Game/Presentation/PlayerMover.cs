@@ -10,16 +10,20 @@ namespace Game.Presentation
     public class PlayerMover : MonoBehaviour
     {
         [SerializeField] private float _gravity = -20f;
+        [SerializeField, Min(0f)] private float _fallTransitionDelay = 0.5f;
 
         private CharacterController _cc;
         private Vector3 _velocity;
         private bool    _isDodging;
         private Vector3 _dodgeVelocity;
         private float _motionSpeedMultiplier = 1f;
+        private float _continuousAirTime;
 
         public bool    IsGrounded       => _cc.isGrounded;
         public Vector3 Velocity         => _velocity;
         public float   VerticalVelocity => _velocity.y;
+        public float   FallTransitionDelay => _fallTransitionDelay;
+        public float   ContinuousAirTime => _continuousAirTime;
 
         private void Awake() => _cc = GetComponent<CharacterController>();
 
@@ -40,6 +44,11 @@ namespace Game.Presentation
             }
 
             _cc.Move(moveVelocity * dt * Mathf.Max(0f, _motionSpeedMultiplier));
+
+            if (_cc.isGrounded)
+                _continuousAirTime = 0f;
+            else
+                _continuousAirTime += dt;
         }
 
         public void SetHorizontalVelocity(Vector3 horizontal)
@@ -74,6 +83,14 @@ namespace Game.Presentation
 
         public void SetVerticalVelocity(float vy) => _velocity.y = vy;
         public void SetMotionSpeedMultiplier(float multiplier) => _motionSpeedMultiplier = Mathf.Max(0f, multiplier);
+
+        public bool HasExceededFallTransitionDelay(float currentFrameDelta)
+        {
+            if (IsGrounded)
+                return false;
+
+            return _continuousAirTime + Mathf.Max(0f, currentFrameDelta) > _fallTransitionDelay;
+        }
 
         /// <summary>
         /// 检测角色是否在距地面 threshold 米以内。

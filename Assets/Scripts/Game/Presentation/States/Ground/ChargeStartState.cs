@@ -24,9 +24,10 @@ namespace Game.Presentation
         {
             if (AnimNearConfiguredEnd())
             {
+                bool shouldLand = IsGrounded || Ctx.Mover.IsNearGround(0.3f) || !HasExceededFallTransitionDelay(dt);
                 if (input.IsLmbHeld)
                     GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.ChargeLoopState);
-                else if (IsGrounded || Ctx.Mover.IsNearGround(0.3f))
+                else if (shouldLand)
                     GoTo<LandState>();
                 else
                     GoTo<FallState>();

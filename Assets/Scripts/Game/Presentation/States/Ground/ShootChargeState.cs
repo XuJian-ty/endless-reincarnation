@@ -38,7 +38,7 @@ namespace Game.Presentation
             if (input.IsLmbHeld)
                 return;
 
-            if (!IsGrounded)
+            if (HasExceededFallTransitionDelay(dt))
             {
                 GoTo<FallState>();
                 return;

@@ -23,9 +23,10 @@ namespace Game.Presentation
         {
             if (AnimNearConfiguredEnd())
             {
+                bool shouldLand = IsGrounded || Ctx.Mover.IsNearGround(0.3f) || !HasExceededFallTransitionDelay(dt);
                 CompleteWithPending(() =>
                 {
-                    if (IsGrounded || Ctx.Mover.IsNearGround(0.3f))
+                    if (shouldLand)
                         GoTo<LandState>();
                     else
                         GoTo<FallState>();

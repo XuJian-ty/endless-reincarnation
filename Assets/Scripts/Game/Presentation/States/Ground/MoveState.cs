@@ -38,8 +38,8 @@ namespace Game.Presentation
                 return;
             }
 
-            // 仅当持续离地超过 0.2s 才考虑进坠落（走出悬崖）。进 Fall 的决策只在本状态内部做。
-            if (StateAge > 0.2f && !IsGrounded)
+            // 仅当持续离地超过 0.5s 才考虑进坠落（走出悬崖）。进 Fall 的决策只在本状态内部做。
+            if (HasExceededFallTransitionDelay(dt))
             {
                 var p = Ctx.StateMachine.PeekPending();
                 if (!p.IsEmpty && p.Action == GameAction.Jump)

@@ -619,7 +619,7 @@ namespace Game.Presentation
             if (StateMachine == null)
                 return;
 
-            if (Mover != null && !Mover.IsGrounded)
+            if (Mover != null && Mover.HasExceededFallTransitionDelay(0f))
             {
                 StateMachine.ChangeState<FallState>();
                 return;
