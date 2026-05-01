@@ -77,9 +77,10 @@ namespace Game.Presentation
             if (ComboIndex < 3)
                 Ctx.StateMachine.OpenComboWindow(ComboIndex + 1);
 
+            bool canStayOnGroundTrack = IsGrounded || !HasExceededFallTransitionDelay(dt);
             CompleteWithPending(() =>
             {
-                if (IsGrounded)
+                if (canStayOnGroundTrack)
                     GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
                 else
                     GoTo<FallState>();

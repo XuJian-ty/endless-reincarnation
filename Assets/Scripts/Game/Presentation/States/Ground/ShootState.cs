@@ -61,11 +61,12 @@ namespace Game.Presentation
             if (!IsShootAnimationNearEnd(GetConfiguredNaturalExitThreshold(0.45f)))
                 return;
 
+            bool canStayOnGroundTrack = IsGrounded || !HasExceededFallTransitionDelay(dt);
             CompleteWithPending(() =>
             {
-                if (IsGrounded && Ctx.IsAimModeActive)
+                if (canStayOnGroundTrack && Ctx.IsAimModeActive)
                     GoTo<AimState>();
-                else if (IsGrounded)
+                else if (canStayOnGroundTrack)
                     GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
                 else
                     GoTo<FallState>();

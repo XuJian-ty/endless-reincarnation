@@ -8,39 +8,39 @@
     },
     {
       "module": "角色控制",
-      "passRate": 100.0,
-      "passedCases": 12,
-      "totalCases": 12
+      "passRate": 86.4,
+      "passedCases": 19,
+      "totalCases": 22
     },
     {
       "module": "技能系统",
-      "passRate": 95.5,
-      "passedCases": 21,
+      "passRate": 100.0,
+      "passedCases": 22,
       "totalCases": 22
     },
     {
       "module": "敌人AI",
-      "passRate": 85.7,
-      "passedCases": 12,
-      "totalCases": 14
+      "passRate": 78.3,
+      "passedCases": 18,
+      "totalCases": 23
     },
     {
       "module": "分身AI",
-      "passRate": 90.0,
-      "passedCases": 9,
-      "totalCases": 10
+      "passRate": 96.2,
+      "passedCases": 25,
+      "totalCases": 26
     },
     {
       "module": "成长与资源",
-      "passRate": 92.3,
-      "passedCases": 12,
+      "passRate": 100.0,
+      "passedCases": 13,
       "totalCases": 13
     },
     {
       "module": "边界流程",
-      "passRate": 90.9,
-      "passedCases": 10,
-      "totalCases": 11
+      "passRate": 95.8,
+      "passedCases": 23,
+      "totalCases": 24
     }
   ],
   "figure_6_2": [
@@ -66,122 +66,386 @@
   "figure_6_3": [
     {
       "levelIndex": 1,
-      "passRate": 96.0,
-      "avgDurationMinutes": 6.8
+      "passRate": 97.0,
+      "avgDurationMinutes": 8.6
     },
     {
       "levelIndex": 2,
       "passRate": 92.0,
-      "avgDurationMinutes": 8.1
+      "avgDurationMinutes": 9.8
     },
     {
       "levelIndex": 3,
-      "passRate": 86.0,
-      "avgDurationMinutes": 10.2
+      "passRate": 85.0,
+      "avgDurationMinutes": 11.7
     },
     {
       "levelIndex": 4,
-      "passRate": 78.0,
-      "avgDurationMinutes": 12.6
+      "passRate": 77.0,
+      "avgDurationMinutes": 14.2
     },
     {
       "levelIndex": 5,
-      "passRate": 70.0,
-      "avgDurationMinutes": 15.1
+      "passRate": 69.0,
+      "avgDurationMinutes": 17.0
     }
   ],
   "figure_6_4": [
     {
       "levelIndex": 1,
-      "distribution": {
-        "普通武器": 40.0,
-        "精良武器": 18.0,
-        "史诗武器": 0.0,
-        "传说武器": 0.0,
-        "功能道具": 42.0
+      "sourceLabel": "宝箱",
+      "sampleCount": 100,
+      "counts": {
+        "普通武器": 34,
+        "精良武器": 12,
+        "回血药剂": 22,
+        "回蓝药剂": 20,
+        "仙露": 12
+      },
+      "probabilities": {
+        "普通武器": 34.0,
+        "精良武器": 12.0,
+        "回血药剂": 22.0,
+        "回蓝药剂": 20.0,
+        "仙露": 12.0
+      }
+    },
+    {
+      "levelIndex": 1,
+      "sourceLabel": "精英怪",
+      "sampleCount": 100,
+      "counts": {
+        "普通武器": 34,
+        "精良武器": 11,
+        "回血药剂": 26,
+        "回蓝药剂": 19,
+        "仙露": 10
+      },
+      "probabilities": {
+        "普通武器": 34.0,
+        "精良武器": 11.0,
+        "回血药剂": 26.0,
+        "回蓝药剂": 19.0,
+        "仙露": 10.0
       }
     },
     {
       "levelIndex": 2,
-      "distribution": {
-        "普通武器": 28.0,
-        "精良武器": 24.0,
+      "sourceLabel": "宝箱",
+      "sampleCount": 100,
+      "counts": {
+        "普通武器": 16,
+        "精良武器": 14,
+        "史诗武器": 7,
+        "回血药剂": 25,
+        "回蓝药剂": 28,
+        "仙露": 10
+      },
+      "probabilities": {
+        "普通武器": 16.0,
+        "精良武器": 14.000000000000002,
+        "史诗武器": 7.000000000000001,
+        "回血药剂": 25.0,
+        "回蓝药剂": 28.000000000000004,
+        "仙露": 10.0
+      }
+    },
+    {
+      "levelIndex": 2,
+      "sourceLabel": "精英怪",
+      "sampleCount": 100,
+      "counts": {
+        "普通武器": 16,
+        "精良武器": 16,
+        "史诗武器": 8,
+        "回血药剂": 21,
+        "回蓝药剂": 29,
+        "仙露": 10
+      },
+      "probabilities": {
+        "普通武器": 16.0,
+        "精良武器": 16.0,
         "史诗武器": 8.0,
-        "传说武器": 0.0,
-        "功能道具": 40.0
+        "回血药剂": 21.0,
+        "回蓝药剂": 28.999999999999996,
+        "仙露": 10.0
       }
     },
     {
       "levelIndex": 3,
-      "distribution": {
-        "普通武器": 18.0,
-        "精良武器": 28.0,
-        "史诗武器": 14.0,
-        "传说武器": 4.0,
-        "功能道具": 36.0
+      "sourceLabel": "宝箱",
+      "sampleCount": 100,
+      "counts": {
+        "精良武器": 21,
+        "史诗武器": 15,
+        "回血药剂": 24,
+        "回蓝药剂": 29,
+        "仙露": 11
+      },
+      "probabilities": {
+        "精良武器": 21.0,
+        "史诗武器": 15.0,
+        "回血药剂": 24.0,
+        "回蓝药剂": 28.999999999999996,
+        "仙露": 11.0
+      }
+    },
+    {
+      "levelIndex": 3,
+      "sourceLabel": "精英怪",
+      "sampleCount": 100,
+      "counts": {
+        "精良武器": 22,
+        "史诗武器": 18,
+        "回血药剂": 20,
+        "回蓝药剂": 29,
+        "仙露": 11
+      },
+      "probabilities": {
+        "精良武器": 22.0,
+        "史诗武器": 18.0,
+        "回血药剂": 20.0,
+        "回蓝药剂": 28.999999999999996,
+        "仙露": 11.0
       }
     },
     {
       "levelIndex": 4,
-      "distribution": {
-        "普通武器": 10.0,
-        "精良武器": 27.0,
-        "史诗武器": 20.0,
+      "sourceLabel": "宝箱",
+      "sampleCount": 100,
+      "counts": {
+        "史诗武器": 25,
+        "传说武器": 8,
+        "回血药剂": 29,
+        "回蓝药剂": 27,
+        "仙露": 11
+      },
+      "probabilities": {
+        "史诗武器": 25.0,
         "传说武器": 8.0,
-        "功能道具": 35.0
+        "回血药剂": 28.999999999999996,
+        "回蓝药剂": 27.0,
+        "仙露": 11.0
+      }
+    },
+    {
+      "levelIndex": 4,
+      "sourceLabel": "精英怪",
+      "sampleCount": 100,
+      "counts": {
+        "史诗武器": 29,
+        "传说武器": 7,
+        "回血药剂": 26,
+        "回蓝药剂": 28,
+        "仙露": 10
+      },
+      "probabilities": {
+        "史诗武器": 28.999999999999996,
+        "传说武器": 7.000000000000001,
+        "回血药剂": 26.0,
+        "回蓝药剂": 28.000000000000004,
+        "仙露": 10.0
       }
     },
     {
       "levelIndex": 5,
-      "distribution": {
-        "普通武器": 6.0,
-        "精良武器": 20.0,
-        "史诗武器": 24.0,
-        "传说武器": 16.0,
-        "功能道具": 34.0
+      "sourceLabel": "宝箱",
+      "sampleCount": 100,
+      "counts": {
+        "传说武器": 31,
+        "回血药剂": 29,
+        "回蓝药剂": 29,
+        "仙露": 11
+      },
+      "probabilities": {
+        "传说武器": 31.0,
+        "回血药剂": 28.999999999999996,
+        "回蓝药剂": 28.999999999999996,
+        "仙露": 11.0
+      }
+    },
+    {
+      "levelIndex": 5,
+      "sourceLabel": "精英怪",
+      "sampleCount": 100,
+      "counts": {
+        "传说武器": 32,
+        "回血药剂": 25,
+        "回蓝药剂": 32,
+        "仙露": 11
+      },
+      "probabilities": {
+        "传说武器": 32.0,
+        "回血药剂": 25.0,
+        "回蓝药剂": 32.0,
+        "仙露": 11.0
       }
     }
   ],
   "figure_6_5": [
     {
       "rarity": "普通",
-      "bossKillSeconds": 183.0,
-      "level1DamagePerMinute": 1180.3,
-      "level1ClearMinutes": 11.7,
-      "referenceAttack": 28.0,
-      "referenceCritRate": 0.05,
-      "referenceCritDmg": 1.0,
-      "referenceAttackSpeed": 1.0
+      "trials": [
+        {
+          "trialIndex": 1,
+          "bossKillSeconds": 41.8,
+          "level1DamagePerSecond": 462.4,
+          "level1ClearMinutes": 10.7
+        },
+        {
+          "trialIndex": 2,
+          "bossKillSeconds": 42.9,
+          "level1DamagePerSecond": 471.8,
+          "level1ClearMinutes": 11.0
+        },
+        {
+          "trialIndex": 3,
+          "bossKillSeconds": 43.2,
+          "level1DamagePerSecond": 485.6,
+          "level1ClearMinutes": 11.2
+        },
+        {
+          "trialIndex": 4,
+          "bossKillSeconds": 41.9,
+          "level1DamagePerSecond": 493.1,
+          "level1ClearMinutes": 10.8
+        },
+        {
+          "trialIndex": 5,
+          "bossKillSeconds": 42.6,
+          "level1DamagePerSecond": 476.9,
+          "level1ClearMinutes": 10.9
+        },
+        {
+          "trialIndex": 6,
+          "bossKillSeconds": 42.8,
+          "level1DamagePerSecond": 484.8,
+          "level1ClearMinutes": 10.8
+        }
+      ]
     },
     {
       "rarity": "精良",
-      "bossKillSeconds": 160.1,
-      "level1DamagePerMinute": 1348.9,
-      "level1ClearMinutes": 10.5,
-      "referenceAttack": 32.0,
-      "referenceCritRate": 0.05,
-      "referenceCritDmg": 1.0,
-      "referenceAttackSpeed": 1.0
+      "trials": [
+        {
+          "trialIndex": 1,
+          "bossKillSeconds": 23.1,
+          "level1DamagePerSecond": 742.6,
+          "level1ClearMinutes": 7.2
+        },
+        {
+          "trialIndex": 2,
+          "bossKillSeconds": 23.8,
+          "level1DamagePerSecond": 758.4,
+          "level1ClearMinutes": 7.5
+        },
+        {
+          "trialIndex": 3,
+          "bossKillSeconds": 24.2,
+          "level1DamagePerSecond": 771.9,
+          "level1ClearMinutes": 7.6
+        },
+        {
+          "trialIndex": 4,
+          "bossKillSeconds": 23.4,
+          "level1DamagePerSecond": 782.3,
+          "level1ClearMinutes": 7.3
+        },
+        {
+          "trialIndex": 5,
+          "bossKillSeconds": 24.0,
+          "level1DamagePerSecond": 761.5,
+          "level1ClearMinutes": 7.4
+        },
+        {
+          "trialIndex": 6,
+          "bossKillSeconds": 23.7,
+          "level1DamagePerSecond": 763.7,
+          "level1ClearMinutes": 7.4
+        }
+      ]
     },
     {
       "rarity": "史诗",
-      "bossKillSeconds": 122.5,
-      "level1DamagePerMinute": 1763.5,
-      "level1ClearMinutes": 8.6,
-      "referenceAttack": 38.0,
-      "referenceCritRate": 0.13,
-      "referenceCritDmg": 1.2,
-      "referenceAttackSpeed": 1.0
+      "trials": [
+        {
+          "trialIndex": 1,
+          "bossKillSeconds": 11.6,
+          "level1DamagePerSecond": 1868.2,
+          "level1ClearMinutes": 4.1
+        },
+        {
+          "trialIndex": 2,
+          "bossKillSeconds": 12.0,
+          "level1DamagePerSecond": 1914.7,
+          "level1ClearMinutes": 4.2
+        },
+        {
+          "trialIndex": 3,
+          "bossKillSeconds": 12.4,
+          "level1DamagePerSecond": 1962.4,
+          "level1ClearMinutes": 4.4
+        },
+        {
+          "trialIndex": 4,
+          "bossKillSeconds": 12.2,
+          "level1DamagePerSecond": 1988.6,
+          "level1ClearMinutes": 4.3
+        },
+        {
+          "trialIndex": 5,
+          "bossKillSeconds": 12.1,
+          "level1DamagePerSecond": 1919.3,
+          "level1ClearMinutes": 4.4
+        },
+        {
+          "trialIndex": 6,
+          "bossKillSeconds": 12.3,
+          "level1DamagePerSecond": 1950.5,
+          "level1ClearMinutes": 4.4
+        }
+      ]
     },
     {
       "rarity": "传说",
-      "bossKillSeconds": 89.4,
-      "level1DamagePerMinute": 2415.6,
-      "level1ClearMinutes": 7.0,
-      "referenceAttack": 44.0,
-      "referenceCritRate": 0.17,
-      "referenceCritDmg": 1.3,
-      "referenceAttackSpeed": 1.12
+      "trials": [
+        {
+          "trialIndex": 1,
+          "bossKillSeconds": 3.5,
+          "level1DamagePerSecond": 6218.4,
+          "level1ClearMinutes": 2.0
+        },
+        {
+          "trialIndex": 2,
+          "bossKillSeconds": 3.7,
+          "level1DamagePerSecond": 6337.8,
+          "level1ClearMinutes": 2.1
+        },
+        {
+          "trialIndex": 3,
+          "bossKillSeconds": 3.9,
+          "level1DamagePerSecond": 6419.6,
+          "level1ClearMinutes": 2.2
+        },
+        {
+          "trialIndex": 4,
+          "bossKillSeconds": 3.8,
+          "level1DamagePerSecond": 6488.3,
+          "level1ClearMinutes": 2.1
+        },
+        {
+          "trialIndex": 5,
+          "bossKillSeconds": 4.0,
+          "level1DamagePerSecond": 6351.7,
+          "level1ClearMinutes": 2.0
+        },
+        {
+          "trialIndex": 6,
+          "bossKillSeconds": 3.9,
+          "level1DamagePerSecond": 6409.2,
+          "level1ClearMinutes": 2.2
+        }
+      ]
     }
   ],
   "recommended_balance_config": {

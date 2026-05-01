@@ -78,9 +78,10 @@ namespace Game.Presentation
             bool alreadyMovedToLoop = StateAge > 0.1f && Ctx.Anim.IsCurrentStateLooping();
             if (hasMovePending && AnimNearEnd(GetConfiguredPendingReleaseThreshold(pending.Action, 0.80f)))
             {
+                bool canStayOnGroundTrack = IsGrounded || !HasExceededFallTransitionDelay(dt);
                 CompleteWithPending(() =>
                 {
-                    if (IsGrounded)
+                    if (canStayOnGroundTrack)
                         GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
                     else
                         GoTo<FallState>();
@@ -88,13 +89,16 @@ namespace Game.Presentation
                 return;
             }
             if (AnimNearConfiguredEnd() || alreadyMovedToLoop)
+            {
+                bool canStayOnGroundTrack = IsGrounded || !HasExceededFallTransitionDelay(dt);
                 CompleteWithPending(() =>
                 {
-                    if (IsGrounded)
+                    if (canStayOnGroundTrack)
                         GoToConfiguredNaturalExit(Game.Data.PlayerStateNaturalExitTarget.IdleState);
                     else
                         GoTo<FallState>();
                 });
+            }
         }
 
         public override TransitionPolicy GetPolicyFor(GameAction action)

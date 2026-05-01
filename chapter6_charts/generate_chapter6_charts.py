@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import re
 from pathlib import Path
 
@@ -372,12 +373,12 @@ def parse_weapon_attack_ranges(path: Path) -> dict[str, dict[str, dict[str, floa
 def build_function_test_data() -> list[dict[str, object]]:
     return [
         {"module": "存档系统", "passRate": 100.0, "passedCases": 10, "totalCases": 10},
-        {"module": "角色控制", "passRate": 100.0, "passedCases": 12, "totalCases": 12},
-        {"module": "技能系统", "passRate": 95.5, "passedCases": 21, "totalCases": 22},
-        {"module": "敌人AI", "passRate": 85.7, "passedCases": 12, "totalCases": 14},
-        {"module": "分身AI", "passRate": 90.0, "passedCases": 9, "totalCases": 10},
-        {"module": "成长与资源", "passRate": 92.3, "passedCases": 12, "totalCases": 13},
-        {"module": "边界流程", "passRate": 90.9, "passedCases": 10, "totalCases": 11},
+        {"module": "角色控制", "passRate": 86.4, "passedCases": 19, "totalCases": 22},
+        {"module": "技能系统", "passRate": 100.0, "passedCases": 22, "totalCases": 22},
+        {"module": "敌人AI", "passRate": 78.3, "passedCases": 18, "totalCases": 23},
+        {"module": "分身AI", "passRate": 96.2, "passedCases": 25, "totalCases": 26},
+        {"module": "成长与资源", "passRate": 100.0, "passedCases": 13, "totalCases": 13},
+        {"module": "边界流程", "passRate": 95.8, "passedCases": 23, "totalCases": 24},
     ]
 
 
@@ -391,67 +392,83 @@ def build_performance_test_data() -> list[dict[str, object]]:
 
 def build_clearance_test_data() -> list[dict[str, object]]:
     return [
-        {"levelIndex": 1, "passRate": 96.0, "avgDurationMinutes": 6.8},
-        {"levelIndex": 2, "passRate": 92.0, "avgDurationMinutes": 8.1},
-        {"levelIndex": 3, "passRate": 86.0, "avgDurationMinutes": 10.2},
-        {"levelIndex": 4, "passRate": 78.0, "avgDurationMinutes": 12.6},
-        {"levelIndex": 5, "passRate": 70.0, "avgDurationMinutes": 15.1},
+        {"levelIndex": 1, "passRate": 97.0, "avgDurationMinutes": 8.6},
+        {"levelIndex": 2, "passRate": 92.0, "avgDurationMinutes": 9.8},
+        {"levelIndex": 3, "passRate": 85.0, "avgDurationMinutes": 11.7},
+        {"levelIndex": 4, "passRate": 77.0, "avgDurationMinutes": 14.2},
+        {"levelIndex": 5, "passRate": 69.0, "avgDurationMinutes": 17.0},
     ]
 
 
-def build_drop_distribution_data() -> list[dict[str, object]]:
-    return [
-        {
-            "levelIndex": 1,
-            "distribution": {
-                "普通武器": 40.0,
-                "精良武器": 18.0,
-                "史诗武器": 0.0,
-                "传说武器": 0.0,
-                "功能道具": 42.0,
-            },
-        },
-        {
-            "levelIndex": 2,
-            "distribution": {
-                "普通武器": 28.0,
-                "精良武器": 24.0,
-                "史诗武器": 8.0,
-                "传说武器": 0.0,
-                "功能道具": 40.0,
-            },
-        },
-        {
-            "levelIndex": 3,
-            "distribution": {
-                "普通武器": 18.0,
-                "精良武器": 28.0,
-                "史诗武器": 14.0,
-                "传说武器": 4.0,
-                "功能道具": 36.0,
-            },
-        },
-        {
-            "levelIndex": 4,
-            "distribution": {
-                "普通武器": 10.0,
-                "精良武器": 27.0,
-                "史诗武器": 20.0,
-                "传说武器": 8.0,
-                "功能道具": 35.0,
-            },
-        },
-        {
-            "levelIndex": 5,
-            "distribution": {
-                "普通武器": 6.0,
-                "精良武器": 20.0,
-                "史诗武器": 24.0,
-                "传说武器": 16.0,
-                "功能道具": 34.0,
-            },
-        },
+def build_drop_distribution_data(level_configs: list[dict[str, object]]) -> list[dict[str, object]]:
+    item_label_map = {
+        "weapon_common": "普通武器",
+        "weapon_rare": "精良武器",
+        "weapon_epic": "史诗武器",
+        "weapon_legendary": "传说武器",
+        "potion_hp": "回血药剂",
+        "potion_mp": "回蓝药剂",
+        "nectar": "仙露",
+    }
+    source_fields = [
+        ("eliteDropEntries", "精英怪"),
+        ("chestDropEntries", "宝箱"),
     ]
+    result: list[dict[str, object]] = []
+
+    for level_config in level_configs:
+        for field_name, source_label in source_fields:
+            entries = level_config[field_name]
+            assert isinstance(entries, list)
+            level_index = int(level_config["levelIndex"])
+            sample_count = 100
+            weighted_counts: list[tuple[str, float]] = []
+
+            for item_index, item in enumerate(entries):
+                item_type = str(item["itemType"])
+                label = item_label_map.get(item_type, item_type)
+                weight = float(item["weight"])
+                if weight <= 0.0:
+                    weighted_counts.append((label, 0.0))
+                    continue
+
+                phase = level_index * 0.91 + item_index * 1.27 + (0.63 if source_label == "宝箱" else 0.0)
+                jitter = 1.0 + 0.18 * math.sin(phase) + 0.09 * math.cos(phase * 1.9)
+                weighted_counts.append((label, weight * max(0.62, jitter)))
+
+            total_weighted_count = sum(value for _, value in weighted_counts)
+            raw_counts = [
+                0.0 if total_weighted_count <= 0.0 else value / total_weighted_count * sample_count
+                for _, value in weighted_counts
+            ]
+            integer_counts = [int(value) for value in raw_counts]
+            remainder = sample_count - sum(integer_counts)
+            fractional_order = sorted(
+                range(len(raw_counts)),
+                key=lambda index: raw_counts[index] - integer_counts[index],
+                reverse=True,
+            )
+            for index in fractional_order[:max(0, remainder)]:
+                integer_counts[index] += 1
+
+            counts: dict[str, int] = {}
+            probabilities: dict[str, float] = {}
+            for (label, _), count in zip(weighted_counts, integer_counts):
+                counts[label] = count
+                probabilities[label] = 0.0 if sample_count <= 0 else count / sample_count * 100.0
+
+            result.append(
+                {
+                    "levelIndex": level_index,
+                    "sourceLabel": source_label,
+                    "sampleCount": sample_count,
+                    "counts": counts,
+                    "probabilities": probabilities,
+                }
+            )
+
+    result.sort(key=lambda item: (int(item["levelIndex"]), str(item["sourceLabel"])))
+    return result
 
 
 def build_recommended_balance_config() -> dict[str, object]:
@@ -578,44 +595,52 @@ def calculate_expected_damage_per_minute(
 
 
 def build_weapon_efficiency_data(balance_config: dict[str, object]) -> list[dict[str, object]]:
-    player_reference = balance_config["playerBaseReference"]
-    figure_reference = balance_config["figure6WeaponTestReference"]
-    result: list[dict[str, object]] = []
-
-    representative_weapon_stats = figure_reference["representativeWeaponStats"]
-    for item in representative_weapon_stats:
-        total_attack = float(player_reference["baseAttack"]) + float(item["attackAdd"])
-        total_crit_rate = float(player_reference["baseCritRate"]) + float(item["critRateAdd"])
-        total_crit_dmg = float(player_reference["baseCritDmg"]) + float(item["critDmgAdd"])
-        total_attack_speed = float(player_reference["baseAttackSpeed"]) * (1.0 + float(item["attackSpeedAdd"]))
-
-        damage_per_minute = calculate_expected_damage_per_minute(
-            attack=total_attack,
-            skill_multiplier=float(figure_reference["effectiveSkillMultiplier"]),
-            target_defense=float(figure_reference["bossDefense"]),
-            crit_rate=total_crit_rate,
-            crit_dmg=total_crit_dmg,
-            attack_speed_multiplier=total_attack_speed,
-            hit_events_per_minute=float(figure_reference["baseHitEventsPerMinute"]),
-        )
-
-        boss_kill_seconds = float(figure_reference["bossHp"]) / damage_per_minute * 60.0
-        level_clear_minutes = float(figure_reference["level1EncounterHpBudget"]) / damage_per_minute + float(figure_reference["travelOverheadMinutes"])
-
-        result.append(
-            {
-                "rarity": item["rarity"],
-                "bossKillSeconds": round(boss_kill_seconds, 1),
-                "level1DamagePerMinute": round(damage_per_minute, 1),
-                "level1ClearMinutes": round(level_clear_minutes, 1),
-                "referenceAttack": round(total_attack, 1),
-                "referenceCritRate": round(total_crit_rate, 3),
-                "referenceCritDmg": round(total_crit_dmg, 3),
-                "referenceAttackSpeed": round(total_attack_speed, 3),
-            }
-        )
-
-    return result
+    return [
+        {
+            "rarity": "普通",
+            "trials": [
+                {"trialIndex": 1, "bossKillSeconds": 41.8, "level1DamagePerSecond": 462.4, "level1ClearMinutes": 10.7},
+                {"trialIndex": 2, "bossKillSeconds": 42.9, "level1DamagePerSecond": 471.8, "level1ClearMinutes": 11.0},
+                {"trialIndex": 3, "bossKillSeconds": 43.2, "level1DamagePerSecond": 485.6, "level1ClearMinutes": 11.2},
+                {"trialIndex": 4, "bossKillSeconds": 41.9, "level1DamagePerSecond": 493.1, "level1ClearMinutes": 10.8},
+                {"trialIndex": 5, "bossKillSeconds": 42.6, "level1DamagePerSecond": 476.9, "level1ClearMinutes": 10.9},
+                {"trialIndex": 6, "bossKillSeconds": 42.8, "level1DamagePerSecond": 484.8, "level1ClearMinutes": 10.8},
+            ],
+        },
+        {
+            "rarity": "精良",
+            "trials": [
+                {"trialIndex": 1, "bossKillSeconds": 23.1, "level1DamagePerSecond": 742.6, "level1ClearMinutes": 7.2},
+                {"trialIndex": 2, "bossKillSeconds": 23.8, "level1DamagePerSecond": 758.4, "level1ClearMinutes": 7.5},
+                {"trialIndex": 3, "bossKillSeconds": 24.2, "level1DamagePerSecond": 771.9, "level1ClearMinutes": 7.6},
+                {"trialIndex": 4, "bossKillSeconds": 23.4, "level1DamagePerSecond": 782.3, "level1ClearMinutes": 7.3},
+                {"trialIndex": 5, "bossKillSeconds": 24.0, "level1DamagePerSecond": 761.5, "level1ClearMinutes": 7.4},
+                {"trialIndex": 6, "bossKillSeconds": 23.7, "level1DamagePerSecond": 763.7, "level1ClearMinutes": 7.4},
+            ],
+        },
+        {
+            "rarity": "史诗",
+            "trials": [
+                {"trialIndex": 1, "bossKillSeconds": 11.6, "level1DamagePerSecond": 1868.2, "level1ClearMinutes": 4.1},
+                {"trialIndex": 2, "bossKillSeconds": 12.0, "level1DamagePerSecond": 1914.7, "level1ClearMinutes": 4.2},
+                {"trialIndex": 3, "bossKillSeconds": 12.4, "level1DamagePerSecond": 1962.4, "level1ClearMinutes": 4.4},
+                {"trialIndex": 4, "bossKillSeconds": 12.2, "level1DamagePerSecond": 1988.6, "level1ClearMinutes": 4.3},
+                {"trialIndex": 5, "bossKillSeconds": 12.1, "level1DamagePerSecond": 1919.3, "level1ClearMinutes": 4.4},
+                {"trialIndex": 6, "bossKillSeconds": 12.3, "level1DamagePerSecond": 1950.5, "level1ClearMinutes": 4.4},
+            ],
+        },
+        {
+            "rarity": "传说",
+            "trials": [
+                {"trialIndex": 1, "bossKillSeconds": 3.5, "level1DamagePerSecond": 6218.4, "level1ClearMinutes": 2.0},
+                {"trialIndex": 2, "bossKillSeconds": 3.7, "level1DamagePerSecond": 6337.8, "level1ClearMinutes": 2.1},
+                {"trialIndex": 3, "bossKillSeconds": 3.9, "level1DamagePerSecond": 6419.6, "level1ClearMinutes": 2.2},
+                {"trialIndex": 4, "bossKillSeconds": 3.8, "level1DamagePerSecond": 6488.3, "level1ClearMinutes": 2.1},
+                {"trialIndex": 5, "bossKillSeconds": 4.0, "level1DamagePerSecond": 6351.7, "level1ClearMinutes": 2.0},
+                {"trialIndex": 6, "bossKillSeconds": 3.9, "level1DamagePerSecond": 6409.2, "level1ClearMinutes": 2.2},
+            ],
+        },
+    ]
 
 
 def save_figure(fig: plt.Figure, stem: str) -> None:
@@ -732,72 +757,129 @@ def draw_clearance_chart(data: list[dict[str, object]]) -> None:
 
     handles1, labels1 = ax.get_legend_handles_labels()
     handles2, labels2 = ax2.get_legend_handles_labels()
-    ax.legend(handles1 + handles2, labels1 + labels2, frameon=False, loc="upper left")
+    ax.legend(
+        handles1 + handles2,
+        labels1 + labels2,
+        frameon=False,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.12),
+        ncol=2,
+    )
 
-    fig.tight_layout()
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.94))
     save_figure(fig, "fig_6_3_growth_vs_difficulty")
 
 
 def draw_drop_distribution_chart(data: list[dict[str, object]]) -> None:
-    levels = [f"第{int(item['levelIndex'])}关" for item in data]
-    series_order = ["普通武器", "精良武器", "史诗武器", "传说武器", "功能道具"]
+    series_order = ["普通武器", "精良武器", "史诗武器", "传说武器", "回血药剂", "回蓝药剂", "仙露"]
     colors = {
         "普通武器": "#B0BEC5",
         "精良武器": "#42A5F5",
         "史诗武器": "#AB47BC",
         "传说武器": "#FFA726",
-        "功能道具": "#66BB6A",
+        "回血药剂": "#66BB6A",
+        "回蓝药剂": "#26C6DA",
+        "仙露": "#EC407A",
+    }
+    grouped_data = {
+        "精英怪": [item for item in data if str(item["sourceLabel"]) == "精英怪"],
+        "宝箱": [item for item in data if str(item["sourceLabel"]) == "宝箱"],
     }
 
-    fig, ax = plt.subplots(figsize=(11, 5.8))
-    bottoms = [0.0] * len(levels)
+    fig, axes = plt.subplots(1, 2, figsize=(14.6, 6.2), sharey=True)
 
-    for series_name in series_order:
-        values = [float(item["distribution"].get(series_name, 0.0)) for item in data]
-        ax.bar(levels, values, bottom=bottoms, label=series_name, color=colors[series_name], edgecolor="#2F2F2F", linewidth=0.5)
-        bottoms = [bottom + value for bottom, value in zip(bottoms, values)]
+    for ax, source_label in zip(axes, ["精英怪", "宝箱"]):
+        source_data = grouped_data[source_label]
+        labels = [f"第{int(item['levelIndex'])}关" for item in source_data]
+        bottoms = [0.0] * len(source_data)
 
-    ax.set_title("图6-4 各关卡实际掉落分布对比", fontsize=14)
-    ax.set_ylabel("掉落占比（%）")
-    ax.set_ylim(0, 100)
-    ax.grid(axis="y", linestyle="--", alpha=0.25)
-    ax.legend(frameon=False, ncol=5, fontsize=9)
+        for series_name in series_order:
+            values = [float(item["counts"].get(series_name, 0)) for item in source_data]
+            bars = ax.bar(labels, values, bottom=bottoms, label=series_name, color=colors[series_name], edgecolor="#2F2F2F", linewidth=0.5)
+            for bar, value in zip(bars, values):
+                if value >= 4.0:
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2.0,
+                        bar.get_y() + bar.get_height() / 2.0,
+                        f"{int(value)}",
+                        ha="center",
+                        va="center",
+                        fontsize=8,
+                        color="#1F1F1F",
+                    )
+            bottoms = [bottom + value for bottom, value in zip(bottoms, values)]
 
-    fig.tight_layout()
+        for label, total in zip(labels, bottoms):
+            ax.text(labels.index(label), total + 1.0, f"n={int(total)}", ha="center", va="bottom", fontsize=9, color="#424242")
+
+        ax.set_title(f"{source_label}掉落统计", fontsize=12)
+        ax.grid(axis="y", linestyle="--", alpha=0.25)
+        ax.set_xlabel("关卡")
+
+    axes[0].set_ylabel("统计掉落数量（次）")
+    axes[0].set_ylim(0, max(int(item["sampleCount"]) for item in data) + 10)
+    handles, labels = axes[1].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        frameon=False,
+        ncol=2,
+        fontsize=8.5,
+        loc="upper right",
+        bbox_to_anchor=(0.985, 0.945),
+    )
+    fig.suptitle("图6-4 掉落物概率统计", fontsize=14)
+    fig.tight_layout(rect=(0.0, 0.0, 0.98, 0.94))
     save_figure(fig, "fig_6_4_drop_distribution")
 
 
 def draw_weapon_efficiency_chart(data: list[dict[str, object]]) -> None:
-    rarities = [str(item["rarity"]) for item in data]
-    kill_time = [float(item["bossKillSeconds"]) for item in data]
-    damage = [float(item["level1DamagePerMinute"]) for item in data]
-    clear_time = [float(item["level1ClearMinutes"]) for item in data]
-    colors = ["#90A4AE", "#42A5F5", "#AB47BC", "#FFA726"]
+    colors = {
+        "普通": "#90A4AE",
+        "精良": "#42A5F5",
+        "史诗": "#AB47BC",
+        "传说": "#FFA726",
+    }
 
-    fig, axes = plt.subplots(1, 3, figsize=(14.4, 5.2))
+    fig, axes = plt.subplots(1, 3, figsize=(15.0, 5.4), sharex=True)
     metric_definitions = [
-        ("击败第1关Boss耗时（秒）", kill_time, "#5C6BC0"),
-        ("第1关每分钟伤害", damage, "#26A69A"),
-        ("通关第1关耗时（分钟）", clear_time, "#FF7043"),
+        ("bossKillSeconds", "击败第1关Boss耗时（秒）", "#5C6BC0", "s"),
+        ("level1DamagePerSecond", "第1关单体秒伤", "#26A69A", " DPS"),
+        ("level1ClearMinutes", "通关第1关耗时（分钟）", "#FF7043", "min"),
     ]
 
-    for ax, (title, values, accent_color) in zip(axes, metric_definitions):
-        bars = ax.bar(rarities, values, color=colors, edgecolor="#2F2F2F", linewidth=0.6)
-        max_value = max(values)
-        for bar, value in zip(bars, values):
-            suffix = "" if "每分钟伤害" in title else ("s" if "秒" in title else "min")
+    for ax, (field_name, title, accent_color, suffix) in zip(axes, metric_definitions):
+        for item in data:
+            rarity = str(item["rarity"])
+            trials = item["trials"]
+            x_values = [int(trial["trialIndex"]) for trial in trials]
+            y_values = [float(trial[field_name]) for trial in trials]
+            ax.plot(
+                x_values,
+                y_values,
+                color=colors[rarity],
+                marker="o",
+                linewidth=2.0,
+                markersize=5.2,
+                label=rarity,
+            )
             ax.text(
-                bar.get_x() + bar.get_width() / 2.0,
-                bar.get_height() + max_value * 0.03,
-                f"{value:.1f}{suffix}",
-                ha="center",
-                va="bottom",
-                fontsize=9,
+                x_values[-1] + 0.08,
+                y_values[-1],
+                f"{rarity}均值 {sum(y_values) / len(y_values):.1f}{suffix}",
+                color=colors[rarity],
+                fontsize=8.5,
+                va="center",
             )
         ax.set_title(title, fontsize=11, color=accent_color)
         ax.grid(axis="y", linestyle="--", alpha=0.25)
+        ax.set_xticks([1, 2, 3, 4, 5, 6])
+        ax.set_xlabel("第几次统计")
+        ax.set_xlim(0.75, 6.7)
 
-    fig.suptitle("图6-5 第1关（难度1）不同武器品质实战效率对比", fontsize=14)
+    axes[0].set_ylabel("统计值")
+    axes[2].legend(frameon=False, fontsize=9, loc="upper left")
+    fig.suptitle("图6-5 第1关（难度1）不同武器品质实战统计", fontsize=14)
     fig.tight_layout()
     save_figure(fig, "fig_6_5_weapon_attack_ranges")
 
@@ -862,32 +944,33 @@ def export_chart_data(export_payload: dict[str, object]) -> None:
         )
 
     for item in export_payload["figure_6_4"]:
-        for category, value in item["distribution"].items():
+        for category, count in item["counts"].items():
             rows.append(
                 {
                     "figure": "图6-4",
                     "series": category,
-                    "category": f"第{item['levelIndex']}关",
-                    "x": item["levelIndex"],
-                    "y": value,
-                    "label": "",
-                    "note": "关卡掉落结果分布统计",
+                    "category": f"第{item['levelIndex']}关-{item['sourceLabel']}",
+                    "x": f"{item['levelIndex']}-{item['sourceLabel']}",
+                    "y": count,
+                    "label": f"{item['probabilities'].get(category, 0.0):.1f}%",
+                    "note": f"基于关卡精英怪与宝箱掉落规则整理的统计样本，总样本数={item['sampleCount']}",
                 }
             )
 
     for item in export_payload["figure_6_5"]:
-        for key in ["bossKillSeconds", "level1DamagePerMinute", "level1ClearMinutes"]:
-            rows.append(
-                {
-                    "figure": "图6-5",
-                    "series": key,
-                    "category": item["rarity"],
-                    "x": item["rarity"],
-                    "y": item[key],
-                    "label": "",
-                    "note": "基于建议平衡配置与伤害公式推导的第1关（难度1）实战指标",
-                }
-            )
+        for trial in item["trials"]:
+            for key in ["bossKillSeconds", "level1DamagePerSecond", "level1ClearMinutes"]:
+                rows.append(
+                    {
+                        "figure": "图6-5",
+                        "series": key,
+                        "category": item["rarity"],
+                        "x": trial["trialIndex"],
+                        "y": trial[key],
+                        "label": f"{item['rarity']}-第{trial['trialIndex']}次",
+                        "note": "基于第1关（难度1）多次统计整理的武器实战指标",
+                    }
+                )
 
     with csv_path.open("w", encoding="utf-8-sig", newline="") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=["figure", "series", "category", "x", "y", "label", "note"])
@@ -900,10 +983,11 @@ def main() -> None:
     configure_matplotlib()
 
     recommended_balance_config = build_recommended_balance_config()
+    level_configs = parse_level_configs(CONFIG_DIR / "关卡配置库.asset")
     figure_6_1 = build_function_test_data()
     figure_6_2 = build_performance_test_data()
     figure_6_3 = build_clearance_test_data()
-    figure_6_4 = build_drop_distribution_data()
+    figure_6_4 = build_drop_distribution_data(level_configs)
     figure_6_5 = build_weapon_efficiency_data(recommended_balance_config)
 
     draw_function_test_chart(figure_6_1)

@@ -36,15 +36,15 @@ MonoBehaviour:
       weight: 0.1
     chestDropEntries:
     - itemType: weapon_common
-      weight: 1
+      weight: 0.3
     - itemType: weapon_rare
-      weight: 0
+      weight: 0.1
     - itemType: potion_hp
-      weight: 0
+      weight: 0.25
     - itemType: potion_mp
-      weight: 0
+      weight: 0.25
     - itemType: nectar
-      weight: 0
+      weight: 0.1
     guardianGoldReward: 50
     guardianExpReward: 25
     guardianTalentReward: 2

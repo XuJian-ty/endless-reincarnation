@@ -44,7 +44,7 @@ namespace Game.Presentation
                 return;
             }
 
-            if (!IsGrounded)
+            if (HasExceededFallTransitionDelay(dt))
             {
                 GoTo<FallState>();
                 return;
@@ -97,7 +97,7 @@ namespace Game.Presentation
 
         private void ExitAimState(in PlayerInputData input)
         {
-            if (!IsGrounded)
+            if (HasExceededFallTransitionDelay(0f))
             {
                 GoTo<FallState>();
                 return;
