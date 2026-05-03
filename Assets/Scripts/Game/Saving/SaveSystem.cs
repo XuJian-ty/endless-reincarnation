@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 using Game;
 using Game.Data;
+using Game.Social;
 using ProjectBase;
 
 namespace Game.Saving
@@ -14,16 +15,45 @@ namespace Game.Saving
     /// </summary>
     public class SaveSystem : BaseManager<SaveSystem>
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 5;
+        public const string DefaultPortraitId = "UI图片/天依";
 
         private ISaveStorage _storage;
+        private RemoteSaveStorage _remoteStorage;
+        private FileSaveStorage _fileStorage;
         private List<SaveEntry> _index = new List<SaveEntry>();
-        private static string IndexPath => Path.Combine(Application.persistentDataPath, "saves_index.json");
+        private static string IndexPath => Path.Combine(GetCurrentUserSaveRoot(), "saves_index.json");
 
         public ISaveStorage Storage
         {
-            get => _storage ??= new FileSaveStorage();
+            get => _storage ??= CreateDefaultStorage();
             set => _storage = value;
+        }
+
+        public SaveSystem()
+        {
+            SocialSession.GetInstance().SessionChanged += HandleSessionChanged;
+        }
+
+        private ISaveStorage CreateDefaultStorage()
+        {
+            if (SocialSession.GetInstance().IsLoggedIn)
+                return _remoteStorage ??= new RemoteSaveStorage();
+
+            return _fileStorage ??= new FileSaveStorage();
+        }
+
+        private void HandleSessionChanged()
+        {
+            _storage = null;
+        }
+
+        public static string GetCurrentUserSaveRoot()
+        {
+            string root = Path.Combine(Application.persistentDataPath, "social_saves", GetCurrentUserStorageKey());
+            if (!Directory.Exists(root))
+                Directory.CreateDirectory(root);
+            return root;
         }
 
         private void LoadIndex()
@@ -58,6 +88,13 @@ namespace Game.Saving
         /// <summary>获取所有存档列表项（按最后修改时间倒序）</summary>
         public List<SaveEntry> GetAllSaveEntries()
         {
+            if (Storage is IIndexedSaveStorage indexedStorage)
+            {
+                List<SaveEntry> entries = indexedStorage.GetAllEntries() ?? new List<SaveEntry>();
+                entries.Sort((a, b) => b.lastModifiedTicks.CompareTo(a.lastModifiedTicks));
+                return entries;
+            }
+
             LoadIndex();
             _index.Sort((a, b) => b.lastModifiedTicks.CompareTo(a.lastModifiedTicks));
             return new List<SaveEntry>(_index);
@@ -157,6 +194,15 @@ namespace Game.Saving
             {
                 data.run.selectedSkillMutations ??= new List<SkillMutationSelectionSave>();
             }
+            if (data.version < 4)
+            {
+                // v4 起关卡内音频设置改为本机设备偏好，不再保存在存档里。
+            }
+            if (data.version < 5)
+            {
+                if (string.IsNullOrWhiteSpace(data.portraitId))
+                    data.portraitId = DefaultPortraitId;
+            }
             if (data.run.levelSnapshot != null)
             {
                 data.run.levelSnapshot.enemies ??= new List<EnemySnapshot>();
@@ -174,9 +220,8 @@ namespace Game.Saving
                 for (int i = 0; i < data.run.levelSnapshot.localSpawners.Count; i++)
                     data.run.levelSnapshot.localSpawners[i].plannedSpawnCounts ??= new List<int>();
             }
-            if (data.run.levelBgmVolume <= 0f) data.run.levelBgmVolume = 1f;
-            if (data.run.levelBgmTrackIndex < 0) data.run.levelBgmTrackIndex = 0;
-            if (data.run.soundEffectsVolume < 0f) data.run.soundEffectsVolume = 1f;
+            if (string.IsNullOrWhiteSpace(data.portraitId))
+                data.portraitId = DefaultPortraitId;
             if (data.run.keyConfigOverrides == null) data.run.keyConfigOverrides = "";
             data.version = CurrentVersion;
         }
@@ -227,6 +272,7 @@ namespace Game.Saving
         {
             var data = NewGameRun(Mathf.Max(1, levelIndex), Mathf.Max(1, difficulty));
             data.playerName = NormalizePlayerName(playerName);
+            data.portraitId = DefaultPortraitId;
             string id = Guid.NewGuid().ToString("N");
             Save(id, data);
             return id;
@@ -259,6 +305,7 @@ namespace Game.Saving
 
             SaveData created = NewGameRun(normalizedLevelIndex, 1);
             created.playerName = normalizedPlayerName;
+            created.portraitId = DefaultPortraitId;
             saveId = Guid.NewGuid().ToString("N");
             Save(saveId, created);
             return created;
@@ -270,6 +317,7 @@ namespace Game.Saving
             var save = new SaveData
             {
                 version = CurrentVersion,
+                portraitId = DefaultPortraitId,
                 run = new RunData
                 {
                     levelIndex       = levelIndex,
@@ -328,6 +376,32 @@ namespace Game.Saving
         private static string NormalizePlayerName(string playerName)
         {
             return string.IsNullOrWhiteSpace(playerName) ? "玩家" : playerName.Trim();
+        }
+
+        private static string GetCurrentUserStorageKey()
+        {
+            SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
+            if (currentUser != null && !string.IsNullOrWhiteSpace(currentUser.userId))
+                return SanitizePathSegment(currentUser.userId.Trim());
+
+            Debug.LogError("[SaveSystem] 当前未登录账号，不能访问账号存档目录。");
+            return "_missing_user";
+        }
+
+        private static string SanitizePathSegment(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "_missing_user";
+
+            char[] invalid = Path.GetInvalidFileNameChars();
+            char[] chars = value.ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (Array.IndexOf(invalid, chars[i]) >= 0)
+                    chars[i] = '_';
+            }
+
+            return new string(chars);
         }
 
         private static void SetStarterStack(List<InventorySlotSave> slots, int index, string itemId, int count)

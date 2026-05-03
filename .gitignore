@@ -6,6 +6,10 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+/Backend/**/bin/
+/Backend/**/obj/
+/Backend/**/.dotnet/
+/Backend/**/Data/
 
 # Visual Studio
 .vs/

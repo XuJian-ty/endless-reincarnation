@@ -1,5 +1,6 @@
 using UnityEngine;
 using Game.Data;
+using Game.Social;
 using ProjectBase;
 using Game;
 
@@ -16,6 +17,8 @@ namespace Game.UI
 
         private static bool _useLoadingTransitionForNextShow;
         private bool _mainMenuShown;
+        private bool _sessionSubscribed;
+        private int _promptAvailableFrame = -1;
 
         /// <summary>
         /// 将下一次 ShowMe 设为“加载过渡模式”：
@@ -29,6 +32,7 @@ namespace Game.UI
         public override void ShowMe()
         {
             gameObject.SetActive(true);
+            SetSessionSubscription(true);
 
             bool isLoadingTransition = _useLoadingTransitionForNextShow;
             _useLoadingTransitionForNextShow = false;
@@ -36,9 +40,22 @@ namespace Game.UI
             if (!isLoadingTransition)
                 ApplyMainMenuBgm();
 
-            if (promptClickToContinue != null)
-                promptClickToContinue.SetActive(!isLoadingTransition);
-            _mainMenuShown = isLoadingTransition;
+            if (isLoadingTransition)
+            {
+                if (promptClickToContinue != null)
+                    promptClickToContinue.SetActive(false);
+                _mainMenuShown = true;
+                return;
+            }
+
+            _mainMenuShown = false;
+            RefreshEntryFlow();
+        }
+
+        public override void HideMe()
+        {
+            SetSessionSubscription(false);
+            gameObject.SetActive(false);
         }
 
         private static void ApplyMainMenuBgm()
@@ -60,6 +77,7 @@ namespace Game.UI
         {
             if (_mainMenuShown) return;
             if (promptClickToContinue != null && !promptClickToContinue.activeSelf) return;
+            if (Time.frameCount <= _promptAvailableFrame) return;
             if (!UnityEngine.Input.anyKeyDown && !UnityEngine.Input.GetMouseButtonDown(0)) return;
 
             _mainMenuShown = true;
@@ -71,6 +89,65 @@ namespace Game.UI
                 PanelNames.MainMenu,
                 PanelLayers.MainMenu,
                 panel => panel.Init(levelGrowth));
+        }
+
+        private void RefreshEntryFlow()
+        {
+            if (SocialSession.GetInstance().IsLoggedIn)
+            {
+                UIManager.GetInstance().HidePanel(PanelNames.SocialLogin);
+                if (promptClickToContinue != null)
+                {
+                    promptClickToContinue.SetActive(!_mainMenuShown);
+                    if (!_mainMenuShown)
+                        _promptAvailableFrame = Time.frameCount;
+                }
+                return;
+            }
+
+            _mainMenuShown = false;
+            if (promptClickToContinue != null)
+                promptClickToContinue.SetActive(false);
+
+            UIManager.GetInstance().HidePanel(PanelNames.MainMenu);
+            UIManager.GetInstance().HidePanel(PanelNames.NamePanel);
+            UIManager.GetInstance().HidePanel(PanelNames.SaveList);
+            UIManager.GetInstance().HidePanel(PanelNames.SocialHub);
+            UIManager.GetInstance().ShowPanel<SocialLoginPanel>(
+                PanelNames.SocialLogin,
+                PanelLayers.SocialLogin);
+        }
+
+        private void HandleSessionChanged()
+        {
+            if (!gameObject.activeInHierarchy)
+                return;
+
+            RefreshEntryFlow();
+        }
+
+        private void SetSessionSubscription(bool subscribe)
+        {
+            if (subscribe)
+            {
+                if (_sessionSubscribed)
+                    return;
+
+                SocialSession.GetInstance().SessionChanged += HandleSessionChanged;
+                _sessionSubscribed = true;
+                return;
+            }
+
+            if (!_sessionSubscribed)
+                return;
+
+            SocialSession.GetInstance().SessionChanged -= HandleSessionChanged;
+            _sessionSubscribed = false;
+        }
+
+        private void OnDestroy()
+        {
+            SetSessionSubscription(false);
         }
     }
 }

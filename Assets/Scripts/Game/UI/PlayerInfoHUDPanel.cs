@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Game.Domain;
 using Game.GameFlow;
+using Game.Social;
 using ProjectBase;
 
 namespace Game.UI
@@ -25,6 +26,10 @@ namespace Game.UI
         private Text _goldText;
         private Text _levelIndexText;
         private Text _difficultyText;
+        private Image _portraitImage;
+        private Button _portraitButton;
+        private Button _socialHubButton;
+        private bool _socialButtonBuilt;
 
         private bool _dirty = true;
         private float _lastHp, _lastMp, _lastExp, _lastExpToNext;
@@ -33,6 +38,7 @@ namespace Game.UI
         private int _lastLevelIndex;
         private int _lastDifficulty;
         private string _lastPlayerName;
+        private string _lastPortraitId;
 
         protected override void Awake()
         {
@@ -53,12 +59,16 @@ namespace Game.UI
             _goldText       = GetControl<Text>("GoldText");
             _levelIndexText = GetControl<Text>("Text_LevelIndex");
             _difficultyText = GetControl<Text>("Text_Difficulty");
+            _portraitImage  = GetControl<Image>("Img_Avatar");
+            EnsurePortraitButton();
+            EnsureSocialButton();
         }
 
         public override void ShowMe()
         {
             gameObject.SetActive(true);
             _dirty = true;
+            RefreshSocialButton();
             RefreshIfDirty();
         }
 
@@ -74,6 +84,9 @@ namespace Game.UI
             {
                 model.SubscribeInventoryChanged(MarkDirty);
             }
+
+            SocialSession.GetInstance().SessionChanged += RefreshSocialButton;
+            RefreshSocialButton();
         }
 
         private void OnDisable()
@@ -83,6 +96,8 @@ namespace Game.UI
             {
                 model.UnsubscribeInventoryChanged(MarkDirty);
             }
+
+            SocialSession.GetInstance().SessionChanged -= RefreshSocialButton;
         }
 
         private void MarkDirty() => _dirty = true;
@@ -103,15 +118,17 @@ namespace Game.UI
             int levelIndex = run?.levelIndex ?? 0;
             int difficulty = run?.difficulty ?? 0;
             string playerName = model.CurrentPlayerName ?? "玩家";
+            string portraitId = model.CurrentPortraitId;
 
             if (!_dirty && _lastHp == hp && _lastMp == mp && _lastExp == exp && _lastExpToNext == expToNext
                 && _lastLevel == level && _lastGold == gold && _lastLevelIndex == levelIndex && _lastDifficulty == difficulty
-                && _lastPlayerName == playerName)
+                && _lastPlayerName == playerName && _lastPortraitId == portraitId)
                 return;
 
             _lastHp = hp; _lastMp = mp; _lastExp = exp; _lastExpToNext = expToNext;
             _lastLevel = level; _lastGold = gold; _lastLevelIndex = levelIndex; _lastDifficulty = difficulty;
             _lastPlayerName = playerName;
+            _lastPortraitId = portraitId;
             _dirty = false;
             RefreshAll(model);
         }
@@ -135,6 +152,16 @@ namespace Game.UI
             if (_playerNameText != null) _playerNameText.text = displayName;
             if (_levelText != null)      _levelText.text      = $"Lv.{player.Exp.Level}";
 
+            if (_portraitImage != null)
+            {
+                Sprite portrait = PlayerPortraitUtility.LoadPortraitSprite(model.CurrentPortraitId);
+                if (portrait != null)
+                {
+                    _portraitImage.sprite = portrait;
+                    _portraitImage.preserveAspect = true;
+                }
+            }
+
             if (_hpSlider != null) { _hpSlider.maxValue = stats.MaxHp; _hpSlider.value = player.CurrentHp; }
             if (_hpText != null)   _hpText.text = $"{player.CurrentHp:F0}/{stats.MaxHp:F0}";
 
@@ -148,6 +175,94 @@ namespace Game.UI
 
             if (_levelIndexText != null && run != null) _levelIndexText.text = $"关卡： {run.levelIndex}";
             if (_difficultyText != null && run != null) _difficultyText.text = $"难度： {run.difficulty}";
+        }
+
+        private void EnsurePortraitButton()
+        {
+            if (_portraitImage == null || _portraitButton != null)
+                return;
+
+            _portraitImage.raycastTarget = true;
+            _portraitButton = _portraitImage.GetComponent<Button>();
+            if (_portraitButton == null)
+                _portraitButton = _portraitImage.gameObject.AddComponent<Button>();
+
+            _portraitButton.transition = Selectable.Transition.None;
+            _portraitButton.targetGraphic = _portraitImage;
+            _portraitButton.onClick.RemoveAllListeners();
+            _portraitButton.onClick.AddListener(() =>
+            {
+                UIManager.GetInstance()?.ShowPanel<PlayerProfilePanel>(PanelNames.PlayerProfile, PanelLayers.PlayerProfile);
+            });
+        }
+
+        private void EnsureSocialButton()
+        {
+            if (_socialButtonBuilt)
+                return;
+
+            RectTransform root = transform as RectTransform;
+            if (root == null)
+                return;
+
+            GameObject buttonObject = new GameObject("Btn_SocialHub", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(transform, false);
+
+            RectTransform rect = buttonObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(0f, 0f);
+            rect.pivot = new Vector2(0f, 0f);
+            rect.anchoredPosition = new Vector2(24f, 24f);
+            rect.sizeDelta = new Vector2(112f, 44f);
+
+            Image image = buttonObject.GetComponent<Image>();
+            image.color = new Color(0.18f, 0.45f, 0.72f, 0.92f);
+            image.raycastTarget = true;
+
+            _socialHubButton = buttonObject.GetComponent<Button>();
+            _socialHubButton.targetGraphic = image;
+            _socialHubButton.onClick.AddListener(() =>
+            {
+                UIManager.GetInstance().ShowPanel<SocialHubPanel>(PanelNames.SocialHub, PanelLayers.SocialHub);
+            });
+
+            GameObject labelObject = new GameObject("Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            labelObject.transform.SetParent(buttonObject.transform, false);
+
+            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+
+            Text label = labelObject.GetComponent<Text>();
+            label.text = "社交";
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.fontSize = 20;
+            label.fontStyle = FontStyle.Bold;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            label.raycastTarget = false;
+
+            _socialButtonBuilt = true;
+            RefreshSocialButton();
+        }
+
+        private void RefreshSocialButton()
+        {
+            if (_socialHubButton == null)
+                return;
+
+            bool loggedIn = SocialSession.GetInstance().IsLoggedIn;
+            _socialHubButton.interactable = loggedIn;
+
+            Image image = _socialHubButton.targetGraphic as Image;
+            if (image != null)
+            {
+                image.color = loggedIn
+                    ? new Color(0.18f, 0.45f, 0.72f, 0.92f)
+                    : new Color(0.25f, 0.28f, 0.32f, 0.7f);
+            }
         }
     }
 }

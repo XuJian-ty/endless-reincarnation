@@ -66,5 +66,6 @@ namespace Game.UI
             var run = LevelUIModelLocator.Get()?.CurrentRun ?? GameStateMachine.GetInstance()?.CurrentRun;
             btn.gameObject.SetActive(run != null && run.isGameCleared);
         }
+
     }
 }
