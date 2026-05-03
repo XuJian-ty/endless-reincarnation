@@ -22,7 +22,7 @@ namespace Game.Saving
 
         private static string GetPath(string id, string suffix)
         {
-            return Path.Combine(Application.persistentDataPath, $"save_{SanitizeId(id)}{suffix}");
+            return Path.Combine(SaveSystem.GetCurrentUserSaveRoot(), $"save_{SanitizeId(id)}{suffix}");
         }
 
         public bool Exists(string id)

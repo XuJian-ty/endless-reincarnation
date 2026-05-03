@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Data;
+using Game.Social;
 using ProjectBase;
 
 namespace Game.UI
@@ -39,11 +40,8 @@ namespace Game.UI
             });
             RegisterClick("Btn_Quit", () =>
             {
-#if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-#else
-                UnityEngine.Application.Quit();
-#endif
+                UIManager.GetInstance().HidePanel(PanelNames.MainMenu);
+                SocialSession.GetInstance().Logout();
             });
         }
 
@@ -53,6 +51,7 @@ namespace Game.UI
         }
 
         public override void ShowMe() => gameObject.SetActive(true);
+
         public override void HideMe() => gameObject.SetActive(false);
     }
 }

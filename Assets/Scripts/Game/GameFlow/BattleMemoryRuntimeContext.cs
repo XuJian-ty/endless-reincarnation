@@ -19,6 +19,7 @@ namespace Game.GameFlow
         {
             public string saveId;
             public string playerName;
+            public string portraitId;
             public string sceneName;
             public RunData run;
         }
@@ -26,6 +27,7 @@ namespace Game.GameFlow
         private sealed class BattleContextSnapshot
         {
             public string playerName;
+            public string portraitId;
             public string bossId;
             public string bossDisplayName;
             public RunData templateRun;
@@ -55,10 +57,11 @@ namespace Game.GameFlow
             {
                 saveId = gsm.CurrentSaveId,
                 playerName = gsm.CurrentPlayerName,
+                portraitId = gsm.CurrentPortraitId,
                 sceneName = SceneManager.GetActiveScene().name,
                 run = SaveSystem.CloneRunData(sourceRun),
             };
-            _battle = CreateBattleSnapshot(sourceRun, gsm.CurrentPlayerName, bossId, bossDisplayName);
+            _battle = CreateBattleSnapshot(sourceRun, gsm.CurrentPlayerName, gsm.CurrentPortraitId, bossId, bossDisplayName);
             if (!AdoptBattleContext(gsm))
             {
                 Clear();
@@ -83,7 +86,7 @@ namespace Game.GameFlow
                 return false;
 
             _origin = null;
-            _battle = CreateBattleSnapshot(sourceRun, gsm.CurrentPlayerName, bossId, bossDisplayName);
+            _battle = CreateBattleSnapshot(sourceRun, gsm.CurrentPlayerName, gsm.CurrentPortraitId, bossId, bossDisplayName);
             if (AdoptBattleContext(gsm))
                 return true;
 
@@ -120,7 +123,7 @@ namespace Game.GameFlow
             {
                 RunData restoredRun = SaveSystem.CloneRunData(origin.run);
                 PlayerModel playerModel = CreatePlayerModel(restoredRun);
-                gsm.AdoptRuntimeContext(restoredRun, playerModel, origin.playerName, origin.saveId);
+                gsm.AdoptRuntimeContext(restoredRun, playerModel, origin.playerName, origin.saveId, origin.portraitId);
 
                 string sceneName = !string.IsNullOrWhiteSpace(origin.sceneName)
                     ? origin.sceneName
@@ -140,11 +143,11 @@ namespace Game.GameFlow
 
             RunData run = SaveSystem.CloneRunData(_battle.templateRun);
             PlayerModel playerModel = CreatePlayerModel(run);
-            gsm.AdoptRuntimeContext(run, playerModel, _battle.playerName, null);
+            gsm.AdoptRuntimeContext(run, playerModel, _battle.playerName, null, _battle.portraitId);
             return true;
         }
 
-        private static BattleContextSnapshot CreateBattleSnapshot(RunData sourceRun, string playerName, string bossId, string bossDisplayName)
+        private static BattleContextSnapshot CreateBattleSnapshot(RunData sourceRun, string playerName, string portraitId, string bossId, string bossDisplayName)
         {
             RunData templateRun = SaveSystem.CloneRunData(sourceRun) ?? SaveSystem.NewGameRun().run;
             templateRun.levelSnapshot = null;
@@ -159,6 +162,7 @@ namespace Game.GameFlow
             return new BattleContextSnapshot
             {
                 playerName = string.IsNullOrWhiteSpace(playerName) ? "玩家" : playerName.Trim(),
+                portraitId = string.IsNullOrWhiteSpace(portraitId) ? SaveSystem.DefaultPortraitId : portraitId.Trim(),
                 bossId = bossId.Trim(),
                 bossDisplayName = string.IsNullOrWhiteSpace(bossDisplayName) ? bossId.Trim() : bossDisplayName.Trim(),
                 templateRun = templateRun,

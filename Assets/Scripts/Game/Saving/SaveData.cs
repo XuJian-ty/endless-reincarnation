@@ -25,6 +25,8 @@ namespace Game.Saving
         public int     version = 1;
         /// <summary>玩家在起名面板输入的名字，用于存档列表展示</summary>
         public string  playerName;
+        /// <summary>存档头像资源标识。当前默认使用 UI图片/天依。 </summary>
+        public string  portraitId;
         public RunData run;
     }
 
@@ -54,16 +56,6 @@ namespace Game.Saving
         public List<string> defeatedBossIds  = new List<string>();
         public bool         isGameCleared;
 
-        /// <summary>游戏关卡内背景音乐是否开启，仅对当前存档有效</summary>
-        public bool levelBgmEnabled = true;
-        /// <summary>游戏关卡内背景音乐音量 0～1，仅对当前存档有效</summary>
-        public float levelBgmVolume = 1f;
-        /// <summary>游戏关卡内背景音乐曲目下拉索引，仅对当前存档有效</summary>
-        public int levelBgmTrackIndex = 0;
-        /// <summary>音效（除关卡 BGM 外）是否开启，仅对当前存档有效</summary>
-        public bool soundEffectsEnabled = true;
-        /// <summary>音效音量 0～1，仅对当前存档有效</summary>
-        public float soundEffectsVolume = 1f;
         /// <summary>按键配置覆盖（格式同 KeyConfigPanel：actionId,index,path;...），仅对当前存档有效</summary>
         public string keyConfigOverrides = "";
 

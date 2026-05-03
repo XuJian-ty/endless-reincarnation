@@ -13,6 +13,7 @@ namespace Game.UI
         PlayerModel Player { get; }
         RunData CurrentRun { get; }
         string CurrentPlayerName { get; }
+        string CurrentPortraitId { get; }
 
         /// <summary>订阅背包/属性变更，用于 HUD、背包面板等刷新。</summary>
         void SubscribeInventoryChanged(Action callback);

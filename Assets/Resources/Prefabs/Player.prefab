@@ -11062,6 +11062,7 @@ GameObject:
   - component: {fileID: 8532880724129978160}
   - component: {fileID: 396362934264542260}
   - component: {fileID: 4268790388907309181}
+  - component: {fileID: 7972606146572096375}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -11181,6 +11182,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _gravity: -20
+  _fallTransitionDelay: 0.5
 --- !u!114 &4054665962222687261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11265,6 +11267,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebef250bdeed0f64b8113325cbee3077, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7972606146572096375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5585036147389614541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &5596422808652736802
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,11 +22,17 @@ namespace Game.UI
         public const string NamePanel    = "NamePanel";
         public const string SaveList    = "SaveListPanel";
         public const string MainMenu    = "MainMenuPanel";
+        public const string SocialLogin = "SocialLoginPanel";
+        public const string SocialHub = "SocialHubPanel";
+        public const string SocialAddFriend = "SocialAddFriendPanel";
+        public const string SocialFriendRequests = "SocialFriendRequestsPanel";
+        public const string SocialAidRequestPopup = "SocialAidRequestPopupPanel";
         /// <summary>主界面背景（主菜单场景底层全屏图，与 MainMenuPanel 同由 UIManager 加载，放在 Bot 层）</summary>
         public const string MainMenuBackground = "MainMenuBackground";
         public const string Loading      = "LoadingPanel";
         public const string BuffSelect   = "BuffSelectPanel";
         public const string PlayerInfoHUD = "PlayerInfoHUDPanel";
+        public const string PlayerProfile = "PlayerProfilePanel";
         public const string FinalBossHealthBarOverlay = "FinalBossHealthBarOverlay";
         public const string FloatingNumberOverlay = "FloatingNumberOverlay";
         public const string BossArrivalNotice = "BossArrivalNoticePanel";
@@ -47,6 +53,12 @@ namespace Game.UI
             BattleMemory,
             Dialogue,
             Shop,
+            SocialLogin,
+            SocialHub,
+            SocialAddFriend,
+            SocialFriendRequests,
+            SocialAidRequestPopup,
+            PlayerProfile,
             DeathChoice,
             BossResult,
         };
@@ -69,10 +81,16 @@ namespace Game.UI
         public const E_UI_Layer NamePanel    = E_UI_Layer.Mid;
         public const E_UI_Layer SaveList     = E_UI_Layer.Mid;
         public const E_UI_Layer MainMenu    = E_UI_Layer.Mid;
+        public const E_UI_Layer SocialLogin = E_UI_Layer.System;
+        public const E_UI_Layer SocialHub = E_UI_Layer.System;
+        public const E_UI_Layer SocialAddFriend = E_UI_Layer.System;
+        public const E_UI_Layer SocialFriendRequests = E_UI_Layer.System;
+        public const E_UI_Layer SocialAidRequestPopup = E_UI_Layer.Top;
         public const E_UI_Layer MainMenuBackground = E_UI_Layer.Bot;
         public const E_UI_Layer Loading     = E_UI_Layer.System;
         public const E_UI_Layer BuffSelect  = E_UI_Layer.System;
         public const E_UI_Layer PlayerInfoHUD = E_UI_Layer.Bot;
+        public const E_UI_Layer PlayerProfile = E_UI_Layer.System;
         public const E_UI_Layer FinalBossHealthBarOverlay = E_UI_Layer.Bot;
         public const E_UI_Layer FloatingNumberOverlay = E_UI_Layer.Bot;
         public const E_UI_Layer BossArrivalNotice = E_UI_Layer.Top;

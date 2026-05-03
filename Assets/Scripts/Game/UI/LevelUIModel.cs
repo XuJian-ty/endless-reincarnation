@@ -22,6 +22,7 @@ namespace Game.UI
         public PlayerModel Player => _gsm?.Player;
         public RunData CurrentRun => _gsm?.CurrentRun;
         public string CurrentPlayerName => _gsm?.CurrentPlayerName ?? "玩家";
+        public string CurrentPortraitId => _gsm?.CurrentPortraitId ?? SaveSystem.DefaultPortraitId;
 
         public void SubscribeInventoryChanged(Action callback)
         {

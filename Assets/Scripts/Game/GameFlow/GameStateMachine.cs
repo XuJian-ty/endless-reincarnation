@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -6,6 +7,7 @@ using Game;
 using Game.Domain;
 using Game.Data;
 using Game.Saving;
+using Game.Social;
 using Game.UI;
 using ProjectBase;
 
@@ -43,14 +45,17 @@ namespace Game.GameFlow
         private State                _state           = State.MainMenu;
         private string               _currentSaveId;
         private string               _currentPlayerName;
+        private string               _currentPortraitId;
         private RunData              _currentRun;
         private PlayerModel          _playerModel;
         private IDeathChoiceHandler  _deathChoiceHandler;
         private Transform            _levelPlayerTransform;
+        private Coroutine            _activeSaveHeartbeat;
 
         public State       CurrentState => _state;
         public string      CurrentSaveId => _currentSaveId;
         public string      CurrentPlayerName => _currentPlayerName;
+        public string      CurrentPortraitId => _currentPortraitId;
         public RunData     CurrentRun   => _currentRun;
         public PlayerModel Player       => _playerModel;
         public bool IsGameplayPaused => _state == State.Paused;
@@ -102,6 +107,7 @@ namespace Game.GameFlow
 
             _currentSaveId     = saveId;
             _currentPlayerName = data.playerName ?? "";
+            _currentPortraitId = string.IsNullOrWhiteSpace(data.portraitId) ? SaveSystem.DefaultPortraitId : data.portraitId.Trim();
             _currentRun        = data.run;
             _playerModel       = new PlayerModel(levelGrowth);
             _playerModel.LoadFrom(_currentRun);
@@ -112,9 +118,9 @@ namespace Game.GameFlow
             // 加载进度条期间不播 BGM，等进度条满、进入关卡后再在回调里播
             MusicMgr.GetInstance().StopBKMusic();
 
-            float bgmVol = _currentRun.levelBgmEnabled ? Mathf.Clamp01(_currentRun.levelBgmVolume) : 0f;
+            float bgmVol = LevelAudioSettings.BgmEnabled ? Mathf.Clamp01(LevelAudioSettings.BgmVolume) : 0f;
             MusicMgr.GetInstance().ChangeBKValue(bgmVol);
-            float sfxVol = _currentRun.soundEffectsEnabled ? Mathf.Clamp01(_currentRun.soundEffectsVolume) : 0f;
+            float sfxVol = LevelAudioSettings.SoundEffectsEnabled ? Mathf.Clamp01(LevelAudioSettings.SoundEffectsVolume) : 0f;
             MusicMgr.GetInstance().ChangeSoundValue(sfxVol);
 
             if (_currentRun.checkpoint == null && _currentRun.levelIndex == 1)
@@ -122,9 +128,10 @@ namespace Game.GameFlow
                 RestorePlayerHealthToFull();
                 _playerModel.SaveTo(_currentRun);
                 _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
-                SaveSystem.GetInstance().Save(saveId, new SaveData { version = SaveSystem.CurrentVersion, playerName = data.playerName, run = _currentRun });
+                SaveSystem.GetInstance().Save(saveId, new SaveData { version = SaveSystem.CurrentVersion, playerName = data.playerName, portraitId = _currentPortraitId, run = _currentRun });
             }
 
+            StartActiveSaveHeartbeat();
             SetState(State.InLevel);
             OnRunStarted?.Invoke();
             ScenesMgr.GetInstance().LoadSceneAsyn(
@@ -139,10 +146,10 @@ namespace Game.GameFlow
 
         private void ApplyLevelBgm()
         {
-            if (_currentRun == null || !_currentRun.levelBgmEnabled) return;
+            if (_currentRun == null || !LevelAudioSettings.BgmEnabled) return;
             int trackCount = LevelBgmTrackListSO.GetTrackCount();
             if (trackCount == 0) return;
-            int idx = Mathf.Clamp(_currentRun.levelBgmTrackIndex, 0, trackCount - 1);
+            int idx = Mathf.Clamp(LevelAudioSettings.BgmTrackIndex, 0, trackCount - 1);
             var clip = LevelBgmTrackListSO.GetClip(idx);
             if (clip != null)
                 MusicMgr.GetInstance().PlayBkMusic(clip);
@@ -160,7 +167,55 @@ namespace Game.GameFlow
             }
             _playerModel.SaveTo(_currentRun);
             SaveSystem.GetInstance().Save(_currentSaveId,
-                new SaveData { version = SaveSystem.CurrentVersion, playerName = _currentPlayerName ?? "", run = _currentRun });
+                new SaveData { version = SaveSystem.CurrentVersion, playerName = _currentPlayerName ?? "", portraitId = _currentPortraitId, run = _currentRun });
+            SyncActiveSaveContext();
+        }
+
+        public bool TryUpdateCurrentPlayerProfile(string playerName, string portraitId, out string error)
+        {
+            error = null;
+
+            if (_currentRun == null || _playerModel == null || string.IsNullOrWhiteSpace(_currentSaveId))
+            {
+                error = "当前没有可保存的关卡存档。";
+                return false;
+            }
+
+            string normalizedName = string.IsNullOrWhiteSpace(playerName) ? string.Empty : playerName.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName))
+            {
+                error = "玩家名字不能为空。";
+                return false;
+            }
+
+            string normalizedPortraitId = string.IsNullOrWhiteSpace(portraitId) ? string.Empty : portraitId.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedPortraitId))
+            {
+                error = "玩家头像不能为空。";
+                return false;
+            }
+
+            SaveData data = SaveSystem.GetInstance().Load(_currentSaveId);
+            if (data?.run == null)
+            {
+                error = "无法读取当前存档。";
+                return false;
+            }
+
+            LevelBootstrapper bootstrapper = UnityEngine.Object.FindFirstObjectByType<LevelBootstrapper>();
+            bootstrapper?.CaptureRuntimeSnapshot();
+            _playerModel.SaveTo(_currentRun);
+
+            _currentPlayerName = normalizedName;
+            _currentPortraitId = normalizedPortraitId;
+
+            data.version = SaveSystem.CurrentVersion;
+            data.playerName = _currentPlayerName;
+            data.portraitId = _currentPortraitId;
+            data.run = _currentRun;
+            SaveSystem.GetInstance().Save(_currentSaveId, data);
+            SyncActiveSaveContext();
+            return true;
         }
 
         /// <summary>当前存档的按键配置覆盖（KeyConfigPanel 用）；无存档时返回空字符串。</summary>
@@ -195,10 +250,11 @@ namespace Game.GameFlow
         }
 
         /// <summary>编辑器直接运行关卡时，注入一份临时运行上下文，供关卡逻辑与 HUD 正常读取。</summary>
-        public void AdoptRuntimeContext(RunData run, PlayerModel playerModel, string playerName = "玩家", string saveId = null)
+        public void AdoptRuntimeContext(RunData run, PlayerModel playerModel, string playerName, string saveId, string portraitId)
         {
             _currentSaveId = string.IsNullOrWhiteSpace(saveId) ? null : saveId.Trim();
             _currentPlayerName = string.IsNullOrWhiteSpace(playerName) ? "玩家" : playerName.Trim();
+            _currentPortraitId = string.IsNullOrWhiteSpace(portraitId) ? SaveSystem.DefaultPortraitId : portraitId.Trim();
             _currentRun = run;
             _playerModel = playerModel;
             if (_currentRun != null && _playerModel != null)
@@ -209,9 +265,9 @@ namespace Game.GameFlow
                     _playerModel.ReapplyBuffModifiers(buffConfig.GetModifierForBuff);
 
                 MusicMgr.GetInstance().StopBKMusic();
-                float bgmVol = _currentRun.levelBgmEnabled ? Mathf.Clamp01(_currentRun.levelBgmVolume) : 0f;
+                float bgmVol = LevelAudioSettings.BgmEnabled ? Mathf.Clamp01(LevelAudioSettings.BgmVolume) : 0f;
                 MusicMgr.GetInstance().ChangeBKValue(bgmVol);
-                float sfxVol = _currentRun.soundEffectsEnabled ? Mathf.Clamp01(_currentRun.soundEffectsVolume) : 0f;
+                float sfxVol = LevelAudioSettings.SoundEffectsEnabled ? Mathf.Clamp01(LevelAudioSettings.SoundEffectsVolume) : 0f;
                 MusicMgr.GetInstance().ChangeSoundValue(sfxVol);
 
                 if (_currentRun.checkpoint == null && _currentRun.levelIndex == 1)
@@ -226,6 +282,7 @@ namespace Game.GameFlow
                             {
                                 version = SaveSystem.CurrentVersion,
                                 playerName = _currentPlayerName ?? "",
+                                portraitId = _currentPortraitId,
                                 run = _currentRun
                             });
                     }
@@ -233,6 +290,7 @@ namespace Game.GameFlow
 
                 ApplyLevelBgm();
             }
+            StartActiveSaveHeartbeat();
             Time.timeScale = 1f;
             SetState(State.InLevel);
         }
@@ -321,11 +379,15 @@ namespace Game.GameFlow
             if (_currentRun == null) return;
 
             Debug.Log("[GameStateMachine] 玩家选择不复活，本局结束");
+            CloseActiveAidSession();
             if (!string.IsNullOrEmpty(_currentSaveId))
                 SaveSystem.GetInstance().Delete(_currentSaveId);
+            StopActiveSaveHeartbeat();
+            ClearActiveSaveContext();
             OnRunEnded?.Invoke();
             _currentSaveId     = null;
             _currentPlayerName = null;
+            _currentPortraitId = null;
             _currentRun       = null;
             _playerModel      = null;
             SetLevelPlayerTransform(null);
@@ -352,6 +414,11 @@ namespace Game.GameFlow
         {
             if (_currentRun == null) return;
 
+            if (SocialAidSessionCoordinator.GetInstance().TryHandleLocalPlayerDeath())
+            {
+                return;
+            }
+
             if (_deathChoiceHandler != null)
             {
                 _deathChoiceHandler.RequestDeathChoice(ExecuteReviveWithNectar, ExecuteGiveUp);
@@ -366,10 +433,14 @@ namespace Game.GameFlow
         public void SaveAndQuit()
         {
             SaveCurrent();
+            CloseActiveAidSession();
+            StopActiveSaveHeartbeat();
+            ClearActiveSaveContext();
             OnRunEnded?.Invoke();
 
             _currentSaveId     = null;
             _currentPlayerName = null;
+            _currentPortraitId = null;
             _currentRun        = null;
             _playerModel       = null;
             SetLevelPlayerTransform(null);
@@ -379,6 +450,21 @@ namespace Game.GameFlow
             SetState(State.MainMenu);
             // 返回主菜单不播进度条动画，加载完等 0.3s 即切场景，避免长时间无谓等待和卡顿感
             ScenesMgr.GetInstance().LoadSceneAsyn(SceneNames.MainMenu, null, false);
+        }
+
+        public void ReturnCurrentSaveToOwnLevel(int returnLevelIndex, LevelSnapshot returnSnapshot)
+        {
+            if (_currentRun == null || _playerModel == null)
+                return;
+
+            if (returnLevelIndex > 0)
+                _currentRun.levelIndex = returnLevelIndex;
+            _currentRun.levelSnapshot = returnSnapshot;
+            SaveCurrent(false);
+            StartActiveSaveHeartbeat();
+            Time.timeScale = 1f;
+            SetState(State.InLevel);
+            LoadLevelWithMainMenuStyleTransition(GetLevelSceneName(_currentRun.levelIndex), ApplyLevelBgm);
         }
 
         // ── 私有工具 ──────────────────────────────────────────────────────
@@ -412,6 +498,7 @@ namespace Game.GameFlow
             _currentRun.checkpoint = SaveSystem.CloneRunData(_currentRun);
             SaveCurrent(false);
 
+            StartActiveSaveHeartbeat();
             Time.timeScale = 1f;
             SetState(State.InLevel);
             LoadLevelWithMainMenuStyleTransition(GetLevelSceneName(levelIndex), ApplyLevelBgm);
@@ -469,6 +556,69 @@ namespace Game.GameFlow
 
             _playerModel.CurrentHp = _playerModel.Stats.MaxHp;
             _playerModel.CurrentMp = _playerModel.Stats.MaxMp;
+        }
+
+        private void SyncActiveSaveContext()
+        {
+            if (string.IsNullOrWhiteSpace(_currentSaveId) || !SocialSession.GetInstance().IsLoggedIn)
+                return;
+
+            SocialService.GetInstance().SetActiveSaveContext(
+                _currentSaveId,
+                (_, _) => { },
+                error => Debug.LogWarning($"[GameStateMachine] 活跃存档上报失败：{error}"));
+        }
+
+        private void StartActiveSaveHeartbeat()
+        {
+            SyncActiveSaveContext();
+            if (_activeSaveHeartbeat != null)
+                return;
+
+            _activeSaveHeartbeat = MonoMgr.GetInstance().StartCoroutine(ActiveSaveHeartbeatLoop());
+        }
+
+        private void StopActiveSaveHeartbeat()
+        {
+            if (_activeSaveHeartbeat == null)
+                return;
+
+            MonoMgr.GetInstance().StopCoroutine(_activeSaveHeartbeat);
+            _activeSaveHeartbeat = null;
+        }
+
+        private IEnumerator ActiveSaveHeartbeatLoop()
+        {
+            while (!string.IsNullOrWhiteSpace(_currentSaveId))
+            {
+                yield return new WaitForSecondsRealtime(5f);
+                SyncActiveSaveContext();
+            }
+
+            _activeSaveHeartbeat = null;
+        }
+
+        private void ClearActiveSaveContext()
+        {
+            if (!SocialSession.GetInstance().IsLoggedIn)
+                return;
+
+            SocialService.GetInstance().ClearActiveSaveContext(
+                (_, _) => { },
+                error => Debug.LogWarning($"[GameStateMachine] 活跃存档清除失败：{error}"));
+        }
+
+        private void CloseActiveAidSession()
+        {
+            SocialAidSessionInfo session = SocialAidSessionCoordinator.GetInstance().ActiveSession;
+            if (session == null || string.IsNullOrWhiteSpace(session.sessionId))
+                return;
+
+            SocialAidSessionCoordinator.GetInstance().StopSession();
+            SocialService.GetInstance().CloseAidSession(
+                session.sessionId,
+                (_, _) => { },
+                error => Debug.LogWarning($"[GameStateMachine] 援助会话关闭失败：{error}"));
         }
 
         private static int GetMaxConfiguredLevelIndex()

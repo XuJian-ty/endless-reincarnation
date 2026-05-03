@@ -4,6 +4,7 @@ using Game.Domain;
 using Game.Presentation;
 using Game.Data;
 using Game.Saving;
+using Game.Social;
 using Game.UI;
 using ProjectBase;
 using UnityEngine.SceneManagement;
@@ -64,6 +65,11 @@ namespace Game.GameFlow
             BattleMemorySceneRuntime.TryAdoptPreviewContext(gsm, ref run, ref playerModel);
             FinalBossDuelSceneRuntime.TryAdoptPreviewContext(gsm, ref run, ref playerModel);
 
+            if (SocialAidSessionCoordinator.GetInstance().IsInNetworkPlayMode)
+            {
+                Debug.Log("[LevelBootstrapper] 当前处于援助联机会话，关卡已进入联机兼容模式。");
+            }
+
             ResolveSceneReferences();
             EnsurePlayerInstance(run);
 
@@ -79,7 +85,11 @@ namespace Game.GameFlow
             _deathChoiceHandler ??= new UIDeathChoiceHandler();
             gsm?.SetDeathChoiceHandler(_deathChoiceHandler);
 
-            if (run.levelSnapshot != null)
+            if (SocialAidSessionCoordinator.GetInstance().TryConsumeHelperSpawnOverride(out Vector3 aidSpawnPosition, out Quaternion aidSpawnRotation))
+            {
+                PlacePlayer(aidSpawnPosition, aidSpawnRotation);
+            }
+            else if (run.levelSnapshot != null)
             {
                 var snap = run.levelSnapshot;
                 var rotation = Quaternion.Euler(0f, snap.playerYaw, 0f);
@@ -111,7 +121,8 @@ namespace Game.GameFlow
 
             bool isBattleMemoryScene = BattleMemorySceneRuntime.TryPrepareScene(this);
             bool isFinalBossDuelScene = FinalBossDuelSceneRuntime.TryPrepareScene(this);
-            if (!isBattleMemoryScene && !isFinalBossDuelScene && run.levelSnapshot != null)
+            bool skipLocalSnapshotRestore = SocialAidSessionCoordinator.GetInstance().ShouldSkipLocalSnapshotRestore();
+            if (!isBattleMemoryScene && !isFinalBossDuelScene && !skipLocalSnapshotRestore && run.levelSnapshot != null)
                 StartCoroutine(RestoreLevelSnapshotState(run.levelSnapshot));
 
             Debug.Log($"[LevelBootstrapper] Level {run.levelIndex} initialized. Difficulty {run.difficulty}.");
@@ -188,7 +199,7 @@ namespace Game.GameFlow
 
             run = data.run;
             playerModel = new PlayerModel(ConfigManager.GetInstance().GetLevelGrowth());
-            gsm.AdoptRuntimeContext(run, playerModel, data.playerName, saveId);
+            gsm.AdoptRuntimeContext(run, playerModel, data.playerName, saveId, data.portraitId);
             Debug.Log($"[LevelBootstrapper] Adopted direct scene save '{data.playerName}' for level {levelIndex}.");
             return true;
         }

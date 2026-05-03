@@ -22,6 +22,7 @@ namespace Game.Input
         private InputAction _toggleSkillTreeAction;
         private InputAction _toggleKeyConfigAction;
         private InputAction _toggleMenuAction;
+        private bool _initializedActions;
 
         /// <summary>按 C 切换背包时触发。</summary>
         public static event Action ToggleBackpackRequested
@@ -64,6 +65,7 @@ namespace Game.Input
         private static event Action _toggleCursorRequested;
 
         private static bool _hasLoggedNoAsset;
+        private static int _activeInstanceCount;
 
         private InputAction _toggleCursorAction;
 
@@ -79,6 +81,11 @@ namespace Game.Input
                 return;
             }
 
+            if (_initializedActions)
+                return;
+
+            _activeInstanceCount++;
+            _initializedActions = true;
             _inputActionAsset.Enable();
             _gameplayMap = _inputActionAsset.FindActionMap("Gameplay");
             _uiMap = _inputActionAsset.FindActionMap("UI");
@@ -114,8 +121,13 @@ namespace Game.Input
             _toggleBackpackAction = _toggleSkillTreeAction = _toggleKeyConfigAction = _toggleMenuAction = _toggleCursorAction = null;
             _gameplayMap = null;
             _uiMap = null;
-            if (_inputActionAsset != null)
+            if (_initializedActions)
+                _activeInstanceCount = Math.Max(0, _activeInstanceCount - 1);
+
+            if (_initializedActions && _activeInstanceCount == 0 && _inputActionAsset != null)
                 _inputActionAsset.Disable();
+
+            _initializedActions = false;
         }
 
         /// <summary>打开 UI 面板时由 GameplayUIInputBridge 设为 false，仅响应 UI 地图；关闭全部面板后设为 true。</summary>
