@@ -1,4 +1,5 @@
 using System;
+using Game.Online;
 using Game.Social;
 using ProjectBase;
 using UnityEngine;
@@ -64,7 +65,10 @@ namespace Game.UI
                 (session, _) =>
                 {
                     if (session != null)
-                        SocialAidSessionCoordinator.GetInstance().TryStartSession(session, out _);
+                    {
+                        if (!OnlineDungeonSessionCoordinator.GetInstance().TryEnterSession(session, out string error))
+                            Debug.LogWarning($"[SocialAidRequestPopupPanel] 进入联机副本失败：{error}");
+                    }
                     UIManager.GetInstance()?.HidePanel(PanelNames.SocialAidRequestPopup);
                 },
                 error => Debug.LogWarning($"[SocialAidRequestPopupPanel] 接受援助请求失败：{error}"));

@@ -457,7 +457,7 @@ namespace Game.Social
             string baseUrl = SocialSession.GetInstance().ServerBaseUrl;
             if (string.IsNullOrWhiteSpace(baseUrl))
             {
-                onError?.Invoke("社交服务地址为空");
+                onError?.Invoke("平台服务地址为空");
                 return;
             }
 

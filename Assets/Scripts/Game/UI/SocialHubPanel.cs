@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Game.GameFlow;
+using Game.Online;
 using Game.Social;
 using ProjectBase;
 using UnityEngine;
@@ -378,10 +379,15 @@ namespace Game.UI
                 (session, message) =>
                 {
                     _activeAidSession = session;
-                    if (session != null && !SocialAidSessionCoordinator.GetInstance().HasActiveSession)
+                    OnlineDungeonSessionCoordinator coordinator = OnlineDungeonSessionCoordinator.GetInstance();
+                    if (session == null || string.IsNullOrWhiteSpace(session.sessionId))
                     {
-                        if (!SocialAidSessionCoordinator.GetInstance().TryStartSession(session, out string sessionError))
-                            Debug.LogWarning($"[SocialHubPanel] 援助联机会话恢复失败：{sessionError}");
+                        coordinator.StopSession();
+                    }
+                    else if (!coordinator.HasActiveSession)
+                    {
+                        if (!coordinator.TryEnterSession(session, out string sessionError))
+                            Debug.LogWarning($"[SocialHubPanel] 进入联机副本失败：{sessionError}");
                     }
                     if (showStatus)
                         SetStatus(message, new Color(0.6f, 0.92f, 0.66f, 1f));

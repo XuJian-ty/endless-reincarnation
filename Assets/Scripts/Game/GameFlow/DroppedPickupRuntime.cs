@@ -2,6 +2,7 @@ using UnityEngine;
 using Game;
 using Game.Data;
 using Game.Domain;
+using Game.Online;
 using Game.Presentation;
 using Game.Saving;
 using Game.UI;
@@ -41,6 +42,7 @@ namespace Game.GameFlow
         private WeaponInstance _weapon;
         private bool _pickedUp;
         private bool _initialized;
+        private string _onlineDropId;
         private bool _requireFreshInteractPickup;
         private bool _waitForInteractRelease;
         private Transform _playerTransform;
@@ -72,6 +74,37 @@ namespace Game.GameFlow
             pickup._weapon = weapon;
             pickup.RefreshVisual();
             pickup._initialized = true;
+            return pickup;
+        }
+
+        public static DroppedPickupRuntime SpawnOnlineDrop(OnlineDungeonDropInfo drop)
+        {
+            if (drop == null || drop.pickedUp)
+                return null;
+
+            Vector3 position = new Vector3(drop.x, drop.y, drop.z);
+            DroppedPickupRuntime pickup = null;
+            if (string.Equals(drop.itemType, "weapon", System.StringComparison.OrdinalIgnoreCase))
+            {
+                WeaponInstance weapon = JsonConvert.DeserializeObject<WeaponInstance>(drop.payloadJson);
+                if (weapon != null)
+                    pickup = SpawnWeapon(weapon, position, null);
+            }
+            else
+            {
+                ItemStackSave stack = JsonConvert.DeserializeObject<ItemStackSave>(drop.payloadJson);
+                string itemId = stack != null ? stack.itemId : drop.payloadJson;
+                int count = stack != null ? Mathf.Max(1, stack.count) : Mathf.Max(1, drop.count);
+                if (!string.IsNullOrWhiteSpace(itemId))
+                    pickup = SpawnStackable(itemId, count, position, null);
+            }
+
+            if (pickup == null)
+                return null;
+
+            pickup._onlineDropId = drop.dropId?.Trim();
+            pickup._basePosition = position;
+            pickup.transform.position = position;
             return pickup;
         }
 
@@ -150,7 +183,7 @@ namespace Game.GameFlow
         public bool TryBuildSave(out GroundDropSave save)
         {
             save = null;
-            if (!_initialized || _pickedUp)
+            if (!_initialized || _pickedUp || !string.IsNullOrWhiteSpace(_onlineDropId))
                 return false;
 
             save = new GroundDropSave
@@ -313,6 +346,23 @@ namespace Game.GameFlow
             var player = GameStateMachine.GetInstance()?.Player;
             if (player == null)
                 return;
+
+            if (!string.IsNullOrWhiteSpace(_onlineDropId))
+            {
+                if (_weapon != null)
+                {
+                    if (!player.CanAddWeapon())
+                        return;
+                }
+                else if (!player.CanAddStackable(_stackItemId, _stackCount))
+                {
+                    return;
+                }
+
+                OnlineDungeonSessionCoordinator.GetInstance().TryRequestPickupOnlineDrop(_onlineDropId);
+
+                return;
+            }
 
             if (_weapon != null)
             {

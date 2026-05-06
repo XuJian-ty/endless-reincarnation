@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Game.GameFlow;
+using Game.Online;
 using Game.UI;
 using ProjectBase;
 using UnityEngine;
@@ -78,9 +79,11 @@ namespace Game.Social
 
         private static void HandleActiveSession(SocialAidSessionInfo session, string _)
         {
+            OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
             SocialAidSessionCoordinator coordinator = SocialAidSessionCoordinator.GetInstance();
             if (session == null || string.IsNullOrWhiteSpace(session.sessionId))
             {
+                onlineCoordinator.StopSession();
                 if (coordinator.HasActiveSession)
                 {
                     if (coordinator.IsHostRole)
@@ -91,11 +94,11 @@ namespace Game.Social
                 return;
             }
 
-            if (coordinator.HasActiveSession)
+            if (onlineCoordinator.HasActiveSession)
                 return;
 
-            if (!coordinator.TryStartSession(session, out string error))
-                Debug.LogWarning($"[SocialAidRequestNotifier] 援助联机会话启动失败：{error}");
+            if (!onlineCoordinator.TryEnterSession(session, out string error))
+                Debug.LogWarning($"[SocialAidRequestNotifier] 进入联机副本失败：{error}");
         }
     }
 }

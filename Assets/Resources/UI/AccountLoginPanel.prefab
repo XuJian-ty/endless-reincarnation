@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1003}
   - component: {fileID: 1004}
   m_Layer: 5
-  m_Name: SocialLoginPanel
+  m_Name: AccountLoginPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

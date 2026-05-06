@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Game.UI
 {
-    public class SocialLoginPanel : BasePanel
+    public class AccountLoginPanel : BasePanel
     {
         private InputField _usernameInput;
         private InputField _passwordInput;
@@ -172,7 +172,7 @@ namespace Game.UI
                 {
                     SocialSession.GetInstance().Login(user);
                     SetStatus(message, new Color(0.6f, 0.92f, 0.66f, 1f));
-                    UIManager.GetInstance()?.HidePanel(PanelNames.SocialLogin);
+                    UIManager.GetInstance()?.HidePanel(PanelNames.AccountLogin);
                 },
                 error => SetStatus(error, new Color(1f, 0.62f, 0.62f, 1f)));
         }
@@ -190,7 +190,7 @@ namespace Game.UI
                 {
                     SocialSession.GetInstance().Login(user);
                     SetStatus(message, new Color(0.6f, 0.92f, 0.66f, 1f));
-                    UIManager.GetInstance()?.HidePanel(PanelNames.SocialLogin);
+                    UIManager.GetInstance()?.HidePanel(PanelNames.AccountLogin);
                 },
                 error => SetStatus(error, new Color(1f, 0.62f, 0.62f, 1f)));
         }

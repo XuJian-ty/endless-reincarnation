@@ -5,6 +5,7 @@ using UnityEngine;
 using Game.Data;
 using Game.Domain;
 using Game.GameFlow;
+using Game.Online;
 using MasterStylizedProjectile;
 using ProjectBase;
 using UnityObject = UnityEngine.Object;
@@ -253,7 +254,7 @@ namespace Game.Presentation
             if (evt == null || ctx?.CasterTransform == null)
                 return;
 
-            PlayVfxEffects(evt.vfxEffects, ctx.CasterTransform, ctx.CasterTransform, cueRuntime);
+            PlayVfxEffects(evt.vfxEffects, ctx.CasterTransform, ctx.CasterTransform, cueRuntime, ctx as ISkillAimPoseProvider);
         }
 
         public static void ExecuteSfxEvent(SkillSfxEvent evt, ISkillExecutionContext ctx)
@@ -295,6 +296,14 @@ namespace Game.Presentation
                 return;
             }
 
+            var remotePlayer = target.GetComponentInParent<OnlineDungeonRemotePlayerTarget>();
+            if (remotePlayer != null)
+            {
+                float casterDamageBonus = casterEnemy != null ? casterEnemy.DamageBonus : 0f;
+                remotePlayer.ReceiveDamage(casterAttack, casterDamageBonus, damageMultiplier, stunDuration);
+                return;
+            }
+
             var player = target.GetComponentInParent<PlayerController>();
             if (player != null)
             {
@@ -316,6 +325,9 @@ namespace Game.Presentation
                     return;
 
                 float damage = CalculatePlayerSideDamage(ctx, damageMultiplier, enemy, out bool isCrit);
+                if (OnlineDungeonSessionCoordinator.GetInstance().TryReportLocalEnemyDamage(enemy, damage, enemy.transform.position))
+                    return;
+
                 enemy.ApplyDamage(damage);
                 CombatNumberDispatcher.PublishDamage(enemy.transform, damage, isCrit);
             }
@@ -443,7 +455,8 @@ namespace Game.Presentation
                             continue;
 
                         float delay = Mathf.Max(0f, effect.onHitTriggerDelay);
-                        ScheduleOnHitEffect(delay, () => PlayVfxEffect(effect, ctx.CasterTransform, target, cueRuntime));
+                        ISkillAimPoseProvider aimProvider = ctx as ISkillAimPoseProvider;
+                        ScheduleOnHitEffect(delay, () => PlayVfxEffect(effect, ctx.CasterTransform, target, cueRuntime, aimProvider));
                     }
                 }
             }
@@ -771,6 +784,7 @@ namespace Game.Presentation
                 ICombatHardControlReceiver hardControl =
                     target.GetComponentInParent<PlayerController>() as ICombatHardControlReceiver
                     ?? target.GetComponentInParent<PlayerCloneActor>() as ICombatHardControlReceiver
+                    ?? target.GetComponentInParent<OnlineDungeonRemotePlayerTarget>() as ICombatHardControlReceiver
                     ?? target.GetComponentInParent<EnemyController>() as ICombatHardControlReceiver;
                 hardControl?.ApplyHardControl(duration);
 
@@ -1000,22 +1014,32 @@ namespace Game.Presentation
                 CombatNumberDispatcher.PublishMana(clone.transform, applied);
         }
 
-        private static void PlayVfxEffects(List<SkillVfxEffect> effects, Transform caster, Transform target, SkillCueRuntimeScope cueRuntime)
+        private static void PlayVfxEffects(
+            List<SkillVfxEffect> effects,
+            Transform caster,
+            Transform target,
+            SkillCueRuntimeScope cueRuntime,
+            ISkillAimPoseProvider aimProvider = null)
         {
             if (effects == null || caster == null)
                 return;
 
             for (int i = 0; i < effects.Count; i++)
-                PlayVfxEffect(effects[i], caster, target, cueRuntime);
+                PlayVfxEffect(effects[i], caster, target, cueRuntime, aimProvider);
         }
 
-        private static void PlayVfxEffect(SkillVfxEffect effect, Transform caster, Transform target, SkillCueRuntimeScope cueRuntime)
+        private static void PlayVfxEffect(
+            SkillVfxEffect effect,
+            Transform caster,
+            Transform target,
+            SkillCueRuntimeScope cueRuntime,
+            ISkillAimPoseProvider aimProvider)
         {
             if (effect == null || effect.particlePrefab == null || caster == null)
                 return;
 
             Transform anchor = ResolveAnchorTransform(effect.anchor, caster, target);
-            GameObject instance = CreateVfxInstance(effect, caster, anchor);
+            GameObject instance = CreateVfxInstance(effect, caster, anchor, aimProvider);
             RegisterCueLifetime(instance, effect.particlePrefab, effect.destroyMode, effect.duration, cueRuntime);
         }
 
@@ -1047,7 +1071,11 @@ namespace Game.Presentation
             CreateSfxInstance(effect, caster, anchor, cueRuntime, sourceKind);
         }
 
-        private static GameObject CreateVfxInstance(SkillVfxEffect effect, Transform caster, Transform anchor)
+        private static GameObject CreateVfxInstance(
+            SkillVfxEffect effect,
+            Transform caster,
+            Transform anchor,
+            ISkillAimPoseProvider aimProvider)
         {
             if (effect == null || effect.particlePrefab == null)
                 return null;
@@ -1074,7 +1102,7 @@ namespace Game.Presentation
             else
             {
                 Vector3 position = ResolveCueSpawnPosition(effect, caster, anchor);
-                Quaternion rotation = ResolveCueSpawnRotation(effect, caster, anchor);
+                Quaternion rotation = ResolveCueSpawnRotation(effect, caster, anchor, aimProvider);
                 instance = usePool
                     ? PoolMgr.GetInstance().GetObjSync(effect.particlePrefab, worldVfxRoot)
                     : (worldVfxRoot != null
@@ -1093,7 +1121,7 @@ namespace Game.Presentation
             instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
             ConfigureCueFollow(instance, effect, anchor, followAnchor);
             ConfigureVfxMotion(instance, effect.motion, useWorldMotion);
-            ApplyCueMotion(instance, effect, caster, useWorldMotion);
+            ApplyCueMotion(instance, effect, caster, useWorldMotion, aimProvider);
             EnsureCuePauseProxy(instance);
             return instance;
         }
@@ -1266,7 +1294,12 @@ namespace Game.Presentation
                 UnityObject.Destroy(instance, 0.1f);
         }
 
-        private static void ApplyCueMotion(GameObject instance, SkillVfxEffect effect, Transform caster, bool useWorldMotion)
+        private static void ApplyCueMotion(
+            GameObject instance,
+            SkillVfxEffect effect,
+            Transform caster,
+            bool useWorldMotion,
+            ISkillAimPoseProvider aimProvider)
         {
             SkillMotionSettings motion = effect != null ? effect.motion : null;
             if (instance == null)
@@ -1281,7 +1314,7 @@ namespace Game.Presentation
             }
 
             Vector3 originPosition = instance.transform.position;
-            Quaternion originRotation = ResolveWorldMotionBasisRotation(effect, caster);
+            Quaternion originRotation = ResolveWorldMotionBasisRotation(effect, caster, aimProvider);
             Quaternion lockedRotation = instance.transform.rotation;
 
             if (mover == null)
@@ -1448,13 +1481,17 @@ namespace Game.Presentation
             return effect.offset;
         }
 
-        private static Quaternion ResolveCueSpawnRotation(SkillVfxEffect effect, Transform caster, Transform anchor)
+        private static Quaternion ResolveCueSpawnRotation(
+            SkillVfxEffect effect,
+            Transform caster,
+            Transform anchor,
+            ISkillAimPoseProvider aimProvider)
         {
             Transform basis = anchor != null ? anchor : caster;
             Quaternion basisRotation = basis != null ? basis.rotation : Quaternion.identity;
             if (effect != null
                 && effect.anchor == CueAnchor.World
-                && TryResolveAimRotation(effect.motion, caster, out Quaternion aimRotation))
+                && TryResolveAimRotation(effect.motion, caster, aimProvider, out Quaternion aimRotation))
             {
                 basisRotation = aimRotation;
             }
@@ -1462,19 +1499,34 @@ namespace Game.Presentation
             return basisRotation * Quaternion.Euler(effect.rotationEuler);
         }
 
-        private static Quaternion ResolveWorldMotionBasisRotation(SkillVfxEffect effect, Transform caster)
+        private static Quaternion ResolveWorldMotionBasisRotation(
+            SkillVfxEffect effect,
+            Transform caster,
+            ISkillAimPoseProvider aimProvider)
         {
-            if (TryResolveAimRotation(effect != null ? effect.motion : null, caster, out Quaternion aimRotation))
+            if (TryResolveAimRotation(effect != null ? effect.motion : null, caster, aimProvider, out Quaternion aimRotation))
                 return aimRotation;
 
             return caster != null ? caster.rotation : Quaternion.identity;
         }
 
-        private static bool TryResolveAimRotation(SkillMotionSettings motion, Transform caster, out Quaternion aimRotation)
+        private static bool TryResolveAimRotation(
+            SkillMotionSettings motion,
+            Transform caster,
+            ISkillAimPoseProvider aimProvider,
+            out Quaternion aimRotation)
         {
             aimRotation = Quaternion.identity;
             if (motion == null || !motion.useAimDirection || caster == null)
                 return false;
+
+            if (aimProvider != null
+                && aimProvider.IsAimModeActive
+                && aimProvider.TryGetCurrentAimPose(out SkillAimPose contextAimPose))
+            {
+                aimRotation = contextAimPose.Rotation;
+                return true;
+            }
 
             PlayerController player = caster.GetComponent<PlayerController>();
             if (player == null
@@ -1607,6 +1659,10 @@ namespace Game.Presentation
             var player = collider.GetComponentInParent<PlayerController>();
             if (player != null)
                 return player.transform;
+
+            var remotePlayer = collider.GetComponentInParent<OnlineDungeonRemotePlayerTarget>();
+            if (remotePlayer != null)
+                return remotePlayer.transform;
 
             var enemy = collider.GetComponentInParent<EnemyController>();
             if (enemy != null)

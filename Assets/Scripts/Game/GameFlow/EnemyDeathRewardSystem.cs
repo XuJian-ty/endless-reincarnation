@@ -10,6 +10,13 @@ namespace Game.GameFlow
     /// </summary>
     public static class EnemyDeathRewardSystem
     {
+        public sealed class RewardProposal
+        {
+            public int exp;
+            public int gold;
+            public int talentPoints;
+        }
+
         public static void GrantRewards(PlayerModel player, EnemyRuntimeStats enemyStats, Vector3 deathPosition, System.Random rng)
         {
             if (player == null)
@@ -38,6 +45,38 @@ namespace Game.GameFlow
                     break;
             }
 
+            EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
+        }
+
+        public static RewardProposal BuildRewardProposal(EnemyRuntimeStats enemyStats, Vector3 deathPosition, System.Random rng, string enemyRuntimeId)
+        {
+            if (rng == null)
+                rng = new System.Random();
+
+            LevelConfigData levelConfig = ResolveCurrentLevelConfig();
+            RewardProposal proposal = new RewardProposal
+            {
+                exp = ResolveExpReward(enemyStats, levelConfig),
+                gold = ResolveGoldReward(enemyStats, levelConfig, rng),
+                talentPoints = enemyStats.type == EnemyType.Guardian
+                    ? Mathf.Max(0, levelConfig != null ? levelConfig.GetTalentPointReward(enemyStats.type) : 1)
+                    : 0,
+            };
+
+            return proposal;
+        }
+
+        public static void GrantFixedRewards(PlayerModel player, RewardProposal proposal)
+        {
+            if (player == null || proposal == null)
+                return;
+
+            int levelsGained = player.AddExp(Mathf.Max(0, proposal.exp));
+            if (levelsGained > 0)
+                EventCenter.GetInstance().EventTrigger(GameEvents.PlayerLevelUp, player.Exp.Level);
+
+            player.AddItemCount(PlayerModel.ItemIds.Gold, Mathf.Max(0, proposal.gold));
+            player.AddItemCount(PlayerModel.ItemIds.TalentPoint, Mathf.Max(0, proposal.talentPoints));
             EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
         }
 

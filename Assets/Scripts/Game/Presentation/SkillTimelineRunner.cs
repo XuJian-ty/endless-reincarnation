@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Data;
+using ProjectBase;
 
 namespace Game.Presentation
 {
@@ -90,6 +91,7 @@ namespace Game.Presentation
         private SkillCueRuntimeScope _cueRuntime = new SkillCueRuntimeScope();
         private bool _started;
         private bool _stateScopeEnded;
+        private bool _visualOnly;
         private float _dynamicCompletionTime;
         private float _baseCastSpeedMultiplier = 1f;
         private Func<float> _externalCastSpeedMultiplierProvider;
@@ -144,7 +146,8 @@ namespace Game.Presentation
             ISkillExecutionContext context,
             float castDuration = -1f,
             float baseCastSpeedMultiplier = 1f,
-            Func<float> externalCastSpeedMultiplierProvider = null)
+            Func<float> externalCastSpeedMultiplierProvider = null,
+            bool visualOnly = false)
         {
             _definition   = definition;
             _context      = context;
@@ -154,6 +157,7 @@ namespace Game.Presentation
             _elapsed      = 0f;
             _started      = true;
             _stateScopeEnded = false;
+            _visualOnly = visualOnly;
             _dynamicCompletionTime = 0f;
             IsComplete    = false;
             _cueRuntime.Stop();
@@ -247,8 +251,12 @@ namespace Game.Presentation
         {
             EvaluateDamageTrack();
             UpdateActiveDamageWindows();
-            EvaluateTrack(_definition?.physicsEvents, _physicsStates, SkillEffectExecutor.ExecutePhysicsEvent);
-            EvaluateTrack(_definition?.attributeEvents, _attributeStates, SkillEffectExecutor.ExecuteAttributeEvent);
+            if (!_visualOnly)
+            {
+                EvaluateTrack(_definition?.physicsEvents, _physicsStates, SkillEffectExecutor.ExecutePhysicsEvent);
+                EvaluateTrack(_definition?.attributeEvents, _attributeStates, SkillEffectExecutor.ExecuteAttributeEvent);
+            }
+
             EvaluateTrack(_definition?.vfxEvents, _vfxStates, SkillEffectExecutor.ExecuteVfxEvent);
             EvaluateTrack(_definition?.sfxEvents, _sfxStates, SkillEffectExecutor.ExecuteSfxEvent);
         }
@@ -303,6 +311,29 @@ namespace Game.Presentation
                     continue;
 
                 ResolveDamageAnchorSnapshot(evt, state, effect, out UnityEngine.Vector3 anchorPosition, out UnityEngine.Quaternion anchorRotation);
+
+                if (_visualOnly)
+                {
+                    float detectionLifetimeForVisual = SharedSkillDefinition.GetDamageDetectionWindowLifetime(effect);
+                    UpdateDynamicCompletionTime(_elapsed + SharedSkillDefinition.GetDamageEffectLifetime(effect));
+                    if (detectionLifetimeForVisual > 0f)
+                    {
+                        var visualWindow = new ActiveDamageWindow
+                        {
+                            effect = effect,
+                            endTime = _elapsed + detectionLifetimeForVisual,
+                            startTime = _elapsed,
+                            originPosition = anchorPosition,
+                            originRotation = anchorRotation,
+                            casterTransform = _context.CasterTransform,
+                        };
+                        CreateDamageWindowCompanionVfx(visualWindow);
+                        if (visualWindow.companionVfxRoot != null)
+                            _activeDamageWindows.Add(visualWindow);
+                    }
+
+                    continue;
+                }
 
                 if (effect.detectionType == DamageDetectionType.Collision)
                 {
@@ -395,6 +426,17 @@ namespace Game.Presentation
 
                 float windowElapsed = _elapsed - window.startTime;
                 UpdateDamageWindowCompanionVfx(window, windowElapsed);
+                if (_visualOnly)
+                {
+                    if (_elapsed > window.endTime + 0.0001f)
+                    {
+                        DestroyDamageWindowCompanionVfx(window);
+                        _activeDamageWindows.RemoveAt(i);
+                    }
+
+                    continue;
+                }
+
                 bool isDetectionActive = IsDamageWindowDetectionActive(window.effect, windowElapsed);
                 ApplyDamageWindowHitDeduplication(window, windowElapsed, isDetectionActive);
                 window.wasDetectionActive = isDetectionActive;
@@ -887,6 +929,14 @@ namespace Game.Presentation
             UnityEngine.Transform caster = _context?.CasterTransform;
             if (caster == null)
                 return false;
+
+            if (_context is ISkillAimPoseProvider aimProvider
+                && aimProvider.IsAimModeActive
+                && aimProvider.TryGetCurrentAimPose(out SkillAimPose contextAimPose))
+            {
+                aimRotation = contextAimPose.Rotation;
+                return true;
+            }
 
             PlayerController player = caster.GetComponent<PlayerController>();
             if (player == null

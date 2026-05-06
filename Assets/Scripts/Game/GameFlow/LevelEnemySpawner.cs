@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Data;
+using Game.Online;
 using Game.Saving;
 using UnityEngine;
 using UnityEngine.AI;
@@ -35,6 +36,12 @@ namespace Game.GameFlow
 
         private void Awake()
         {
+            if (!OnlineDungeonSessionCoordinator.GetInstance().ShouldDriveOnlineWorldSimulation())
+            {
+                enabled = false;
+                return;
+            }
+
             _seed = GameStateMachine.GetInstance()?.CurrentRun?.levelSnapshot?.seed ?? 0;
             if (_seed == 0)
                 _seed = Environment.TickCount;

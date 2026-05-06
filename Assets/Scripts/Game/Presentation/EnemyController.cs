@@ -71,8 +71,10 @@ namespace Game.Presentation
         private bool _loggedMissingStatsError;
         private bool _loggedMissingArchetypeError;
         private GameObject _poolSourcePrefab;
+        private bool _onlineRemoteSimulationDisabled;
         private float _currentPoise;
         private bool _poiseInitialized;
+        private string _runtimeId;
         private float _temporarySuperArmorTimer;
         private float _temporaryInvincibleTimer;
         private int _stateScopedSuperArmorCount;
@@ -186,6 +188,14 @@ namespace Game.Presentation
 
         public bool IsAlive => !_dead;
         public static IReadOnlyList<EnemyController> ActiveEnemies => ActiveEnemyControllers;
+        public string RuntimeId
+        {
+            get
+            {
+                EnsureRuntimeId();
+                return _runtimeId;
+            }
+        }
         public bool CountsAsLevelBoss => _countsAsLevelBoss;
         public EnemyIntent CurrentIntent { get; set; }
         public float HurtRemainingTime => _hurtRemainingTime;
@@ -242,6 +252,22 @@ namespace Game.Presentation
             }
         }
 
+        public void SetOnlineRemoteSimulationDisabled(bool disabled)
+        {
+            _onlineRemoteSimulationDisabled = disabled;
+            EnemyAI ai = GetComponent<EnemyAI>();
+            if (ai != null)
+                ai.enabled = !disabled;
+
+            EnemyMover mover = GetComponent<EnemyMover>();
+            if (mover != null)
+                mover.enabled = !disabled;
+
+            EnemyCombat combat = GetComponent<EnemyCombat>();
+            if (combat != null)
+                combat.enabled = !disabled;
+        }
+
         public Vector3 ResolveFlightAnchorPosition(Vector3 baseTargetPosition)
         {
             EnsureInitialized();
@@ -270,6 +296,7 @@ namespace Game.Presentation
 
         private void Awake()
         {
+            EnsureRuntimeId();
             RegisterActiveEnemy();
             _rng = new System.Random();
             InitializeRuntimeState();
@@ -295,6 +322,7 @@ namespace Game.Presentation
             snapshot = new EnemySnapshot
             {
                 id = EnemyId,
+                runtimeId = RuntimeId,
                 enemyType = (int)EnemyCategory,
                 x = position.x,
                 y = position.y,
@@ -323,6 +351,8 @@ namespace Game.Presentation
                 return;
 
             EnsureInitialized();
+            if (!string.IsNullOrWhiteSpace(snapshot.runtimeId))
+                _runtimeId = snapshot.runtimeId.Trim();
 
             transform.position = new Vector3(snapshot.x, snapshot.y, snapshot.z);
             transform.rotation = Quaternion.Euler(0f, snapshot.yaw, 0f);
@@ -354,6 +384,12 @@ namespace Game.Presentation
             EnsureInitialized();
             if (!_dead && GameStateMachine.GetInstance()?.IsGameplayPaused == true)
                 return;
+
+            if (_onlineRemoteSimulationDisabled)
+            {
+                UpdateHeadHealthBar();
+                return;
+            }
 
             if (_dead)
             {
@@ -581,6 +617,7 @@ namespace Game.Presentation
         public void PrepareForSpawn(GameObject poolSourcePrefab)
         {
             _poolSourcePrefab = poolSourcePrefab;
+            _runtimeId = Guid.NewGuid().ToString("N");
             _runtimeStateInitialized = false;
             _poiseInitialized = false;
             _loggedAmbiguousVariantError = false;
@@ -811,6 +848,32 @@ namespace Game.Presentation
             return false;
         }
 
+        public bool ApplyOnlineDamage(float amount)
+        {
+            return ApplyDamage(amount);
+        }
+
+        public void ApplyOnlineAuthorityState(float currentHp, bool isDead)
+        {
+            EnsureInitialized();
+            _stats.currentHp = Mathf.Clamp(currentHp, 0f, Mathf.Max(1f, _stats.maxHp));
+            if (isDead || _stats.currentHp <= 0f)
+            {
+                if (!_dead)
+                {
+                    RefreshHeadHealthBarOnDeath();
+                    Die();
+                }
+
+                return;
+            }
+
+            _dead = false;
+            _deathFinalized = false;
+            _deathCleanupTime = 0f;
+            UpdateHeadHealthBar();
+        }
+
         private void InitializeRuntimeState()
         {
             if (_runtimeStateInitialized)
@@ -987,7 +1050,7 @@ namespace Game.Presentation
 
             // 使用奖励系统处理玩家奖励，解耦 EnemyController 和 PlayerModel
             var player = GameStateMachine.GetInstance()?.Player;
-            if (player != null)
+            if (player != null && !Game.Online.OnlineDungeonSessionCoordinator.GetInstance().TrySubmitEnemyKillReward(this, _stats, position, _rng))
                 Game.GameFlow.EnemyDeathRewardSystem.GrantRewards(player, _stats, position, _rng);
         }
 
@@ -1050,6 +1113,12 @@ namespace Game.Presentation
             return string.IsNullOrWhiteSpace(value)
                 ? string.Empty
                 : value.Trim().ToLowerInvariant();
+        }
+
+        private void EnsureRuntimeId()
+        {
+            if (string.IsNullOrWhiteSpace(_runtimeId))
+                _runtimeId = Guid.NewGuid().ToString("N");
         }
 
         private bool CanFallbackStatsToType(ConfigManager cfg, string resolvedEnemyId)
@@ -1266,6 +1335,22 @@ namespace Game.Presentation
         private void UnregisterActiveEnemy()
         {
             ActiveEnemyControllers.Remove(this);
+        }
+
+        public static EnemyController FindByRuntimeId(string runtimeId)
+        {
+            if (string.IsNullOrWhiteSpace(runtimeId))
+                return null;
+
+            string normalizedRuntimeId = runtimeId.Trim();
+            for (int i = 0; i < ActiveEnemyControllers.Count; i++)
+            {
+                EnemyController enemy = ActiveEnemyControllers[i];
+                if (enemy != null && string.Equals(enemy.RuntimeId, normalizedRuntimeId, StringComparison.Ordinal))
+                    return enemy;
+            }
+
+            return null;
         }
 
     }

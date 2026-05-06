@@ -3,6 +3,7 @@ using UnityEngine;
 using Game.Domain;
 using Game.Presentation;
 using Game.Data;
+using Game.Online;
 using Game.Saving;
 using Game.Social;
 using Game.UI;
@@ -33,6 +34,7 @@ namespace Game.GameFlow
         private Transform spawnPoint;
 
         private UIDeathChoiceHandler _deathChoiceHandler;
+        private string _lastOnlineGroundDropsSnapshotKey;
 
         private void Awake()
         {
@@ -85,7 +87,11 @@ namespace Game.GameFlow
             _deathChoiceHandler ??= new UIDeathChoiceHandler();
             gsm?.SetDeathChoiceHandler(_deathChoiceHandler);
 
-            if (SocialAidSessionCoordinator.GetInstance().TryConsumeHelperSpawnOverride(out Vector3 aidSpawnPosition, out Quaternion aidSpawnRotation))
+            if (OnlineDungeonSessionCoordinator.GetInstance().TryConsumeSpawnOverride(out Vector3 onlineSpawnPosition, out Quaternion onlineSpawnRotation))
+            {
+                PlacePlayer(onlineSpawnPosition, onlineSpawnRotation);
+            }
+            else if (SocialAidSessionCoordinator.GetInstance().TryConsumeHelperSpawnOverride(out Vector3 aidSpawnPosition, out Quaternion aidSpawnRotation))
             {
                 PlacePlayer(aidSpawnPosition, aidSpawnRotation);
             }
@@ -121,9 +127,12 @@ namespace Game.GameFlow
 
             bool isBattleMemoryScene = BattleMemorySceneRuntime.TryPrepareScene(this);
             bool isFinalBossDuelScene = FinalBossDuelSceneRuntime.TryPrepareScene(this);
-            bool skipLocalSnapshotRestore = SocialAidSessionCoordinator.GetInstance().ShouldSkipLocalSnapshotRestore();
+            bool skipLocalSnapshotRestore = OnlineDungeonSessionCoordinator.GetInstance().ShouldSkipLocalSnapshotRestore()
+                                            || SocialAidSessionCoordinator.GetInstance().ShouldSkipLocalSnapshotRestore();
             if (!isBattleMemoryScene && !isFinalBossDuelScene && !skipLocalSnapshotRestore && run.levelSnapshot != null)
                 StartCoroutine(RestoreLevelSnapshotState(run.levelSnapshot));
+
+            RemoveOnlineFollowerLocalEnemies();
 
             Debug.Log($"[LevelBootstrapper] Level {run.levelIndex} initialized. Difficulty {run.difficulty}.");
         }
@@ -178,6 +187,30 @@ namespace Game.GameFlow
             CaptureGroundDropSnapshots(run.levelSnapshot);
             CaptureSpawnerSnapshots(run.levelSnapshot);
             CaptureLevelDirectorSnapshot(run.levelSnapshot);
+        }
+
+        public void ApplyOnlineWorldSnapshot(LevelSnapshot snapshot, System.Action onCompleted)
+        {
+            ApplyOnlineWorldSnapshotState(snapshot);
+            onCompleted?.Invoke();
+        }
+
+        private static void RemoveOnlineFollowerLocalEnemies()
+        {
+            OnlineDungeonSessionCoordinator coordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            if (!coordinator.HasActiveSession || coordinator.ShouldDriveOnlineWorldSimulation())
+                return;
+
+            EnemyController[] enemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                EnemyController enemy = enemies[i];
+                if (enemy == null)
+                    continue;
+
+                enemy.gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(enemy.gameObject);
+            }
         }
 
         private bool TryAdoptDirectSceneSaveContext(GameStateMachine gsm, out RunData run, out PlayerModel playerModel)
@@ -519,6 +552,116 @@ namespace Game.GameFlow
                 EnemySpawnRuntime.SpawnEnemyFromSnapshot(snapshot.enemies[i], catalog);
         }
 
+        private void ApplyOnlineWorldSnapshotState(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            RestoreOpenedChests(snapshot);
+            ApplyOnlineEnemySnapshots(snapshot);
+            RestoreSpawnerSnapshots(snapshot);
+            RestoreLevelDirectorSnapshot(snapshot);
+            RestoreShopSnapshots(snapshot);
+            RestoreGroundDropsForOnline(snapshot, ref _lastOnlineGroundDropsSnapshotKey);
+        }
+
+        private static void ApplyOnlineEnemySnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot == null || snapshot.runtimeSnapshotVersion <= 0)
+                return;
+
+            SanitizeEnemySnapshots(snapshot);
+            Dictionary<string, EnemyController> currentByRuntimeId = new Dictionary<string, EnemyController>();
+            EnemyController[] currentEnemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < currentEnemies.Length; i++)
+            {
+                EnemyController enemy = currentEnemies[i];
+                if (enemy == null || string.IsNullOrWhiteSpace(enemy.RuntimeId))
+                    continue;
+
+                currentByRuntimeId[enemy.RuntimeId] = enemy;
+            }
+
+            HashSet<string> snapshotRuntimeIds = new HashSet<string>();
+            EnemySpawnVariantCatalog catalog = null;
+            if (snapshot.enemies != null)
+            {
+                for (int i = 0; i < snapshot.enemies.Count; i++)
+                {
+                    EnemySnapshot enemySnapshot = snapshot.enemies[i];
+                    if (enemySnapshot == null || string.IsNullOrWhiteSpace(enemySnapshot.runtimeId))
+                        continue;
+
+                    string runtimeId = enemySnapshot.runtimeId.Trim();
+                    snapshotRuntimeIds.Add(runtimeId);
+                    if (currentByRuntimeId.TryGetValue(runtimeId, out EnemyController existingEnemy) && existingEnemy != null)
+                    {
+                        existingEnemy.RestoreFromSnapshot(enemySnapshot);
+                        existingEnemy.SetOnlineRemoteSimulationDisabled(true);
+                        continue;
+                    }
+
+                    catalog ??= EnemySpawnRuntime.BuildVariantCatalog();
+                    EnemyController spawnedEnemy = EnemySpawnRuntime.SpawnEnemyFromSnapshot(enemySnapshot, catalog);
+                    spawnedEnemy?.SetOnlineRemoteSimulationDisabled(true);
+                }
+            }
+
+            for (int i = 0; i < currentEnemies.Length; i++)
+            {
+                EnemyController enemy = currentEnemies[i];
+                if (enemy == null || snapshotRuntimeIds.Contains(enemy.RuntimeId))
+                    continue;
+
+                enemy.gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(enemy.gameObject);
+            }
+        }
+
+        private static void RestoreSpawnerSnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            if (snapshot.globalSpawner != null)
+            {
+                LevelEnemySpawner[] globalSpawners = UnityEngine.Object.FindObjectsByType<LevelEnemySpawner>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                for (int i = 0; i < globalSpawners.Length; i++)
+                    globalSpawners[i]?.RestoreSnapshot(snapshot.globalSpawner);
+            }
+
+            if (snapshot.localSpawners == null || snapshot.localSpawners.Count == 0)
+                return;
+
+            LevelLocalEnemySpawner[] localSpawners = UnityEngine.Object.FindObjectsByType<LevelLocalEnemySpawner>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < localSpawners.Length; i++)
+            {
+                LevelLocalEnemySpawner spawner = localSpawners[i];
+                if (spawner == null)
+                    continue;
+
+                for (int j = 0; j < snapshot.localSpawners.Count; j++)
+                    spawner.RestoreSnapshot(snapshot.localSpawners[j]);
+            }
+        }
+
+        private static void RestoreLevelDirectorSnapshot(LevelSnapshot snapshot)
+        {
+            if (snapshot?.levelDirector == null)
+                return;
+
+            LevelDirector[] directors = UnityEngine.Object.FindObjectsByType<LevelDirector>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < directors.Length; i++)
+            {
+                LevelDirector director = directors[i];
+                if (director == null)
+                    continue;
+
+                director.RestoreSnapshot(snapshot.levelDirector);
+                director.CompleteRuntimeSnapshotRestore();
+            }
+        }
+
         private static void SanitizeEnemySnapshots(LevelSnapshot snapshot)
         {
             if (snapshot?.enemies == null)
@@ -572,6 +715,49 @@ namespace Game.GameFlow
 
             for (int i = 0; i < snapshot.groundDrops.Count; i++)
                 DroppedPickupRuntime.SpawnFromSave(snapshot.groundDrops[i]);
+        }
+
+        private static void RestoreGroundDropsForOnline(LevelSnapshot snapshot, ref string lastSnapshotKey)
+        {
+            string snapshotKey = BuildGroundDropsSnapshotKey(snapshot);
+            if (lastSnapshotKey != null && string.Equals(snapshotKey, lastSnapshotKey, System.StringComparison.Ordinal))
+                return;
+
+            lastSnapshotKey = snapshotKey;
+            DroppedPickupRuntime[] currentDrops = UnityEngine.Object.FindObjectsByType<DroppedPickupRuntime>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < currentDrops.Length; i++)
+            {
+                DroppedPickupRuntime drop = currentDrops[i];
+                if (drop == null)
+                    continue;
+
+                drop.gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(drop.gameObject);
+            }
+
+            RestoreGroundDrops(snapshot);
+        }
+
+        private static string BuildGroundDropsSnapshotKey(LevelSnapshot snapshot)
+        {
+            if (snapshot?.groundDrops == null || snapshot.groundDrops.Count == 0)
+                return string.Empty;
+
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            for (int i = 0; i < snapshot.groundDrops.Count; i++)
+            {
+                GroundDropSave drop = snapshot.groundDrops[i];
+                if (drop == null)
+                    continue;
+
+                builder.Append(drop.itemType).Append('|')
+                       .Append(drop.payload).Append('|')
+                       .Append(drop.x).Append('|')
+                       .Append(drop.y).Append('|')
+                       .Append(drop.z).Append(';');
+            }
+
+            return builder.ToString();
         }
     }
 }

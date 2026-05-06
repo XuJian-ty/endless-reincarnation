@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Game.Data;
+using Game.Online;
 using Game.Saving;
 using UnityEngine;
 
@@ -34,6 +35,12 @@ namespace Game.GameFlow
 
         private void Awake()
         {
+            if (!OnlineDungeonSessionCoordinator.GetInstance().ShouldDriveOnlineWorldSimulation())
+            {
+                enabled = false;
+                return;
+            }
+
             int seed = GameStateMachine.GetInstance()?.CurrentRun?.levelSnapshot?.seed ?? Environment.TickCount;
             _seed = seed ^ gameObject.scene.handle ^ transform.position.GetHashCode() ^ _planIndex;
             _rng = new System.Random(_seed);

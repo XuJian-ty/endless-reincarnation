@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Data.Common;
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -113,6 +115,10 @@ internal sealed class SocialDbContext : DbContext
             entity.Property(x => x.HostSaveId).IsRequired();
             entity.Property(x => x.HelperUserId).IsRequired();
             entity.Property(x => x.HelperSaveId).IsRequired();
+            entity.Property(x => x.DungeonServerUrl).IsRequired();
+            entity.Property(x => x.DungeonInstanceId).IsRequired();
+            entity.Property(x => x.DungeonJoinToken).IsRequired();
+            entity.Property(x => x.DungeonParticipantsJson).IsRequired();
             entity.Property(x => x.Status).IsRequired();
             entity.HasIndex(x => x.SessionId).IsUnique();
             entity.HasIndex(x => new { x.HostUserId, x.Status });
@@ -226,6 +232,12 @@ internal sealed class AidSessionEntity
     public string HelperSaveId { get; set; } = string.Empty;
     public string HelperPlayerName { get; set; } = string.Empty;
     public int HelperLevelIndex { get; set; }
+    public string DungeonServerUrl { get; set; } = string.Empty;
+    public string DungeonInstanceId { get; set; } = string.Empty;
+    public int DungeonRealtimeUdpPort { get; set; }
+    public int DungeonRealtimeKcpPort { get; set; }
+    public string DungeonJoinToken { get; set; } = string.Empty;
+    public string DungeonParticipantsJson { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAtUtc { get; set; }
     public DateTime UpdatedAtUtc { get; set; }
@@ -378,6 +390,12 @@ internal static class SocialDbInitializer
                     HelperSaveId TEXT NOT NULL,
                     HelperPlayerName TEXT NOT NULL,
                     HelperLevelIndex INTEGER NOT NULL,
+                    DungeonServerUrl TEXT NOT NULL DEFAULT '',
+                    DungeonInstanceId TEXT NOT NULL DEFAULT '',
+                    DungeonRealtimeUdpPort INTEGER NOT NULL DEFAULT 0,
+                    DungeonRealtimeKcpPort INTEGER NOT NULL DEFAULT 0,
+                    DungeonJoinToken TEXT NOT NULL DEFAULT '',
+                    DungeonParticipantsJson TEXT NOT NULL DEFAULT '[]',
                     Status TEXT NOT NULL,
                     CreatedAtUtc TEXT NOT NULL,
                     UpdatedAtUtc TEXT NOT NULL
@@ -401,6 +419,12 @@ internal static class SocialDbInitializer
             EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "HostPlayerY", "ALTER TABLE aid_sessions ADD COLUMN HostPlayerY REAL NOT NULL DEFAULT 0;");
             EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "HostPlayerZ", "ALTER TABLE aid_sessions ADD COLUMN HostPlayerZ REAL NOT NULL DEFAULT 0;");
             EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "HostPlayerYaw", "ALTER TABLE aid_sessions ADD COLUMN HostPlayerYaw REAL NOT NULL DEFAULT 0;");
+            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonServerUrl", "ALTER TABLE aid_sessions ADD COLUMN DungeonServerUrl TEXT NOT NULL DEFAULT '';");
+            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonInstanceId", "ALTER TABLE aid_sessions ADD COLUMN DungeonInstanceId TEXT NOT NULL DEFAULT '';");
+            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonRealtimeUdpPort", "ALTER TABLE aid_sessions ADD COLUMN DungeonRealtimeUdpPort INTEGER NOT NULL DEFAULT 0;");
+            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonRealtimeKcpPort", "ALTER TABLE aid_sessions ADD COLUMN DungeonRealtimeKcpPort INTEGER NOT NULL DEFAULT 0;");
+            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonJoinToken", "ALTER TABLE aid_sessions ADD COLUMN DungeonJoinToken TEXT NOT NULL DEFAULT '';");
+            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonParticipantsJson", "ALTER TABLE aid_sessions ADD COLUMN DungeonParticipantsJson TEXT NOT NULL DEFAULT '[]';");
         }
         finally
         {
@@ -428,8 +452,154 @@ internal static class SocialDbInitializer
     }
 }
 
+internal sealed class OnlineDungeonClient
+{
+    private readonly HttpClient _httpClient;
+
+    public OnlineDungeonClient(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
+    public bool TryCreateInstance(
+        string dungeonServerUrl,
+        CreateDungeonInstanceRequest request,
+        out DungeonInstanceInfo? instance,
+        out string error)
+    {
+        instance = null;
+        error = string.Empty;
+
+        string normalizedServerUrl = NormalizeServerUrl(dungeonServerUrl);
+        if (string.IsNullOrWhiteSpace(normalizedServerUrl))
+        {
+            error = "联机副本服务地址为空";
+            return false;
+        }
+
+        try
+        {
+            HttpResponseMessage response = _httpClient.PostAsJsonAsync($"{normalizedServerUrl}/api/dungeons", request)
+                .GetAwaiter()
+                .GetResult();
+            DungeonApiResponse<DungeonInstanceInfo>? apiResponse = response.Content
+                .ReadFromJsonAsync<DungeonApiResponse<DungeonInstanceInfo>>()
+                .GetAwaiter()
+                .GetResult();
+
+            if (!response.IsSuccessStatusCode || apiResponse == null || !apiResponse.success || apiResponse.data == null)
+            {
+                error = apiResponse?.message ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(error))
+                    error = $"联机副本服务返回 HTTP {(int)response.StatusCode}";
+                return false;
+            }
+
+            instance = apiResponse.data;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+    }
+
+    public bool TryJoinInstance(
+        string dungeonServerUrl,
+        string instanceId,
+        JoinDungeonInstanceRequest request,
+        out string error)
+    {
+        error = string.Empty;
+
+        string normalizedServerUrl = NormalizeServerUrl(dungeonServerUrl);
+        string normalizedInstanceId = string.IsNullOrWhiteSpace(instanceId) ? string.Empty : instanceId.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedServerUrl) || string.IsNullOrWhiteSpace(normalizedInstanceId))
+        {
+            error = "联机副本服务地址或副本标识为空";
+            return false;
+        }
+
+        try
+        {
+            HttpResponseMessage response = _httpClient.PostAsJsonAsync(
+                    $"{normalizedServerUrl}/api/dungeons/{Uri.EscapeDataString(normalizedInstanceId)}/participants/join",
+                    request)
+                .GetAwaiter()
+                .GetResult();
+            DungeonApiResponse<DungeonInstanceInfo>? apiResponse = response.Content
+                .ReadFromJsonAsync<DungeonApiResponse<DungeonInstanceInfo>>()
+                .GetAwaiter()
+                .GetResult();
+
+            if (response.IsSuccessStatusCode && apiResponse != null && apiResponse.success)
+                return true;
+
+            error = apiResponse?.message ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(error))
+                error = $"联机副本服务返回 HTTP {(int)response.StatusCode}";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+    }
+
+    public bool TryCloseInstance(
+        string dungeonServerUrl,
+        string instanceId,
+        string reason,
+        out string error)
+    {
+        error = string.Empty;
+
+        string normalizedServerUrl = NormalizeServerUrl(dungeonServerUrl);
+        string normalizedInstanceId = string.IsNullOrWhiteSpace(instanceId) ? string.Empty : instanceId.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedServerUrl) || string.IsNullOrWhiteSpace(normalizedInstanceId))
+        {
+            error = "联机副本服务地址或副本标识为空";
+            return false;
+        }
+
+        try
+        {
+            HttpResponseMessage response = _httpClient.PostAsJsonAsync(
+                    $"{normalizedServerUrl}/api/dungeons/{Uri.EscapeDataString(normalizedInstanceId)}/close",
+                    new CloseDungeonInstanceRequest { reason = reason })
+                .GetAwaiter()
+                .GetResult();
+            DungeonApiResponse<DungeonInstanceInfo>? apiResponse = response.Content
+                .ReadFromJsonAsync<DungeonApiResponse<DungeonInstanceInfo>>()
+                .GetAwaiter()
+                .GetResult();
+
+            if (response.IsSuccessStatusCode && apiResponse != null && apiResponse.success)
+                return true;
+
+            error = apiResponse?.message ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(error))
+                error = $"联机副本服务返回 HTTP {(int)response.StatusCode}";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+    }
+
+    private static string NormalizeServerUrl(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().TrimEnd('/');
+    }
+}
+
 internal sealed class SocialAppService
 {
+    private const string DefaultDungeonServerUrl = "http://127.0.0.1:5086";
     private const string AidRequestPending = "pending";
     private const string AidRequestAccepted = "accepted";
     private const string AidRequestRejected = "rejected";
@@ -443,10 +613,12 @@ internal sealed class SocialAppService
     private static readonly TimeSpan PendingAidRequestWindow = TimeSpan.FromMinutes(2);
 
     private readonly IDbContextFactory<SocialDbContext> _dbContextFactory;
+    private readonly OnlineDungeonClient _onlineDungeonClient;
 
-    public SocialAppService(IDbContextFactory<SocialDbContext> dbContextFactory)
+    public SocialAppService(IDbContextFactory<SocialDbContext> dbContextFactory, OnlineDungeonClient onlineDungeonClient)
     {
         _dbContextFactory = dbContextFactory;
+        _onlineDungeonClient = onlineDungeonClient;
     }
 
     public bool TryRegister(AuthRequest request, out SocialUserDto? user, out string error)
@@ -1241,13 +1413,74 @@ internal sealed class SocialAppService
             return false;
         }
 
+        string sessionId = Guid.NewGuid().ToString("N");
+        string hostJoinToken = Guid.NewGuid().ToString("N");
+        string helperJoinToken = Guid.NewGuid().ToString("N");
+        if (!_onlineDungeonClient.TryCreateInstance(
+                DefaultDungeonServerUrl,
+                new CreateDungeonInstanceRequest
+                {
+                    instanceId = sessionId,
+                    templateOwnerUserId = aidRequest.HostUserId,
+                    templateSaveId = aidRequest.HostSaveId,
+                    levelIndex = aidRequest.HostLevelIndex,
+                    difficulty = 1,
+                    seed = StablePositiveSeed(sessionId),
+                    maxPlayers = 4,
+                },
+                out DungeonInstanceInfo? dungeonInstance,
+                out error))
+        {
+            error = $"创建联机副本失败：{error}";
+            return false;
+        }
+
+        string dungeonInstanceId = dungeonInstance?.instanceId ?? sessionId;
+        if (dungeonInstance == null || dungeonInstance.realtimeUdpPort <= 0 || dungeonInstance.realtimeKcpPort <= 0)
+        {
+            error = "联机副本服务未返回实时通信端口";
+            return false;
+        }
+
+        if (!_onlineDungeonClient.TryJoinInstance(
+                DefaultDungeonServerUrl,
+                dungeonInstanceId,
+                new JoinDungeonInstanceRequest
+                {
+                    userId = aidRequest.HostUserId,
+                    saveId = aidRequest.HostSaveId,
+                    displayName = aidRequest.HostPlayerName,
+                    joinToken = hostJoinToken,
+                },
+                out error))
+        {
+            error = $"登记被援助方副本参与者失败：{error}";
+            return false;
+        }
+
+        if (!_onlineDungeonClient.TryJoinInstance(
+                DefaultDungeonServerUrl,
+                dungeonInstanceId,
+                new JoinDungeonInstanceRequest
+                {
+                    userId = helperUserId,
+                    saveId = helperContext.SaveId,
+                    displayName = string.IsNullOrWhiteSpace(helperContext.PlayerName) ? aidRequest.HelperPlayerName : helperContext.PlayerName,
+                    joinToken = helperJoinToken,
+                },
+                out error))
+        {
+            error = $"登记援助方副本参与者失败：{error}";
+            return false;
+        }
+
         DateTime now = DateTime.UtcNow;
         aidRequest.Status = AidRequestAccepted;
         aidRequest.UpdatedAtUtc = now;
 
         AidSessionEntity entity = new()
         {
-            SessionId = Guid.NewGuid().ToString("N"),
+            SessionId = sessionId,
             RequestId = aidRequest.RequestId,
             HostUserId = aidRequest.HostUserId,
             HostSaveId = aidRequest.HostSaveId,
@@ -1261,6 +1494,30 @@ internal sealed class SocialAppService
             HelperSaveId = helperContext.SaveId,
             HelperPlayerName = string.IsNullOrWhiteSpace(helperContext.PlayerName) ? aidRequest.HelperPlayerName : helperContext.PlayerName,
             HelperLevelIndex = Math.Max(1, helperContext.LevelIndex),
+            DungeonServerUrl = DefaultDungeonServerUrl,
+            DungeonInstanceId = dungeonInstanceId,
+            DungeonRealtimeUdpPort = dungeonInstance.realtimeUdpPort,
+            DungeonRealtimeKcpPort = dungeonInstance.realtimeKcpPort,
+            DungeonJoinToken = helperJoinToken,
+            DungeonParticipantsJson = SerializeDungeonParticipants(new List<DungeonParticipantInfo>
+            {
+                new DungeonParticipantInfo
+                {
+                    userId = aidRequest.HostUserId,
+                    saveId = aidRequest.HostSaveId,
+                    displayName = aidRequest.HostPlayerName,
+                    levelIndex = aidRequest.HostLevelIndex,
+                    joinToken = hostJoinToken,
+                },
+                new DungeonParticipantInfo
+                {
+                    userId = helperUserId,
+                    saveId = helperContext.SaveId,
+                    displayName = string.IsNullOrWhiteSpace(helperContext.PlayerName) ? aidRequest.HelperPlayerName : helperContext.PlayerName,
+                    levelIndex = Math.Max(1, helperContext.LevelIndex),
+                    joinToken = helperJoinToken,
+                },
+            }),
             Status = AidSessionActive,
             CreatedAtUtc = now,
             UpdatedAtUtc = now,
@@ -1268,7 +1525,7 @@ internal sealed class SocialAppService
 
         db.AidSessions.Add(entity);
         db.SaveChanges();
-        aidSession = ToAidSessionDto(entity);
+        aidSession = ToAidSessionDto(entity, helperUserId);
         error = string.Empty;
         return true;
     }
@@ -1289,7 +1546,7 @@ internal sealed class SocialAppService
             return false;
         }
 
-        aidSession = ToAidSessionDto(entity);
+        aidSession = ToAidSessionDto(entity, normalizedUserId);
         error = string.Empty;
         return true;
     }
@@ -1324,7 +1581,16 @@ internal sealed class SocialAppService
         entity.UpdatedAtUtc = DateTime.UtcNow;
         db.SaveChanges();
 
-        aidSession = ToAidSessionDto(entity);
+        if (!_onlineDungeonClient.TryCloseInstance(
+                entity.DungeonServerUrl,
+                entity.DungeonInstanceId,
+                "aid_session_closed",
+                out string closeDungeonError))
+        {
+            Console.WriteLine($"[SocialAppService] 关闭联机副本失败：{closeDungeonError}");
+        }
+
+        aidSession = ToAidSessionDto(entity, requesterUserId);
         error = string.Empty;
         return true;
     }
@@ -1595,8 +1861,12 @@ internal sealed class SocialAppService
         };
     }
 
-    private static AidSessionDto ToAidSessionDto(AidSessionEntity entity)
+    private static AidSessionDto ToAidSessionDto(AidSessionEntity entity, string requesterUserId)
     {
+        List<DungeonParticipantInfo> participants = DeserializeDungeonParticipants(entity.DungeonParticipantsJson);
+        DungeonParticipantInfo? requesterParticipant = participants.FirstOrDefault(participant =>
+            string.Equals(participant.userId, requesterUserId, StringComparison.Ordinal));
+
         return new AidSessionDto
         {
             sessionId = entity.SessionId,
@@ -1613,6 +1883,12 @@ internal sealed class SocialAppService
             helperSaveId = entity.HelperSaveId,
             helperPlayerName = entity.HelperPlayerName,
             helperLevelIndex = entity.HelperLevelIndex,
+            dungeonServerUrl = entity.DungeonServerUrl,
+            dungeonInstanceId = entity.DungeonInstanceId,
+            dungeonRealtimeUdpPort = entity.DungeonRealtimeUdpPort,
+            dungeonRealtimeKcpPort = entity.DungeonRealtimeKcpPort,
+            dungeonJoinToken = requesterParticipant?.joinToken ?? string.Empty,
+            participants = participants.Select(ToDungeonSessionParticipantDto).ToList(),
             status = entity.Status,
             createdAtUtc = entity.CreatedAtUtc.ToString("O"),
             updatedAtUtc = entity.UpdatedAtUtc.ToString("O"),
@@ -1648,6 +1924,37 @@ internal sealed class SocialAppService
     private static string NormalizePortraitId(string portraitId)
     {
         return string.IsNullOrWhiteSpace(portraitId) ? "UI图片/天依" : portraitId.Trim();
+    }
+
+    private static int StablePositiveSeed(string value)
+    {
+        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        int seed = BitConverter.ToInt32(bytes, 0) & int.MaxValue;
+        return seed == 0 ? 1 : seed;
+    }
+
+    private static string SerializeDungeonParticipants(List<DungeonParticipantInfo> participants)
+    {
+        return JsonSerializer.Serialize(participants);
+    }
+
+    private static List<DungeonParticipantInfo> DeserializeDungeonParticipants(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return new List<DungeonParticipantInfo>();
+
+        return JsonSerializer.Deserialize<List<DungeonParticipantInfo>>(json) ?? new List<DungeonParticipantInfo>();
+    }
+
+    private static DungeonSessionParticipantDto ToDungeonSessionParticipantDto(DungeonParticipantInfo participant)
+    {
+        return new DungeonSessionParticipantDto
+        {
+            userId = participant.userId,
+            saveId = participant.saveId,
+            displayName = participant.displayName,
+            levelIndex = participant.levelIndex,
+        };
     }
 
     private static string MinUserId(string left, string right)
@@ -1731,6 +2038,45 @@ internal sealed class CloseAidSessionRequest
     public string sessionId { get; set; } = string.Empty;
 }
 
+internal sealed class CreateDungeonInstanceRequest
+{
+    public string instanceId { get; set; } = string.Empty;
+    public string templateOwnerUserId { get; set; } = string.Empty;
+    public string templateSaveId { get; set; } = string.Empty;
+    public int levelIndex { get; set; }
+    public int difficulty { get; set; }
+    public int seed { get; set; }
+    public int maxPlayers { get; set; }
+}
+
+internal sealed class DungeonInstanceInfo
+{
+    public string instanceId { get; set; } = string.Empty;
+    public string status { get; set; } = string.Empty;
+    public int realtimeUdpPort { get; set; }
+    public int realtimeKcpPort { get; set; }
+}
+
+internal sealed class JoinDungeonInstanceRequest
+{
+    public string userId { get; set; } = string.Empty;
+    public string saveId { get; set; } = string.Empty;
+    public string displayName { get; set; } = string.Empty;
+    public string joinToken { get; set; } = string.Empty;
+}
+
+internal sealed class CloseDungeonInstanceRequest
+{
+    public string reason { get; set; } = string.Empty;
+}
+
+internal sealed class DungeonApiResponse<T>
+{
+    public bool success { get; set; }
+    public string message { get; set; } = string.Empty;
+    public T? data { get; set; }
+}
+
 internal sealed class AidRequestDto
 {
     public string requestId { get; set; } = string.Empty;
@@ -1766,9 +2112,32 @@ internal sealed class AidSessionDto
     public string helperSaveId { get; set; } = string.Empty;
     public string helperPlayerName { get; set; } = string.Empty;
     public int helperLevelIndex { get; set; }
+    public string dungeonServerUrl { get; set; } = string.Empty;
+    public string dungeonInstanceId { get; set; } = string.Empty;
+    public int dungeonRealtimeUdpPort { get; set; }
+    public int dungeonRealtimeKcpPort { get; set; }
+    public string dungeonJoinToken { get; set; } = string.Empty;
+    public List<DungeonSessionParticipantDto> participants { get; set; } = new();
     public string status { get; set; } = string.Empty;
     public string createdAtUtc { get; set; } = string.Empty;
     public string updatedAtUtc { get; set; } = string.Empty;
+}
+
+internal sealed class DungeonParticipantInfo
+{
+    public string userId { get; set; } = string.Empty;
+    public string saveId { get; set; } = string.Empty;
+    public string displayName { get; set; } = string.Empty;
+    public int levelIndex { get; set; }
+    public string joinToken { get; set; } = string.Empty;
+}
+
+internal sealed class DungeonSessionParticipantDto
+{
+    public string userId { get; set; } = string.Empty;
+    public string saveId { get; set; } = string.Empty;
+    public string displayName { get; set; } = string.Empty;
+    public int levelIndex { get; set; }
 }
 
 internal sealed class FriendPresenceDto

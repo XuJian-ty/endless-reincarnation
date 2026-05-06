@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 namespace Game.Saving
 {
     /// <summary>
-    /// 服务端存档存储：通过社交后端的 /api/saves 接口同步当前账号的存档。
+    /// 服务端存档存储：通过平台后端的 /api/saves 接口同步当前账号的存档。
     /// 目前使用同步阻塞请求，先保证接入最小改动；后续可再改成真正异步加载流程。
     /// </summary>
     public class RemoteSaveStorage : ISaveStorage, IIndexedSaveStorage
@@ -123,7 +123,7 @@ namespace Game.Saving
         {
             string baseUrl = SocialSession.GetInstance().ServerBaseUrl;
             if (string.IsNullOrWhiteSpace(baseUrl))
-                throw new InvalidOperationException("社交服务地址为空。");
+                throw new InvalidOperationException("平台服务地址为空。");
 
             string url = BuildUrl(baseUrl, relativeUrl);
             using UnityWebRequest request = BuildRequest(method, url, requestBody);

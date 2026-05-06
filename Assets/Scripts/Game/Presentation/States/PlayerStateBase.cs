@@ -29,6 +29,8 @@ namespace Game.Presentation
         private SkillTimelineRunner _auxiliaryTimelineRunner;
         private string _timelineActionId;
         private string _auxiliaryTimelineActionId;
+        private int _entrySequence;
+        private static int s_nextEntrySequence;
 
         /// <summary>当前状态已持续运行的时间（秒）。子类可用于时序/首帧保护。</summary>
         protected float StateAge => _stateAge;
@@ -38,6 +40,7 @@ namespace Game.Presentation
         {
             Ctx       = ctx;
             _stateAge = 0f;
+            _entrySequence = ++s_nextEntrySequence;
             ApplyActionPlaybackSpeed();
             ApplyActionMovementSpeed();
             OnEnter();
@@ -69,6 +72,9 @@ namespace Game.Presentation
 
         /// <summary>当前状态对应的动作 ID，供 HUD/调试用；默认 None。</summary>
         public virtual GameAction CurrentActionId => GameAction.None;
+        public string CurrentRuntimeActionId => string.IsNullOrWhiteSpace(ActionId) ? string.Empty : ActionId.Trim();
+        public int EntrySequence => _entrySequence;
+        public float ElapsedSeconds => _stateAge;
         public virtual float RemainingTime => -1f;
         public virtual float NormalizedProgress => -1f;
 

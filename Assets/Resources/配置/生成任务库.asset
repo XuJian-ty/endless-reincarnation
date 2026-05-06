@@ -15,20 +15,28 @@ MonoBehaviour:
   tasks:
   - spawnType: 0
     specificSpawnId: 
-    spawnRadius: 20
+    spawnRadius: 15
     countMode: 1
     fixedCount: 1
-    randomMinCount: 8
-    randomMaxCount: 10
+    randomMinCount: 2
+    randomMaxCount: 3
     spawnMinSpacing: 1
   - spawnType: 2
     specificSpawnId: 
-    spawnRadius: 20
+    spawnRadius: 15
     countMode: 1
     fixedCount: 3
-    randomMinCount: 5
-    randomMaxCount: 8
+    randomMinCount: 1
+    randomMaxCount: 2
     spawnMinSpacing: 2
+  - spawnType: 3
+    specificSpawnId: 
+    spawnRadius: 15
+    countMode: 0
+    fixedCount: 1
+    randomMinCount: 0
+    randomMaxCount: 0
+    spawnMinSpacing: 5
   - spawnType: 3
     specificSpawnId: 
     spawnRadius: 15
@@ -39,23 +47,15 @@ MonoBehaviour:
     spawnMinSpacing: 5
   - spawnType: 3
     specificSpawnId: 
-    spawnRadius: 20
+    spawnRadius: 15
     countMode: 0
-    fixedCount: 4
-    randomMinCount: 0
-    randomMaxCount: 0
-    spawnMinSpacing: 5
-  - spawnType: 3
-    specificSpawnId: 
-    spawnRadius: 25
-    countMode: 0
-    fixedCount: 6
+    fixedCount: 3
     randomMinCount: 0
     randomMaxCount: 0
     spawnMinSpacing: 5
   - spawnType: 4
     specificSpawnId: 
-    spawnRadius: 20
+    spawnRadius: 15
     countMode: 0
     fixedCount: 1
     randomMinCount: 0
@@ -63,9 +63,9 @@ MonoBehaviour:
     spawnMinSpacing: 0
   - spawnType: 5
     specificSpawnId: 
-    spawnRadius: 10
+    spawnRadius: 15
     countMode: 1
     fixedCount: 1
-    randomMinCount: 2
-    randomMaxCount: 3
-    spawnMinSpacing: 3
+    randomMinCount: 1
+    randomMaxCount: 1
+    spawnMinSpacing: 5

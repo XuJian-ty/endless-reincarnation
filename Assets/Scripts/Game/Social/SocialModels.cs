@@ -101,9 +101,24 @@ namespace Game.Social
         public string helperSaveId;
         public string helperPlayerName;
         public int helperLevelIndex;
+        public string dungeonServerUrl;
+        public string dungeonInstanceId;
+        public int dungeonRealtimeUdpPort;
+        public int dungeonRealtimeKcpPort;
+        public string dungeonJoinToken;
+        public List<SocialDungeonParticipantInfo> participants;
         public string status;
         public string createdAtUtc;
         public string updatedAtUtc;
+    }
+
+    [Serializable]
+    public class SocialDungeonParticipantInfo
+    {
+        public string userId;
+        public string saveId;
+        public string displayName;
+        public int levelIndex;
     }
 
     [Serializable]
