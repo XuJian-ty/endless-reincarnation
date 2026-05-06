@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Data;
+using Game.Online;
 using Game.Presentation;
 using Game.Saving;
 using ProjectBase;
@@ -403,6 +404,9 @@ namespace Game.GameFlow
 
             if (applyEmergence)
                 ApplySpawnEmergence(instance);
+
+            if (controller != null)
+                OnlineDungeonSessionCoordinator.GetInstance().NotifyOnlineWorldSimulationChanged();
 
             return controller;
         }

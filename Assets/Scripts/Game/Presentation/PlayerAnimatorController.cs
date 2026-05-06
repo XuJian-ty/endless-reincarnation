@@ -98,6 +98,20 @@ namespace Game.Presentation
         }
 
         public float GetLocomotionSpeed()            => _animator.GetFloat(SpeedHash);
+        public bool TryGetLocomotionPresentation(out float speed, out Vector2 blend)
+        {
+            speed = 0f;
+            blend = Vector2.zero;
+            if (_animator == null)
+                return false;
+
+            speed = HasParameter("Speed") ? _animator.GetFloat(SpeedHash) : 0f;
+            float moveX = HasParameter("MoveX") ? _animator.GetFloat(MoveXHash) : 0f;
+            float moveY = HasParameter("MoveY") ? _animator.GetFloat(MoveYHash) : 0f;
+            blend = new Vector2(moveX, moveY);
+            return true;
+        }
+
         public void SetGrounded(bool grounded)       => _animator.SetBool(IsGroundedHash, grounded);
         public void SetPlaybackSpeed(float speed)
         {
@@ -119,6 +133,30 @@ namespace Game.Presentation
                 return;
 
             _animator.SetLayerWeight(_aimLayerIndex, active ? 1f : 0f);
+        }
+
+        public bool TryGetAimLayerActive(out bool active)
+        {
+            active = false;
+            if (_animator == null || _aimLayerIndex < 0)
+                return false;
+
+            active = _animator.GetLayerWeight(_aimLayerIndex) > 0.5f;
+            return true;
+        }
+
+        public bool TryGetCurrentAimPitch(out float pitch)
+        {
+            pitch = 0f;
+            if (_playerController == null || !_playerController.IsAimModeActive)
+                return false;
+
+            ThirdPersonCamera cameraRig = ThirdPersonCamera.Active;
+            float rawPitch = cameraRig != null
+                ? -cameraRig.Pitch + _aimNeutralCameraPitch
+                : _aimNeutralCameraPitch;
+            pitch = ClampAimPitch(rawPitch);
+            return true;
         }
 
         // ── 触发方法 ──────────────────────────────────────────────────────
@@ -303,15 +341,9 @@ namespace Game.Presentation
 
             float targetWeight = 0f;
             float clampedPitch = 0f;
-            if (_playerController != null && _playerController.IsAimModeActive)
+            if (TryGetCurrentAimPitch(out float aimPitch))
             {
-                ThirdPersonCamera cameraRig = ThirdPersonCamera.Active;
-                float rawPitch = cameraRig != null
-                    ? -cameraRig.Pitch + _aimNeutralCameraPitch
-                    : _aimNeutralCameraPitch;
-                clampedPitch = rawPitch >= 0f
-                    ? Mathf.Min(rawPitch, _maxAimUpAngle)
-                    : Mathf.Max(rawPitch, -_maxAimDownAngle);
+                clampedPitch = aimPitch;
                 targetWeight = 1f;
             }
 
@@ -325,6 +357,13 @@ namespace Game.Presentation
             ApplyAimPitchToBone(_chestBone, clampedPitch, _chestAimWeight);
             ApplyAimPitchToBone(_neckBone, clampedPitch, _neckAimWeight);
             ApplyAimPitchToBone(_headBone, clampedPitch, _headAimWeight);
+        }
+
+        private float ClampAimPitch(float rawPitch)
+        {
+            return rawPitch >= 0f
+                ? Mathf.Min(rawPitch, _maxAimUpAngle)
+                : Mathf.Max(rawPitch, -_maxAimDownAngle);
         }
 
         private void ApplyAimPitchToBone(Transform bone, float clampedPitch, float weight)

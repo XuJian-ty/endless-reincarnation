@@ -18,6 +18,12 @@ namespace Game.Presentation
         Collider[] OverlapBuffer { get; }
     }
 
+    public interface ISkillAimPoseProvider
+    {
+        bool IsAimModeActive { get; }
+        bool TryGetCurrentAimPose(out SkillAimPose aimPose);
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     //  EnemySkillExecutionContext
     // ═══════════════════════════════════════════════════════════════════════════
@@ -51,7 +57,7 @@ namespace Game.Presentation
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// <summary>玩家技能执行上下文，持有 PlayerController 引用。</summary>
-    public sealed class PlayerSkillExecutionContext : ISkillExecutionContext
+    public sealed class PlayerSkillExecutionContext : ISkillExecutionContext, ISkillAimPoseProvider
     {
         private static readonly Collider[] SharedBuffer = new Collider[32];
 
@@ -67,5 +73,13 @@ namespace Game.Presentation
         public float CasterAttack => _player != null ? _player.PlayerModel.Stats.Attack : 0f;
 
         public Collider[] OverlapBuffer => SharedBuffer;
+
+        public bool IsAimModeActive => _player != null && _player.IsAimModeActive;
+
+        public bool TryGetCurrentAimPose(out SkillAimPose aimPose)
+        {
+            aimPose = default;
+            return _player != null && _player.TryGetCurrentAimPose(out aimPose);
+        }
     }
 }

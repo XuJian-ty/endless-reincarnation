@@ -118,6 +118,17 @@ public class UIManager : BaseManager<UIManager>
 
         ResMgr.GetInstance().LoadAsync<GameObject>("UI/" + panelName, obj =>
         {
+            if (_panelDic.TryGetValue(panelName, out var loadedCached))
+            {
+                if (obj != null)
+                    GameObject.Destroy(obj);
+
+                loadedCached.ShowMe();
+                callBack?.Invoke(loadedCached as T);
+                TryPauseGameplayForPanel(panelName);
+                return;
+            }
+
             if (obj == null)
             {
                 Debug.LogWarning($"[UIManager] 未找到面板预制体 '{panelName}'，将创建运行时回退面板。");
@@ -165,15 +176,24 @@ public class UIManager : BaseManager<UIManager>
     /// <summary>隐藏并销毁面板。先从字典移除再销毁，避免 OnDisable 等链里再次调用 HidePanel 导致同一物体被销毁两次。</summary>
     public void HidePanel(string panelName)
     {
-        if (!_panelDic.TryGetValue(panelName, out var panel)) return;
-        _panelDic.Remove(panelName);
+        bool hidAnyPanel = false;
+        if (!_panelDic.TryGetValue(panelName, out var panel))
+            panel = null;
+        else
+            _panelDic.Remove(panelName);
+
         if (panel != null && panel.gameObject != null)
         {
             panel.HideMe();
             GameObject.Destroy(panel.gameObject);
+            hidAnyPanel = true;
         }
 
+        hidAnyPanel |= DestroyDetachedPanels(panelName, panel);
+        if (!hidAnyPanel) return;
+
         TryResumeGameplayAfterPanelClosed(panelName);
+        GameplayUIInputBridge.NotifyPanelHidden(panelName);
     }
 
     /// <summary>获取已显示的面板，不存在则返回 null</summary>
@@ -254,6 +274,36 @@ public class UIManager : BaseManager<UIManager>
         }
 
         return false;
+    }
+
+    private static bool DestroyDetachedPanels(string panelName, BasePanel ignoredPanel)
+    {
+        if (string.IsNullOrWhiteSpace(panelName))
+            return false;
+
+        bool destroyedAny = false;
+        var allPanels = Object.FindObjectsByType<BasePanel>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < allPanels.Length; i++)
+        {
+            BasePanel panel = allPanels[i];
+            if (panel == null || panel.gameObject == null)
+                continue;
+            if (panel == ignoredPanel)
+                continue;
+
+            string objectName = panel.gameObject.name;
+            if (!string.Equals(objectName, panelName, System.StringComparison.Ordinal) &&
+                !string.Equals(objectName, panelName + "(Clone)", System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            panel.HideMe();
+            GameObject.Destroy(panel.gameObject);
+            destroyedAny = true;
+        }
+
+        return destroyedAny;
     }
 
     private static GameObject CreateRuntimeFallbackPanel<T>(string panelName) where T : BasePanel

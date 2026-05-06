@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Input;
 using Game.GameFlow;
+using Game.Online;
 using Game.Social;
 using ProjectBase;
 
@@ -30,6 +31,7 @@ namespace Game.UI
         private int _lastClosedFrame;
         private bool _panelOpening;
         private bool _isInputDriver;
+        private bool _suppressPanelHiddenBroadcast;
 
         private static bool IsGameplayUiContext()
         {
@@ -122,7 +124,13 @@ namespace Game.UI
         {
             _lastClosedPanelName = panelName;
             _lastClosedFrame = Time.frameCount;
+            bool previousSuppress = _suppressPanelHiddenBroadcast;
+            if (broadcastToAidPeer)
+                _suppressPanelHiddenBroadcast = true;
+
             UIManager.GetInstance().HidePanel(panelName);
+
+            _suppressPanelHiddenBroadcast = previousSuppress;
             RefreshBlockingUiState();
             if (broadcastToAidPeer)
                 BroadcastAidPanelState(panelName, false);
@@ -169,7 +177,12 @@ namespace Game.UI
             {
                 _pendingOpens.Remove(panelName);
                 if (_cancelledOpens.Remove(panelName))
+                {
+                    bool callbackSuppress = _suppressPanelHiddenBroadcast;
+                    _suppressPanelHiddenBroadcast = true;
                     ui.HidePanel(panelName);
+                    _suppressPanelHiddenBroadcast = callbackSuppress;
+                }
 
                 RefreshBlockingUiState();
             });
@@ -180,8 +193,35 @@ namespace Game.UI
             return _instance != null && _instance.ApplyAidPanelState(panelName, open);
         }
 
+        public static void NotifyPanelHidden(string panelName)
+        {
+            if (_instance == null)
+                return;
+
+            _instance.OnPanelHidden(panelName);
+        }
+
+        private void OnPanelHidden(string panelName)
+        {
+            if (_suppressPanelHiddenBroadcast || !IsToggleablePanelName(panelName) || !IsGameplayUiContext())
+                return;
+
+            _pendingOpens.Remove(panelName);
+            _cancelledOpens.Remove(panelName);
+            _lastClosedPanelName = panelName;
+            _lastClosedFrame = Time.frameCount;
+            RefreshBlockingUiState();
+            BroadcastAidPanelState(panelName, false);
+        }
+
         private bool ApplyAidPanelState(string panelName, bool open)
         {
+            if (!open && string.IsNullOrWhiteSpace(panelName))
+            {
+                CloseAllToggleablePanels();
+                return true;
+            }
+
             switch (panelName)
             {
                 case PanelNames.Backpack:
@@ -203,36 +243,65 @@ namespace Game.UI
 
         private void SetPanelOpen<T>(string panelName, E_UI_Layer layer, bool open) where T : BasePanel
         {
-            if (!IsGameplayUiContext())
-                return;
-
-            _pendingOpens.Remove(panelName);
-            _cancelledOpens.Remove(panelName);
-
-            if (!open)
+            bool previousSuppress = _suppressPanelHiddenBroadcast;
+            _suppressPanelHiddenBroadcast = true;
+            try
             {
-                ClosePanelAndMark(panelName);
-                return;
-            }
+                if (!IsGameplayUiContext())
+                    return;
 
-            var ui = UIManager.GetInstance();
-            var panel = ui.GetPanel<T>(panelName);
-            if (panel != null && panel.gameObject.activeSelf)
-            {
+                if (!open)
+                {
+                    bool hadPendingOpen = _pendingOpens.Remove(panelName);
+                    _cancelledOpens.Remove(panelName);
+                    if (hadPendingOpen)
+                        _cancelledOpens.Add(panelName);
+                    UIManager.GetInstance().HidePanel(panelName);
+                    RefreshBlockingUiState();
+                    return;
+                }
+
+                if (_pendingOpens.Contains(panelName))
+                {
+                    _cancelledOpens.Remove(panelName);
+                    RefreshBlockingUiState();
+                    return;
+                }
+
+                _cancelledOpens.Remove(panelName);
+                var ui = UIManager.GetInstance();
+                var panel = ui.GetPanel<T>(panelName);
+                if (panel != null && panel.gameObject.activeSelf)
+                {
+                    RefreshBlockingUiState();
+                    return;
+                }
+
+                CloseOtherToggleablePanels(panelName, ui);
+                _pendingOpens.Add(panelName);
+                _panelOpening = true;
                 RefreshBlockingUiState();
-                return;
+
+                ui.ShowPanel<T>(panelName, layer, _ =>
+                {
+                    _pendingOpens.Remove(panelName);
+                    if (_cancelledOpens.Remove(panelName))
+                    {
+                        bool callbackSuppress = _suppressPanelHiddenBroadcast;
+                        _suppressPanelHiddenBroadcast = true;
+                        ui.HidePanel(panelName);
+                        _suppressPanelHiddenBroadcast = callbackSuppress;
+                        RefreshBlockingUiState();
+                        return;
+                    }
+
+                    RefreshBlockingUiState();
+                });
             }
-
-            CloseOtherToggleablePanels(panelName, ui);
-            _pendingOpens.Add(panelName);
-            _panelOpening = true;
-            RefreshBlockingUiState();
-
-            ui.ShowPanel<T>(panelName, layer, _ =>
+            finally
             {
-                _pendingOpens.Remove(panelName);
-                RefreshBlockingUiState();
-            });
+                _suppressPanelHiddenBroadcast = previousSuppress;
+            }
         }
 
         private void CloseOtherToggleablePanels(string panelName, UIManager ui)
@@ -245,15 +314,44 @@ namespace Game.UI
                 if (name == panelName)
                     continue;
 
-                _pendingOpens.Remove(name);
+                bool hadPendingOpen = _pendingOpens.Remove(name);
                 _cancelledOpens.Remove(name);
+                if (hadPendingOpen)
+                    _cancelledOpens.Add(name);
+
                 if (ui.GetPanel<BasePanel>(name) != null)
                     ui.HidePanel(name);
             }
         }
 
+        private void CloseAllToggleablePanels()
+        {
+            var ui = UIManager.GetInstance();
+            bool previousSuppress = _suppressPanelHiddenBroadcast;
+            _suppressPanelHiddenBroadcast = true;
+            try
+            {
+                _cancelledOpens.Clear();
+                foreach (var name in _pendingOpens)
+                    _cancelledOpens.Add(name);
+
+                _pendingOpens.Clear();
+                foreach (var name in ToggleablePanelNames)
+                    ui.HidePanel(name);
+            }
+            finally
+            {
+                _suppressPanelHiddenBroadcast = previousSuppress;
+            }
+
+            RefreshBlockingUiState();
+        }
+
         private static void BroadcastAidPanelState(string panelName, bool open)
         {
+            if (OnlineDungeonSessionCoordinator.GetInstance().TryBroadcastGameplayPanelState(panelName, open))
+                return;
+
             SocialAidSessionCoordinator.GetInstance().BroadcastGameplayPanelState(panelName, open);
         }
 
@@ -322,6 +420,20 @@ namespace Game.UI
             {
                 var panel = ui.GetPanel<BasePanel>(name);
                 if (panel != null && panel.gameObject.activeSelf)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsToggleablePanelName(string panelName)
+        {
+            if (string.IsNullOrEmpty(panelName))
+                return false;
+
+            foreach (var name in ToggleablePanelNames)
+            {
+                if (name == panelName)
                     return true;
             }
 

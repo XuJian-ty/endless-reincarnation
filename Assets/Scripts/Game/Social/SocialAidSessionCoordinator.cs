@@ -764,7 +764,7 @@ namespace Game.Social
                 _remoteAvatars[ownerClientId] = avatar;
             }
 
-            avatar.ApplyPose(position, yaw, moveSpeed, action, attackMode, hasMeleeWeapon, hasRangedWeapon);
+            avatar.ApplyPose(position, yaw, false, false, 0f, Vector3.zero, moveSpeed, 0f, moveSpeed, string.Empty, action, attackMode, hasMeleeWeapon, hasRangedWeapon, Time.unscaledTime);
         }
 
         private SocialAidRemotePlayerAvatar CreateRemoteAvatar(ulong ownerClientId, Vector3 position, float yaw)

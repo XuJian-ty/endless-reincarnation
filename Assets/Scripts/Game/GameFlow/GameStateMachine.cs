@@ -6,6 +6,7 @@ using UnityEngine.Events;
 using Game;
 using Game.Domain;
 using Game.Data;
+using Game.Online;
 using Game.Saving;
 using Game.Social;
 using Game.UI;
@@ -414,7 +415,8 @@ namespace Game.GameFlow
         {
             if (_currentRun == null) return;
 
-            if (SocialAidSessionCoordinator.GetInstance().TryHandleLocalPlayerDeath())
+            if (OnlineDungeonSessionCoordinator.GetInstance().TryHandleLocalPlayerDeath()
+                || SocialAidSessionCoordinator.GetInstance().TryHandleLocalPlayerDeath())
             {
                 return;
             }
@@ -454,6 +456,11 @@ namespace Game.GameFlow
 
         public void ReturnCurrentSaveToOwnLevel(int returnLevelIndex, LevelSnapshot returnSnapshot)
         {
+            ReturnCurrentSaveToOwnLevel(returnLevelIndex, returnSnapshot, null);
+        }
+
+        public void ReturnCurrentSaveToOwnLevel(int returnLevelIndex, LevelSnapshot returnSnapshot, string returnSceneName)
+        {
             if (_currentRun == null || _playerModel == null)
                 return;
 
@@ -464,7 +471,10 @@ namespace Game.GameFlow
             StartActiveSaveHeartbeat();
             Time.timeScale = 1f;
             SetState(State.InLevel);
-            LoadLevelWithMainMenuStyleTransition(GetLevelSceneName(_currentRun.levelIndex), ApplyLevelBgm);
+            string sceneName = string.IsNullOrWhiteSpace(returnSceneName)
+                ? GetLevelSceneName(_currentRun.levelIndex)
+                : returnSceneName.Trim();
+            LoadLevelWithMainMenuStyleTransition(sceneName, ApplyLevelBgm);
         }
 
         // ── 私有工具 ──────────────────────────────────────────────────────
@@ -610,10 +620,12 @@ namespace Game.GameFlow
 
         private void CloseActiveAidSession()
         {
-            SocialAidSessionInfo session = SocialAidSessionCoordinator.GetInstance().ActiveSession;
+            OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            SocialAidSessionInfo session = onlineCoordinator.ActiveAidSession ?? SocialAidSessionCoordinator.GetInstance().ActiveSession;
             if (session == null || string.IsNullOrWhiteSpace(session.sessionId))
                 return;
 
+            onlineCoordinator.StopSession();
             SocialAidSessionCoordinator.GetInstance().StopSession();
             SocialService.GetInstance().CloseAidSession(
                 session.sessionId,

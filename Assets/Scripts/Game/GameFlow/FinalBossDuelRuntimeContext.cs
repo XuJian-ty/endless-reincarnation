@@ -63,6 +63,16 @@ namespace Game.GameFlow
             return true;
         }
 
+        public static bool AdoptOnlineChallenge(string bossId, string bossDisplayName = null)
+        {
+            if (string.IsNullOrWhiteSpace(bossId))
+                return false;
+
+            _bossId = bossId.Trim();
+            _bossDisplayName = string.IsNullOrWhiteSpace(bossDisplayName) ? _bossId : bossDisplayName.Trim();
+            return true;
+        }
+
         public static void ClearChallenge()
         {
             _bossId = string.Empty;

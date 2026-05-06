@@ -330,6 +330,29 @@ namespace Game.Presentation
                 HandleDeath();
         }
 
+        public void ApplyOnlineAuthorityHit(float currentHp, bool isDead, float stunDuration)
+        {
+            if (!_initialized) return;
+            if (_deathSequenceStarted) return;
+            if (StateMachine.CurrentState is DodgeState) return;
+            if (_temporaryInvincibleTimer > 0f || _stateScopedInvincibleCount > 0) return;
+
+            PlayerModel.CurrentHp = Mathf.Clamp(currentHp, 0f, PlayerModel.Stats.MaxHp);
+            bool hasHitProtection = _hitProtectionSystem.IsProtected;
+            bool hasSuperArmor = PlayerModel.HasBuff(Game.Data.BuffIds.SuperArmor)
+                                 || _temporarySuperArmorTimer > 0f
+                                 || _stateScopedSuperArmorCount > 0;
+
+            if (!hasHitProtection && !hasSuperArmor)
+                _hitProtectionSystem.RecordHit();
+
+            if (!hasSuperArmor && !hasHitProtection)
+                ApplyHardControl(stunDuration);
+
+            if (isDead || PlayerModel.CurrentHp <= 0f)
+                HandleDeath();
+        }
+
         public void ApplyHardControl(float duration)
         {
             if (!_initialized || _deathSequenceStarted)

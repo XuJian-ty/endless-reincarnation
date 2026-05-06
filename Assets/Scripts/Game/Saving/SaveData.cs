@@ -138,6 +138,7 @@ namespace Game.Saving
     public class EnemySnapshot
     {
         public string id;
+        public string runtimeId;
         public int    enemyType; // 0近战 1远程 2精英 3守卫者 4Boss
         public float  x, y, z;
         public float  yaw;

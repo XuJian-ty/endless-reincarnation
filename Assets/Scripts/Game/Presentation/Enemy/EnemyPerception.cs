@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Game.Data;
 using Game.GameFlow;
+using Game.Online;
 
 namespace Game.Presentation
 {
@@ -517,6 +519,23 @@ namespace Game.Presentation
                     clone.transform,
                     null,
                     clone,
+                    ref targetTransform,
+                    ref targetPlayerController,
+                    ref targetCloneActor,
+                    ref bestScore);
+            }
+
+            IReadOnlyList<OnlineDungeonRemotePlayerTarget> remoteTargets = OnlineDungeonRemotePlayerTarget.ActiveRemoteTargets;
+            for (int i = 0; i < remoteTargets.Count; i++)
+            {
+                OnlineDungeonRemotePlayerTarget remoteTarget = remoteTargets[i];
+                if (remoteTarget == null || !remoteTarget.gameObject.activeInHierarchy)
+                    continue;
+
+                ConsiderTarget(
+                    remoteTarget.transform,
+                    null,
+                    null,
                     ref targetTransform,
                     ref targetPlayerController,
                     ref targetCloneActor,

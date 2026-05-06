@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://0.0.0.0:5076");
@@ -18,6 +19,7 @@ builder.Services.AddDbContextFactory<SocialDbContext>(options =>
 {
     options.UseSqlite($"Data Source={databasePath}");
 });
+builder.Services.AddHttpClient<OnlineDungeonClient>();
 builder.Services.AddSingleton<SocialAppService>();
 
 var app = builder.Build();
@@ -30,7 +32,7 @@ app.MapGet("/api/health", () =>
         status = "ok",
         utcNow = DateTime.UtcNow,
         database = databasePath,
-    }, "社交服务已启动"));
+    }, "平台服务已启动"));
 });
 
 app.MapPost("/api/auth/register", (AuthRequest request, SocialAppService service) =>

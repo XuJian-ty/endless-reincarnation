@@ -1,0 +1,232 @@
+{
+  "levels": [
+    {
+      "levelIndex": 1,
+      "rewards": {
+        "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
+        "elite": {
+          "gold": 30,
+          "exp": 15,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_common", "weight": 0.3 },
+            { "itemType": "weapon_rare", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "guardian": {
+          "gold": 50,
+          "exp": 25,
+          "talentPoints": 2,
+          "drops": [
+            { "itemType": "weapon_common", "weight": 0.3 },
+            { "itemType": "weapon_rare", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "boss": {
+          "gold": 200,
+          "exp": 50,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_common", "weight": 0.3 },
+            { "itemType": "weapon_rare", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        }
+      }
+    },
+    {
+      "levelIndex": 2,
+      "rewards": {
+        "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
+        "elite": {
+          "gold": 30,
+          "exp": 15,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_common", "weight": 0.15 },
+            { "itemType": "weapon_rare", "weight": 0.15 },
+            { "itemType": "weapon_epic", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "guardian": {
+          "gold": 0,
+          "exp": 25,
+          "talentPoints": 2,
+          "drops": [
+            { "itemType": "weapon_common", "weight": 0.15 },
+            { "itemType": "weapon_rare", "weight": 0.15 },
+            { "itemType": "weapon_epic", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "boss": {
+          "gold": 0,
+          "exp": 50,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_common", "weight": 0.15 },
+            { "itemType": "weapon_rare", "weight": 0.15 },
+            { "itemType": "weapon_epic", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        }
+      }
+    },
+    {
+      "levelIndex": 3,
+      "rewards": {
+        "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
+        "elite": {
+          "gold": 30,
+          "exp": 15,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_rare", "weight": 0.2 },
+            { "itemType": "weapon_epic", "weight": 0.2 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "guardian": {
+          "gold": 0,
+          "exp": 25,
+          "talentPoints": 2,
+          "drops": [
+            { "itemType": "weapon_rare", "weight": 0.2 },
+            { "itemType": "weapon_epic", "weight": 0.2 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "boss": {
+          "gold": 0,
+          "exp": 50,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_rare", "weight": 0.2 },
+            { "itemType": "weapon_epic", "weight": 0.2 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        }
+      }
+    },
+    {
+      "levelIndex": 4,
+      "rewards": {
+        "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
+        "elite": {
+          "gold": 30,
+          "exp": 15,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_epic", "weight": 0.3 },
+            { "itemType": "weapon_legendary", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "guardian": {
+          "gold": 0,
+          "exp": 25,
+          "talentPoints": 2,
+          "drops": [
+            { "itemType": "weapon_epic", "weight": 0.3 },
+            { "itemType": "weapon_legendary", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "boss": {
+          "gold": 0,
+          "exp": 50,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_epic", "weight": 0.3 },
+            { "itemType": "weapon_legendary", "weight": 0.1 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        }
+      }
+    },
+    {
+      "levelIndex": 5,
+      "rewards": {
+        "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
+        "elite": {
+          "gold": 30,
+          "exp": 15,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_legendary", "weight": 0.4 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "guardian": {
+          "gold": 0,
+          "exp": 25,
+          "talentPoints": 2,
+          "drops": [
+            { "itemType": "weapon_legendary", "weight": 0.4 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        },
+        "boss": {
+          "gold": 0,
+          "exp": 50,
+          "talentPoints": 0,
+          "drops": [
+            { "itemType": "weapon_legendary", "weight": 0.4 },
+            { "itemType": "potion_hp", "weight": 0.25 },
+            { "itemType": "potion_mp", "weight": 0.25 },
+            { "itemType": "nectar", "weight": 0.1 }
+          ]
+        }
+      }
+    }
+  ],
+  "weapons": [
+    {
+      "weaponId": "sword",
+      "type": 0,
+      "common": { "hp": [6000000, 1000], "mp": [300, 500], "attack": [30, 50], "defense": [60, 100], "hpRegen": [0.5, 1.5], "mpRegen": [0.5, 1.5], "critRate": [0.4, 0.6], "critDmg": [0.8, 1.2], "attackSpeed": [0.1, 0.3], "moveSpeed": [0.1, 0.3] },
+      "rare": { "hp": [1080, 1800], "mp": [540, 900], "attack": [54, 90], "defense": [108, 180], "hpRegen": [16, 27], "mpRegen": [8, 13.5], "critRate": [0.4, 0.6], "critDmg": [0.8, 1.2], "attackSpeed": [0.1, 0.3], "moveSpeed": [0.1, 0.3] },
+      "epic": { "hp": [2000, 3300], "mp": [1000, 1650], "attack": [100, 165], "defense": [200, 330], "hpRegen": [30, 50], "mpRegen": [15, 25], "critRate": [0.2, 0.33], "critDmg": [0.4, 0.66], "attackSpeed": [0.1, 0.3], "moveSpeed": [0.1, 0.3] },
+      "legendary": { "hp": [3600, 6000], "mp": [1800, 3000], "attack": [180, 300], "defense": [360, 600], "hpRegen": [54, 90], "mpRegen": [27, 45], "critRate": [0.36, 0.6], "critDmg": [0.72, 1.2], "attackSpeed": [0.36, 0.6], "moveSpeed": [0.36, 0.6] }
+    },
+    {
+      "weaponId": "gun",
+      "type": 1,
+      "common": { "hp": [6000000, 1000], "mp": [300, 600], "attack": [30, 60], "defense": [60, 100], "hpRegen": [0.5, 1.5], "mpRegen": [0.5, 1.5], "critRate": [0.4, 0.6], "critDmg": [0.8, 1.2], "attackSpeed": [0.1, 0.3], "moveSpeed": [0.1, 0.3] },
+      "rare": { "hp": [1080, 1800], "mp": [540, 900], "attack": [54, 90], "defense": [108, 180], "hpRegen": [16, 27], "mpRegen": [8, 13.5], "critRate": [0.4, 0.6], "critDmg": [0.8, 1.2], "attackSpeed": [0.1, 0.3], "moveSpeed": [0.1, 0.3] },
+      "epic": { "hp": [2000, 3300], "mp": [1000, 1650], "attack": [100, 165], "defense": [200, 330], "hpRegen": [30, 50], "mpRegen": [15, 25], "critRate": [0.2, 0.33], "critDmg": [0.4, 0.66], "attackSpeed": [0.1, 0.3], "moveSpeed": [0.1, 0.3] },
+      "legendary": { "hp": [3600, 6000], "mp": [1800, 3000], "attack": [180, 300], "defense": [360, 600], "hpRegen": [54, 90], "mpRegen": [27, 45], "critRate": [0.3, 0.6], "critDmg": [0.6, 1.2], "attackSpeed": [0.36, 0.6], "moveSpeed": [0.36, 0.6] }
+    }
+  ]
+}

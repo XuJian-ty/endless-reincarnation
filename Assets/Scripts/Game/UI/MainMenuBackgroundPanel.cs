@@ -95,7 +95,7 @@ namespace Game.UI
         {
             if (SocialSession.GetInstance().IsLoggedIn)
             {
-                UIManager.GetInstance().HidePanel(PanelNames.SocialLogin);
+                UIManager.GetInstance().HidePanel(PanelNames.AccountLogin);
                 if (promptClickToContinue != null)
                 {
                     promptClickToContinue.SetActive(!_mainMenuShown);
@@ -113,9 +113,9 @@ namespace Game.UI
             UIManager.GetInstance().HidePanel(PanelNames.NamePanel);
             UIManager.GetInstance().HidePanel(PanelNames.SaveList);
             UIManager.GetInstance().HidePanel(PanelNames.SocialHub);
-            UIManager.GetInstance().ShowPanel<SocialLoginPanel>(
-                PanelNames.SocialLogin,
-                PanelLayers.SocialLogin);
+            UIManager.GetInstance().ShowPanel<AccountLoginPanel>(
+                PanelNames.AccountLogin,
+                PanelLayers.AccountLogin);
         }
 
         private void HandleSessionChanged()
