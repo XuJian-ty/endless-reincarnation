@@ -37,6 +37,8 @@ namespace Game.Presentation
         [SerializeField, Min(0f)] private float _deathDisableDelay = 1.2f;
         [SerializeField] private bool _countsAsLevelBoss = false;
 
+        private Vector3 _baseVisualScale = Vector3.one;
+        private bool _baseVisualScaleInitialized;
         private EnemyRuntimeStats _stats;
         private readonly List<RuntimeStatModifier> _runtimeModifiers = new List<RuntimeStatModifier>();
         private readonly Dictionary<int, float> _lastSkillCastTimeBySlot = new Dictionary<int, float>();
@@ -56,6 +58,9 @@ namespace Game.Presentation
         private EnemyResolvedSkill _activeSkill;
         private Vector3? _activeSkillTargetPosition;
         private int _activeSkillSequence;
+        private readonly Collider[] _onlineRemoteVisualOverlapBuffer = new Collider[32];
+        private SkillTimelineRunner _onlineRemoteVisualTimelineRunner;
+        private int _onlineRemoteVisualSkillSequence;
         private float _idleUntilTime;
         private float _decisionLockUntilTime;
         private bool _isInPostCastRecovery;
@@ -296,6 +301,8 @@ namespace Game.Presentation
 
         private void Awake()
         {
+            _baseVisualScale = transform.localScale;
+            _baseVisualScaleInitialized = true;
             EnsureRuntimeId();
             RegisterActiveEnemy();
             _rng = new System.Random();
@@ -356,7 +363,7 @@ namespace Game.Presentation
 
             transform.position = new Vector3(snapshot.x, snapshot.y, snapshot.z);
             transform.rotation = Quaternion.Euler(0f, snapshot.yaw, 0f);
-            _countsAsLevelBoss = snapshot.countsAsLevelBoss;
+            SetCountsAsLevelBoss(snapshot.countsAsLevelBoss);
             _dead = false;
             _deathFinalized = false;
             _deathCleanupTime = 0f;
@@ -387,6 +394,7 @@ namespace Game.Presentation
 
             if (_onlineRemoteSimulationDisabled)
             {
+                TickOnlineRemoteVisualTimeline(Time.deltaTime);
                 UpdateHeadHealthBar();
                 return;
             }
@@ -581,6 +589,22 @@ namespace Game.Presentation
             _animatorMoveStrafe = Mathf.Clamp(blendStrafeSigned, -1f, 1f);
         }
 
+        public void ApplyOnlineRemoteMovementPresentation(float moveBlend, float moveForward, float moveStrafe)
+        {
+            if (!_onlineRemoteSimulationDisabled)
+                return;
+
+            SetAnimatorMove(moveBlend, moveForward, moveStrafe);
+            Animator animator = GetComponent<Animator>();
+            if (animator == null)
+                return;
+
+            if (HasAnimatorParameter(animator, "MoveX", AnimatorControllerParameterType.Float))
+                animator.SetFloat("MoveX", _animatorMoveStrafe);
+            if (HasAnimatorParameter(animator, "MoveY", AnimatorControllerParameterType.Float))
+                animator.SetFloat("MoveY", _animatorMoveSigned);
+        }
+
         public bool CanCastSkill(int slot)
         {
             EnsureInitialized();
@@ -611,7 +635,31 @@ namespace Game.Presentation
 
         public void SetCountsAsLevelBoss(bool value)
         {
-            _countsAsLevelBoss = value;
+            EnsureBaseVisualScale();
+            if (!value)
+            {
+                _countsAsLevelBoss = false;
+                transform.localScale = _baseVisualScale;
+                LevelBossVisualMarker marker = GetComponent<LevelBossVisualMarker>();
+                if (marker != null)
+                    Destroy(marker);
+                return;
+            }
+
+            _countsAsLevelBoss = true;
+            float scaleMultiplier = ConfigManager.GetInstance()?.GetPlayerCloneAndLevelBossVisualConfig()?.levelBoss.scaleMultiplier ?? 3f;
+            transform.localScale = _baseVisualScale * scaleMultiplier;
+            if (GetComponent<LevelBossVisualMarker>() == null)
+                gameObject.AddComponent<LevelBossVisualMarker>();
+        }
+
+        private void EnsureBaseVisualScale()
+        {
+            if (_baseVisualScaleInitialized)
+                return;
+
+            _baseVisualScale = transform.localScale;
+            _baseVisualScaleInitialized = true;
         }
 
         public void PrepareForSpawn(GameObject poolSourcePrefab)
@@ -623,6 +671,9 @@ namespace Game.Presentation
             _loggedAmbiguousVariantError = false;
             _loggedMissingStatsError = false;
             _loggedMissingArchetypeError = false;
+            _countsAsLevelBoss = false;
+            _baseVisualScale = transform.localScale;
+            _baseVisualScaleInitialized = true;
             Archetype = null;
             _stats = default;
 
@@ -872,6 +923,92 @@ namespace Game.Presentation
             _deathFinalized = false;
             _deathCleanupTime = 0f;
             UpdateHeadHealthBar();
+        }
+
+        public void ApplyOnlineRemoteSkillPresentation(
+            int activeSkillSequence,
+            int activeSkillSlot,
+            string activeSkillId,
+            string activeSkillAnimationTrigger,
+            bool hasActiveSkillTarget,
+            Vector3 activeSkillTarget)
+        {
+            if (!_onlineRemoteSimulationDisabled || activeSkillSequence <= 0 || activeSkillSequence == _onlineRemoteVisualSkillSequence)
+                return;
+
+            EnsureInitialized();
+            EnemyResolvedSkill resolvedSkill = activeSkillSlot >= 0 ? ResolveSkillSlot(activeSkillSlot) : null;
+            SharedSkillDefinition definition = resolvedSkill != null ? resolvedSkill.Definition : null;
+            if (definition == null && !string.IsNullOrWhiteSpace(activeSkillId))
+                definition = ConfigManager.GetInstance()?.GetSkillEffectDatabase()?.GetEntry(activeSkillId.Trim());
+            if (definition == null)
+                return;
+
+            _onlineRemoteVisualSkillSequence = activeSkillSequence;
+            if (hasActiveSkillTarget)
+                RotateOnlineRemoteVisualToward(activeSkillTarget);
+
+            string triggerName = !string.IsNullOrWhiteSpace(activeSkillAnimationTrigger)
+                ? activeSkillAnimationTrigger.Trim()
+                : resolvedSkill != null ? resolvedSkill.AnimationTrigger : definition.GetAnimationTriggerOrEmpty();
+            SetOnlineRemoteVisualTrigger(triggerName);
+
+            _onlineRemoteVisualTimelineRunner?.Stop();
+            _onlineRemoteVisualTimelineRunner = new SkillTimelineRunner();
+            _onlineRemoteVisualTimelineRunner.Begin(
+                definition,
+                new EnemySkillExecutionContext(this, GetComponent<EnemyPerception>(), _onlineRemoteVisualOverlapBuffer),
+                -1f,
+                1f,
+                null,
+                true);
+        }
+
+        private void TickOnlineRemoteVisualTimeline(float deltaTime)
+        {
+            if (_onlineRemoteVisualTimelineRunner == null)
+                return;
+
+            _onlineRemoteVisualTimelineRunner.Tick(deltaTime);
+            if (_onlineRemoteVisualTimelineRunner.IsComplete)
+                _onlineRemoteVisualTimelineRunner = null;
+        }
+
+        private void RotateOnlineRemoteVisualToward(Vector3 targetPosition)
+        {
+            Vector3 direction = targetPosition - transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 0.0001f)
+                transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        }
+
+        private void SetOnlineRemoteVisualTrigger(string triggerName)
+        {
+            if (string.IsNullOrWhiteSpace(triggerName))
+                return;
+
+            Animator animator = GetComponent<Animator>();
+            if (animator == null || !HasAnimatorParameter(animator, triggerName, AnimatorControllerParameterType.Trigger))
+                return;
+
+            animator.ResetTrigger(triggerName);
+            animator.SetTrigger(triggerName);
+        }
+
+        private static bool HasAnimatorParameter(Animator animator, string parameterName, AnimatorControllerParameterType parameterType)
+        {
+            if (animator == null || string.IsNullOrWhiteSpace(parameterName))
+                return false;
+
+            AnimatorControllerParameter[] parameters = animator.parameters;
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                AnimatorControllerParameter parameter = parameters[i];
+                if (parameter.type == parameterType && string.Equals(parameter.name, parameterName, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
         }
 
         private void InitializeRuntimeState()

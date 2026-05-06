@@ -8,10 +8,6 @@ using ProjectBase;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
-
 namespace Game.GameFlow
 {
     /// <summary>
@@ -77,12 +73,6 @@ namespace Game.GameFlow
         private ItemDisplayDatabaseSO _itemDisplayDb;
         private ShopPriceConfigSO _shopPriceConfig;
         private WeaponDatabaseSO _weaponDb;
-
-#if ENABLE_INPUT_SYSTEM
-        private PlayerInput _playerInput;
-        private InputAction _interactAction;
-        private bool _loggedInteractActionMissing;
-#endif
 
         public static HutaoShopInteractable EnsureOn(GameObject target)
         {
@@ -777,42 +767,8 @@ namespace Game.GameFlow
 
         private Transform ResolvePlayerTransform()
         {
-            if (IsUsablePlayerTransform(_playerTransform))
-                return _playerTransform;
-
-            Transform levelPlayerTransform = GameStateMachine.GetInstance()?.LevelPlayerTransform;
-            if (IsUsablePlayerTransform(levelPlayerTransform))
-            {
-                _playerTransform = levelPlayerTransform;
-                return _playerTransform;
-            }
-
-            PlayerController controller = FindFirstObjectByType<PlayerController>();
-            Transform scenePlayerTransform = controller != null ? controller.transform : null;
-            if (IsUsablePlayerTransform(scenePlayerTransform))
-            {
-                _playerTransform = scenePlayerTransform;
-                return _playerTransform;
-            }
-
-            _playerTransform = null;
-            return null;
-        }
-
-        private bool IsUsablePlayerTransform(Transform player)
-        {
-            if (player == null || !player.gameObject.activeInHierarchy)
-                return false;
-
-            Scene playerScene = player.gameObject.scene;
-            if (!playerScene.IsValid() || !playerScene.isLoaded)
-                return false;
-
-            Scene currentScene = gameObject.scene;
-            if (currentScene.IsValid() && currentScene.isLoaded && playerScene != currentScene)
-                return false;
-
-            return true;
+            _playerTransform = LocalPlayerInteractionResolver.ResolvePlayerTransform(gameObject.scene, _playerTransform);
+            return _playerTransform;
         }
 
         private static Camera ResolveWorldCamera()
@@ -833,54 +789,7 @@ namespace Game.GameFlow
 
         private bool WasInteractPressedThisFrame()
         {
-#if ENABLE_INPUT_SYSTEM
-            InputAction interactAction = ResolveInteractAction();
-            return interactAction != null && interactAction.WasPressedThisFrame();
-#else
-            return false;
-#endif
+            return LocalPlayerInteractionResolver.IsInteractPressedThisFrame(ResolvePlayerTransform());
         }
-
-#if ENABLE_INPUT_SYSTEM
-        private InputAction ResolveInteractAction()
-        {
-            if (_interactAction != null)
-                return _interactAction;
-
-            Transform player = ResolvePlayerTransform();
-            if (player == null)
-                return null;
-
-            PlayerInput playerInput = player.GetComponent<PlayerInput>();
-            if (playerInput == null)
-                playerInput = player.GetComponentInParent<PlayerInput>();
-            if (playerInput == null)
-            {
-                if (!_loggedInteractActionMissing)
-                {
-                    _loggedInteractActionMissing = true;
-                    Debug.LogWarning($"[HutaoShopInteractable:{name}] 无法读取 Interact：未找到 PlayerInput", this);
-                }
-                return null;
-            }
-
-            if (_playerInput != playerInput)
-            {
-                _playerInput = playerInput;
-                _interactAction = null;
-            }
-
-            _interactAction = _playerInput.actions?.FindAction("Interact");
-            if (_interactAction == null)
-            {
-                if (!_loggedInteractActionMissing)
-                {
-                    _loggedInteractActionMissing = true;
-                    Debug.LogWarning($"[HutaoShopInteractable:{name}] 无法读取 Interact：PlayerInput 中未找到 Interact Action", this);
-                }
-            }
-            return _interactAction;
-        }
-#endif
     }
 }

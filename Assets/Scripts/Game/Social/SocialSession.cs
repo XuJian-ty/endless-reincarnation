@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Game.GameFlow;
 using Game.Online;
 using ProjectBase;
 
@@ -89,8 +90,13 @@ namespace Game.Social
         private void OnApplicationQuit()
         {
             OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            bool hadOnlineSession = onlineCoordinator.HasActiveSession;
             SocialAidSessionInfo session = onlineCoordinator.ActiveAidSession ?? SocialAidSessionCoordinator.GetInstance().ActiveSession;
-            if (session != null && !string.IsNullOrWhiteSpace(session.sessionId))
+            bool onlineSessionPrepared = onlineCoordinator.TryPrepareSaveAndQuit();
+            if (onlineSessionPrepared)
+                GameStateMachine.GetInstance().SaveCurrent(false);
+
+            if (!hadOnlineSession && session != null && !string.IsNullOrWhiteSpace(session.sessionId))
             {
                 SocialService.GetInstance().CloseAidSession(
                     session.sessionId,

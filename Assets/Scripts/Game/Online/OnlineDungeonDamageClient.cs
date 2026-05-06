@@ -146,6 +146,9 @@ namespace Game.Online
         public float currentPoise;
         public bool countsAsLevelBoss;
         public bool isDead;
+        public float moveBlend;
+        public float moveForward;
+        public float moveStrafe;
     }
 
     [Serializable]

@@ -12,7 +12,7 @@ namespace Game.Online
 {
     public sealed class OnlineDungeonRealtimeClient : IDisposable
     {
-        private const int ProtocolVersion = 1;
+        private const int ProtocolVersion = 2;
         private const int ReceiveBufferBytes = 16 * 1024;
         private const float HelloRetryIntervalSeconds = 1f;
         private const float HelloTimeoutSeconds = 8f;
@@ -28,6 +28,10 @@ namespace Game.Online
         private const string ExpectedStateTransport = "udp-unreliable-snapshot";
         private const string ExpectedEventTransport = "kcp-reliable-event";
         private const string ExpectedSynchronizationMode = "state-sync-snapshot-interpolation";
+        private const string ExpectedAuthoritySchema = "enemy-authority-v2-movement-skill-chest-reward";
+        private const string ExpectedSessionLifecycleMode = "server-authoritative-session-close";
+        private const string ExpectedStateChannel = "state";
+        private const string ExpectedEventChannel = "event";
         private static readonly DateTime UnixEpochUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private IRealtimeTransport _stateTransport;
@@ -241,6 +245,7 @@ namespace Game.Online
             {
                 action = "enemyKill",
                 enemyRuntimeId = request.enemyRuntimeId.Trim(),
+                targetEnemy = request.targetEnemy,
                 x = request.x,
                 y = request.y,
                 z = request.z,
@@ -256,6 +261,24 @@ namespace Game.Online
             {
                 action = "claimKillReward",
                 enemyRuntimeId = enemyRuntimeId.Trim(),
+            });
+        }
+
+        public void EnqueueChestOpen(OnlineDungeonChestOpenRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.chestId))
+                return;
+
+            _pendingRewardActions.Enqueue(new OnlineDungeonRealtimeRewardSyncPayload
+            {
+                action = "openChest",
+                chestId = request.chestId.Trim(),
+                chestPrefabId = request.prefabId,
+                dropCount = Mathf.Max(1, request.dropCount),
+                x = request.x,
+                y = request.y,
+                z = request.z,
+                yaw = request.yaw,
             });
         }
 
@@ -511,6 +534,12 @@ namespace Game.Online
                 if (envelope == null)
                     continue;
 
+                if (envelope.version != ProtocolVersion)
+                {
+                    onError?.Invoke("联机副本实时协议版本不匹配");
+                    continue;
+                }
+
                 if (string.Equals(envelope.type, "helloAck", StringComparison.Ordinal))
                 {
                     OnlineDungeonRealtimeHelloAckPayload ack = envelope.payload != null
@@ -590,6 +619,18 @@ namespace Game.Online
                     string message = envelope.payload != null
                         ? envelope.payload.Value<string>("message")
                         : string.Empty;
+                    string code = envelope.payload != null
+                        ? envelope.payload.Value<string>("code")
+                        : string.Empty;
+                    string closeReason = envelope.payload != null
+                        ? envelope.payload.Value<string>("closeReason")
+                        : string.Empty;
+                    if (string.Equals(code, "sessionClosed", StringComparison.Ordinal))
+                    {
+                        onError?.Invoke(string.IsNullOrWhiteSpace(closeReason) ? "sessionClosed" : $"sessionClosed:{closeReason}");
+                        continue;
+                    }
+
                     onError?.Invoke(string.IsNullOrWhiteSpace(message) ? "联机副本实时通道错误" : message);
                 }
             }
@@ -625,7 +666,9 @@ namespace Game.Online
 
                 string requestTargetId = string.Equals(action, "pickupDrop", StringComparison.Ordinal)
                     ? request.dropId
-                    : request.enemyRuntimeId;
+                    : string.Equals(action, "openChest", StringComparison.Ordinal)
+                        ? request.chestId
+                        : request.enemyRuntimeId;
                 return string.Equals(requestTargetId, targetId, StringComparison.Ordinal);
             });
         }
@@ -698,6 +741,7 @@ namespace Game.Online
         {
             private readonly UdpClient _client;
             private readonly IPEndPoint _remoteEndPoint;
+            private bool _disposed;
 
             public UdpRealtimeTransport(IPEndPoint remoteEndPoint)
             {
@@ -711,7 +755,29 @@ namespace Game.Online
                 };
             }
 
-            public int Available => _client != null ? _client.Available : 0;
+            public int Available
+            {
+                get
+                {
+                    if (_disposed || _client == null)
+                        return 0;
+
+                    try
+                    {
+                        return _client.Available;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        _disposed = true;
+                        return 0;
+                    }
+                    catch (NullReferenceException)
+                    {
+                        _disposed = true;
+                        return 0;
+                    }
+                }
+            }
 
             public void Tick()
             {
@@ -719,25 +785,53 @@ namespace Game.Online
 
             public void Send(byte[] bytes)
             {
-                if (bytes == null || bytes.Length <= 0)
+                if (_disposed || bytes == null || bytes.Length <= 0)
                     return;
 
-                _client.Send(bytes, bytes.Length, _remoteEndPoint);
+                try
+                {
+                    _client.Send(bytes, bytes.Length, _remoteEndPoint);
+                }
+                catch (ObjectDisposedException)
+                {
+                    _disposed = true;
+                }
+                catch (NullReferenceException)
+                {
+                    _disposed = true;
+                }
             }
 
             public bool TryReceive(out byte[] bytes)
             {
                 bytes = null;
-                if (_client == null || _client.Available <= 0)
+                if (_disposed || _client == null || Available <= 0)
                     return false;
 
-                IPEndPoint sender = null;
-                bytes = _client.Receive(ref sender);
-                return bytes != null && bytes.Length > 0;
+                try
+                {
+                    IPEndPoint sender = null;
+                    bytes = _client.Receive(ref sender);
+                    return bytes != null && bytes.Length > 0;
+                }
+                catch (ObjectDisposedException)
+                {
+                    _disposed = true;
+                    return false;
+                }
+                catch (NullReferenceException)
+                {
+                    _disposed = true;
+                    return false;
+                }
             }
 
             public void Dispose()
             {
+                if (_disposed)
+                    return;
+
+                _disposed = true;
                 _client.Close();
                 _client.Dispose();
             }
@@ -952,6 +1046,20 @@ namespace Game.Online
                 return false;
             }
 
+            if (!string.Equals(ack.authoritySchema, ExpectedAuthoritySchema, StringComparison.Ordinal) ||
+                !string.Equals(ack.sessionLifecycleMode, ExpectedSessionLifecycleMode, StringComparison.Ordinal))
+            {
+                onError?.Invoke("联机副本实时权威同步能力不匹配");
+                return false;
+            }
+
+            if (!string.Equals(ack.stateChannel, ExpectedStateChannel, StringComparison.Ordinal) ||
+                !string.Equals(ack.eventChannel, ExpectedEventChannel, StringComparison.Ordinal))
+            {
+                onError?.Invoke("联机副本实时通道能力不匹配");
+                return false;
+            }
+
             if (!TryParseServerUtcSeconds(ack.utcNow, out double serverUtcSeconds))
             {
                 onError?.Invoke("联机副本实时服务器时间无效");
@@ -991,6 +1099,10 @@ namespace Game.Online
             public string stateTransport;
             public string eventTransport;
             public string synchronizationMode;
+            public string authoritySchema;
+            public string sessionLifecycleMode;
+            public string stateChannel;
+            public string eventChannel;
             public string utcNow;
         }
 
@@ -1022,10 +1134,15 @@ namespace Game.Online
         {
             public string action;
             public string enemyRuntimeId;
+            public string chestId;
+            public string chestPrefabId;
             public string dropId;
+            public OnlineDungeonDamageTargetEnemyInfo targetEnemy;
+            public int dropCount;
             public float x;
             public float y;
             public float z;
+            public float yaw;
         }
     }
 

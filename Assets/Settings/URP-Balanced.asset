@@ -81,7 +81,7 @@ MonoBehaviour:
   m_ShadowType: 1
   m_LocalShadowsSupported: 0
   m_LocalShadowsAtlasResolution: 256
-  m_MaxPixelLights: 0
+  m_MaxPixelLights: 2
   m_ShadowAtlasResolution: 256
   m_VolumeFrameworkUpdateMode: 0
   m_VolumeProfile: {fileID: 0}

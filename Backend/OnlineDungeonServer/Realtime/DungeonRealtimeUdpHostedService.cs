@@ -447,6 +447,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
                 UserId = envelope.UserId,
                 JoinToken = envelope.JoinToken,
                 EnemyRuntimeId = ackTargetId,
+                TargetEnemy = syncPayload?.TargetEnemy,
                 X = syncPayload?.X ?? 0f,
                 Y = syncPayload?.Y ?? 0f,
                 Z = syncPayload?.Z ?? 0f,
@@ -454,6 +455,27 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             if (!_registry.TryAddEnemyKill(envelope.InstanceId, request, out state, out string addError))
             {
                 await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, addError, cancellationToken);
+                return;
+            }
+        }
+        else if (string.Equals(action, "openChest", StringComparison.Ordinal))
+        {
+            ackAction = action;
+            ackTargetId = syncPayload?.ChestId?.Trim() ?? string.Empty;
+            var request = new OpenDungeonChestRequest
+            {
+                UserId = envelope.UserId,
+                JoinToken = envelope.JoinToken,
+                PrefabId = syncPayload?.ChestPrefabId,
+                DropCount = Math.Max(1, syncPayload?.DropCount ?? 1),
+                X = syncPayload?.X ?? 0f,
+                Y = syncPayload?.Y ?? 0f,
+                Z = syncPayload?.Z ?? 0f,
+                Yaw = syncPayload?.Yaw ?? 0f,
+            };
+            if (!_registry.TryOpenChest(envelope.InstanceId, ackTargetId, request, out state, out string chestError))
+            {
+                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, chestError, cancellationToken);
                 return;
             }
         }
@@ -525,10 +547,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         string message,
         CancellationToken cancellationToken)
     {
-        var payload = new DungeonRealtimeErrorPayload
-        {
-            Message = string.IsNullOrWhiteSpace(message) ? "实时协议错误" : message,
-        };
+        var payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
         return SendAsync(
             transport,
             remoteEndPoint,

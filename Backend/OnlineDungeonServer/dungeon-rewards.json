@@ -2,6 +2,13 @@
   "levels": [
     {
       "levelIndex": 1,
+      "chestDrops": [
+        { "itemType": "weapon_common", "weight": 0.45 },
+        { "itemType": "weapon_rare", "weight": 0.2 },
+        { "itemType": "potion_hp", "weight": 0.15 },
+        { "itemType": "potion_mp", "weight": 0.15 },
+        { "itemType": "nectar", "weight": 0.05 }
+      ],
       "rewards": {
         "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
         "elite": {
@@ -44,6 +51,14 @@
     },
     {
       "levelIndex": 2,
+      "chestDrops": [
+        { "itemType": "weapon_common", "weight": 0.25 },
+        { "itemType": "weapon_rare", "weight": 0.3 },
+        { "itemType": "weapon_epic", "weight": 0.15 },
+        { "itemType": "potion_hp", "weight": 0.1 },
+        { "itemType": "potion_mp", "weight": 0.1 },
+        { "itemType": "nectar", "weight": 0.1 }
+      ],
       "rewards": {
         "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
         "elite": {
@@ -89,6 +104,13 @@
     },
     {
       "levelIndex": 3,
+      "chestDrops": [
+        { "itemType": "weapon_rare", "weight": 0.35 },
+        { "itemType": "weapon_epic", "weight": 0.25 },
+        { "itemType": "potion_hp", "weight": 0.15 },
+        { "itemType": "potion_mp", "weight": 0.15 },
+        { "itemType": "nectar", "weight": 0.1 }
+      ],
       "rewards": {
         "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
         "elite": {
@@ -131,6 +153,13 @@
     },
     {
       "levelIndex": 4,
+      "chestDrops": [
+        { "itemType": "weapon_epic", "weight": 0.5 },
+        { "itemType": "weapon_legendary", "weight": 0.2 },
+        { "itemType": "potion_hp", "weight": 0.1 },
+        { "itemType": "potion_mp", "weight": 0.1 },
+        { "itemType": "nectar", "weight": 0.1 }
+      ],
       "rewards": {
         "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
         "elite": {
@@ -173,6 +202,12 @@
     },
     {
       "levelIndex": 5,
+      "chestDrops": [
+        { "itemType": "weapon_legendary", "weight": 0.6 },
+        { "itemType": "potion_hp", "weight": 0.15 },
+        { "itemType": "potion_mp", "weight": 0.15 },
+        { "itemType": "nectar", "weight": 0.1 }
+      ],
       "rewards": {
         "minion": { "gold": 10, "exp": 5, "talentPoints": 0, "drops": [] },
         "elite": {

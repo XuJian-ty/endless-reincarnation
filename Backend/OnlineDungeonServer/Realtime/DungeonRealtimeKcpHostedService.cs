@@ -292,6 +292,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
                 UserId = envelope.UserId,
                 JoinToken = envelope.JoinToken,
                 EnemyRuntimeId = ackTargetId,
+                TargetEnemy = syncPayload?.TargetEnemy,
                 X = syncPayload?.X ?? 0f,
                 Y = syncPayload?.Y ?? 0f,
                 Z = syncPayload?.Z ?? 0f,
@@ -299,6 +300,27 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             if (!_registry.TryAddEnemyKill(envelope.InstanceId, request, out state, out string addError))
             {
                 SendError(connectionId, envelope.InstanceId, envelope.UserId, addError);
+                return;
+            }
+        }
+        else if (string.Equals(action, "openChest", StringComparison.Ordinal))
+        {
+            ackAction = action;
+            ackTargetId = syncPayload?.ChestId?.Trim() ?? string.Empty;
+            var request = new OpenDungeonChestRequest
+            {
+                UserId = envelope.UserId,
+                JoinToken = envelope.JoinToken,
+                PrefabId = syncPayload?.ChestPrefabId,
+                DropCount = Math.Max(1, syncPayload?.DropCount ?? 1),
+                X = syncPayload?.X ?? 0f,
+                Y = syncPayload?.Y ?? 0f,
+                Z = syncPayload?.Z ?? 0f,
+                Yaw = syncPayload?.Yaw ?? 0f,
+            };
+            if (!_registry.TryOpenChest(envelope.InstanceId, ackTargetId, request, out state, out string chestError))
+            {
+                SendError(connectionId, envelope.InstanceId, envelope.UserId, chestError);
                 return;
             }
         }
@@ -355,10 +377,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
 
     private void SendError(int connectionId, string instanceId, string userId, string message)
     {
-        var payload = new DungeonRealtimeErrorPayload
-        {
-            Message = string.IsNullOrWhiteSpace(message) ? "实时协议错误" : message,
-        };
+        var payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
         Send(connectionId, instanceId, userId, DungeonRealtimeProtocol.ErrorType, 0, payload);
     }
 

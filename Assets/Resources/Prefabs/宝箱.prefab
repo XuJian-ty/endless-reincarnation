@@ -98,6 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 856083ffa3a54f07a9202f5acf3bc528, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _snapshotPrefabId: "\u5B9D\u7BB1"
   _interactDistance: 2.5
   _promptHeightOffset: 1.4
   _dropCount: 1

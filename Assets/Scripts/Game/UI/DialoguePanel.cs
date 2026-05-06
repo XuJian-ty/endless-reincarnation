@@ -328,24 +328,58 @@ namespace Game.UI
 
         private InputAction ResolveNavigateAction()
         {
-            GameplayInputEvents events = FindFirstObjectByType<GameplayInputEvents>();
-            InputAction action = events != null ? events.FindAction("Navigate") : null;
+            InputAction action = ResolveLocalPlayerAction("Navigate");
             if (action != null)
                 return action;
 
-            PlayerInput playerInput = FindFirstObjectByType<PlayerInput>();
-            return playerInput?.actions?.FindAction("Navigate");
+            GameplayInputEvents events = FindFirstObjectByType<GameplayInputEvents>();
+            action = events != null ? events.FindAction("Navigate") : null;
+            return IsUsableAction(action) ? action : null;
         }
 
         private static InputAction ResolveInteractAction()
         {
-            GameplayInputEvents events = FindFirstObjectByType<GameplayInputEvents>();
-            InputAction action = events != null ? events.FindAction("Interact") : null;
+            InputAction action = ResolveLocalPlayerAction("Interact");
             if (action != null)
                 return action;
 
-            PlayerInput playerInput = FindFirstObjectByType<PlayerInput>();
-            return playerInput?.actions?.FindAction("Interact");
+            GameplayInputEvents events = FindFirstObjectByType<GameplayInputEvents>();
+            action = events != null ? events.FindAction("Interact") : null;
+            return IsUsableAction(action) ? action : null;
+        }
+
+        private static InputAction ResolveLocalPlayerAction(string actionName)
+        {
+            if (string.IsNullOrWhiteSpace(actionName))
+                return null;
+
+            Transform playerTransform = GameStateMachine.GetInstance()?.LevelPlayerTransform;
+            PlayerInput playerInput = playerTransform != null ? playerTransform.GetComponent<PlayerInput>() : null;
+            if (playerInput == null && playerTransform != null)
+                playerInput = playerTransform.GetComponentInParent<PlayerInput>();
+
+            InputAction action = playerInput?.actions?.FindAction(actionName);
+            if (IsUsableAction(action))
+                return action;
+
+            PlayerInput[] playerInputs = FindObjectsByType<PlayerInput>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < playerInputs.Length; i++)
+            {
+                PlayerInput candidate = playerInputs[i];
+                if (candidate == null || !candidate.isActiveAndEnabled)
+                    continue;
+
+                InputAction candidateAction = candidate.actions?.FindAction(actionName);
+                if (IsUsableAction(candidateAction))
+                    return candidateAction;
+            }
+
+            return null;
+        }
+
+        private static bool IsUsableAction(InputAction action)
+        {
+            return action != null && action.enabled;
         }
 
         private void SelectRelativeReply(int delta)

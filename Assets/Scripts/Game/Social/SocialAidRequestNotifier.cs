@@ -83,7 +83,10 @@ namespace Game.Social
             SocialAidSessionCoordinator coordinator = SocialAidSessionCoordinator.GetInstance();
             if (session == null || string.IsNullOrWhiteSpace(session.sessionId))
             {
-                onlineCoordinator.StopSession();
+                if (onlineCoordinator.IsAidJoinerRole)
+                    onlineCoordinator.ReturnAidJoinerToOwnLevel(false);
+                else
+                    onlineCoordinator.StopSession();
                 if (coordinator.HasActiveSession)
                 {
                     if (coordinator.IsHostRole)
