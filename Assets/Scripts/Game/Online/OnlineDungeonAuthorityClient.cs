@@ -83,6 +83,8 @@ namespace Game.Online
         public long version;
         public bool initialized;
         public List<OnlineDungeonEnemyAuthorityInfo> enemies;
+        public List<OnlineDungeonChestAuthorityInfo> chests;
+        public long rewardStateVersion;
     }
 
     [Serializable]
@@ -99,7 +101,33 @@ namespace Game.Online
         public float currentPoise;
         public bool countsAsLevelBoss;
         public bool isDead;
+        public float moveBlend;
+        public float moveForward;
+        public float moveStrafe;
+        public int activeSkillSequence;
+        public int activeSkillSlot;
+        public string activeSkillId;
+        public string activeSkillAnimationTrigger;
+        public bool hasActiveSkillTarget;
+        public float activeSkillTargetX;
+        public float activeSkillTargetY;
+        public float activeSkillTargetZ;
         public string updatedAtUtc;
         public string diedAtUtc;
+    }
+
+    [Serializable]
+    public sealed class OnlineDungeonChestAuthorityInfo
+    {
+        public string chestId;
+        public string prefabId;
+        public float x;
+        public float y;
+        public float z;
+        public float yaw;
+        public bool opened;
+        public string openedByUserId;
+        public string openedAtUtc;
+        public string updatedAtUtc;
     }
 }

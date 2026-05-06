@@ -4,6 +4,7 @@ using Game.Saving;
 using Game.UI;
 using Game.Data;
 using Game.Presentation;
+using Game.Online;
 using ProjectBase;
 using UnityEngine.SceneManagement;
 
@@ -65,6 +66,12 @@ namespace Game.GameFlow
             if (_enemySpawner == null && FindFirstObjectByType<LevelLocalEnemySpawner>() == null)
                 Debug.LogWarning("[LevelDirector] 场景中未找到 LevelEnemySpawner。若当前关卡不使用全局生成器，可忽略此提示。", this);
 
+            if (ShouldFollowOnlineAuthority())
+            {
+                ApplySnapshotIfAvailable();
+                return;
+            }
+
             EventCenter.GetInstance().AddEventListener(GameEvents.GuardianDied, OnGuardianDied);
             EventCenter.GetInstance().AddEventListener<string>(GameEvents.BossDefeated, OnBossDefeated);
 
@@ -80,6 +87,9 @@ namespace Game.GameFlow
 
         private void Update()
         {
+            if (ShouldFollowOnlineAuthority())
+                return;
+
             if (_suspendBossSchedulingForRuntimeRestore)
                 return;
 
@@ -115,6 +125,9 @@ namespace Game.GameFlow
 
         private void OnGuardianDied()
         {
+            if (ShouldFollowOnlineAuthority())
+                return;
+
             if (_suspendBossSchedulingForRuntimeRestore)
                 return;
 
@@ -137,6 +150,9 @@ namespace Game.GameFlow
             _bossSpawnReadyTime = -1f;
 
             if (BattleMemorySceneRuntime.IsBattleMemoryScene() || FinalBossDuelSceneRuntime.IsFinalBossDuelScene())
+                return;
+
+            if (OnlineDungeonSessionCoordinator.GetInstance().TryHandleBossDefeatedSessionEnd())
                 return;
 
             ScheduleBossResultPanel(_defeatedBossId, BossResultPanelDelay);
@@ -197,6 +213,9 @@ namespace Game.GameFlow
 
             _bossSpawnReadyTime = -1f;
             _bossResultReadyTime = -1f;
+            if (ShouldFollowOnlineAuthority())
+                return;
+
             if (_bossDefeated &&
                 snapshot.hasPendingBossResult &&
                 !string.IsNullOrWhiteSpace(_defeatedBossId))
@@ -227,11 +246,17 @@ namespace Game.GameFlow
                 return;
 
             _suspendBossSchedulingForRuntimeRestore = false;
+            if (ShouldFollowOnlineAuthority())
+                return;
+
             TryScheduleBossSpawnIfReady();
         }
 
         private void ScheduleBossSpawn(float delayOverride = -1f)
         {
+            if (ShouldFollowOnlineAuthority())
+                return;
+
             if (_bossSpawned || _bossDefeated || _bossSpawnRoutine != null)
                 return;
 
@@ -243,6 +268,9 @@ namespace Game.GameFlow
 
         private void TryScheduleBossSpawnIfReady()
         {
+            if (ShouldFollowOnlineAuthority())
+                return;
+
             if (_bossSpawned || _bossDefeated || _bossSpawnRoutine != null)
                 return;
 
@@ -522,6 +550,12 @@ namespace Game.GameFlow
                 return;
 
             RestoreSnapshot(snapshot.levelDirector);
+        }
+
+        private static bool ShouldFollowOnlineAuthority()
+        {
+            OnlineDungeonSessionCoordinator coordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            return coordinator.HasActiveSession && !coordinator.ShouldDriveOnlineWorldSimulation();
         }
 
         private static bool HasRuntimeSnapshotToRestore()

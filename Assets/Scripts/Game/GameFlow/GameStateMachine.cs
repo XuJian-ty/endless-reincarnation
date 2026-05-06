@@ -434,7 +434,8 @@ namespace Game.GameFlow
         /// <summary>退出并保存，返回主菜单</summary>
         public void SaveAndQuit()
         {
-            SaveCurrent();
+            bool restoredOwnLevelState = OnlineDungeonSessionCoordinator.GetInstance().TryPrepareSaveAndQuit();
+            SaveCurrent(!restoredOwnLevelState);
             CloseActiveAidSession();
             StopActiveSaveHeartbeat();
             ClearActiveSaveContext();
@@ -464,9 +465,7 @@ namespace Game.GameFlow
             if (_currentRun == null || _playerModel == null)
                 return;
 
-            if (returnLevelIndex > 0)
-                _currentRun.levelIndex = returnLevelIndex;
-            _currentRun.levelSnapshot = returnSnapshot;
+            RestoreCurrentSaveToOwnLevelState(returnLevelIndex, returnSnapshot);
             SaveCurrent(false);
             StartActiveSaveHeartbeat();
             Time.timeScale = 1f;
@@ -475,6 +474,16 @@ namespace Game.GameFlow
                 ? GetLevelSceneName(_currentRun.levelIndex)
                 : returnSceneName.Trim();
             LoadLevelWithMainMenuStyleTransition(sceneName, ApplyLevelBgm);
+        }
+
+        public void RestoreCurrentSaveToOwnLevelState(int returnLevelIndex, LevelSnapshot returnSnapshot)
+        {
+            if (_currentRun == null || _playerModel == null)
+                return;
+
+            if (returnLevelIndex > 0)
+                _currentRun.levelIndex = returnLevelIndex;
+            _currentRun.levelSnapshot = returnSnapshot;
         }
 
         // ── 私有工具 ──────────────────────────────────────────────────────

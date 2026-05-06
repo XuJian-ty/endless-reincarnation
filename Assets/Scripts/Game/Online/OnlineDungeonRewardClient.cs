@@ -221,9 +221,24 @@ namespace Game.Online
         public string userId;
         public string joinToken;
         public string enemyRuntimeId;
+        public OnlineDungeonDamageTargetEnemyInfo targetEnemy;
         public float x;
         public float y;
         public float z;
+    }
+
+    [Serializable]
+    public sealed class OnlineDungeonChestOpenRequest
+    {
+        public string userId;
+        public string joinToken;
+        public string chestId;
+        public string prefabId;
+        public int dropCount = 1;
+        public float x;
+        public float y;
+        public float z;
+        public float yaw;
     }
 
     [Serializable]

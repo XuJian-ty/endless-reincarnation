@@ -1,6 +1,7 @@
 using System.Collections;
 using Game.Data;
 using Game.Domain;
+using Game.Online;
 using Game.Presentation;
 using Game.Saving;
 using Game.UI;
@@ -51,9 +52,18 @@ namespace Game.GameFlow
 
             _transitioning = false;
             StripRegularLevelGameplayObjects();
+            if (ShouldWaitForOnlineAuthorityBoss())
+                return true;
+
             RegisterBossListener();
             host.StartCoroutine(SpawnSelectedBossNextFrame());
             return true;
+        }
+
+        private static bool ShouldWaitForOnlineAuthorityBoss()
+        {
+            OnlineDungeonSessionCoordinator coordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            return coordinator.HasActiveSession && !coordinator.ShouldDriveOnlineWorldSimulation();
         }
 
         private static IEnumerator SpawnSelectedBossNextFrame()
@@ -87,6 +97,9 @@ namespace Game.GameFlow
                 return;
 
             if (!string.Equals(bossId, FinalBossDuelRuntimeContext.CurrentBossId, System.StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (OnlineDungeonSessionCoordinator.GetInstance().TryHandleBossDefeatedSessionEnd())
                 return;
 
             _transitioning = true;

@@ -414,13 +414,6 @@ namespace Game.GameFlow
         private static void ApplyBossVisuals(GameObject instance, EnemyController controller, bool countsAsLevelBoss)
         {
             controller.SetCountsAsLevelBoss(countsAsLevelBoss);
-            if (!countsAsLevelBoss)
-                return;
-
-            float scaleMultiplier = ConfigManager.GetInstance()?.GetPlayerCloneAndLevelBossVisualConfig()?.levelBoss.scaleMultiplier ?? 3f;
-            instance.transform.localScale *= scaleMultiplier;
-            if (controller.GetComponent<LevelBossVisualMarker>() == null)
-                controller.gameObject.AddComponent<LevelBossVisualMarker>();
         }
 
         private static Quaternion ResolveLookRotation(Vector3 position)

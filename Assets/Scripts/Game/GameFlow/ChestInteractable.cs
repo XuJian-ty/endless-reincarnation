@@ -2,15 +2,12 @@ using System;
 using System.Collections.Generic;
 using Game.Data;
 using Game.Domain;
+using Game.Online;
 using Game.Presentation;
+using Game.Saving;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
-
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 namespace Game.GameFlow
 {
@@ -27,6 +24,10 @@ namespace Game.GameFlow
         private const int DefaultDropCount = 1;
         private const string PromptCanvasResourcePath = "UI/WorldInteractionCanvas";
         private const string PromptVisualResourcePath = "UI/InteractionPromptButton";
+
+        [Header("联机快照")]
+        [SerializeField] [Tooltip("联机权威快照用于重建宝箱的 Resources/Prefabs 路径 ID。")]
+        private string _snapshotPrefabId = string.Empty;
 
         [Header("交互")]
         [SerializeField] [Min(0.2f)] [Tooltip("玩家进入该距离后显示提示，并可按 E 开启宝箱。")]
@@ -46,17 +47,12 @@ namespace Game.GameFlow
         private Transform _playerTransform;
         private Transform _promptRoot;
         private Vector3 _promptBaseLocalScale = Vector3.one;
-#if ENABLE_INPUT_SYSTEM
-        private PlayerInput _playerInput;
-        private InputAction _interactAction;
-#endif
         private bool _promptVisible;
         private bool _opened;
+        private bool _pendingOnlineOpen;
         private float _fadeElapsed;
+        private string _onlineSnapshotIdOverride = string.Empty;
         private bool _loggedMissingPromptConfig;
-#if ENABLE_INPUT_SYSTEM
-        private bool _loggedInteractActionMissing;
-#endif
 
         private sealed class MaterialFadeState
         {
@@ -78,16 +74,68 @@ namespace Game.GameFlow
 
         public string GetSnapshotId()
         {
-            Vector3 position = transform.position;
-            string sceneName = gameObject.scene.IsValid() ? gameObject.scene.name : string.Empty;
-            return $"{sceneName}|{gameObject.name}|{position.x:F3}|{position.y:F3}|{position.z:F3}";
+            if (!string.IsNullOrWhiteSpace(_onlineSnapshotIdOverride))
+                return _onlineSnapshotIdOverride;
+
+            Transform owner = ResolveSnapshotOwnerTransform();
+            Vector3 position = owner.position;
+            string sceneName = owner.gameObject.scene.IsValid() ? owner.gameObject.scene.name : string.Empty;
+            return $"{sceneName}|{owner.gameObject.name}|{position.x:F3}|{position.y:F3}|{position.z:F3}";
+        }
+
+        public void ApplyOnlineSnapshotIdentity(string snapshotId)
+        {
+            _onlineSnapshotIdOverride = string.IsNullOrWhiteSpace(snapshotId) ? string.Empty : snapshotId.Trim();
+        }
+
+        public void ApplyOnlineSnapshotPose(string snapshotId, Vector3 position, Quaternion rotation)
+        {
+            ApplyOnlineSnapshotIdentity(snapshotId);
+            ResolveSnapshotOwnerTransform().SetPositionAndRotation(position, rotation);
+        }
+
+        public bool TryBuildSnapshot(out ChestSnapshotSave snapshot)
+        {
+            snapshot = null;
+            if (_opened)
+                return false;
+
+            string snapshotId = GetSnapshotId();
+            string prefabId = ResolveSnapshotPrefabId();
+            if (string.IsNullOrWhiteSpace(snapshotId) || string.IsNullOrWhiteSpace(prefabId))
+                return false;
+
+            Transform owner = ResolveSnapshotOwnerTransform();
+            Vector3 position = owner.position;
+            snapshot = new ChestSnapshotSave
+            {
+                snapshotId = snapshotId,
+                prefabId = prefabId,
+                x = position.x,
+                y = position.y,
+                z = position.z,
+                yaw = owner.eulerAngles.y,
+            };
+            return true;
+        }
+
+        private string ResolveSnapshotPrefabId()
+        {
+            string prefabId = _snapshotPrefabId;
+            if (string.IsNullOrWhiteSpace(prefabId))
+            {
+                Debug.LogWarning($"[ChestInteractable:{name}] 未配置联机快照预制体 ID，宝箱不会进入联机权威快照。", this);
+                return string.Empty;
+            }
+
+            return string.IsNullOrWhiteSpace(prefabId) ? string.Empty : prefabId.Trim();
         }
 
         private void Awake()
         {
             if (ShouldDestroyFromSnapshot())
             {
-                Destroy(gameObject);
+                Destroy(ResolveSnapshotOwnerTransform().gameObject);
                 return;
             }
 
@@ -142,12 +190,45 @@ namespace Game.GameFlow
             if (_opened)
                 return;
 
+            OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            if (onlineCoordinator.HasActiveSession)
+            {
+                if (!_pendingOnlineOpen && onlineCoordinator.TryRequestOpenOnlineChest(this, _dropCount))
+                {
+                    _pendingOnlineOpen = true;
+                    SetPromptVisible(false);
+                }
+
+                return;
+            }
+
             _opened = true;
             RecordOpenedSnapshot();
             SetPromptVisible(false);
             DisableAllColliders();
             SpawnRewards();
             CacheFadeMaterials();
+        }
+
+        public void ApplyOnlineAuthorityOpened()
+        {
+            if (_opened)
+                return;
+
+            _opened = true;
+            _pendingOnlineOpen = false;
+            RecordOpenedSnapshot();
+            SetPromptVisible(false);
+            DisableAllColliders();
+            CacheFadeMaterials();
+        }
+
+        public void CancelPendingOnlineOpen()
+        {
+            if (_opened)
+                return;
+
+            _pendingOnlineOpen = false;
         }
 
         private void RecordOpenedSnapshot()
@@ -181,7 +262,7 @@ namespace Game.GameFlow
             ApplyAlpha(1f - normalized);
 
             if (normalized >= 1f)
-                Destroy(gameObject);
+                Destroy(ResolveSnapshotOwnerTransform().gameObject);
         }
 
         private void SpawnRewards()
@@ -260,7 +341,7 @@ namespace Game.GameFlow
             if (_fadeMaterials.Count > 0)
                 return;
 
-            Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+            Renderer[] renderers = ResolveSnapshotOwnerTransform().GetComponentsInChildren<Renderer>(true);
             for (int i = 0; i < renderers.Length; i++)
             {
                 Renderer renderer = renderers[i];
@@ -514,16 +595,17 @@ namespace Game.GameFlow
             if (TryGetWorldBounds(out Bounds bounds))
                 return bounds.center;
 
-            return transform.position;
+            return ResolveSnapshotOwnerTransform().position;
         }
 
         private bool TryGetWorldBounds(out Bounds bounds)
         {
-            Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+            Transform owner = ResolveSnapshotOwnerTransform();
+            Renderer[] renderers = owner.GetComponentsInChildren<Renderer>(true);
             if (TryEncapsulateBounds(renderers, out bounds))
                 return true;
 
-            Collider[] colliders = GetComponentsInChildren<Collider>(true);
+            Collider[] colliders = owner.GetComponentsInChildren<Collider>(true);
             return TryEncapsulateBounds(colliders, out bounds);
         }
 
@@ -573,38 +655,26 @@ namespace Game.GameFlow
 
         private void DisableAllColliders()
         {
-            Collider[] colliders = GetComponentsInChildren<Collider>(true);
+            Transform owner = ResolveSnapshotOwnerTransform();
+            Collider[] colliders = owner.GetComponentsInChildren<Collider>(true);
             for (int i = 0; i < colliders.Length; i++)
             {
                 if (colliders[i] != null)
                     colliders[i].enabled = false;
             }
 
-            Collider[] parentColliders = GetComponentsInParent<Collider>(true);
-            for (int i = 0; i < parentColliders.Length; i++)
-            {
-                if (parentColliders[i] != null)
-                    parentColliders[i].enabled = false;
-            }
-
-            NavMeshObstacle[] obstacles = GetComponentsInChildren<NavMeshObstacle>(true);
+            NavMeshObstacle[] obstacles = owner.GetComponentsInChildren<NavMeshObstacle>(true);
             for (int i = 0; i < obstacles.Length; i++)
             {
                 if (obstacles[i] != null)
                     obstacles[i].enabled = false;
             }
-
-            NavMeshObstacle[] parentObstacles = GetComponentsInParent<NavMeshObstacle>(true);
-            for (int i = 0; i < parentObstacles.Length; i++)
-            {
-                if (parentObstacles[i] != null)
-                    parentObstacles[i].enabled = false;
-            }
         }
 
         private void ValidateBlockingSetup()
         {
-            Collider[] colliders = GetComponentsInChildren<Collider>(true);
+            Transform owner = ResolveSnapshotOwnerTransform();
+            Collider[] colliders = owner.GetComponentsInChildren<Collider>(true);
             bool hasBlockingCollider = false;
             for (int i = 0; i < colliders.Length; i++)
             {
@@ -617,23 +687,9 @@ namespace Game.GameFlow
             }
 
             if (!hasBlockingCollider)
-            {
-                Collider[] parentColliders = GetComponentsInParent<Collider>(true);
-                for (int i = 0; i < parentColliders.Length; i++)
-                {
-                    Collider collider = parentColliders[i];
-                    if (collider != null && !collider.isTrigger)
-                    {
-                        hasBlockingCollider = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!hasBlockingCollider)
                 Debug.LogWarning($"[ChestInteractable:{name}] 缺少实体 Collider，玩家将无法被宝箱阻挡。请直接在宝箱 prefab 上配置阻挡碰撞体。", this);
 
-            NavMeshObstacle[] obstacles = GetComponentsInChildren<NavMeshObstacle>(true);
+            NavMeshObstacle[] obstacles = owner.GetComponentsInChildren<NavMeshObstacle>(true);
             bool hasNavMeshObstacle = false;
             for (int i = 0; i < obstacles.Length; i++)
             {
@@ -645,60 +701,25 @@ namespace Game.GameFlow
             }
 
             if (!hasNavMeshObstacle)
-            {
-                NavMeshObstacle[] parentObstacles = GetComponentsInParent<NavMeshObstacle>(true);
-                for (int i = 0; i < parentObstacles.Length; i++)
-                {
-                    if (parentObstacles[i] != null)
-                    {
-                        hasNavMeshObstacle = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!hasNavMeshObstacle)
                 Debug.LogWarning($"[ChestInteractable:{name}] 缺少 NavMeshObstacle，敌人可能不会绕开宝箱。请直接在宝箱 prefab 上配置导航障碍。", this);
+        }
+
+        private Transform ResolveSnapshotOwnerTransform()
+        {
+            Transform parent = transform.parent;
+            bool parentLooksLikeChestOwner = parent != null &&
+                                             parent.GetComponent<ChestInteractable>() == null &&
+                                             (parent.GetComponent<Collider>() != null ||
+                                              parent.GetComponent<NavMeshObstacle>() != null);
+            return parentLooksLikeChestOwner
+                ? transform.parent
+                : transform;
         }
 
         private Transform ResolvePlayerTransform()
         {
-            if (IsUsablePlayerTransform(_playerTransform))
-                return _playerTransform;
-
-            Transform levelPlayerTransform = GameStateMachine.GetInstance()?.LevelPlayerTransform;
-            if (IsUsablePlayerTransform(levelPlayerTransform))
-            {
-                _playerTransform = levelPlayerTransform;
-                return _playerTransform;
-            }
-
-            PlayerController controller = FindFirstObjectByType<PlayerController>();
-            Transform scenePlayerTransform = controller != null ? controller.transform : null;
-            if (IsUsablePlayerTransform(scenePlayerTransform))
-            {
-                _playerTransform = scenePlayerTransform;
-                return _playerTransform;
-            }
-
-            _playerTransform = null;
-            return null;
-        }
-
-        private bool IsUsablePlayerTransform(Transform player)
-        {
-            if (player == null || !player.gameObject.activeInHierarchy)
-                return false;
-
-            Scene playerScene = player.gameObject.scene;
-            if (!playerScene.IsValid() || !playerScene.isLoaded)
-                return false;
-
-            Scene currentScene = gameObject.scene;
-            if (currentScene.IsValid() && currentScene.isLoaded && playerScene != currentScene)
-                return false;
-
-            return true;
+            _playerTransform = LocalPlayerInteractionResolver.ResolvePlayerTransform(gameObject.scene, _playerTransform);
+            return _playerTransform;
         }
 
         private static Camera ResolveWorldCamera()
@@ -719,55 +740,8 @@ namespace Game.GameFlow
 
         private bool WasInteractPressedThisFrame()
         {
-#if ENABLE_INPUT_SYSTEM
-            InputAction interactAction = ResolveInteractAction();
-            return interactAction != null && interactAction.WasPressedThisFrame();
-#else
-            return false;
-#endif
+            return LocalPlayerInteractionResolver.IsInteractPressedThisFrame(ResolvePlayerTransform());
         }
-
-#if ENABLE_INPUT_SYSTEM
-        private InputAction ResolveInteractAction()
-        {
-            if (_interactAction != null)
-                return _interactAction;
-
-            Transform player = ResolvePlayerTransform();
-            if (player == null)
-                return null;
-
-            PlayerInput playerInput = player.GetComponent<PlayerInput>();
-            if (playerInput == null)
-                playerInput = player.GetComponentInParent<PlayerInput>();
-            if (playerInput == null)
-            {
-                if (!_loggedInteractActionMissing)
-                {
-                    _loggedInteractActionMissing = true;
-                    Debug.LogWarning($"[ChestInteractable:{name}] 无法读取 Interact：未找到 PlayerInput", this);
-                }
-                return null;
-            }
-
-            if (_playerInput != playerInput)
-            {
-                _playerInput = playerInput;
-                _interactAction = null;
-            }
-
-            _interactAction = _playerInput.actions?.FindAction("Interact");
-            if (_interactAction == null)
-            {
-                if (!_loggedInteractActionMissing)
-                {
-                    _loggedInteractActionMissing = true;
-                    Debug.LogWarning($"[ChestInteractable:{name}] 无法读取 Interact：PlayerInput 中未找到 Interact Action", this);
-                }
-            }
-            return _interactAction;
-        }
-#endif
 
         private static bool TryGetWeaponRarity(string dropId, out WeaponRarity rarity)
         {

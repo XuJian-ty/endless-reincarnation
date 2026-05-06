@@ -208,6 +208,18 @@ app.MapPost("/api/dungeons/{instanceId}/enemy-kills", (
     return Results.Ok(ApiResponse<DungeonRewardStateDto>.Ok(state!, "副本击杀奖励已记录"));
 });
 
+app.MapPost("/api/dungeons/{instanceId}/chests/{chestId}/open", (
+    string instanceId,
+    string chestId,
+    OpenDungeonChestRequest request,
+    DungeonInstanceRegistry registry) =>
+{
+    if (!registry.TryOpenChest(instanceId, chestId, request, out DungeonRewardStateDto? state, out string error))
+        return Results.BadRequest(ApiResponse<DungeonRewardStateDto>.Fail(error));
+
+    return Results.Ok(ApiResponse<DungeonRewardStateDto>.Ok(state!, "副本宝箱已开启"));
+});
+
 app.MapPost("/api/dungeons/{instanceId}/enemy-kills/{enemyRuntimeId}/claim", (
     string instanceId,
     string enemyRuntimeId,
@@ -259,6 +271,7 @@ app.Run();
 
 internal sealed class DungeonInstanceRegistry
 {
+    private static readonly TimeSpan HostDisconnectTimeout = TimeSpan.FromSeconds(20);
     private readonly ConcurrentDictionary<string, DungeonInstanceRecord> _instances = new();
     private readonly DungeonRewardConfigStore _rewardConfigStore;
     private readonly int _realtimeUdpPort;
@@ -474,6 +487,9 @@ internal sealed class DungeonInstanceRegistry
                 return false;
             }
 
+            if (!TryEnsureInstanceActiveForParticipant(record, userId, DateTime.UtcNow, out error))
+                return false;
+
             foundParticipant.IsConnected = true;
             foundParticipant.LastSeenAtUtc = DateTime.UtcNow;
             record.UpdatedAtUtc = foundParticipant.LastSeenAtUtc;
@@ -593,6 +609,8 @@ internal sealed class DungeonInstanceRegistry
             }
 
             if (!TryHydrateAuthorityStateFromSnapshot(record, request.SnapshotJson, out error))
+                return false;
+            if (!TryHydrateChestStateFromSnapshot(record, request.SnapshotJson, out error))
                 return false;
 
             DungeonParticipantRecord participant = participantOrNull!;
@@ -719,6 +737,17 @@ internal sealed class DungeonInstanceRegistry
                     enemy.Yaw = incoming.yaw;
                     enemy.CurrentPoise = Math.Max(0f, incoming.currentPoise);
                     enemy.CountsAsLevelBoss = incoming.countsAsLevelBoss;
+                    enemy.MoveBlend = Math.Clamp(incoming.moveBlend, 0f, 1f);
+                    enemy.MoveForward = Math.Clamp(incoming.moveForward, -1f, 1f);
+                    enemy.MoveStrafe = Math.Clamp(incoming.moveStrafe, -1f, 1f);
+                    enemy.ActiveSkillSequence = incoming.activeSkillSequence;
+                    enemy.ActiveSkillSlot = incoming.activeSkillSlot;
+                    enemy.ActiveSkillId = incoming.activeSkillId?.Trim() ?? string.Empty;
+                    enemy.ActiveSkillAnimationTrigger = incoming.activeSkillAnimationTrigger?.Trim() ?? string.Empty;
+                    enemy.HasActiveSkillTarget = incoming.hasActiveSkillTarget;
+                    enemy.ActiveSkillTargetX = incoming.activeSkillTargetX;
+                    enemy.ActiveSkillTargetY = incoming.activeSkillTargetY;
+                    enemy.ActiveSkillTargetZ = incoming.activeSkillTargetZ;
                     if (isNewEnemy)
                     {
                         enemy.CurrentHp = Math.Max(0f, incoming.currentHp);
@@ -882,6 +911,9 @@ internal sealed class DungeonInstanceRegistry
             DateTime now = DateTime.UtcNow;
             participant.IsConnected = true;
             participant.LastSeenAtUtc = now;
+            if (!TryRegisterDamageTargetEnemy(record, enemyRuntimeId, request.TargetEnemy, out error))
+                return false;
+
             if (!record.KillRewards.ContainsKey(enemyRuntimeId))
             {
                 if (!record.Enemies.TryGetValue(enemyRuntimeId, out DungeonEnemyStateRecord? enemy))
@@ -993,6 +1025,73 @@ internal sealed class DungeonInstanceRegistry
             DungeonParticipantRecord participant = participantOrNull!;
             participant.IsConnected = true;
             participant.LastSeenAtUtc = DateTime.UtcNow;
+            state = ToRewardStateDto(record);
+            return true;
+        }
+    }
+
+    public bool TryOpenChest(
+        string instanceId,
+        string chestId,
+        OpenDungeonChestRequest request,
+        out DungeonRewardStateDto? state,
+        out string error)
+    {
+        state = null;
+        error = string.Empty;
+
+        if (!TryGetRecord(instanceId, out DungeonInstanceRecord record, out error))
+            return false;
+
+        lock (record.SyncRoot)
+        {
+            if (!TryValidateParticipantCore(record, request.UserId, request.JoinToken, out DungeonParticipantRecord? participantOrNull, out error))
+                return false;
+
+            string normalizedChestId = NormalizeRequired(chestId);
+            if (string.IsNullOrWhiteSpace(normalizedChestId))
+            {
+                error = "缺少宝箱标识";
+                return false;
+            }
+
+            DungeonParticipantRecord participant = participantOrNull!;
+            DateTime now = DateTime.UtcNow;
+            participant.IsConnected = true;
+            participant.LastSeenAtUtc = now;
+            if (!record.Chests.TryGetValue(normalizedChestId, out DungeonChestStateRecord? chest))
+            {
+                chest = new DungeonChestStateRecord
+                {
+                    ChestId = normalizedChestId,
+                    PrefabId = NormalizeRequired(request.PrefabId),
+                    X = request.X,
+                    Y = request.Y,
+                    Z = request.Z,
+                    Yaw = request.Yaw,
+                    UpdatedAtUtc = now,
+                };
+                record.Chests[normalizedChestId] = chest;
+                record.AuthorityInitialized = true;
+            }
+
+            if (!chest.Opened)
+            {
+                chest.Opened = true;
+                chest.OpenedByUserId = participant.UserId;
+                chest.OpenedAtUtc = now;
+                chest.UpdatedAtUtc = now;
+                if (string.IsNullOrWhiteSpace(chest.PrefabId))
+                    chest.PrefabId = NormalizeRequired(request.PrefabId);
+                if (!_rewardConfigStore.TryBuildChestDrops(record, request, normalizedChestId, out List<DungeonDropProposal>? chestDrops, out error))
+                    return false;
+
+                AddDungeonDrops(record, normalizedChestId, chestDrops, now);
+                record.RewardStateVersion++;
+                record.AuthorityVersion++;
+            }
+
+            record.UpdatedAtUtc = now;
             state = ToRewardStateDto(record);
             return true;
         }
@@ -1209,8 +1308,48 @@ internal sealed class DungeonInstanceRegistry
             return false;
         }
 
+        if (!TryEnsureInstanceActiveForParticipant(record, normalizedUserId, DateTime.UtcNow, out error))
+            return false;
+
         participant = foundParticipant;
         return true;
+    }
+
+    private static bool TryEnsureInstanceActiveForParticipant(
+        DungeonInstanceRecord record,
+        string requesterUserId,
+        DateTime now,
+        out string error)
+    {
+        error = string.Empty;
+
+        if (record.Status != DungeonInstanceStatus.Active)
+        {
+            error = BuildInstanceClosedError(record);
+            return false;
+        }
+
+        if (string.Equals(requesterUserId, record.TemplateOwnerUserId, StringComparison.Ordinal))
+            return true;
+
+        if (record.Participants.TryGetValue(record.TemplateOwnerUserId, out DungeonParticipantRecord? hostParticipant) &&
+            now - hostParticipant.LastSeenAtUtc > HostDisconnectTimeout)
+        {
+            record.Status = DungeonInstanceStatus.Closed;
+            record.CloseReason = "host_disconnected";
+            record.UpdatedAtUtc = now;
+            error = BuildInstanceClosedError(record);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static string BuildInstanceClosedError(DungeonInstanceRecord record)
+    {
+        return string.IsNullOrWhiteSpace(record.CloseReason)
+            ? "联机副本已关闭"
+            : $"联机副本已关闭：{record.CloseReason}";
     }
 
     private DungeonInstanceDto ToDto(DungeonInstanceRecord record)
@@ -1343,6 +1482,9 @@ internal sealed class DungeonInstanceRegistry
         enemy.Yaw = incoming.yaw;
         enemy.CurrentPoise = Math.Max(0f, incoming.currentPoise);
         enemy.CountsAsLevelBoss = incoming.countsAsLevelBoss;
+        enemy.MoveBlend = Math.Clamp(incoming.moveBlend, 0f, 1f);
+        enemy.MoveForward = Math.Clamp(incoming.moveForward, -1f, 1f);
+        enemy.MoveStrafe = Math.Clamp(incoming.moveStrafe, -1f, 1f);
         if (isNewEnemy)
         {
             enemy.CurrentHp = Math.Max(0f, incoming.currentHp);
@@ -1421,12 +1563,6 @@ internal sealed class DungeonInstanceRegistry
                 return false;
             }
 
-            if (enemiesElement.GetArrayLength() <= 0)
-            {
-                error = "副本快照尚未包含敌人状态";
-                return false;
-            }
-
             bool authorityWasInitialized = record.AuthorityInitialized;
             HashSet<string> snapshotRuntimeIds = new(StringComparer.Ordinal);
             foreach (JsonElement enemyElement in enemiesElement.EnumerateArray())
@@ -1478,6 +1614,82 @@ internal sealed class DungeonInstanceRegistry
 
         record.AuthorityInitialized = true;
         record.AuthorityVersion++;
+        return true;
+    }
+
+    private static bool TryHydrateChestStateFromSnapshot(DungeonInstanceRecord record, string snapshotJson, out string error)
+    {
+        error = string.Empty;
+
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(snapshotJson);
+        }
+        catch (JsonException ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+
+        using (document)
+        {
+            if (!document.RootElement.TryGetProperty("chests", out JsonElement chestsElement) ||
+                chestsElement.ValueKind != JsonValueKind.Array)
+            {
+                return true;
+            }
+
+            HashSet<string> snapshotChestIds = new(StringComparer.Ordinal);
+            HashSet<string> openedChestIds = ReadOpenedChestIds(document.RootElement);
+            foreach (JsonElement chestElement in chestsElement.EnumerateArray())
+            {
+                string chestId = GetStringProperty(chestElement, "snapshotId");
+                if (string.IsNullOrWhiteSpace(chestId))
+                    continue;
+
+                snapshotChestIds.Add(chestId);
+                if (!record.Chests.TryGetValue(chestId, out DungeonChestStateRecord? chest))
+                {
+                    chest = new DungeonChestStateRecord
+                    {
+                        ChestId = chestId,
+                    };
+                    record.Chests[chestId] = chest;
+                }
+
+                chest.PrefabId = GetStringProperty(chestElement, "prefabId");
+                chest.X = GetFloatProperty(chestElement, "x");
+                chest.Y = GetFloatProperty(chestElement, "y");
+                chest.Z = GetFloatProperty(chestElement, "z");
+                chest.Yaw = GetFloatProperty(chestElement, "yaw");
+                if (openedChestIds.Contains(chestId))
+                    chest.Opened = true;
+                chest.UpdatedAtUtc = DateTime.UtcNow;
+            }
+
+            foreach (string chestId in openedChestIds)
+            {
+                if (!record.Chests.TryGetValue(chestId, out DungeonChestStateRecord? chest))
+                {
+                    chest = new DungeonChestStateRecord
+                    {
+                        ChestId = chestId,
+                    };
+                    record.Chests[chestId] = chest;
+                }
+
+                chest.Opened = true;
+                chest.UpdatedAtUtc = DateTime.UtcNow;
+            }
+
+            foreach (string chestId in record.Chests.Keys.ToList())
+            {
+                if (!snapshotChestIds.Contains(chestId) && !record.Chests[chestId].Opened)
+                    record.Chests.Remove(chestId);
+            }
+        }
+
         return true;
     }
 
@@ -1541,6 +1753,11 @@ internal sealed class DungeonInstanceRegistry
                 .OrderBy(enemy => enemy.RuntimeId)
                 .Select(ToDto)
                 .ToList(),
+            chests = record.Chests.Values
+                .OrderBy(chest => chest.ChestId)
+                .Select(ToDto)
+                .ToList(),
+            rewardStateVersion = record.RewardStateVersion,
         };
     }
 
@@ -1559,6 +1776,17 @@ internal sealed class DungeonInstanceRegistry
             currentPoise = record.CurrentPoise,
             countsAsLevelBoss = record.CountsAsLevelBoss,
             isDead = record.IsDead,
+            moveBlend = record.MoveBlend,
+            moveForward = record.MoveForward,
+            moveStrafe = record.MoveStrafe,
+            activeSkillSequence = record.ActiveSkillSequence,
+            activeSkillSlot = record.ActiveSkillSlot,
+            activeSkillId = record.ActiveSkillId,
+            activeSkillAnimationTrigger = record.ActiveSkillAnimationTrigger,
+            hasActiveSkillTarget = record.HasActiveSkillTarget,
+            activeSkillTargetX = record.ActiveSkillTargetX,
+            activeSkillTargetY = record.ActiveSkillTargetY,
+            activeSkillTargetZ = record.ActiveSkillTargetZ,
             updatedAtUtc = record.UpdatedAtUtc,
             diedAtUtc = record.DiedAtUtc,
         };
@@ -1720,6 +1948,23 @@ internal sealed class DungeonInstanceRegistry
         };
     }
 
+    private static DungeonChestStateDto ToDto(DungeonChestStateRecord record)
+    {
+        return new DungeonChestStateDto
+        {
+            chestId = record.ChestId,
+            prefabId = record.PrefabId,
+            x = record.X,
+            y = record.Y,
+            z = record.Z,
+            yaw = record.Yaw,
+            opened = record.Opened,
+            openedByUserId = record.OpenedByUserId,
+            openedAtUtc = record.OpenedAtUtc,
+            updatedAtUtc = record.UpdatedAtUtc,
+        };
+    }
+
     private static DungeonDamageEventDto ToDto(DungeonDamageEventRecord record)
     {
         return new DungeonDamageEventDto
@@ -1784,32 +2029,61 @@ internal sealed class DungeonInstanceRegistry
         if (rootNode is not JsonObject rootObject)
             throw new InvalidOperationException("副本世界快照格式无效");
 
-        if (rootObject["enemies"] is not JsonArray enemiesArray)
-            throw new InvalidOperationException("副本世界快照缺少敌人状态");
-
-        for (int i = enemiesArray.Count - 1; i >= 0; i--)
+        if (rootObject["enemies"] is JsonArray enemiesArray)
         {
-            if (enemiesArray[i] is not JsonObject enemyObject)
+            for (int i = enemiesArray.Count - 1; i >= 0; i--)
             {
-                enemiesArray.RemoveAt(i);
-                continue;
-            }
+                if (enemiesArray[i] is not JsonObject enemyObject)
+                {
+                    enemiesArray.RemoveAt(i);
+                    continue;
+                }
 
-            string runtimeId = enemyObject["runtimeId"]?.GetValue<string>()?.Trim() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(runtimeId) ||
-                !instance.Enemies.TryGetValue(runtimeId, out DungeonEnemyStateRecord? enemy) ||
-                enemy.IsDead)
+                string runtimeId = enemyObject["runtimeId"]?.GetValue<string>()?.Trim() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(runtimeId) ||
+                    !instance.Enemies.TryGetValue(runtimeId, out DungeonEnemyStateRecord? enemy) ||
+                    enemy.IsDead)
+                {
+                    enemiesArray.RemoveAt(i);
+                    continue;
+                }
+
+                enemyObject["currentHp"] = enemy.CurrentHp;
+                enemyObject["currentPoise"] = enemy.CurrentPoise;
+                enemyObject["x"] = enemy.X;
+                enemyObject["y"] = enemy.Y;
+                enemyObject["z"] = enemy.Z;
+                enemyObject["yaw"] = enemy.Yaw;
+                enemyObject["countsAsLevelBoss"] = enemy.CountsAsLevelBoss;
+            }
+        }
+
+        JsonArray openedChestIds = new();
+        foreach (DungeonChestStateRecord chest in instance.Chests.Values.OrderBy(chest => chest.ChestId))
+        {
+            if (chest.Opened)
+                openedChestIds.Add(chest.ChestId);
+        }
+
+        rootObject["openedChestIds"] = openedChestIds;
+        if (rootObject["chests"] is JsonArray chestsArray)
+        {
+            for (int i = chestsArray.Count - 1; i >= 0; i--)
             {
-                enemiesArray.RemoveAt(i);
-                continue;
-            }
+                if (chestsArray[i] is not JsonObject chestObject)
+                {
+                    chestsArray.RemoveAt(i);
+                    continue;
+                }
 
-            enemyObject["currentHp"] = enemy.CurrentHp;
-            enemyObject["currentPoise"] = enemy.CurrentPoise;
-            enemyObject["x"] = enemy.X;
-            enemyObject["y"] = enemy.Y;
-            enemyObject["z"] = enemy.Z;
-            enemyObject["yaw"] = enemy.Yaw;
+                string chestId = chestObject["snapshotId"]?.GetValue<string>()?.Trim() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(chestId) &&
+                    instance.Chests.TryGetValue(chestId, out DungeonChestStateRecord? chest) &&
+                    chest.Opened)
+                {
+                    chestsArray.RemoveAt(i);
+                }
+            }
         }
 
         return rootObject.ToJsonString();
@@ -1850,6 +2124,28 @@ internal sealed class DungeonInstanceRegistry
             return false;
 
         return value.ValueKind == JsonValueKind.True || (value.ValueKind == JsonValueKind.False ? false : false);
+    }
+
+    private static HashSet<string> ReadOpenedChestIds(JsonElement rootElement)
+    {
+        HashSet<string> openedChestIds = new(StringComparer.Ordinal);
+        if (!rootElement.TryGetProperty("openedChestIds", out JsonElement openedElement) ||
+            openedElement.ValueKind != JsonValueKind.Array)
+        {
+            return openedChestIds;
+        }
+
+        foreach (JsonElement openedIdElement in openedElement.EnumerateArray())
+        {
+            if (openedIdElement.ValueKind != JsonValueKind.String)
+                continue;
+
+            string openedId = openedIdElement.GetString()?.Trim() ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(openedId))
+                openedChestIds.Add(openedId);
+        }
+
+        return openedChestIds;
     }
 }
 
@@ -1920,11 +2216,61 @@ internal sealed class DungeonRewardConfigStore
         return true;
     }
 
+    public bool TryBuildChestDrops(
+        DungeonInstanceRecord record,
+        OpenDungeonChestRequest request,
+        string chestId,
+        out List<DungeonDropProposal>? drops,
+        out string error)
+    {
+        drops = new List<DungeonDropProposal>();
+        error = string.Empty;
+        if (!_levels.TryGetValue(record.LevelIndex, out DungeonLevelRewardConfig? levelConfig))
+        {
+            error = $"缺少关卡 {record.LevelIndex} 的联机副本奖励配置";
+            return false;
+        }
+
+        if (levelConfig.ChestDrops == null || levelConfig.ChestDrops.Count == 0)
+        {
+            error = $"缺少关卡 {record.LevelIndex} 的联机副本宝箱掉落配置";
+            return false;
+        }
+
+        Random rng = BuildRewardRng(record, chestId);
+        DungeonEnemyRewardConfig rewardConfig = new DungeonEnemyRewardConfig
+        {
+            Drops = levelConfig.ChestDrops,
+        };
+        for (int i = 0; i < Math.Max(1, request.DropCount); i++)
+        {
+            if (!TryBuildDrop(rewardConfig, request, rng, chestId, i, out DungeonDropProposal? drop, out error))
+                return false;
+
+            if (drop != null)
+                drops.Add(drop);
+        }
+
+        return true;
+    }
+
     private bool TryBuildDrop(
         DungeonEnemyRewardConfig rewardConfig,
         AddDungeonEnemyKillRequest request,
         Random rng,
         string enemyRuntimeId,
+        out DungeonDropProposal? drop,
+        out string error)
+    {
+        return TryBuildDrop(rewardConfig, request, rng, enemyRuntimeId, 0, out drop, out error);
+    }
+
+    private bool TryBuildDrop(
+        DungeonEnemyRewardConfig rewardConfig,
+        IDungeonDropOriginRequest request,
+        Random rng,
+        string sourceRuntimeId,
+        int dropIndex,
         out DungeonDropProposal? drop,
         out string error)
     {
@@ -1942,7 +2288,7 @@ internal sealed class DungeonRewardConfigStore
 
             drop = new DungeonDropProposal
             {
-                DropId = BuildDropId(enemyRuntimeId, 0),
+                DropId = BuildDropId(sourceRuntimeId, dropIndex),
                 ItemType = "weapon",
                 PayloadJson = payloadJson,
                 Count = 1,
@@ -1961,7 +2307,7 @@ internal sealed class DungeonRewardConfigStore
 
         drop = new DungeonDropProposal
         {
-            DropId = BuildDropId(enemyRuntimeId, 0),
+            DropId = BuildDropId(sourceRuntimeId, dropIndex),
             ItemType = "stackable",
             PayloadJson = JsonSerializer.Serialize(new DungeonStackableDropPayload
             {
@@ -2111,6 +2457,7 @@ internal sealed class DungeonLevelRewardConfig
 {
     public int LevelIndex { get; init; }
     public DungeonEnemyRewardSetConfig? Rewards { get; init; }
+    public List<DungeonDropWeightConfig>? ChestDrops { get; init; }
 
     public bool TryGetReward(int enemyType, out DungeonEnemyRewardConfig? reward)
     {
@@ -2260,6 +2607,7 @@ internal sealed class DungeonInstanceRecord
     public bool AuthorityInitialized { get; set; }
     public long AuthorityVersion { get; set; }
     public Dictionary<string, DungeonEnemyStateRecord> Enemies { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, DungeonChestStateRecord> Chests { get; } = new(StringComparer.Ordinal);
     public List<DungeonDamageEventRecord> DamageEvents { get; } = new();
     public HashSet<string> DamageEventIds { get; } = new(StringComparer.Ordinal);
     public long NextDamageEventSequence { get; set; }
@@ -2337,8 +2685,33 @@ internal sealed class DungeonEnemyStateRecord
     public float CurrentPoise { get; set; }
     public bool CountsAsLevelBoss { get; set; }
     public bool IsDead { get; set; }
+    public float MoveBlend { get; set; }
+    public float MoveForward { get; set; }
+    public float MoveStrafe { get; set; }
+    public int ActiveSkillSequence { get; set; }
+    public int ActiveSkillSlot { get; set; }
+    public string ActiveSkillId { get; set; } = string.Empty;
+    public string ActiveSkillAnimationTrigger { get; set; } = string.Empty;
+    public bool HasActiveSkillTarget { get; set; }
+    public float ActiveSkillTargetX { get; set; }
+    public float ActiveSkillTargetY { get; set; }
+    public float ActiveSkillTargetZ { get; set; }
     public DateTime UpdatedAtUtc { get; set; }
     public DateTime? DiedAtUtc { get; set; }
+}
+
+internal sealed class DungeonChestStateRecord
+{
+    public string ChestId { get; init; } = string.Empty;
+    public string PrefabId { get; set; } = string.Empty;
+    public float X { get; set; }
+    public float Y { get; set; }
+    public float Z { get; set; }
+    public float Yaw { get; set; }
+    public bool Opened { get; set; }
+    public string OpenedByUserId { get; set; } = string.Empty;
+    public DateTime? OpenedAtUtc { get; set; }
+    public DateTime UpdatedAtUtc { get; set; }
 }
 
 internal sealed class DungeonDamageEventRecord
@@ -2496,13 +2869,35 @@ internal sealed class AddDungeonUiPanelEventRequest
 }
 
 internal sealed class AddDungeonEnemyKillRequest
+    : IDungeonDropOriginRequest
 {
     public string? UserId { get; init; }
     public string? JoinToken { get; init; }
     public string? EnemyRuntimeId { get; init; }
+    public DungeonEnemyAuthorityStateUpsertDto? TargetEnemy { get; init; }
     public float X { get; init; }
     public float Y { get; init; }
     public float Z { get; init; }
+}
+
+internal sealed class OpenDungeonChestRequest
+    : IDungeonDropOriginRequest
+{
+    public string? UserId { get; init; }
+    public string? JoinToken { get; init; }
+    public string? PrefabId { get; init; }
+    public int DropCount { get; init; } = 1;
+    public float X { get; init; }
+    public float Y { get; init; }
+    public float Z { get; init; }
+    public float Yaw { get; init; }
+}
+
+internal interface IDungeonDropOriginRequest
+{
+    float X { get; }
+    float Y { get; }
+    float Z { get; }
 }
 
 internal sealed class PickupDungeonDropRequest
@@ -2606,6 +3001,8 @@ internal sealed class DungeonAuthorityStateDto
     public long version { get; init; }
     public bool initialized { get; init; }
     public List<DungeonEnemyStateDto> enemies { get; init; } = new();
+    public List<DungeonChestStateDto> chests { get; init; } = new();
+    public long rewardStateVersion { get; init; }
 }
 
 internal sealed class DungeonEnemyStateDto
@@ -2621,6 +3018,17 @@ internal sealed class DungeonEnemyStateDto
     public float currentPoise { get; init; }
     public bool countsAsLevelBoss { get; init; }
     public bool isDead { get; init; }
+    public float moveBlend { get; init; }
+    public float moveForward { get; init; }
+    public float moveStrafe { get; init; }
+    public int activeSkillSequence { get; init; }
+    public int activeSkillSlot { get; init; }
+    public string activeSkillId { get; init; } = string.Empty;
+    public string activeSkillAnimationTrigger { get; init; } = string.Empty;
+    public bool hasActiveSkillTarget { get; init; }
+    public float activeSkillTargetX { get; init; }
+    public float activeSkillTargetY { get; init; }
+    public float activeSkillTargetZ { get; init; }
     public DateTime updatedAtUtc { get; init; }
     public DateTime? diedAtUtc { get; init; }
 }
@@ -2638,6 +3046,31 @@ internal sealed class DungeonEnemyAuthorityStateUpsertDto
     public float currentPoise { get; init; }
     public bool countsAsLevelBoss { get; init; }
     public bool isDead { get; init; }
+    public float moveBlend { get; init; }
+    public float moveForward { get; init; }
+    public float moveStrafe { get; init; }
+    public int activeSkillSequence { get; init; }
+    public int activeSkillSlot { get; init; }
+    public string activeSkillId { get; init; } = string.Empty;
+    public string activeSkillAnimationTrigger { get; init; } = string.Empty;
+    public bool hasActiveSkillTarget { get; init; }
+    public float activeSkillTargetX { get; init; }
+    public float activeSkillTargetY { get; init; }
+    public float activeSkillTargetZ { get; init; }
+}
+
+internal sealed class DungeonChestStateDto
+{
+    public string chestId { get; init; } = string.Empty;
+    public string prefabId { get; init; } = string.Empty;
+    public float x { get; init; }
+    public float y { get; init; }
+    public float z { get; init; }
+    public float yaw { get; init; }
+    public bool opened { get; init; }
+    public string openedByUserId { get; init; } = string.Empty;
+    public DateTime? openedAtUtc { get; init; }
+    public DateTime updatedAtUtc { get; init; }
 }
 
 internal sealed class DungeonUiPanelEventListDto

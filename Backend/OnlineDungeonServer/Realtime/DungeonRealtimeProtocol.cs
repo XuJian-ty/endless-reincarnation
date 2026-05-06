@@ -5,7 +5,7 @@ namespace OnlineDungeonServer.Realtime;
 
 internal static class DungeonRealtimeProtocol
 {
-    public const int Version = 1;
+    public const int Version = 2;
     public const int DefaultPort = 5087;
     public const int DefaultKcpPort = 5088;
     public const int MaxDatagramBytes = 16 * 1024;
@@ -15,6 +15,11 @@ internal static class DungeonRealtimeProtocol
     public const string StateTransport = "udp-unreliable-snapshot";
     public const string EventTransport = "kcp-reliable-event";
     public const string SynchronizationMode = "state-sync-snapshot-interpolation";
+    public const string AuthoritySchema = "enemy-authority-v2-movement-skill-chest-reward";
+    public const string SessionLifecycleMode = "server-authoritative-session-close";
+    public const string ErrorCodeGeneric = "error";
+    public const string ErrorCodeSessionClosed = "sessionClosed";
+    public const string SessionClosedMessagePrefix = "联机副本已关闭";
 
     public const string HelloType = "hello";
     public const string HelloAckType = "helloAck";
@@ -40,6 +45,41 @@ internal static class DungeonRealtimeProtocol
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
+
+    public static DungeonRealtimeErrorPayload CreateErrorPayload(string message)
+    {
+        string normalizedMessage = string.IsNullOrWhiteSpace(message) ? "实时协议错误" : message.Trim();
+        var payload = new DungeonRealtimeErrorPayload
+        {
+            Message = normalizedMessage,
+            Code = ErrorCodeGeneric,
+        };
+
+        if (TryExtractSessionClosedReason(normalizedMessage, out string closeReason))
+        {
+            payload = new DungeonRealtimeErrorPayload
+            {
+                Message = normalizedMessage,
+                Code = ErrorCodeSessionClosed,
+                CloseReason = closeReason,
+            };
+        }
+
+        return payload;
+    }
+
+    private static bool TryExtractSessionClosedReason(string message, out string closeReason)
+    {
+        closeReason = string.Empty;
+        if (string.IsNullOrWhiteSpace(message) || !message.StartsWith(SessionClosedMessagePrefix, StringComparison.Ordinal))
+            return false;
+
+        int separatorIndex = message.IndexOf('：');
+        if (separatorIndex >= 0 && separatorIndex + 1 < message.Length)
+            closeReason = message.Substring(separatorIndex + 1).Trim();
+
+        return true;
+    }
 }
 
 internal sealed class DungeonRealtimeEnvelope
@@ -66,6 +106,8 @@ internal sealed class DungeonRealtimeHelloAckPayload
     public string StateTransport { get; init; } = DungeonRealtimeProtocol.StateTransport;
     public string EventTransport { get; init; } = DungeonRealtimeProtocol.EventTransport;
     public string SynchronizationMode { get; init; } = DungeonRealtimeProtocol.SynchronizationMode;
+    public string AuthoritySchema { get; init; } = DungeonRealtimeProtocol.AuthoritySchema;
+    public string SessionLifecycleMode { get; init; } = DungeonRealtimeProtocol.SessionLifecycleMode;
     public string StateChannel { get; init; } = DungeonRealtimeProtocol.ChannelUnreliableState;
     public string EventChannel { get; init; } = DungeonRealtimeProtocol.ChannelReliableEvent;
     public DateTime UtcNow { get; init; }
@@ -74,6 +116,8 @@ internal sealed class DungeonRealtimeHelloAckPayload
 internal sealed class DungeonRealtimeErrorPayload
 {
     public string Message { get; init; } = string.Empty;
+    public string Code { get; init; } = DungeonRealtimeProtocol.ErrorCodeGeneric;
+    public string CloseReason { get; init; } = string.Empty;
 }
 
 internal sealed class DungeonRealtimePlayerSnapshotPayload
@@ -133,10 +177,15 @@ internal sealed class DungeonRealtimeRewardSyncPayload
 {
     public string Action { get; init; } = string.Empty;
     public string EnemyRuntimeId { get; init; } = string.Empty;
+    public string ChestId { get; init; } = string.Empty;
+    public string ChestPrefabId { get; init; } = string.Empty;
     public string DropId { get; init; } = string.Empty;
+    public DungeonEnemyAuthorityStateUpsertDto? TargetEnemy { get; init; }
+    public int DropCount { get; init; } = 1;
     public float X { get; init; }
     public float Y { get; init; }
     public float Z { get; init; }
+    public float Yaw { get; init; }
 }
 
 internal sealed class DungeonRealtimeRewardSnapshotPayload

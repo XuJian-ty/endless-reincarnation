@@ -28,20 +28,22 @@ namespace Game.GameFlow
         private void Awake()
         {
             ApplyConfig();
+            DestroyLegacyAuraObject();
             EnsureMarkerLight();
         }
 
         private void LateUpdate()
         {
+            ApplyConfig();
             if (_markerLight == null)
                 EnsureMarkerLight();
 
             if (_markerLight == null)
                 return;
 
+            float pulse = (Mathf.Sin(Time.time * _pulseSpeed) + 1f) * 0.5f;
             Transform lightTransform = _markerLight.transform;
             lightTransform.position = transform.position + _offset;
-            float pulse = (Mathf.Sin(Time.time * _pulseSpeed) + 1f) * 0.5f;
             _markerLight.intensity = Mathf.Lerp(_minIntensity, _maxIntensity, pulse);
         }
 
@@ -64,7 +66,9 @@ namespace Game.GameFlow
             if (_markerLight == null)
                 return;
 
+            _markerLight.gameObject.SetActive(true);
             _markerLight.type = LightType.Point;
+            _markerLight.enabled = true;
             _markerLight.color = _markerColor;
             _markerLight.range = _range;
             _markerLight.intensity = _maxIntensity;
@@ -85,6 +89,19 @@ namespace Game.GameFlow
             _pulseSpeed = config.levelBoss.pulseSpeed;
             _range = config.levelBoss.range;
             _offset = config.levelBoss.offset;
+        }
+
+        private void DestroyLegacyAuraObject()
+        {
+            Transform legacyAura = transform.Find("FinalBossRedAura");
+            if (legacyAura != null)
+                Destroy(legacyAura.gameObject);
+        }
+
+        private void OnDestroy()
+        {
+            if (_markerLight != null)
+                Destroy(_markerLight.gameObject);
         }
     }
 }

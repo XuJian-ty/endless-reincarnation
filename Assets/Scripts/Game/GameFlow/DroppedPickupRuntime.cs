@@ -10,10 +10,6 @@ using Newtonsoft.Json;
 using ProjectBase;
 using UnityEngine.SceneManagement;
 
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
-
 namespace Game.GameFlow
 {
     /// <summary>
@@ -46,11 +42,6 @@ namespace Game.GameFlow
         private bool _requireFreshInteractPickup;
         private bool _waitForInteractRelease;
         private Transform _playerTransform;
-
-#if ENABLE_INPUT_SYSTEM
-        private PlayerInput _playerInput;
-        private InputAction _interactAction;
-#endif
 
         public static DroppedPickupRuntime SpawnStackable(string itemId, int count, Vector3 position, System.Random rng = null)
         {
@@ -112,7 +103,7 @@ namespace Game.GameFlow
         {
             _requireFreshInteractPickup = true;
 #if ENABLE_INPUT_SYSTEM
-            _waitForInteractRelease = IsInteractCurrentlyPressed();
+            _waitForInteractRelease = LocalPlayerInteractionResolver.IsInteractPressed(ResolvePlayerTransform());
 #else
             _waitForInteractRelease = false;
 #endif
@@ -299,7 +290,7 @@ namespace Game.GameFlow
             transform.position = _basePosition + Vector3.up * hoverOffset;
             FaceCamera();
 #if ENABLE_INPUT_SYSTEM
-            if (_waitForInteractRelease && !IsInteractCurrentlyPressed())
+            if (_waitForInteractRelease && !LocalPlayerInteractionResolver.IsInteractPressed(ResolvePlayerTransform()))
                 _waitForInteractRelease = false;
 #endif
             TryPickupWithInteract();
@@ -333,6 +324,10 @@ namespace Game.GameFlow
 
             PlayerController playerController = other.GetComponentInParent<PlayerController>();
             if (playerController == null)
+                return;
+
+            Transform localPlayerTransform = ResolvePlayerTransform();
+            if (localPlayerTransform == null || playerController.transform != localPlayerTransform)
                 return;
 
             TryPickup(playerController);
@@ -404,7 +399,7 @@ namespace Game.GameFlow
             if (!IsNearestInteractablePickup(playerTransform))
                 return;
 
-            if (!WasInteractPressedThisFrame())
+            if (!LocalPlayerInteractionResolver.IsInteractPressedThisFrame(playerTransform))
                 return;
 
             if (_waitForInteractRelease)
@@ -470,83 +465,10 @@ namespace Game.GameFlow
             return !_pickedUp && _initialized && isActiveAndEnabled;
         }
 
-#if ENABLE_INPUT_SYSTEM
-        private bool WasInteractPressedThisFrame()
-        {
-            InputAction interactAction = ResolveInteractAction();
-            return interactAction != null && interactAction.WasPressedThisFrame();
-        }
-
-        private bool IsInteractCurrentlyPressed()
-        {
-            InputAction interactAction = ResolveInteractAction();
-            return interactAction != null && interactAction.IsPressed();
-        }
-
-        private InputAction ResolveInteractAction()
-        {
-            if (_interactAction != null)
-                return _interactAction;
-
-            Transform playerTransform = ResolvePlayerTransform();
-            if (playerTransform == null)
-                return null;
-
-            PlayerInput playerInput = playerTransform.GetComponent<PlayerInput>();
-            if (playerInput == null)
-                playerInput = playerTransform.GetComponentInParent<PlayerInput>();
-            if (playerInput == null)
-                return null;
-
-            if (_playerInput != playerInput)
-            {
-                _playerInput = playerInput;
-                _interactAction = null;
-            }
-
-            _interactAction = _playerInput.actions?.FindAction("Interact");
-            return _interactAction;
-        }
-#endif
-
         private Transform ResolvePlayerTransform()
         {
-            if (IsUsablePlayerTransform(_playerTransform))
-                return _playerTransform;
-
-            Transform levelPlayerTransform = GameStateMachine.GetInstance()?.LevelPlayerTransform;
-            if (IsUsablePlayerTransform(levelPlayerTransform))
-            {
-                _playerTransform = levelPlayerTransform;
-                return _playerTransform;
-            }
-
-            PlayerController controller = FindFirstObjectByType<PlayerController>();
-            Transform scenePlayerTransform = controller != null ? controller.transform : null;
-            if (IsUsablePlayerTransform(scenePlayerTransform))
-            {
-                _playerTransform = scenePlayerTransform;
-                return _playerTransform;
-            }
-
-            _playerTransform = null;
-            return null;
-        }
-
-        private bool IsUsablePlayerTransform(Transform playerTransform)
-        {
-            if (playerTransform == null || !playerTransform.gameObject.activeInHierarchy)
-                return false;
-
-            Scene playerScene = playerTransform.gameObject.scene;
-            if (!playerScene.IsValid() || !playerScene.isLoaded)
-                return false;
-
-            Scene currentScene = gameObject.scene;
-            if (currentScene.IsValid() && currentScene.isLoaded && playerScene != currentScene)
-                return false;
-
-            return true;
+            _playerTransform = LocalPlayerInteractionResolver.ResolvePlayerTransform(gameObject.scene, _playerTransform);
+            return _playerTransform;
         }
 
         private static bool IsPlayerCollider(Collider other)

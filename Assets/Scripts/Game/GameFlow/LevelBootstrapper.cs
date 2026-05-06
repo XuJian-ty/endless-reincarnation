@@ -183,6 +183,7 @@ namespace Game.GameFlow
             run.levelSnapshot.runtimeSnapshotVersion = 1;
 
             CaptureEnemySnapshots(run.levelSnapshot);
+            CaptureChestSnapshots(run.levelSnapshot);
             CaptureShopSnapshots(run.levelSnapshot);
             CaptureGroundDropSnapshots(run.levelSnapshot);
             CaptureSpawnerSnapshots(run.levelSnapshot);
@@ -193,6 +194,54 @@ namespace Game.GameFlow
         {
             ApplyOnlineWorldSnapshotState(snapshot);
             onCompleted?.Invoke();
+        }
+
+        public void ApplyOnlineChestAuthorityState(OnlineDungeonChestAuthorityInfo chestState)
+        {
+            if (chestState == null || string.IsNullOrWhiteSpace(chestState.chestId))
+                return;
+
+            string chestId = chestState.chestId.Trim();
+            if (!IsChestSnapshotForActiveScene(chestId))
+                return;
+
+            if (chestState.opened)
+            {
+                ChestInteractable[] chests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                for (int i = 0; i < chests.Length; i++)
+                {
+                    ChestInteractable chest = chests[i];
+                    if (chest != null && string.Equals(chest.GetSnapshotId(), chestId, System.StringComparison.Ordinal))
+                        chest.ApplyOnlineAuthorityOpened();
+                }
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(chestState.prefabId))
+            {
+                Debug.LogWarning($"[LevelBootstrapper] 联机宝箱权威状态缺少 prefabId：{chestId}");
+                return;
+            }
+
+            UpsertChestSnapshot(new ChestSnapshotSave
+            {
+                snapshotId = chestId,
+                prefabId = chestState.prefabId,
+                x = chestState.x,
+                y = chestState.y,
+                z = chestState.z,
+                yaw = chestState.yaw,
+            });
+        }
+
+        private static bool IsChestSnapshotForActiveScene(string snapshotId)
+        {
+            if (string.IsNullOrWhiteSpace(snapshotId))
+                return false;
+
+            string sceneName = SceneManager.GetActiveScene().name;
+            return snapshotId.StartsWith($"{sceneName}|", System.StringComparison.Ordinal);
         }
 
         private static void RemoveOnlineFollowerLocalEnemies()
@@ -418,6 +467,7 @@ namespace Game.GameFlow
                 yield break;
 
             RestoreOpenedChests(snapshot);
+            RestoreChestSnapshots(snapshot);
             RestoreEnemySnapshots(snapshot);
             UnityEngine.Object.FindFirstObjectByType<LevelDirector>()?.CompleteRuntimeSnapshotRestore();
             RestoreShopSnapshots(snapshot);
@@ -438,6 +488,23 @@ namespace Game.GameFlow
                 EnemyController enemy = enemies[i];
                 if (enemy != null && enemy.TryBuildSnapshot(out EnemySnapshot enemySnapshot))
                     snapshot.enemies.Add(enemySnapshot);
+            }
+        }
+
+        private static void CaptureChestSnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            snapshot.chests ??= new List<ChestSnapshotSave>();
+            snapshot.chests.Clear();
+
+            ChestInteractable[] chests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < chests.Length; i++)
+            {
+                ChestInteractable chest = chests[i];
+                if (chest != null && chest.TryBuildSnapshot(out ChestSnapshotSave chestSnapshot))
+                    snapshot.chests.Add(chestSnapshot);
             }
         }
 
@@ -527,6 +594,102 @@ namespace Game.GameFlow
             }
         }
 
+        private static void RestoreChestSnapshots(LevelSnapshot snapshot)
+        {
+            if (snapshot?.chests == null)
+                return;
+
+            HashSet<string> openedChestIds = snapshot.openedChestIds != null
+                ? new HashSet<string>(snapshot.openedChestIds)
+                : new HashSet<string>();
+            Dictionary<string, ChestInteractable> currentBySnapshotId = new Dictionary<string, ChestInteractable>();
+            ChestInteractable[] currentChests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < currentChests.Length; i++)
+            {
+                ChestInteractable chest = currentChests[i];
+                if (chest == null)
+                    continue;
+
+                string snapshotId = chest.GetSnapshotId();
+                if (!string.IsNullOrWhiteSpace(snapshotId))
+                    currentBySnapshotId[snapshotId] = chest;
+            }
+
+            HashSet<string> snapshotIds = new HashSet<string>();
+            for (int i = 0; i < snapshot.chests.Count; i++)
+            {
+                ChestSnapshotSave chestSnapshot = snapshot.chests[i];
+                if (chestSnapshot == null || string.IsNullOrWhiteSpace(chestSnapshot.snapshotId) || openedChestIds.Contains(chestSnapshot.snapshotId))
+                    continue;
+
+                snapshotIds.Add(chestSnapshot.snapshotId);
+                Vector3 position = new Vector3(chestSnapshot.x, chestSnapshot.y, chestSnapshot.z);
+                Quaternion rotation = Quaternion.Euler(0f, chestSnapshot.yaw, 0f);
+                if (currentBySnapshotId.TryGetValue(chestSnapshot.snapshotId, out ChestInteractable existingChest) && existingChest != null)
+                {
+                    existingChest.ApplyOnlineSnapshotPose(chestSnapshot.snapshotId, position, rotation);
+                    continue;
+                }
+
+                UpsertChestSnapshot(chestSnapshot);
+            }
+
+            for (int i = 0; i < currentChests.Length; i++)
+            {
+                ChestInteractable chest = currentChests[i];
+                if (chest == null)
+                    continue;
+
+                string snapshotId = chest.GetSnapshotId();
+                if (openedChestIds.Contains(snapshotId) || !snapshotIds.Contains(snapshotId))
+                    UnityEngine.Object.Destroy(chest.gameObject);
+            }
+        }
+
+        private static void UpsertChestSnapshot(ChestSnapshotSave chestSnapshot)
+        {
+            if (chestSnapshot == null || string.IsNullOrWhiteSpace(chestSnapshot.snapshotId))
+                return;
+
+            Vector3 position = new Vector3(chestSnapshot.x, chestSnapshot.y, chestSnapshot.z);
+            Quaternion rotation = Quaternion.Euler(0f, chestSnapshot.yaw, 0f);
+            ChestInteractable[] currentChests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < currentChests.Length; i++)
+            {
+                ChestInteractable chest = currentChests[i];
+                if (chest != null && string.Equals(chest.GetSnapshotId(), chestSnapshot.snapshotId, System.StringComparison.Ordinal))
+                {
+                    chest.ApplyOnlineSnapshotPose(chestSnapshot.snapshotId, position, rotation);
+                    return;
+                }
+            }
+
+            SpawnChestFromSnapshot(chestSnapshot, position, rotation);
+        }
+
+        private static void SpawnChestFromSnapshot(ChestSnapshotSave chestSnapshot, Vector3 position, Quaternion rotation)
+        {
+            if (chestSnapshot == null || string.IsNullOrWhiteSpace(chestSnapshot.prefabId))
+                return;
+
+            GameObject prefab = Resources.Load<GameObject>($"Prefabs/{chestSnapshot.prefabId.Trim()}");
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[LevelBootstrapper] 未找到宝箱快照预制体：{chestSnapshot.prefabId}");
+                return;
+            }
+
+            Transform interactablesRoot = LevelRuntimeHierarchy.GetInteractablesRoot();
+            GameObject instance = interactablesRoot != null
+                ? UnityEngine.Object.Instantiate(prefab, position, rotation, interactablesRoot)
+                : UnityEngine.Object.Instantiate(prefab, position, rotation);
+            instance.name = prefab.name;
+            ChestInteractable interactable = instance.GetComponentInChildren<ChestInteractable>(true);
+            if (interactable == null)
+                interactable = ChestInteractable.EnsureOn(instance);
+            interactable?.ApplyOnlineSnapshotIdentity(chestSnapshot.snapshotId);
+        }
+
         private static void RestoreEnemySnapshots(LevelSnapshot snapshot)
         {
             if (snapshot == null || snapshot.runtimeSnapshotVersion <= 0)
@@ -558,11 +721,11 @@ namespace Game.GameFlow
                 return;
 
             RestoreOpenedChests(snapshot);
+            RestoreChestSnapshots(snapshot);
             ApplyOnlineEnemySnapshots(snapshot);
             RestoreSpawnerSnapshots(snapshot);
             RestoreLevelDirectorSnapshot(snapshot);
             RestoreShopSnapshots(snapshot);
-            RestoreGroundDropsForOnline(snapshot, ref _lastOnlineGroundDropsSnapshotKey);
         }
 
         private static void ApplyOnlineEnemySnapshots(LevelSnapshot snapshot)
@@ -667,7 +830,9 @@ namespace Game.GameFlow
             if (snapshot?.enemies == null)
                 return;
 
-            bool allowLevelBoss = snapshot.levelDirector != null &&
+            bool isFinalBossDuelScene = FinalBossDuelSceneRuntime.IsFinalBossDuelScene();
+            bool allowLevelBoss = isFinalBossDuelScene ||
+                                  snapshot.levelDirector != null &&
                                   snapshot.levelDirector.bossSpawned &&
                                   !snapshot.levelDirector.bossDefeated;
             for (int i = 0; i < snapshot.enemies.Count; i++)
@@ -675,6 +840,12 @@ namespace Game.GameFlow
                 EnemySnapshot enemySnapshot = snapshot.enemies[i];
                 if (enemySnapshot == null)
                     continue;
+
+                if (isFinalBossDuelScene && enemySnapshot.enemyType == (int)EnemyType.Boss)
+                {
+                    enemySnapshot.countsAsLevelBoss = true;
+                    continue;
+                }
 
                 if (enemySnapshot.enemyType != (int)EnemyType.Boss || !allowLevelBoss)
                     enemySnapshot.countsAsLevelBoss = false;

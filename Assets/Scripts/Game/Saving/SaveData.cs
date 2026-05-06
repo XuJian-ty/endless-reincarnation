@@ -126,12 +126,22 @@ namespace Game.Saving
         public float playerX, playerY, playerZ;
         public float playerYaw;
         public List<EnemySnapshot>  enemies      = new List<EnemySnapshot>();
+        public List<ChestSnapshotSave> chests = new List<ChestSnapshotSave>();
         public List<string>         openedChestIds = new List<string>();
         public List<GroundDropSave> groundDrops  = new List<GroundDropSave>();
         public List<ShopSnapshotSave> shops = new List<ShopSnapshotSave>();
         public GlobalSpawnerSnapshotSave globalSpawner;
         public List<LocalSpawnerSnapshotSave> localSpawners = new List<LocalSpawnerSnapshotSave>();
         public LevelDirectorSnapshotSave levelDirector;
+    }
+
+    [Serializable]
+    public class ChestSnapshotSave
+    {
+        public string snapshotId;
+        public string prefabId;
+        public float x, y, z;
+        public float yaw;
     }
 
     [Serializable]

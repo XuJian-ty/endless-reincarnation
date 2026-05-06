@@ -45,6 +45,7 @@ namespace Game.Social
         private const float HeadAimWeight = 0.65f;
         private const float SnapshotInterpolationDelaySeconds = 0.2f;
         private const float MaxSnapshotExtrapolationSeconds = 0.08f;
+        private const float AnimatorFloatBlendSpeed = 14f;
         private const float SnapshotTimeEpsilon = 0.0001f;
         private const int MaxBufferedSnapshots = 12;
         private const int MaxBufferedActionPresentations = 8;
@@ -62,6 +63,10 @@ namespace Game.Social
         private string _lastLocomotionTrigger = string.Empty;
         private SkillTimelineRunner _visualTimelineRunner;
         private float _lastPresentedMoveSpeed;
+        private float _displayedMoveSpeed;
+        private float _displayedMoveX;
+        private float _displayedMoveY;
+        private bool _hasDisplayedMoveParameters;
         private PlayerAttackMode _lastPresentedAttackMode = PlayerAttackMode.Melee;
         private bool _aimActive;
         private bool _aimLayerActive;
@@ -266,9 +271,12 @@ namespace Game.Social
 
             RemoteAction presentationAction = action;
             float normalizedMoveSpeed = Mathf.Clamp01(moveSpeed);
-            SetFloatIfExists("Speed", SpeedHash, normalizedMoveSpeed);
-            SetFloatIfExists("MoveX", MoveXHash, Mathf.Clamp(moveX, -1f, 1f));
-            SetFloatIfExists("MoveY", MoveYHash, Mathf.Clamp(moveY, -1f, 1f));
+            float targetMoveX = Mathf.Clamp(moveX, -1f, 1f);
+            float targetMoveY = Mathf.Clamp(moveY, -1f, 1f);
+            SmoothAnimatorMoveParameters(normalizedMoveSpeed, targetMoveX, targetMoveY);
+            SetFloatIfExists("Speed", SpeedHash, _displayedMoveSpeed);
+            SetFloatIfExists("MoveX", MoveXHash, _displayedMoveX);
+            SetFloatIfExists("MoveY", MoveYHash, _displayedMoveY);
             SetFloatIfExists("UpperBodyPlaybackSpeed", UpperBodyPlaybackSpeedHash, 1f);
             SetBoolIfExists("IsGrounded", IsGroundedHash, IsGroundedAction(presentationAction));
             EnsureRangedLocomotionState(presentationAction, actionId);
@@ -283,6 +291,23 @@ namespace Game.Social
             if (!IsLocomotionAction(presentationAction))
                 _lastLocomotionTrigger = string.Empty;
             TriggerAction(presentationAction, actionId);
+        }
+
+        private void SmoothAnimatorMoveParameters(float targetMoveSpeed, float targetMoveX, float targetMoveY)
+        {
+            if (!_hasDisplayedMoveParameters)
+            {
+                _displayedMoveSpeed = targetMoveSpeed;
+                _displayedMoveX = targetMoveX;
+                _displayedMoveY = targetMoveY;
+                _hasDisplayedMoveParameters = true;
+                return;
+            }
+
+            float maxDelta = AnimatorFloatBlendSpeed * Time.unscaledDeltaTime;
+            _displayedMoveSpeed = Mathf.MoveTowards(_displayedMoveSpeed, targetMoveSpeed, maxDelta);
+            _displayedMoveX = Mathf.MoveTowards(_displayedMoveX, targetMoveX, maxDelta);
+            _displayedMoveY = Mathf.MoveTowards(_displayedMoveY, targetMoveY, maxDelta);
         }
 
         private void PlayVisualTimeline(string actionId, string skillEffectId, float actionElapsedSeconds)

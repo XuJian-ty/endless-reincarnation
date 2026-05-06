@@ -35,6 +35,7 @@ namespace Game.Online
         private Coroutine _worldSnapshotSyncCoroutine;
         private Coroutine _worldSnapshotImmediateUploadCoroutine;
         private long _lastAppliedWorldSnapshotVersion;
+        private string _lastAppliedWorldSnapshotSceneName = string.Empty;
         private long _lastAppliedAuthorityStateVersion;
         private long _lastReceivedDamageEventSequence;
         private long _lastReceivedUiPanelEventSequence;
@@ -52,6 +53,8 @@ namespace Game.Online
         private readonly HashSet<string> _appliedKillRewards = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _pendingKillRewardClaims = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _pendingOnlineDropPickups = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _pendingOnlineChestOpens = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _openedOnlineChests = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _spawnedDropIds = new HashSet<string>(StringComparer.Ordinal);
         private readonly Dictionary<string, DroppedPickupRuntime> _onlineDrops = new Dictionary<string, DroppedPickupRuntime>(StringComparer.Ordinal);
         private readonly Dictionary<string, SocialAidRemotePlayerAvatar> _remoteAvatars = new Dictionary<string, SocialAidRemotePlayerAvatar>(StringComparer.Ordinal);
@@ -183,11 +186,61 @@ namespace Game.Online
 
         public bool TryHandleLocalPlayerDeath()
         {
-            if (!IsAidJoinerRole)
+            if (!HasActiveSession)
                 return false;
 
-            ReturnAidJoinerToOwnLevel(true);
-            return true;
+            if (IsAidJoinerRole)
+            {
+                ReturnAidJoinerToOwnLevel(true);
+                return true;
+            }
+
+            EndSessionForLocalOwnerOutcome();
+            return false;
+        }
+
+        public bool TryHandleBossDefeatedSessionEnd()
+        {
+            if (!HasActiveSession)
+                return false;
+
+            if (IsAidJoinerRole)
+            {
+                ReturnAidJoinerToOwnLevel(true);
+                return true;
+            }
+
+            EndSessionForLocalOwnerOutcome();
+            return false;
+        }
+
+        public bool TryPrepareSaveAndQuit()
+        {
+            if (!HasActiveSession)
+                return false;
+
+            if (IsAidJoinerRole)
+            {
+                SocialAidSessionInfo session = _activeAidSession;
+                int returnLevelIndex = _returnLevelIndex;
+                string returnSceneName = _returnSceneName;
+                string returnBossId = _returnBossId;
+                string returnBossDisplayName = _returnBossDisplayName;
+                LevelSnapshot returnSnapshot = _returnSnapshot;
+                StopSession();
+                CloseAidSession(session);
+
+                if (FinalBossDuelSceneRuntime.IsFinalBossDuelSceneName(returnSceneName) && !string.IsNullOrWhiteSpace(returnBossId))
+                    FinalBossDuelRuntimeContext.AdoptOnlineChallenge(returnBossId, returnBossDisplayName);
+                else
+                    FinalBossDuelRuntimeContext.ClearChallenge();
+
+                GameStateMachine.GetInstance().RestoreCurrentSaveToOwnLevelState(returnLevelIndex, returnSnapshot);
+                return true;
+            }
+
+            EndSessionForLocalOwnerOutcome();
+            return false;
         }
 
         public void ReturnAidJoinerToOwnLevel(bool closeServerSession)
@@ -204,12 +257,7 @@ namespace Game.Online
             StopSession();
 
             if (closeServerSession && session != null && !string.IsNullOrWhiteSpace(session.sessionId))
-            {
-                SocialService.GetInstance().CloseAidSession(
-                    session.sessionId,
-                    (_, _) => { },
-                    error => Debug.LogWarning($"[OnlineDungeonSessionCoordinator] 关闭联机副本会话失败：{error}"));
-            }
+                CloseAidSession(session);
 
             if (FinalBossDuelSceneRuntime.IsFinalBossDuelSceneName(returnSceneName) && !string.IsNullOrWhiteSpace(returnBossId))
                 FinalBossDuelRuntimeContext.AdoptOnlineChallenge(returnBossId, returnBossDisplayName);
@@ -217,6 +265,27 @@ namespace Game.Online
                 FinalBossDuelRuntimeContext.ClearChallenge();
 
             GameStateMachine.GetInstance().ReturnCurrentSaveToOwnLevel(returnLevelIndex, returnSnapshot, returnSceneName);
+        }
+
+        private void EndSessionForLocalOwnerOutcome()
+        {
+            if (!HasActiveSession)
+                return;
+
+            SocialAidSessionInfo session = _activeAidSession;
+            StopSession();
+            CloseAidSession(session);
+        }
+
+        private static void CloseAidSession(SocialAidSessionInfo session)
+        {
+            if (session == null || string.IsNullOrWhiteSpace(session.sessionId))
+                return;
+
+            SocialService.GetInstance().CloseAidSession(
+                session.sessionId,
+                (_, _) => { },
+                error => Debug.LogWarning($"[OnlineDungeonSessionCoordinator] 关闭联机副本会话失败：{error}"));
         }
 
         public bool TryReportLocalEnemyDamage(EnemyController enemy, float damage, Vector3 hitPosition)
@@ -264,6 +333,9 @@ namespace Game.Online
                 currentPoise = Mathf.Max(0f, enemy.CurrentPoise),
                 countsAsLevelBoss = enemy.CountsAsLevelBoss,
                 isDead = !enemy.IsAlive,
+                moveBlend = enemy.AnimatorMoveBlend,
+                moveForward = enemy.AnimatorMoveForward,
+                moveStrafe = enemy.AnimatorMoveStrafe,
             };
         }
 
@@ -329,6 +401,7 @@ namespace Game.Online
                 userId = currentUser.userId,
                 joinToken = _activeAidSession.dungeonJoinToken,
                 enemyRuntimeId = enemy.RuntimeId,
+                targetEnemy = BuildDamageTargetEnemyInfo(enemy),
                 x = deathPosition.x,
                 y = deathPosition.y,
                 z = deathPosition.z,
@@ -428,6 +501,8 @@ namespace Game.Online
             _appliedKillRewards.Clear();
             _pendingKillRewardClaims.Clear();
             _pendingOnlineDropPickups.Clear();
+            _pendingOnlineChestOpens.Clear();
+            _openedOnlineChests.Clear();
             _spawnedDropIds.Clear();
         }
 
@@ -437,6 +512,8 @@ namespace Game.Online
             _appliedKillRewards.Clear();
             _pendingKillRewardClaims.Clear();
             _pendingOnlineDropPickups.Clear();
+            _pendingOnlineChestOpens.Clear();
+            _openedOnlineChests.Clear();
             _spawnedDropIds.Clear();
         }
 
@@ -444,6 +521,7 @@ namespace Game.Online
         {
             StopWorldSnapshotSync();
             _lastAppliedWorldSnapshotVersion = 0;
+            _lastAppliedWorldSnapshotSceneName = string.Empty;
             _lastUploadedWorldSnapshotJson = string.Empty;
             _lastUploadedWorldSnapshotSceneName = string.Empty;
             _isApplyingWorldSnapshot = false;
@@ -466,6 +544,7 @@ namespace Game.Online
 
             _isApplyingWorldSnapshot = false;
             _lastAppliedWorldSnapshotVersion = 0;
+            _lastAppliedWorldSnapshotSceneName = string.Empty;
             _lastUploadedWorldSnapshotJson = string.Empty;
             _lastUploadedWorldSnapshotSceneName = string.Empty;
         }
@@ -508,7 +587,16 @@ namespace Game.Online
                 ApplyRealtimeDamageSnapshot,
                 ApplyRealtimeRewardSnapshot,
                 () => Debug.Log("[OnlineDungeonSessionCoordinator] 联机副本实时通道已连接。"),
-                error => Debug.LogWarning($"[OnlineDungeonSessionCoordinator] 联机副本实时通道错误：{error}"));
+                HandleRealtimeError);
+        }
+
+        private void HandleRealtimeError(string error)
+        {
+            if (TryHandleSessionClosedError(error))
+                return;
+
+            ResetPendingOnlineChestOpens();
+            Debug.LogWarning($"[OnlineDungeonSessionCoordinator] 联机副本实时通道错误：{error}");
         }
 
         private OnlineDungeonPlayerPoseRequest BuildRealtimePlayerState()
@@ -533,6 +621,8 @@ namespace Game.Online
                 if (enemy == null || !enemy.TryBuildSnapshot(out EnemySnapshot snapshot))
                     continue;
 
+                EnemyResolvedSkill activeSkill = enemy.ActiveSkill;
+                Vector3? activeSkillTarget = enemy.ActiveSkillTargetPosition;
                 enemyStates.Add(new OnlineDungeonEnemyAuthorityInfo
                 {
                     runtimeId = snapshot.runtimeId,
@@ -546,6 +636,17 @@ namespace Game.Online
                     currentPoise = snapshot.currentPoise,
                     countsAsLevelBoss = snapshot.countsAsLevelBoss,
                     isDead = snapshot.currentHp <= 0f,
+                    moveBlend = enemy.AnimatorMoveBlend,
+                    moveForward = enemy.AnimatorMoveForward,
+                    moveStrafe = enemy.AnimatorMoveStrafe,
+                    activeSkillSequence = activeSkill != null ? enemy.ActiveSkillSequence : 0,
+                    activeSkillSlot = activeSkill != null ? activeSkill.SlotIndex : -1,
+                    activeSkillId = activeSkill != null ? activeSkill.SkillId : string.Empty,
+                    activeSkillAnimationTrigger = activeSkill != null ? activeSkill.AnimationTrigger : string.Empty,
+                    hasActiveSkillTarget = activeSkillTarget.HasValue,
+                    activeSkillTargetX = activeSkillTarget.HasValue ? activeSkillTarget.Value.x : 0f,
+                    activeSkillTargetY = activeSkillTarget.HasValue ? activeSkillTarget.Value.y : 0f,
+                    activeSkillTargetZ = activeSkillTarget.HasValue ? activeSkillTarget.Value.z : 0f,
                 });
             }
 
@@ -585,7 +686,7 @@ namespace Game.Online
             bool appliedResult = snapshot.killRewardClaim != null || snapshot.dropPickup != null;
             ApplyKillRewardClaimResult(snapshot.killRewardClaim);
             ApplyDropPickupResult(snapshot.dropPickup);
-            if (!appliedResult)
+            if (!appliedResult || string.Equals(snapshot.ackAction, "openChest", StringComparison.Ordinal))
                 ApplyRewardState(snapshot.state);
         }
 
@@ -769,6 +870,61 @@ namespace Game.Online
             return true;
         }
 
+        public bool TryRequestOpenOnlineChest(ChestInteractable chest, int dropCount)
+        {
+            if (!HasActiveSession || chest == null)
+                return false;
+
+            SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
+            if (currentUser == null || string.IsNullOrWhiteSpace(currentUser.userId))
+                return false;
+
+            if (!chest.TryBuildSnapshot(out ChestSnapshotSave snapshot) || snapshot == null || string.IsNullOrWhiteSpace(snapshot.snapshotId))
+                return false;
+
+            string chestId = snapshot.snapshotId.Trim();
+            if (_openedOnlineChests.Contains(chestId) || _pendingOnlineChestOpens.Contains(chestId))
+                return false;
+
+            if (!_realtimeClient.IsRunning)
+            {
+                LogWorldSnapshotWarning("联机副本实时通道未启动，副本宝箱无法开启。");
+                return false;
+            }
+
+            _pendingOnlineChestOpens.Add(chestId);
+            _realtimeClient.EnqueueChestOpen(new OnlineDungeonChestOpenRequest
+            {
+                userId = currentUser.userId,
+                joinToken = _activeAidSession.dungeonJoinToken,
+                chestId = chestId,
+                prefabId = snapshot.prefabId,
+                dropCount = Mathf.Max(1, dropCount),
+                x = snapshot.x,
+                y = snapshot.y,
+                z = snapshot.z,
+                yaw = snapshot.yaw,
+            });
+
+            return true;
+        }
+
+        private void ResetPendingOnlineChestOpens()
+        {
+            if (_pendingOnlineChestOpens.Count <= 0)
+                return;
+
+            HashSet<string> pendingChestIds = new HashSet<string>(_pendingOnlineChestOpens, StringComparer.Ordinal);
+            _pendingOnlineChestOpens.Clear();
+            ChestInteractable[] chests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < chests.Length; i++)
+            {
+                ChestInteractable chest = chests[i];
+                if (chest != null && pendingChestIds.Contains(chest.GetSnapshotId()))
+                    chest.CancelPendingOnlineOpen();
+            }
+        }
+
         private void ApplyDropPickupResult(OnlineDungeonDropPickupResultInfo result)
         {
             if (result == null)
@@ -837,11 +993,15 @@ namespace Game.Online
             _onlineDrops.Clear();
             _spawnedDropIds.Clear();
             _pendingOnlineDropPickups.Clear();
+            _pendingOnlineChestOpens.Clear();
         }
 
         private void ApplyAuthorityState(OnlineDungeonAuthorityStateInfo state)
         {
             if (state == null || !state.initialized || state.version <= _lastAppliedAuthorityStateVersion)
+                return;
+
+            if (!ShouldDriveOnlineWorldSimulation() && !IsAuthorityStateSceneReady())
                 return;
 
             if (state.enemies != null)
@@ -850,7 +1010,41 @@ namespace Game.Online
                     ApplyEnemyAuthorityState(state.enemies[i]);
             }
 
+            if (state.chests != null)
+            {
+                for (int i = 0; i < state.chests.Count; i++)
+                    ApplyChestAuthorityState(state.chests[i]);
+            }
+
             _lastAppliedAuthorityStateVersion = state.version;
+        }
+
+        private void ApplyChestAuthorityState(OnlineDungeonChestAuthorityInfo chestState)
+        {
+            if (chestState == null || string.IsNullOrWhiteSpace(chestState.chestId))
+                return;
+
+            string chestId = chestState.chestId.Trim();
+            if (chestState.opened)
+            {
+                _openedOnlineChests.Add(chestId);
+                _pendingOnlineChestOpens.Remove(chestId);
+                ChestInteractable[] chests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                for (int i = 0; i < chests.Length; i++)
+                {
+                    ChestInteractable chest = chests[i];
+                    if (chest != null && string.Equals(chest.GetSnapshotId(), chestId, StringComparison.Ordinal))
+                        chest.ApplyOnlineAuthorityOpened();
+                }
+
+                return;
+            }
+
+            if (ShouldDriveOnlineWorldSimulation())
+                return;
+
+            LevelBootstrapper bootstrapper = UnityEngine.Object.FindFirstObjectByType<LevelBootstrapper>();
+            bootstrapper?.ApplyOnlineChestAuthorityState(chestState);
         }
 
         private void ApplyEnemyAuthorityState(OnlineDungeonEnemyAuthorityInfo enemyState)
@@ -874,7 +1068,20 @@ namespace Game.Online
                     new Vector3(enemyState.x, enemyState.y, enemyState.z),
                     Quaternion.Euler(0f, enemyState.yaw, 0f));
 
+            bool countsAsLevelBoss = IsFinalBossAuthorityContext(enemyState) || enemyState.countsAsLevelBoss;
+            enemy.SetCountsAsLevelBoss(countsAsLevelBoss);
             enemy.ApplyOnlineAuthorityState(enemyState.currentHp, enemyState.isDead);
+            if (!ShouldDriveOnlineWorldSimulation())
+            {
+                enemy.ApplyOnlineRemoteMovementPresentation(enemyState.moveBlend, enemyState.moveForward, enemyState.moveStrafe);
+                enemy.ApplyOnlineRemoteSkillPresentation(
+                    enemyState.activeSkillSequence,
+                    enemyState.activeSkillSlot,
+                    enemyState.activeSkillId,
+                    enemyState.activeSkillAnimationTrigger,
+                    enemyState.hasActiveSkillTarget,
+                    new Vector3(enemyState.activeSkillTargetX, enemyState.activeSkillTargetY, enemyState.activeSkillTargetZ));
+            }
         }
 
         private static EnemyController SpawnEnemyFromAuthorityState(OnlineDungeonEnemyAuthorityInfo enemyState)
@@ -893,11 +1100,18 @@ namespace Game.Online
                 yaw = enemyState.yaw,
                 currentHp = enemyState.currentHp,
                 currentPoise = enemyState.currentPoise,
-                countsAsLevelBoss = enemyState.countsAsLevelBoss,
+                countsAsLevelBoss = IsFinalBossAuthorityContext(enemyState) || enemyState.countsAsLevelBoss,
             };
             EnemyController enemy = EnemySpawnRuntime.SpawnEnemyFromSnapshot(snapshot, EnemySpawnRuntime.BuildVariantCatalog());
             enemy?.SetOnlineRemoteSimulationDisabled(true);
             return enemy;
+        }
+
+        private static bool IsFinalBossAuthorityContext(OnlineDungeonEnemyAuthorityInfo enemyState)
+        {
+            return enemyState != null
+                   && enemyState.enemyType == (int)EnemyType.Boss
+                   && FinalBossDuelSceneRuntime.IsFinalBossDuelScene();
         }
 
         private void ApplyUiPanelEvents(List<OnlineDungeonUiPanelEventInfo> panelEvents)
@@ -1014,9 +1228,6 @@ namespace Game.Online
             if (snapshot == null)
                 yield break;
 
-            if (snapshot.enemies == null || snapshot.enemies.Count <= 0)
-                yield break;
-
             string snapshotJson;
             try
             {
@@ -1051,7 +1262,11 @@ namespace Game.Online
                     _lastUploadedWorldSnapshotJson = snapshotJson;
                     _lastUploadedWorldSnapshotSceneName = sceneName;
                 },
-                error => LogWorldSnapshotWarning($"上传副本世界快照失败：{error}"));
+                error =>
+                {
+                    if (!TryHandleSessionClosedError(error))
+                        LogWorldSnapshotWarning($"上传副本世界快照失败：{error}");
+                });
         }
 
         private IEnumerator PullWorldSnapshotOnce(string currentUserId)
@@ -1067,6 +1282,9 @@ namespace Game.Online
                 ApplyWorldSnapshot,
                 error =>
                 {
+                    if (TryHandleSessionClosedError(error))
+                        return;
+
                     if (!string.Equals(error, "副本世界快照尚未就绪", StringComparison.Ordinal))
                         LogWorldSnapshotWarning($"拉取副本世界快照失败：{error}");
                 });
@@ -1124,6 +1342,7 @@ namespace Game.Online
                 bootstrapper.ApplyOnlineWorldSnapshot(snapshot, () =>
                 {
                     _lastAppliedWorldSnapshotVersion = snapshotInfo.version;
+                    _lastAppliedWorldSnapshotSceneName = sceneName;
                     _isApplyingWorldSnapshot = false;
                 });
             }
@@ -1132,6 +1351,32 @@ namespace Game.Online
                 _isApplyingWorldSnapshot = false;
                 LogWorldSnapshotWarning($"应用副本世界快照失败：{ex.Message}");
             }
+        }
+
+        private bool TryHandleSessionClosedError(string error)
+        {
+            if (!HasActiveSession || string.IsNullOrWhiteSpace(error))
+                return false;
+
+            string trimmedError = error.Trim();
+            bool isSessionClosed =
+                trimmedError.StartsWith("联机副本已关闭", StringComparison.Ordinal) ||
+                trimmedError.StartsWith("sessionClosed", StringComparison.Ordinal);
+            if (!isSessionClosed)
+                return false;
+
+            if (IsAidJoinerRole)
+            {
+                Debug.Log($"[OnlineDungeonSessionCoordinator] 联机副本已关闭，援助方返回原关卡。Reason={error}");
+                ReturnAidJoinerToOwnLevel(true);
+            }
+            else
+            {
+                Debug.Log($"[OnlineDungeonSessionCoordinator] 联机副本已关闭。Reason={error}");
+                StopSession();
+            }
+
+            return true;
         }
 
         private bool IsWorldSnapshotPublisher(string currentUserId)
@@ -1147,6 +1392,17 @@ namespace Game.Online
                 return false;
 
             return IsAllowedOnlineScene(SceneManager.GetActiveScene().name);
+        }
+
+        private bool IsAuthorityStateSceneReady()
+        {
+            if (!IsActiveTargetLevelScene())
+                return false;
+
+            if (string.IsNullOrWhiteSpace(_lastAppliedWorldSnapshotSceneName))
+                return false;
+
+            return string.Equals(SceneManager.GetActiveScene().name, _lastAppliedWorldSnapshotSceneName, StringComparison.Ordinal);
         }
 
         private bool IsAllowedOnlineScene(string sceneName)
@@ -1253,7 +1509,7 @@ namespace Game.Online
                 moveSpeed = moveSpeed,
                 moveX = locomotionBlend.x,
                 moveY = locomotionBlend.y,
-                action = (int)ResolveLocalRemoteAction(playerController),
+                action = (int)ResolveLocalRemoteAction(playerController, moveSpeed, aimActive),
                 actionId = actionId,
                 skillEffectId = skillEffectId,
                 actionSequence = currentState != null ? currentState.EntrySequence : 0,
@@ -1394,6 +1650,9 @@ namespace Game.Online
             if (playerController == null)
                 return;
 
+            if (TryResolveLocalKinematicLocomotion(playerController, playerTransform, out moveSpeed, out locomotionBlend))
+                return;
+
             if (playerController.Anim != null
                 && playerController.Anim.TryGetLocomotionPresentation(out float animatorSpeed, out Vector2 animatorBlend))
             {
@@ -1422,6 +1681,29 @@ namespace Game.Online
             Vector3 localDirection = playerTransform.InverseTransformDirection(moveDirection.normalized);
             float blendScale = ResolveLocalMoveSpeed(playerController);
             return Vector2.ClampMagnitude(new Vector2(localDirection.x, localDirection.z) * blendScale, 1f);
+        }
+
+        private static bool TryResolveLocalKinematicLocomotion(
+            PlayerController playerController,
+            Transform playerTransform,
+            out float moveSpeed,
+            out Vector2 locomotionBlend)
+        {
+            moveSpeed = 0f;
+            locomotionBlend = Vector2.zero;
+            if (playerController == null || playerController.Mover == null || playerTransform == null)
+                return false;
+
+            Vector3 horizontalVelocity = playerController.Mover.Velocity;
+            horizontalVelocity.y = 0f;
+            if (horizontalVelocity.sqrMagnitude <= 0.0001f)
+                return false;
+
+            float runSpeed = Mathf.Max(0.1f, playerController.RunSpeed);
+            moveSpeed = Mathf.Clamp01(horizontalVelocity.magnitude / runSpeed);
+            Vector3 localDirection = playerTransform.InverseTransformDirection(horizontalVelocity.normalized);
+            locomotionBlend = Vector2.ClampMagnitude(new Vector2(localDirection.x, localDirection.z) * moveSpeed, 1f);
+            return moveSpeed > 0.01f;
         }
 
         private static SocialAidRemotePlayerAvatar CreateRemoteAvatar(string userId, Vector3 position, float yaw)
@@ -1489,10 +1771,6 @@ namespace Game.Online
             if (playerController == null)
                 return 0f;
 
-            Vector2 moveInput = playerController.CurrentMoveInput;
-            if (moveInput.sqrMagnitude <= 0.01f)
-                return 0f;
-
             float runSpeed = Mathf.Max(0.1f, playerController.RunSpeed);
             float velocity = 0f;
             if (playerController.Mover != null)
@@ -1502,12 +1780,21 @@ namespace Game.Online
             }
 
             if (velocity <= 0.01f)
+            {
+                Vector2 moveInput = playerController.CurrentMoveInput;
+                if (moveInput.sqrMagnitude <= 0.01f)
+                    return 0f;
+
                 velocity = playerController.WalkSpeed;
+            }
 
             return Mathf.Clamp01(velocity / runSpeed);
         }
 
-        private static SocialAidRemotePlayerAvatar.RemoteAction ResolveLocalRemoteAction(PlayerController playerController)
+        private static SocialAidRemotePlayerAvatar.RemoteAction ResolveLocalRemoteAction(
+            PlayerController playerController,
+            float moveSpeed,
+            bool aimActive)
         {
             if (playerController == null || playerController.StateMachine?.CurrentState == null)
                 return SocialAidRemotePlayerAvatar.RemoteAction.Idle;
@@ -1559,6 +1846,9 @@ namespace Game.Online
                 return SocialAidRemotePlayerAvatar.RemoteAction.HitStun;
             if (state is PlayerDeathState)
                 return SocialAidRemotePlayerAvatar.RemoteAction.Dead;
+
+            if (moveSpeed > 0.05f)
+                return aimActive ? SocialAidRemotePlayerAvatar.RemoteAction.Aim : SocialAidRemotePlayerAvatar.RemoteAction.Move;
 
             return SocialAidRemotePlayerAvatar.RemoteAction.Idle;
         }

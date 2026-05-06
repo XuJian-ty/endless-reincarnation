@@ -382,7 +382,10 @@ namespace Game.UI
                     OnlineDungeonSessionCoordinator coordinator = OnlineDungeonSessionCoordinator.GetInstance();
                     if (session == null || string.IsNullOrWhiteSpace(session.sessionId))
                     {
-                        coordinator.StopSession();
+                        if (coordinator.IsAidJoinerRole)
+                            coordinator.ReturnAidJoinerToOwnLevel(false);
+                        else
+                            coordinator.StopSession();
                     }
                     else if (!coordinator.HasActiveSession)
                     {
