@@ -24,6 +24,8 @@ internal static class DungeonRealtimeProtocol
 
     public const string HelloType = "hello";
     public const string HelloAckType = "helloAck";
+    public const string ServerDiscoveryType = "serverDiscovery";
+    public const string ServerDiscoveryAckType = "serverDiscoveryAck";
     public const string PlayerStateType = "playerState";
     public const string PlayerSnapshotType = "playerSnapshot";
     public const string EnemyAuthorityStateType = "enemyAuthorityState";
@@ -115,6 +117,13 @@ internal sealed class DungeonRealtimeHelloAckPayload
     public string StateChannel { get; init; } = DungeonRealtimeProtocol.ChannelUnreliableState;
     public string EventChannel { get; init; } = DungeonRealtimeProtocol.ChannelReliableEvent;
     public DateTime UtcNow { get; init; }
+}
+
+internal sealed class DungeonRealtimeServerDiscoveryAckPayload
+{
+    public int SocialServerPort { get; init; } = 5076;
+    public int DungeonServerPort { get; init; } = 5086;
+    public DateTime UtcNow { get; init; } = DateTime.UtcNow;
 }
 
 internal sealed class DungeonRealtimeErrorPayload

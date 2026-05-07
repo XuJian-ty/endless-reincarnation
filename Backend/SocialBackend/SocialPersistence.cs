@@ -595,6 +595,7 @@ internal sealed class OnlineDungeonClient
     {
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().TrimEnd('/');
     }
+
 }
 
 internal sealed class SocialAppService
@@ -619,6 +620,19 @@ internal sealed class SocialAppService
     {
         _dbContextFactory = dbContextFactory;
         _onlineDungeonClient = onlineDungeonClient;
+    }
+
+    private static string ResolveDungeonServerUrl(string requestHost)
+    {
+        string host = string.IsNullOrWhiteSpace(requestHost) ? "127.0.0.1" : requestHost.Trim();
+        int colonIndex = host.IndexOf(':');
+        if (colonIndex >= 0)
+            host = host[..colonIndex];
+
+        if (string.IsNullOrWhiteSpace(host))
+            host = "127.0.0.1";
+
+        return $"http://{host}:5086";
     }
 
     public bool TryRegister(AuthRequest request, out SocialUserDto? user, out string error)
@@ -1355,7 +1369,7 @@ internal sealed class SocialAppService
             .ToList();
     }
 
-    public bool TryRespondToAidRequest(RespondAidRequestRequest request, out AidSessionDto? aidSession, out string error)
+    public bool TryRespondToAidRequest(RespondAidRequestRequest request, string requestHost, out AidSessionDto? aidSession, out string error)
     {
         aidSession = null;
         using SocialDbContext db = _dbContextFactory.CreateDbContext();
@@ -1416,8 +1430,9 @@ internal sealed class SocialAppService
         string sessionId = Guid.NewGuid().ToString("N");
         string hostJoinToken = Guid.NewGuid().ToString("N");
         string helperJoinToken = Guid.NewGuid().ToString("N");
+        string dungeonServerUrl = ResolveDungeonServerUrl(requestHost);
         if (!_onlineDungeonClient.TryCreateInstance(
-                DefaultDungeonServerUrl,
+                dungeonServerUrl,
                 new CreateDungeonInstanceRequest
                 {
                     instanceId = sessionId,
@@ -1443,7 +1458,7 @@ internal sealed class SocialAppService
         }
 
         if (!_onlineDungeonClient.TryJoinInstance(
-                DefaultDungeonServerUrl,
+                dungeonServerUrl,
                 dungeonInstanceId,
                 new JoinDungeonInstanceRequest
                 {
@@ -1459,7 +1474,7 @@ internal sealed class SocialAppService
         }
 
         if (!_onlineDungeonClient.TryJoinInstance(
-                DefaultDungeonServerUrl,
+                dungeonServerUrl,
                 dungeonInstanceId,
                 new JoinDungeonInstanceRequest
                 {
@@ -1494,7 +1509,7 @@ internal sealed class SocialAppService
             HelperSaveId = helperContext.SaveId,
             HelperPlayerName = string.IsNullOrWhiteSpace(helperContext.PlayerName) ? aidRequest.HelperPlayerName : helperContext.PlayerName,
             HelperLevelIndex = Math.Max(1, helperContext.LevelIndex),
-            DungeonServerUrl = DefaultDungeonServerUrl,
+            DungeonServerUrl = dungeonServerUrl,
             DungeonInstanceId = dungeonInstanceId,
             DungeonRealtimeUdpPort = dungeonInstance.realtimeUdpPort,
             DungeonRealtimeKcpPort = dungeonInstance.realtimeKcpPort,

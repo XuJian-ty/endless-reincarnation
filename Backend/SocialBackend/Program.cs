@@ -225,9 +225,9 @@ app.MapGet("/api/aid/requests", (string helperUserId, SocialAppService service) 
     return Results.Ok(ApiResponse<List<AidRequestDto>>.Ok(requests, $"获取到 {requests.Count} 条援助请求"));
 });
 
-app.MapPost("/api/aid/respond", (RespondAidRequestRequest request, SocialAppService service) =>
+app.MapPost("/api/aid/respond", (RespondAidRequestRequest request, HttpContext httpContext, SocialAppService service) =>
 {
-    if (!service.TryRespondToAidRequest(request, out AidSessionDto? aidSession, out string error))
+    if (!service.TryRespondToAidRequest(request, httpContext.Request.Host.Host, out AidSessionDto? aidSession, out string error))
         return Results.BadRequest(ApiResponse<AidSessionDto>.Fail(error));
 
     return Results.Ok(ApiResponse<AidSessionDto>.Ok(aidSession!, "援助请求已处理"));
