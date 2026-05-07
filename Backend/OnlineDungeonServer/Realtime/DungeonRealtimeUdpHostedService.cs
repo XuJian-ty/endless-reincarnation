@@ -74,6 +74,12 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             return;
         }
 
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.ServerDiscoveryType, StringComparison.Ordinal))
+        {
+            await HandleServerDiscoveryAsync(transport, result.RemoteEndPoint, envelope, cancellationToken);
+            return;
+        }
+
         if (string.Equals(envelope.Type, DungeonRealtimeProtocol.PlayerStateType, StringComparison.Ordinal))
         {
             await HandlePlayerStateAsync(transport, result.RemoteEndPoint, envelope, cancellationToken);
@@ -93,6 +99,25 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         }
 
         await SendErrorAsync(transport, result.RemoteEndPoint, envelope.InstanceId, envelope.UserId, "UDP实时状态通道不处理该消息类型", cancellationToken);
+    }
+
+    private static async Task HandleServerDiscoveryAsync(
+        IRealtimeDatagramTransport transport,
+        IPEndPoint remoteEndPoint,
+        DungeonRealtimeEnvelope envelope,
+        CancellationToken cancellationToken)
+    {
+        var payload = new DungeonRealtimeServerDiscoveryAckPayload();
+        await SendAsync(
+            transport,
+            remoteEndPoint,
+            envelope.InstanceId,
+            envelope.UserId,
+            DungeonRealtimeProtocol.ServerDiscoveryAckType,
+            DungeonRealtimeProtocol.ChannelReliableEvent,
+            envelope.Sequence,
+            payload,
+            cancellationToken);
     }
 
     private async Task HandleHelloAsync(
