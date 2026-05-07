@@ -437,6 +437,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         DungeonKillRewardClaimResultDto? killRewardClaim = null;
         DungeonDropPickupResultDto? dropPickup = null;
         DungeonRewardStateDto? state;
+        long afterVersion = Math.Max(0, syncPayload?.AfterVersion ?? 0);
         string action = syncPayload?.Action?.Trim() ?? string.Empty;
         if (string.Equals(action, "enemyKill", StringComparison.Ordinal))
         {
@@ -454,7 +455,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             };
             if (!_registry.TryAddEnemyKill(envelope.InstanceId, request, out state, out string addError))
             {
-                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, addError, cancellationToken);
+                await SendRewardErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, addError, ackAction, ackTargetId, cancellationToken);
                 return;
             }
         }
@@ -475,7 +476,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             };
             if (!_registry.TryOpenChest(envelope.InstanceId, ackTargetId, request, out state, out string chestError))
             {
-                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, chestError, cancellationToken);
+                await SendRewardErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, chestError, ackAction, ackTargetId, cancellationToken);
                 return;
             }
         }
@@ -490,7 +491,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             };
             if (!_registry.TryClaimKillReward(envelope.InstanceId, ackTargetId, request, out killRewardClaim, out string claimError))
             {
-                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, claimError, cancellationToken);
+                await SendRewardErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, claimError, ackAction, ackTargetId, cancellationToken);
                 return;
             }
 
@@ -507,16 +508,43 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             };
             if (!_registry.TryPickupDrop(envelope.InstanceId, ackTargetId, request, out dropPickup, out string pickupError))
             {
-                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, pickupError, cancellationToken);
+                await SendRewardErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, pickupError, ackAction, ackTargetId, cancellationToken);
                 return;
             }
 
             state = dropPickup?.state;
         }
-        else if (!_registry.TryGetRewardState(envelope.InstanceId, envelope.UserId, envelope.JoinToken, out state, out string stateError))
+        else if (!_registry.TryGetRewardStateAfterVersion(envelope.InstanceId, envelope.UserId, envelope.JoinToken, afterVersion, out state, out string stateError))
         {
             await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, stateError, cancellationToken);
             return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(action))
+        {
+            if (!_registry.TryGetRewardStateAfterVersion(envelope.InstanceId, envelope.UserId, envelope.JoinToken, afterVersion, out state, out string stateError))
+            {
+                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, stateError, cancellationToken);
+                return;
+            }
+
+            if (killRewardClaim != null)
+            {
+                killRewardClaim = new DungeonKillRewardClaimResultDto
+                {
+                    accepted = killRewardClaim.accepted,
+                    reward = killRewardClaim.reward,
+                };
+            }
+
+            if (dropPickup != null)
+            {
+                dropPickup = new DungeonDropPickupResultDto
+                {
+                    accepted = dropPickup.accepted,
+                    drop = dropPickup.drop,
+                };
+            }
         }
 
         var payload = new DungeonRealtimeRewardSnapshotPayload
@@ -548,6 +576,37 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         CancellationToken cancellationToken)
     {
         var payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
+        return SendAsync(
+            transport,
+            remoteEndPoint,
+            instanceId,
+            userId,
+            DungeonRealtimeProtocol.ErrorType,
+            DungeonRealtimeProtocol.ChannelReliableEvent,
+            0,
+            payload,
+            cancellationToken);
+    }
+
+    private static Task SendRewardErrorAsync(
+        IRealtimeDatagramTransport transport,
+        IPEndPoint remoteEndPoint,
+        string instanceId,
+        string userId,
+        string message,
+        string ackAction,
+        string ackTargetId,
+        CancellationToken cancellationToken)
+    {
+        DungeonRealtimeErrorPayload payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
+        payload = new DungeonRealtimeErrorPayload
+        {
+            Message = payload.Message,
+            Code = payload.Code,
+            CloseReason = payload.CloseReason,
+            AckAction = ackAction ?? string.Empty,
+            AckTargetId = ackTargetId ?? string.Empty,
+        };
         return SendAsync(
             transport,
             remoteEndPoint,

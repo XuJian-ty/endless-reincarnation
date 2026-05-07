@@ -176,7 +176,10 @@ namespace Game.GameFlow
             SetPromptVisible(inRange);
 
             if (inRange && WasInteractPressedThisFrame())
+            {
+                Debug.Log($"[OnlineRewardDebug] Chest interact pressed. chestId={GetSnapshotId()} opened={_opened} pendingOnlineOpen={_pendingOnlineOpen} scene={gameObject.scene.name}");
                 OpenChest();
+            }
         }
 
         private void LateUpdate()
@@ -193,7 +196,9 @@ namespace Game.GameFlow
             OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
             if (onlineCoordinator.HasActiveSession)
             {
-                if (!_pendingOnlineOpen && onlineCoordinator.TryRequestOpenOnlineChest(this, _dropCount))
+                bool requested = !_pendingOnlineOpen && onlineCoordinator.TryRequestOpenOnlineChest(this, _dropCount);
+                Debug.Log($"[OnlineRewardDebug] Chest online request result. chestId={GetSnapshotId()} requested={requested} pendingBefore={_pendingOnlineOpen} dropCount={_dropCount}");
+                if (requested)
                 {
                     _pendingOnlineOpen = true;
                     SetPromptVisible(false);

@@ -157,6 +157,7 @@ namespace Game.Online
             Func<long> getDamageAfterSequence,
             Action<OnlineDungeonRealtimeDamageSnapshotInfo> onDamageSnapshot,
             Action<OnlineDungeonRealtimeRewardSnapshotInfo> onRewardSnapshot,
+            Func<long> getRewardAfterVersion,
             Action onConnected,
             Action<string> onError)
         {
@@ -222,7 +223,7 @@ namespace Game.Online
 
             if (IsConnected && Time.unscaledTime >= _nextRewardPollTime)
             {
-                SendNextRewardSync(onError);
+                SendNextRewardSync(getRewardAfterVersion, onError);
                 _nextRewardPollTime = Time.unscaledTime + RewardPollIntervalSeconds;
             }
 
@@ -259,6 +260,7 @@ namespace Game.Online
                 y = request.y,
                 z = request.z,
             });
+            _nextRewardPollTime = 0f;
         }
 
         public void EnqueueKillRewardClaim(string enemyRuntimeId)
@@ -271,6 +273,7 @@ namespace Game.Online
                 action = "claimKillReward",
                 enemyRuntimeId = enemyRuntimeId.Trim(),
             });
+            _nextRewardPollTime = 0f;
         }
 
         public void EnqueueChestOpen(OnlineDungeonChestOpenRequest request)
@@ -289,6 +292,8 @@ namespace Game.Online
                 z = request.z,
                 yaw = request.yaw,
             });
+            Debug.Log($"[OnlineRewardDebug] Realtime reward queued. action=openChest target={request.chestId.Trim()} connected={IsConnected}");
+            _nextRewardPollTime = 0f;
         }
 
         public void EnqueueDropPickup(string dropId)
@@ -301,6 +306,14 @@ namespace Game.Online
                 action = "pickupDrop",
                 dropId = dropId.Trim(),
             });
+            Debug.Log($"[OnlineRewardDebug] Realtime reward queued. action=pickupDrop target={dropId.Trim()} connected={IsConnected}");
+            _nextRewardPollTime = 0f;
+        }
+
+        public void ClearPendingRewardActions()
+        {
+            _pendingRewardActions.Clear();
+            _nextRewardPollTime = 0f;
         }
 
         public bool TryConvertServerUtcToLocalTime(string utcText, out float localTime)
@@ -365,11 +378,12 @@ namespace Game.Online
             Send(envelope, onError);
         }
 
-        private void SendNextRewardSync(Action<string> onError)
+        private void SendNextRewardSync(Func<long> getAfterVersion, Action<string> onError)
         {
             OnlineDungeonRealtimeRewardSyncPayload payload = null;
-            if (!_pendingRewardActions.TryPeekDue(Time.unscaledTime, ReliableEventResendIntervalSeconds, out payload))
+            if (!_pendingRewardActions.TryPeekDueRoundRobin(Time.unscaledTime, ReliableEventResendIntervalSeconds, out payload))
                 payload = new OnlineDungeonRealtimeRewardSyncPayload();
+            payload.afterVersion = getAfterVersion != null ? Math.Max(0, getAfterVersion()) : 0;
             var envelope = new OnlineDungeonRealtimeEnvelope
             {
                 version = ProtocolVersion,
@@ -381,6 +395,8 @@ namespace Game.Online
                 sequence = ++_sequence,
                 payload = JObject.FromObject(payload),
             };
+            if (!string.IsNullOrWhiteSpace(payload.action))
+                Debug.Log($"[OnlineRewardDebug] Realtime reward send. action={payload.action} target={GetRewardPayloadTargetId(payload)} sequence={envelope.sequence} connected={IsConnected}");
             Send(envelope, onError);
         }
 
@@ -617,6 +633,7 @@ namespace Game.Online
                         : null;
                     if (snapshot != null)
                     {
+                        Debug.Log($"[OnlineRewardDebug] Realtime reward ack. ackAction={snapshot.ackAction} ackTargetId={snapshot.ackTargetId} hasDropPickup={snapshot.dropPickup != null} hasKillClaim={snapshot.killRewardClaim != null} hasState={snapshot.state != null}");
                         AcknowledgeRewardAction(snapshot.ackAction, snapshot.ackTargetId);
                         onRewardSnapshot?.Invoke(snapshot);
                     }
@@ -634,9 +651,29 @@ namespace Game.Online
                     string closeReason = envelope.payload != null
                         ? envelope.payload.Value<string>("closeReason")
                         : string.Empty;
+                    string ackAction = envelope.payload != null
+                        ? envelope.payload.Value<string>("ackAction")
+                        : string.Empty;
+                    string ackTargetId = envelope.payload != null
+                        ? envelope.payload.Value<string>("ackTargetId")
+                        : string.Empty;
                     if (string.Equals(code, "sessionClosed", StringComparison.Ordinal))
                     {
                         onError?.Invoke(string.IsNullOrWhiteSpace(closeReason) ? "sessionClosed" : $"sessionClosed:{closeReason}");
+                        continue;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(ackAction))
+                    {
+                        Debug.Log($"[OnlineRewardDebug] Realtime reward rejected. ackAction={ackAction} ackTargetId={ackTargetId} message={message}");
+                        AcknowledgeRewardAction(ackAction, ackTargetId);
+                        onRewardSnapshot?.Invoke(new OnlineDungeonRealtimeRewardSnapshotInfo
+                        {
+                            ackAction = ackAction,
+                            ackTargetId = ackTargetId,
+                            rejected = true,
+                            errorMessage = string.IsNullOrWhiteSpace(message) ? "联机副本奖励事件被拒绝" : message,
+                        });
                         continue;
                     }
 
@@ -668,7 +705,7 @@ namespace Game.Online
             if (string.IsNullOrWhiteSpace(action))
                 return;
 
-            _pendingRewardActions.DequeueIfHeadMatches(request =>
+            _pendingRewardActions.RemoveFirstMatching(request =>
             {
                 if (request == null || !string.Equals(request.action, action, StringComparison.Ordinal))
                     return false;
@@ -680,6 +717,20 @@ namespace Game.Online
                         : request.enemyRuntimeId;
                 return string.Equals(requestTargetId, targetId, StringComparison.Ordinal);
             });
+        }
+
+        private static string GetRewardPayloadTargetId(OnlineDungeonRealtimeRewardSyncPayload payload)
+        {
+            if (payload == null)
+                return string.Empty;
+
+            if (string.Equals(payload.action, "pickupDrop", StringComparison.Ordinal))
+                return payload.dropId;
+
+            if (string.Equals(payload.action, "openChest", StringComparison.Ordinal))
+                return payload.chestId;
+
+            return payload.enemyRuntimeId;
         }
 
         private static bool TryResolveRemoteEndPoint(string dungeonServerUrl, int port, out IPEndPoint endPoint, out string error)
@@ -999,6 +1050,28 @@ namespace Game.Online
                 return true;
             }
 
+            public bool TryPeekDueRoundRobin(float now, float resendIntervalSeconds, out T payload)
+            {
+                payload = default(T);
+                int count = _events.Count;
+                if (count <= 0)
+                    return false;
+
+                for (int i = 0; i < count; i++)
+                {
+                    ReliableEvent<T> reliableEvent = _events.Dequeue();
+                    _events.Enqueue(reliableEvent);
+                    if (!reliableEvent.ShouldSend(now, resendIntervalSeconds))
+                        continue;
+
+                    reliableEvent.MarkSent(now);
+                    payload = reliableEvent.Payload;
+                    return true;
+                }
+
+                return false;
+            }
+
             public void DequeueIfHeadMatches(Func<T, bool> predicate)
             {
                 if (_events.Count <= 0 || predicate == null)
@@ -1007,6 +1080,26 @@ namespace Game.Online
                 ReliableEvent<T> reliableEvent = _events.Peek();
                 if (predicate(reliableEvent.Payload))
                     _events.Dequeue();
+            }
+
+            public void RemoveFirstMatching(Func<T, bool> predicate)
+            {
+                if (_events.Count <= 0 || predicate == null)
+                    return;
+
+                int count = _events.Count;
+                bool removed = false;
+                for (int i = 0; i < count; i++)
+                {
+                    ReliableEvent<T> reliableEvent = _events.Dequeue();
+                    if (!removed && predicate(reliableEvent.Payload))
+                    {
+                        removed = true;
+                        continue;
+                    }
+
+                    _events.Enqueue(reliableEvent);
+                }
             }
         }
 
@@ -1149,6 +1242,7 @@ namespace Game.Online
             public string dropId;
             public OnlineDungeonDamageTargetEnemyInfo targetEnemy;
             public int dropCount;
+            public long afterVersion;
             public float x;
             public float y;
             public float z;
@@ -1195,6 +1289,8 @@ namespace Game.Online
     {
         public string ackAction;
         public string ackTargetId;
+        public bool rejected;
+        public string errorMessage;
         public OnlineDungeonKillRewardClaimResultInfo killRewardClaim;
         public OnlineDungeonDropPickupResultInfo dropPickup;
         public OnlineDungeonRewardStateInfo state;

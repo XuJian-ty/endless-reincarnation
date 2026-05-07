@@ -926,6 +926,7 @@ internal sealed class DungeonInstanceRegistry
                 if (!_rewardConfigStore.TryBuildReward(record, enemy, request, out DungeonRewardProposal rewardProposal, out error))
                     return false;
 
+                long nextRewardVersion = record.RewardStateVersion + 1;
                 DungeonKillRewardRecord reward = new DungeonKillRewardRecord
                 {
                     EnemyRuntimeId = enemyRuntimeId,
@@ -937,11 +938,12 @@ internal sealed class DungeonInstanceRegistry
                     Y = request.Y,
                     Z = request.Z,
                     Claimed = false,
+                    RewardVersion = nextRewardVersion,
                     CreatedAtUtc = now,
                 };
                 record.KillRewards[enemyRuntimeId] = reward;
-                AddDungeonDrops(record, enemyRuntimeId, rewardProposal.Drops, now);
-                record.RewardStateVersion++;
+                AddDungeonDrops(record, enemyRuntimeId, rewardProposal.Drops, now, nextRewardVersion);
+                record.RewardStateVersion = nextRewardVersion;
             }
 
             record.UpdatedAtUtc = now;
@@ -988,9 +990,11 @@ internal sealed class DungeonInstanceRegistry
             bool accepted = string.Equals(reward.KillerUserId, participant.UserId, StringComparison.Ordinal) && reward.Claimed;
             if (!reward.Claimed)
             {
+                long nextRewardVersion = record.RewardStateVersion + 1;
                 reward.Claimed = true;
                 reward.ClaimedAtUtc = now;
-                record.RewardStateVersion++;
+                reward.ClaimVersion = nextRewardVersion;
+                record.RewardStateVersion = nextRewardVersion;
                 record.UpdatedAtUtc = now;
                 accepted = true;
             }
@@ -1027,6 +1031,33 @@ internal sealed class DungeonInstanceRegistry
             participant.IsConnected = true;
             participant.LastSeenAtUtc = DateTime.UtcNow;
             state = ToRewardStateDto(record);
+            return true;
+        }
+    }
+
+    public bool TryGetRewardStateAfterVersion(
+        string instanceId,
+        string userId,
+        string joinToken,
+        long afterVersion,
+        out DungeonRewardStateDto? state,
+        out string error)
+    {
+        state = null;
+        error = string.Empty;
+
+        if (!TryGetRecord(instanceId, out DungeonInstanceRecord record, out error))
+            return false;
+
+        lock (record.SyncRoot)
+        {
+            if (!TryValidateParticipantCore(record, userId, joinToken, out DungeonParticipantRecord? participantOrNull, out error))
+                return false;
+
+            DungeonParticipantRecord participant = participantOrNull!;
+            participant.IsConnected = true;
+            participant.LastSeenAtUtc = DateTime.UtcNow;
+            state = ToRewardStateDto(record, Math.Max(0, afterVersion));
             return true;
         }
     }
@@ -1087,8 +1118,9 @@ internal sealed class DungeonInstanceRegistry
                 if (!_rewardConfigStore.TryBuildChestDrops(record, request, normalizedChestId, out List<DungeonDropProposal>? chestDrops, out error))
                     return false;
 
-                AddDungeonDrops(record, normalizedChestId, chestDrops, now);
-                record.RewardStateVersion++;
+                long nextRewardVersion = record.RewardStateVersion + 1;
+                AddDungeonDrops(record, normalizedChestId, chestDrops, now, nextRewardVersion);
+                record.RewardStateVersion = nextRewardVersion;
                 record.AuthorityVersion++;
             }
 
@@ -1128,10 +1160,12 @@ internal sealed class DungeonInstanceRegistry
             participant.LastSeenAtUtc = DateTime.UtcNow;
             if (!drop.PickedUp)
             {
+                long nextRewardVersion = record.RewardStateVersion + 1;
                 drop.PickedUp = true;
                 drop.PickedUpByUserId = participant.UserId;
                 drop.PickedUpAtUtc = participant.LastSeenAtUtc;
-                record.RewardStateVersion++;
+                drop.PickedUpVersion = nextRewardVersion;
+                record.RewardStateVersion = nextRewardVersion;
                 record.UpdatedAtUtc = participant.LastSeenAtUtc;
             }
 
@@ -1844,7 +1878,8 @@ internal sealed class DungeonInstanceRegistry
         DungeonInstanceRecord record,
         string enemyRuntimeId,
         List<DungeonDropProposal>? drops,
-        DateTime now)
+        DateTime now,
+        long rewardVersion)
     {
         if (drops == null)
             return;
@@ -1876,6 +1911,7 @@ internal sealed class DungeonInstanceRegistry
                 X = proposal.X,
                 Y = proposal.Y,
                 Z = proposal.Z,
+                CreatedVersion = rewardVersion,
                 CreatedAtUtc = now,
             };
         }
@@ -1891,6 +1927,25 @@ internal sealed class DungeonInstanceRegistry
                 .Select(ToDto)
                 .ToList(),
             drops = record.Drops.Values
+                .OrderBy(drop => drop.CreatedAtUtc)
+                .Select(ToDto)
+                .ToList(),
+        };
+    }
+
+    private static DungeonRewardStateDto ToRewardStateDto(DungeonInstanceRecord record, long afterVersion)
+    {
+        long normalizedAfterVersion = Math.Max(0, afterVersion);
+        return new DungeonRewardStateDto
+        {
+            version = record.RewardStateVersion,
+            killRewards = record.KillRewards.Values
+                .Where(reward => reward.RewardVersion > normalizedAfterVersion || reward.ClaimVersion > normalizedAfterVersion)
+                .OrderBy(reward => reward.CreatedAtUtc)
+                .Select(ToDto)
+                .ToList(),
+            drops = record.Drops.Values
+                .Where(drop => drop.CreatedVersion > normalizedAfterVersion || drop.PickedUpVersion > normalizedAfterVersion)
                 .OrderBy(drop => drop.CreatedAtUtc)
                 .Select(ToDto)
                 .ToList(),
@@ -2776,6 +2831,8 @@ internal sealed class DungeonKillRewardRecord
     public float Z { get; init; }
     public bool Claimed { get; set; }
     public DateTime? ClaimedAtUtc { get; set; }
+    public long RewardVersion { get; init; }
+    public long ClaimVersion { get; set; }
     public DateTime CreatedAtUtc { get; init; }
 }
 
@@ -2792,6 +2849,8 @@ internal sealed class DungeonDropRecord
     public bool PickedUp { get; set; }
     public string PickedUpByUserId { get; set; } = string.Empty;
     public DateTime? PickedUpAtUtc { get; set; }
+    public long CreatedVersion { get; init; }
+    public long PickedUpVersion { get; set; }
     public DateTime CreatedAtUtc { get; init; }
 }
 
