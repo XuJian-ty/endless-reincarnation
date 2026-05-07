@@ -70,8 +70,17 @@ namespace Game.GameFlow
 
         public static DroppedPickupRuntime SpawnOnlineDrop(OnlineDungeonDropInfo drop)
         {
-            if (drop == null || drop.pickedUp)
+            if (drop == null)
+            {
+                Debug.Log("[OnlineLootDebug] Online drop spawn skipped because drop is null.");
                 return null;
+            }
+
+            if (drop.pickedUp)
+            {
+                Debug.Log($"[OnlineLootDebug] Online drop spawn skipped because already picked. drop={drop.dropId} itemType={drop.itemType}");
+                return null;
+            }
 
             Vector3 position = new Vector3(drop.x, drop.y, drop.z);
             DroppedPickupRuntime pickup = null;
@@ -91,11 +100,15 @@ namespace Game.GameFlow
             }
 
             if (pickup == null)
+            {
+                Debug.Log($"[OnlineLootDebug] Online drop spawn failed. drop={drop.dropId} itemType={drop.itemType} count={drop.count} payloadEmpty={string.IsNullOrWhiteSpace(drop.payloadJson)}");
                 return null;
+            }
 
             pickup._onlineDropId = drop.dropId?.Trim();
             pickup._basePosition = position;
             pickup.transform.position = position;
+            Debug.Log($"[OnlineLootDebug] Online drop spawned. drop={pickup._onlineDropId} itemType={drop.itemType} count={drop.count} scene={pickup.gameObject.scene.name}");
             return pickup;
         }
 
@@ -348,15 +361,18 @@ namespace Game.GameFlow
                 {
                     if (!player.CanAddWeapon())
                     {
+                        Debug.Log($"[OnlineLootDebug] Online drop pickup blocked by weapon capacity. drop={_onlineDropId} scene={gameObject.scene.name}");
                         return;
                     }
                 }
                 else if (!player.CanAddStackable(_stackItemId, _stackCount))
                 {
+                    Debug.Log($"[OnlineLootDebug] Online drop pickup blocked by stack capacity. drop={_onlineDropId} item={_stackItemId} count={_stackCount} scene={gameObject.scene.name}");
                     return;
                 }
 
                 bool requested = OnlineDungeonSessionCoordinator.GetInstance().TryRequestPickupOnlineDrop(_onlineDropId);
+                Debug.Log($"[OnlineLootDebug] Online drop pickup request result. drop={_onlineDropId} requested={requested} item={(_weapon != null ? "weapon" : _stackItemId)} count={_stackCount} scene={gameObject.scene.name}");
 
                 return;
             }

@@ -310,14 +310,6 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
         if (syncPayload?.HasEvent == true)
         {
             string requestedEventId = string.IsNullOrWhiteSpace(syncPayload.EventId) ? string.Empty : syncPayload.EventId.Trim();
-            _logger.LogInformation("[OnlineDamageDebug] KCP damage event received. instance={InstanceId} user={UserId} event={EventId} targetKind={TargetKind} target={TargetRuntimeId} damage={Damage} afterSequence={AfterSequence}",
-                envelope.InstanceId,
-                envelope.UserId,
-                requestedEventId,
-                syncPayload.TargetKind,
-                syncPayload.TargetRuntimeId,
-                syncPayload.Damage,
-                afterSequence);
             var request = new AddDungeonDamageEventRequest
             {
                 EventId = requestedEventId,
@@ -354,14 +346,6 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             AckEvents = ackEvents,
             Events = events?.events ?? new List<DungeonDamageEventDto>(),
         };
-        if (!string.IsNullOrWhiteSpace(ackEventId) || payload.Events.Count > 0)
-            _logger.LogInformation("[OnlineDamageDebug] KCP damage snapshot send. instance={InstanceId} user={UserId} ack={AckEventId} ackCount={AckCount} eventCount={EventCount} afterSequence={AfterSequence}",
-                envelope.InstanceId,
-                envelope.UserId,
-                ackEventId,
-                ackEvents.Count,
-                payload.Events.Count,
-                afterSequence);
         Send(connectionId, envelope.InstanceId, envelope.UserId, DungeonRealtimeProtocol.DamageSnapshotType, envelope.Sequence, payload);
     }
 
@@ -388,6 +372,27 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
         DungeonRewardStateDto? state;
         long afterVersion = Math.Max(0, syncPayload?.AfterVersion ?? 0);
         string action = syncPayload?.Action?.Trim() ?? string.Empty;
+        string actionTargetId = action switch
+        {
+            "openChest" => syncPayload?.ChestId?.Trim() ?? string.Empty,
+            "pickupDrop" => syncPayload?.DropId?.Trim() ?? string.Empty,
+            "claimKillReward" => syncPayload?.EnemyRuntimeId?.Trim() ?? string.Empty,
+            "enemyKill" => syncPayload?.EnemyRuntimeId?.Trim() ?? string.Empty,
+            _ => string.Empty,
+        };
+        if (!string.IsNullOrWhiteSpace(action))
+        {
+            _logger.LogInformation(
+                "[OnlineLootDebug] KCP reward action received. connection={ConnectionId} instance={InstanceId} user={UserId} action={Action} target={Target} afterVersion={AfterVersion} sequence={Sequence}",
+                connectionId,
+                envelope.InstanceId,
+                envelope.UserId,
+                action,
+                actionTargetId,
+                afterVersion,
+                envelope.Sequence);
+        }
+
         if (string.Equals(action, "enemyKill", StringComparison.Ordinal))
         {
             ackAction = action;
@@ -504,6 +509,21 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             DropPickup = dropPickup,
             State = state,
         };
+        if (!string.IsNullOrWhiteSpace(action) || state != null || dropPickup != null)
+        {
+            _logger.LogInformation(
+                "[OnlineLootDebug] KCP reward snapshot send. connection={ConnectionId} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} hasDropPickup={HasDropPickup} hasState={HasState} stateVersion={StateVersion} dropCount={DropCount} sequence={Sequence}",
+                connectionId,
+                envelope.InstanceId,
+                envelope.UserId,
+                ackAction,
+                ackTargetId,
+                dropPickup != null,
+                state != null,
+                state?.version ?? 0,
+                state?.drops.Count ?? 0,
+                envelope.Sequence);
+        }
         Send(connectionId, envelope.InstanceId, envelope.UserId, DungeonRealtimeProtocol.RewardSnapshotType, envelope.Sequence, payload);
     }
 
@@ -515,6 +535,14 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
 
     private void SendRewardError(int connectionId, string instanceId, string userId, string message, string ackAction, string ackTargetId)
     {
+        _logger.LogWarning(
+            "[OnlineLootDebug] KCP reward error send. connection={ConnectionId} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} message={Message}",
+            connectionId,
+            instanceId,
+            userId,
+            ackAction,
+            ackTargetId,
+            message);
         DungeonRealtimeErrorPayload payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
         payload = new DungeonRealtimeErrorPayload
         {

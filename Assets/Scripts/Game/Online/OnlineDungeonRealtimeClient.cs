@@ -272,7 +272,6 @@ namespace Game.Online
             if (request == null)
                 return;
 
-            Debug.Log($"[OnlineDamageDebug] Realtime damage queued. event={request.eventId} targetKind={request.targetKind} target={request.targetRuntimeId} damage={request.damage} connected={IsConnected}");
             _pendingDamageEvents.Enqueue(request);
             _nextDamagePollTime = 0f;
         }
@@ -312,10 +311,11 @@ namespace Game.Online
             if (request == null || string.IsNullOrWhiteSpace(request.chestId))
                 return;
 
+            string chestId = request.chestId.Trim();
             _pendingRewardActions.Enqueue(new OnlineDungeonRealtimeRewardSyncPayload
             {
                 action = "openChest",
-                chestId = request.chestId.Trim(),
+                chestId = chestId,
                 chestPrefabId = request.prefabId,
                 dropCount = Mathf.Max(1, request.dropCount),
                 x = request.x,
@@ -324,6 +324,7 @@ namespace Game.Online
                 yaw = request.yaw,
             });
             _nextRewardPollTime = 0f;
+            Debug.Log($"[OnlineLootDebug] Realtime reward action queued. action=openChest target={chestId} prefab={request.prefabId} dropCount={Mathf.Max(1, request.dropCount)} connected={IsConnected}");
         }
 
         public void EnqueueDropPickup(string dropId)
@@ -331,12 +332,14 @@ namespace Game.Online
             if (string.IsNullOrWhiteSpace(dropId))
                 return;
 
+            string normalizedDropId = dropId.Trim();
             _pendingRewardActions.Enqueue(new OnlineDungeonRealtimeRewardSyncPayload
             {
                 action = "pickupDrop",
-                dropId = dropId.Trim(),
+                dropId = normalizedDropId,
             });
             _nextRewardPollTime = 0f;
+            Debug.Log($"[OnlineLootDebug] Realtime reward action queued. action=pickupDrop target={normalizedDropId} connected={IsConnected}");
         }
 
         public void ClearPendingRewardActions()
@@ -407,8 +410,6 @@ namespace Game.Online
                 sequence = ++_sequence,
                 payload = JObject.FromObject(payload),
             };
-            if (request != null)
-                Debug.Log($"[OnlineDamageDebug] Send damage event. event={request.eventId} targetKind={request.targetKind} target={request.targetRuntimeId} damage={request.damage} afterSequence={afterSequence} sequence={envelope.sequence} connected={IsConnected}");
             Send(envelope, onError);
             return request != null;
         }
@@ -419,10 +420,11 @@ namespace Game.Online
             if (!_pendingRewardActions.TryPeekDueRoundRobin(Time.unscaledTime, ReliableEventResendIntervalSeconds, out payload))
                 payload = new OnlineDungeonRealtimeRewardSyncPayload();
             payload.afterVersion = getAfterVersion != null ? Math.Max(0, getAfterVersion()) : 0;
+            bool hasAction = !string.IsNullOrWhiteSpace(payload.action);
             var envelope = new OnlineDungeonRealtimeEnvelope
             {
                 version = ProtocolVersion,
-                type = !string.IsNullOrWhiteSpace(payload.action) ? "rewardEvent" : "rewardPoll",
+                type = hasAction ? "rewardEvent" : "rewardPoll",
                 channel = "event",
                 instanceId = _instanceId,
                 userId = _userId,
@@ -430,6 +432,8 @@ namespace Game.Online
                 sequence = ++_sequence,
                 payload = JObject.FromObject(payload),
             };
+            if (hasAction)
+                Debug.Log($"[OnlineLootDebug] Send reward action. action={payload.action} target={GetRewardPayloadTargetId(payload)} afterVersion={payload.afterVersion} sequence={envelope.sequence} connected={IsConnected}");
             Send(envelope, onError);
         }
 
@@ -695,10 +699,6 @@ namespace Game.Online
                         : null;
                     if (snapshot != null)
                     {
-                        int ackCount = snapshot.ackEvents?.Count ?? 0;
-                        int eventCount = snapshot.events?.Count ?? 0;
-                        if (!string.IsNullOrWhiteSpace(snapshot.ackEventId) || ackCount > 0 || eventCount > 0)
-                            Debug.Log($"[OnlineDamageDebug] Receive damage snapshot. ack={snapshot.ackEventId} ackCount={ackCount} eventCount={eventCount}");
                         AcknowledgeDamageEvent(snapshot.ackEventId);
                         onDamageSnapshot?.Invoke(snapshot);
                     }
@@ -712,6 +712,11 @@ namespace Game.Online
                         : null;
                     if (snapshot != null)
                     {
+                        bool hasRewardStateItems = snapshot.state != null
+                            && ((snapshot.state.drops != null && snapshot.state.drops.Count > 0)
+                                || (snapshot.state.killRewards != null && snapshot.state.killRewards.Count > 0));
+                        if (!string.IsNullOrWhiteSpace(snapshot.ackAction) || snapshot.rejected || snapshot.dropPickup != null || hasRewardStateItems)
+                            Debug.Log($"[OnlineLootDebug] Receive reward snapshot. ackAction={snapshot.ackAction} ackTarget={snapshot.ackTargetId} rejected={snapshot.rejected} hasDropPickup={snapshot.dropPickup != null} hasState={snapshot.state != null} stateVersion={(snapshot.state != null ? snapshot.state.version : 0)} dropCount={(snapshot.state?.drops != null ? snapshot.state.drops.Count : 0)}");
                         AcknowledgeRewardAction(snapshot.ackAction, snapshot.ackTargetId);
                         onRewardSnapshot?.Invoke(snapshot);
                     }
@@ -743,6 +748,7 @@ namespace Game.Online
 
                     if (!string.IsNullOrWhiteSpace(ackAction))
                     {
+                        Debug.Log($"[OnlineLootDebug] Receive reward rejection. ackAction={ackAction} ackTarget={ackTargetId} message={message}");
                         AcknowledgeRewardAction(ackAction, ackTargetId);
                         onRewardSnapshot?.Invoke(new OnlineDungeonRealtimeRewardSnapshotInfo
                         {
