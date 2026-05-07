@@ -915,6 +915,8 @@ namespace Game.Presentation
         public void ApplyOnlineAuthorityState(float currentHp, bool isDead, bool showCombatHealthBar)
         {
             EnsureInitialized();
+            if (Game.Online.OnlineDungeonSessionCoordinator.GetInstance().HasActiveSession && (isDead || currentHp <= 0f || _stats.currentHp - currentHp >= 50f))
+                Debug.Log($"[OnlineDamageDebug] Enemy authority state received. runtime={RuntimeId} enemyId={EnemyId} beforeHp={_stats.currentHp} authorityHp={currentHp} beforeDead={_dead} authorityDead={isDead} remoteSimulation={_onlineRemoteSimulationDisabled} scene={gameObject.scene.name}");
             _stats.currentHp = Mathf.Clamp(currentHp, 0f, Mathf.Max(1f, _stats.maxHp));
             _onlineAuthorityCombatVisible = _onlineRemoteSimulationDisabled && !isDead && showCombatHealthBar;
             if (isDead || _stats.currentHp <= 0f)
@@ -1174,6 +1176,8 @@ namespace Game.Presentation
         {
             if (_dead) return;
             _dead = true;
+            if (Game.Online.OnlineDungeonSessionCoordinator.GetInstance().HasActiveSession)
+                Debug.Log($"[OnlineDamageDebug] Enemy Die. runtime={RuntimeId} enemyId={EnemyId} hp={CurrentHp} type={_stats.type} cleanupDelay={_deathDisableDelay} scene={gameObject.scene.name}");
             UnregisterActiveEnemy();
             EnemySquadCoordinator.Release(this);
             CancelActiveSkill();
@@ -1221,6 +1225,8 @@ namespace Game.Presentation
                 return;
 
             _deathFinalized = true;
+            if (Game.Online.OnlineDungeonSessionCoordinator.GetInstance().HasActiveSession)
+                Debug.Log($"[OnlineDamageDebug] Enemy FinalizeDeath. runtime={RuntimeId} enemyId={EnemyId} pooled={_poolSourcePrefab != null} scene={gameObject.scene.name}");
             if (_poolSourcePrefab != null)
             {
                 PoolMgr.GetInstance().PushObj(_poolSourcePrefab, gameObject);
