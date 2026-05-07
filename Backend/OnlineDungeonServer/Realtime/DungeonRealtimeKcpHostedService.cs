@@ -282,6 +282,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
         DungeonKillRewardClaimResultDto? killRewardClaim = null;
         DungeonDropPickupResultDto? dropPickup = null;
         DungeonRewardStateDto? state;
+        long afterVersion = Math.Max(0, syncPayload?.AfterVersion ?? 0);
         string action = syncPayload?.Action?.Trim() ?? string.Empty;
         if (string.Equals(action, "enemyKill", StringComparison.Ordinal))
         {
@@ -299,7 +300,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             };
             if (!_registry.TryAddEnemyKill(envelope.InstanceId, request, out state, out string addError))
             {
-                SendError(connectionId, envelope.InstanceId, envelope.UserId, addError);
+                SendRewardError(connectionId, envelope.InstanceId, envelope.UserId, addError, ackAction, ackTargetId);
                 return;
             }
         }
@@ -320,7 +321,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             };
             if (!_registry.TryOpenChest(envelope.InstanceId, ackTargetId, request, out state, out string chestError))
             {
-                SendError(connectionId, envelope.InstanceId, envelope.UserId, chestError);
+                SendRewardError(connectionId, envelope.InstanceId, envelope.UserId, chestError, ackAction, ackTargetId);
                 return;
             }
         }
@@ -335,7 +336,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             };
             if (!_registry.TryClaimKillReward(envelope.InstanceId, ackTargetId, request, out killRewardClaim, out string claimError))
             {
-                SendError(connectionId, envelope.InstanceId, envelope.UserId, claimError);
+                SendRewardError(connectionId, envelope.InstanceId, envelope.UserId, claimError, ackAction, ackTargetId);
                 return;
             }
 
@@ -352,16 +353,43 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             };
             if (!_registry.TryPickupDrop(envelope.InstanceId, ackTargetId, request, out dropPickup, out string pickupError))
             {
-                SendError(connectionId, envelope.InstanceId, envelope.UserId, pickupError);
+                SendRewardError(connectionId, envelope.InstanceId, envelope.UserId, pickupError, ackAction, ackTargetId);
                 return;
             }
 
             state = dropPickup?.state;
         }
-        else if (!_registry.TryGetRewardState(envelope.InstanceId, envelope.UserId, envelope.JoinToken, out state, out string stateError))
+        else if (!_registry.TryGetRewardStateAfterVersion(envelope.InstanceId, envelope.UserId, envelope.JoinToken, afterVersion, out state, out string stateError))
         {
             SendError(connectionId, envelope.InstanceId, envelope.UserId, stateError);
             return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(action))
+        {
+            if (!_registry.TryGetRewardStateAfterVersion(envelope.InstanceId, envelope.UserId, envelope.JoinToken, afterVersion, out state, out string stateError))
+            {
+                SendError(connectionId, envelope.InstanceId, envelope.UserId, stateError);
+                return;
+            }
+
+            if (killRewardClaim != null)
+            {
+                killRewardClaim = new DungeonKillRewardClaimResultDto
+                {
+                    accepted = killRewardClaim.accepted,
+                    reward = killRewardClaim.reward,
+                };
+            }
+
+            if (dropPickup != null)
+            {
+                dropPickup = new DungeonDropPickupResultDto
+                {
+                    accepted = dropPickup.accepted,
+                    drop = dropPickup.drop,
+                };
+            }
         }
 
         var payload = new DungeonRealtimeRewardSnapshotPayload
@@ -378,6 +406,20 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
     private void SendError(int connectionId, string instanceId, string userId, string message)
     {
         var payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
+        Send(connectionId, instanceId, userId, DungeonRealtimeProtocol.ErrorType, 0, payload);
+    }
+
+    private void SendRewardError(int connectionId, string instanceId, string userId, string message, string ackAction, string ackTargetId)
+    {
+        DungeonRealtimeErrorPayload payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
+        payload = new DungeonRealtimeErrorPayload
+        {
+            Message = payload.Message,
+            Code = payload.Code,
+            CloseReason = payload.CloseReason,
+            AckAction = ackAction ?? string.Empty,
+            AckTargetId = ackTargetId ?? string.Empty,
+        };
         Send(connectionId, instanceId, userId, DungeonRealtimeProtocol.ErrorType, 0, payload);
     }
 

@@ -51,6 +51,7 @@ namespace Game.Online
         private readonly HashSet<string> _appliedDamageEventIds = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _appliedUiPanelEventIds = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _appliedKillRewards = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _appliedDropPickups = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _pendingKillRewardClaims = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _pendingOnlineDropPickups = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _pendingOnlineChestOpens = new HashSet<string>(StringComparer.Ordinal);
@@ -500,6 +501,7 @@ namespace Game.Online
             StopRewardStateSync();
             _lastAppliedRewardStateVersion = 0;
             _appliedKillRewards.Clear();
+            _appliedDropPickups.Clear();
             _pendingKillRewardClaims.Clear();
             _pendingOnlineDropPickups.Clear();
             _pendingOnlineChestOpens.Clear();
@@ -511,6 +513,7 @@ namespace Game.Online
         {
             _lastAppliedRewardStateVersion = 0;
             _appliedKillRewards.Clear();
+            _appliedDropPickups.Clear();
             _pendingKillRewardClaims.Clear();
             _pendingOnlineDropPickups.Clear();
             _pendingOnlineChestOpens.Clear();
@@ -589,6 +592,7 @@ namespace Game.Online
                 () => _lastReceivedDamageEventSequence,
                 ApplyRealtimeDamageSnapshot,
                 ApplyRealtimeRewardSnapshot,
+                () => _lastAppliedRewardStateVersion,
                 () => Debug.Log("[OnlineDungeonSessionCoordinator] 联机副本实时通道已连接。"),
                 HandleRealtimeError);
         }
@@ -598,6 +602,9 @@ namespace Game.Online
             if (TryHandleSessionClosedError(error))
                 return;
 
+            _realtimeClient.ClearPendingRewardActions();
+            _pendingKillRewardClaims.Clear();
+            ResetPendingOnlineDropPickups();
             ResetPendingOnlineChestOpens();
             Debug.LogWarning($"[OnlineDungeonSessionCoordinator] 联机副本实时通道错误：{error}");
         }
@@ -687,11 +694,19 @@ namespace Game.Online
             if (snapshot == null)
                 return;
 
+            Debug.Log($"[OnlineRewardDebug] Reward snapshot received. ackAction={snapshot.ackAction} ackTargetId={snapshot.ackTargetId} rejected={snapshot.rejected} hasKillClaim={snapshot.killRewardClaim != null} hasDropPickup={snapshot.dropPickup != null} hasState={snapshot.state != null}");
+            if (snapshot.rejected)
+            {
+                ResetRejectedRewardPending(snapshot.ackAction, snapshot.ackTargetId);
+                if (!string.IsNullOrWhiteSpace(snapshot.errorMessage))
+                    Debug.LogWarning($"[OnlineDungeonSessionCoordinator] 联机副本奖励事件被拒绝：{snapshot.errorMessage}");
+                return;
+            }
+
             bool appliedResult = snapshot.killRewardClaim != null || snapshot.dropPickup != null;
             ApplyKillRewardClaimResult(snapshot.killRewardClaim);
             ApplyDropPickupResult(snapshot.dropPickup);
-            if (!appliedResult || string.Equals(snapshot.ackAction, "openChest", StringComparison.Ordinal))
-                ApplyRewardState(snapshot.state);
+            ApplyRewardState(snapshot.state);
         }
 
         private void ApplyDamageEvents(List<OnlineDungeonDamageEventInfo> damageEvents, bool advanceSequence)
@@ -759,14 +774,14 @@ namespace Game.Online
             if (state == null)
                 return;
 
+            if (state.version <= _lastAppliedRewardStateVersion)
+                return;
+
             if (state.killRewards != null)
             {
                 for (int i = 0; i < state.killRewards.Count; i++)
                     ApplyKillRewardState(state.killRewards[i]);
             }
-
-            if (state.version <= _lastAppliedRewardStateVersion)
-                return;
 
             if (state.drops != null)
             {
@@ -856,47 +871,75 @@ namespace Game.Online
         public bool TryRequestPickupOnlineDrop(string dropId)
         {
             if (!HasActiveSession || string.IsNullOrWhiteSpace(dropId))
+            {
+                Debug.Log($"[OnlineRewardDebug] Drop request rejected locally. reason=noActiveSessionOrEmptyId hasSession={HasActiveSession} dropId={dropId}");
                 return false;
+            }
 
             SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
             if (currentUser == null || string.IsNullOrWhiteSpace(currentUser.userId))
+            {
+                Debug.Log($"[OnlineRewardDebug] Drop request rejected locally. reason=noCurrentUser dropId={dropId}");
                 return false;
+            }
 
             string normalizedDropId = dropId.Trim();
             if (_pendingOnlineDropPickups.Contains(normalizedDropId))
+            {
+                Debug.Log($"[OnlineRewardDebug] Drop request rejected locally. reason=alreadyPending dropId={normalizedDropId} pendingDrops={_pendingOnlineDropPickups.Count}");
                 return false;
+            }
+
+            if (!_realtimeClient.IsRunning)
+            {
+                Debug.Log($"[OnlineRewardDebug] Drop request rejected locally. reason=realtimeNotRunning dropId={normalizedDropId} isConnected={_realtimeClient.IsConnected}");
+                LogWorldSnapshotWarning("联机副本实时通道未启动，副本掉落无法拾取。");
+                return false;
+            }
 
             _pendingOnlineDropPickups.Add(normalizedDropId);
-            if (_realtimeClient.IsRunning)
-                _realtimeClient.EnqueueDropPickup(normalizedDropId);
-            else
-                LogWorldSnapshotWarning("联机副本实时通道未启动，副本掉落无法拾取。");
+            Debug.Log($"[OnlineRewardDebug] Drop request enqueued. dropId={normalizedDropId} pendingDrops={_pendingOnlineDropPickups.Count} isConnected={_realtimeClient.IsConnected}");
+            _realtimeClient.EnqueueDropPickup(normalizedDropId);
             return true;
         }
 
         public bool TryRequestOpenOnlineChest(ChestInteractable chest, int dropCount)
         {
             if (!HasActiveSession || chest == null)
+            {
+                Debug.Log($"[OnlineRewardDebug] Chest request rejected locally. reason=noActiveSessionOrChestNull hasSession={HasActiveSession} chestNull={chest == null}");
                 return false;
+            }
 
             SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
             if (currentUser == null || string.IsNullOrWhiteSpace(currentUser.userId))
+            {
+                Debug.Log("[OnlineRewardDebug] Chest request rejected locally. reason=noCurrentUser");
                 return false;
+            }
 
             if (!chest.TryBuildSnapshot(out ChestSnapshotSave snapshot) || snapshot == null || string.IsNullOrWhiteSpace(snapshot.snapshotId))
+            {
+                Debug.Log($"[OnlineRewardDebug] Chest request rejected locally. reason=invalidSnapshot chestId={chest.GetSnapshotId()} snapshotNull={snapshot == null}");
                 return false;
+            }
 
             string chestId = snapshot.snapshotId.Trim();
             if (_openedOnlineChests.Contains(chestId) || _pendingOnlineChestOpens.Contains(chestId))
+            {
+                Debug.Log($"[OnlineRewardDebug] Chest request rejected locally. reason=openedOrPending chestId={chestId} opened={_openedOnlineChests.Contains(chestId)} pending={_pendingOnlineChestOpens.Contains(chestId)} pendingChests={_pendingOnlineChestOpens.Count}");
                 return false;
+            }
 
             if (!_realtimeClient.IsRunning)
             {
+                Debug.Log($"[OnlineRewardDebug] Chest request rejected locally. reason=realtimeNotRunning chestId={chestId} isConnected={_realtimeClient.IsConnected}");
                 LogWorldSnapshotWarning("联机副本实时通道未启动，副本宝箱无法开启。");
                 return false;
             }
 
             _pendingOnlineChestOpens.Add(chestId);
+            Debug.Log($"[OnlineRewardDebug] Chest request enqueued. chestId={chestId} pendingChests={_pendingOnlineChestOpens.Count} isConnected={_realtimeClient.IsConnected} prefabId={snapshot.prefabId} dropCount={dropCount}");
             _realtimeClient.EnqueueChestOpen(new OnlineDungeonChestOpenRequest
             {
                 userId = currentUser.userId,
@@ -929,6 +972,44 @@ namespace Game.Online
             }
         }
 
+        private void ResetPendingOnlineDropPickups()
+        {
+            _pendingOnlineDropPickups.Clear();
+        }
+
+        private void ResetRejectedRewardPending(string action, string targetId)
+        {
+            if (string.IsNullOrWhiteSpace(action))
+                return;
+
+            string normalizedTargetId = targetId != null ? targetId.Trim() : string.Empty;
+            if (string.Equals(action, "pickupDrop", StringComparison.Ordinal))
+            {
+                if (!string.IsNullOrWhiteSpace(normalizedTargetId))
+                    _pendingOnlineDropPickups.Remove(normalizedTargetId);
+                return;
+            }
+
+            if (string.Equals(action, "claimKillReward", StringComparison.Ordinal))
+            {
+                if (!string.IsNullOrWhiteSpace(normalizedTargetId))
+                    _pendingKillRewardClaims.Remove(normalizedTargetId);
+                return;
+            }
+
+            if (!string.Equals(action, "openChest", StringComparison.Ordinal) || string.IsNullOrWhiteSpace(normalizedTargetId))
+                return;
+
+            _pendingOnlineChestOpens.Remove(normalizedTargetId);
+            ChestInteractable[] chests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < chests.Length; i++)
+            {
+                ChestInteractable chest = chests[i];
+                if (chest != null && string.Equals(chest.GetSnapshotId(), normalizedTargetId, StringComparison.Ordinal))
+                    chest.CancelPendingOnlineOpen();
+            }
+        }
+
         private void ApplyDropPickupResult(OnlineDungeonDropPickupResultInfo result)
         {
             if (result == null)
@@ -936,10 +1017,17 @@ namespace Game.Online
 
             string dropId = result.drop != null ? result.drop.dropId : string.Empty;
             if (!string.IsNullOrWhiteSpace(dropId))
+            {
                 _pendingOnlineDropPickups.Remove(dropId);
+                Debug.Log($"[OnlineRewardDebug] Drop pickup result applied. dropId={dropId} accepted={result.accepted} pendingDrops={_pendingOnlineDropPickups.Count}");
+            }
 
             if (result.accepted)
-                ApplyPickedUpDropToLocalPlayer(result.drop);
+            {
+                if (string.IsNullOrWhiteSpace(dropId) || _appliedDropPickups.Add(dropId))
+                    ApplyPickedUpDropToLocalPlayer(result.drop);
+                RemoveOnlineDrop(dropId);
+            }
 
             ApplyRewardState(result.state);
         }
@@ -997,6 +1085,7 @@ namespace Game.Online
             _onlineDrops.Clear();
             _spawnedDropIds.Clear();
             _pendingOnlineDropPickups.Clear();
+            _appliedDropPickups.Clear();
             _pendingOnlineChestOpens.Clear();
         }
 

@@ -66,6 +66,6 @@ MonoBehaviour:
     spawnRadius: 15
     countMode: 1
     fixedCount: 1
-    randomMinCount: 1
-    randomMaxCount: 1
+    randomMinCount: 2
+    randomMaxCount: 3
     spawnMinSpacing: 5

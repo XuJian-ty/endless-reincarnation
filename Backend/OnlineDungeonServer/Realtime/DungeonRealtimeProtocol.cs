@@ -118,6 +118,8 @@ internal sealed class DungeonRealtimeErrorPayload
     public string Message { get; init; } = string.Empty;
     public string Code { get; init; } = DungeonRealtimeProtocol.ErrorCodeGeneric;
     public string CloseReason { get; init; } = string.Empty;
+    public string AckAction { get; init; } = string.Empty;
+    public string AckTargetId { get; init; } = string.Empty;
 }
 
 internal sealed class DungeonRealtimePlayerSnapshotPayload
@@ -182,6 +184,7 @@ internal sealed class DungeonRealtimeRewardSyncPayload
     public string DropId { get; init; } = string.Empty;
     public DungeonEnemyAuthorityStateUpsertDto? TargetEnemy { get; init; }
     public int DropCount { get; init; } = 1;
+    public long AfterVersion { get; init; }
     public float X { get; init; }
     public float Y { get; init; }
     public float Z { get; init; }
