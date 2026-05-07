@@ -24,6 +24,7 @@ namespace Game.Online
         private const float DamagePollIntervalSeconds = 0.05f;
         private const int MaxDamageEventsPerPoll = 4;
         private const float RewardPollIntervalSeconds = 0.25f;
+        private const float OnlineEnemyFreezeDebugIntervalSeconds = 1.5f;
         private const int MaxPendingReliableEvents = 256;
         private const int MaxPendingKcpSends = 128;
         private const float ReliableEventResendIntervalSeconds = 0.15f;
@@ -55,6 +56,8 @@ namespace Game.Online
         private int _lastPlayerStateSendFrame = -1;
         private int _lastEnemyAuthorityStateSendFrame = -1;
         private int _lastAuthorityPollFrame = -1;
+        private float _nextAuthorityPollDebugTime;
+        private float _nextAuthorityReceiveDebugTime;
         private bool _hasServerClockOffset;
         private double _serverUtcToLocalTimeOffsetSeconds;
         private readonly ReliableEventQueue<OnlineDungeonUiPanelEventRequest> _pendingUiPanelEvents = new ReliableEventQueue<OnlineDungeonUiPanelEventRequest>(MaxPendingReliableEvents, "面板同步");
@@ -123,6 +126,8 @@ namespace Game.Online
             _lastPlayerStateSendFrame = -1;
             _lastEnemyAuthorityStateSendFrame = -1;
             _lastAuthorityPollFrame = -1;
+            _nextAuthorityPollDebugTime = 0f;
+            _nextAuthorityReceiveDebugTime = 0f;
             _hasServerClockOffset = false;
             _serverUtcToLocalTimeOffsetSeconds = 0d;
             _pendingUiPanelEvents.Clear();
@@ -141,6 +146,8 @@ namespace Game.Online
             _joinToken = string.Empty;
             _hasServerClockOffset = false;
             _serverUtcToLocalTimeOffsetSeconds = 0d;
+            _nextAuthorityPollDebugTime = 0f;
+            _nextAuthorityReceiveDebugTime = 0f;
             _pendingUiPanelEvents.Clear();
             _pendingSceneLoadEvents.Clear();
             _pendingDamageEvents.Clear();
@@ -477,7 +484,14 @@ namespace Game.Online
                 sequence = ++_sequence,
                 payload = new JObject(),
             };
+            if (Time.unscaledTime >= _nextAuthorityPollDebugTime)
+            {
+                _nextAuthorityPollDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
+                Debug.Log($"[OnlineEnemyFreezeDebug] Send authority poll. sequence={envelope.sequence} connected={IsConnected} stateAvailable={(_stateTransport != null ? _stateTransport.Available : 0)}");
+            }
+
             Send(envelope, onError);
+            SendReliableStateFallback(envelope, onError);
         }
 
         private void SendPlayerState(OnlineDungeonPlayerPoseRequest request, Action<string> onError)
@@ -494,6 +508,7 @@ namespace Game.Online
                 payload = JObject.FromObject(request),
             };
             Send(envelope, onError);
+            SendReliableStateFallback(envelope, onError);
         }
 
         private void SendEnemyAuthorityState(OnlineDungeonEnemyAuthorityStateSyncRequest request, Action<string> onError)
@@ -510,6 +525,7 @@ namespace Game.Online
                 payload = JObject.FromObject(request),
             };
             Send(envelope, onError);
+            SendReliableStateFallback(envelope, onError);
         }
 
         private void SendNextUiPanelSync(Func<long> getAfterSequence, Action<string> onError)
@@ -554,6 +570,19 @@ namespace Game.Online
             {
                 onError?.Invoke(ex.Message);
             }
+        }
+
+        private void SendReliableStateFallback(OnlineDungeonRealtimeEnvelope envelope, Action<string> onError)
+        {
+            if (envelope == null || !string.Equals(envelope.channel, "state", StringComparison.Ordinal))
+                return;
+
+            if (_eventTransport == null || ReferenceEquals(_eventTransport, _stateTransport))
+                return;
+
+            envelope.channel = "event";
+            Send(envelope, onError);
+            envelope.channel = "state";
         }
 
         private IRealtimeTransport SelectTransport(string channel)
@@ -662,7 +691,16 @@ namespace Game.Online
                         ? envelope.payload.ToObject<OnlineDungeonRealtimeAuthoritySnapshotInfo>()
                         : null;
                     if (snapshot != null)
+                    {
+                        OnlineDungeonAuthorityStateInfo state = snapshot.state;
+                        if (Time.unscaledTime >= _nextAuthorityReceiveDebugTime)
+                        {
+                            _nextAuthorityReceiveDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
+                            Debug.Log($"[OnlineEnemyFreezeDebug] Receive authority snapshot. sequence={envelope.sequence} hasState={state != null} initialized={(state != null && state.initialized)} version={(state != null ? state.version : 0)} enemyCount={(state?.enemies != null ? state.enemies.Count : 0)}");
+                        }
+
                         onAuthoritySnapshot?.Invoke(snapshot);
+                    }
                     continue;
                 }
 
