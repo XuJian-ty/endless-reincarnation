@@ -348,18 +348,15 @@ namespace Game.GameFlow
                 {
                     if (!player.CanAddWeapon())
                     {
-                        Debug.Log($"[OnlineRewardDebug] Drop online pickup blocked by weapon capacity. dropId={_onlineDropId}");
                         return;
                     }
                 }
                 else if (!player.CanAddStackable(_stackItemId, _stackCount))
                 {
-                    Debug.Log($"[OnlineRewardDebug] Drop online pickup blocked by stack capacity. dropId={_onlineDropId} item={_stackItemId} count={_stackCount}");
                     return;
                 }
 
                 bool requested = OnlineDungeonSessionCoordinator.GetInstance().TryRequestPickupOnlineDrop(_onlineDropId);
-                Debug.Log($"[OnlineRewardDebug] Drop online request result. dropId={_onlineDropId} requested={requested}");
 
                 return;
             }
@@ -410,7 +407,6 @@ namespace Game.GameFlow
             if (_waitForInteractRelease)
                 return;
 
-            Debug.Log($"[OnlineRewardDebug] Drop interact pressed. dropId={_onlineDropId} pickedUp={_pickedUp} item={_stackItemId} count={_stackCount} hasWeapon={_weapon != null} scene={gameObject.scene.name}");
             PlayerController playerController = playerTransform.GetComponent<PlayerController>();
             if (playerController == null)
                 playerController = playerTransform.GetComponentInParent<PlayerController>();

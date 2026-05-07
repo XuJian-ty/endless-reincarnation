@@ -364,6 +364,14 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         if (syncPayload?.HasEvent == true)
         {
             string requestedEventId = string.IsNullOrWhiteSpace(syncPayload.EventId) ? string.Empty : syncPayload.EventId.Trim();
+            _logger.LogInformation("[OnlineDamageDebug] UDP damage event received. instance={InstanceId} user={UserId} event={EventId} targetKind={TargetKind} target={TargetRuntimeId} damage={Damage} afterSequence={AfterSequence}",
+                envelope.InstanceId,
+                envelope.UserId,
+                requestedEventId,
+                syncPayload.TargetKind,
+                syncPayload.TargetRuntimeId,
+                syncPayload.Damage,
+                afterSequence);
             var request = new AddDungeonDamageEventRequest
             {
                 EventId = requestedEventId,
@@ -400,6 +408,14 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             AckEvents = ackEvents,
             Events = events?.events ?? new List<DungeonDamageEventDto>(),
         };
+        if (!string.IsNullOrWhiteSpace(ackEventId) || payload.Events.Count > 0)
+            _logger.LogInformation("[OnlineDamageDebug] UDP damage snapshot send. instance={InstanceId} user={UserId} ack={AckEventId} ackCount={AckCount} eventCount={EventCount} afterSequence={AfterSequence}",
+                envelope.InstanceId,
+                envelope.UserId,
+                ackEventId,
+                ackEvents.Count,
+                payload.Events.Count,
+                afterSequence);
         await SendAsync(
             transport,
             remoteEndPoint,

@@ -1419,12 +1419,18 @@ internal sealed class DungeonInstanceRegistry
                 float targetRemainingHp = 0f;
                 bool targetDied = false;
                 bool targetShowCombatHealthBar = false;
+                bool shouldStoreDamageEvent = true;
                 if (string.Equals(targetKind, "enemy", StringComparison.Ordinal))
                 {
-                    if (!TryRegisterDamageTargetEnemy(record, targetRuntimeId, request.TargetEnemy, out error))
+                    if (!TryEnsureDamageTargetEnemy(record, targetRuntimeId, request.TargetEnemy, out bool shouldIgnoreDamage, out error))
                         return false;
 
-                    if (!TryApplyEnemyDamage(record, targetRuntimeId, acceptedDamage, out targetRemainingHp, out targetDied, out targetShowCombatHealthBar, out error))
+                    if (shouldIgnoreDamage)
+                    {
+                        record.DamageEventIds.Add(eventId);
+                        shouldStoreDamageEvent = false;
+                    }
+                    else if (!TryApplyEnemyDamage(record, targetRuntimeId, acceptedDamage, out targetRemainingHp, out targetDied, out targetShowCombatHealthBar, out error))
                         return false;
                 }
                 else if (string.Equals(targetKind, "player", StringComparison.Ordinal))
@@ -1433,26 +1439,30 @@ internal sealed class DungeonInstanceRegistry
                         return false;
                 }
 
-                record.DamageEventIds.Add(eventId);
-                DungeonDamageEventRecord damageEvent = new DungeonDamageEventRecord
+                if (shouldStoreDamageEvent)
                 {
-                    EventId = eventId,
-                    Sequence = ++record.NextDamageEventSequence,
-                    SourceUserId = participant.UserId,
-                    TargetKind = targetKind,
-                    TargetRuntimeId = targetRuntimeId,
-                    Damage = acceptedDamage,
-                    StunDuration = Math.Max(0f, request.StunDuration),
-                    TargetRemainingHp = targetRemainingHp,
-                    TargetDied = targetDied,
-                    TargetShowCombatHealthBar = targetShowCombatHealthBar,
-                    X = request.X,
-                    Y = request.Y,
-                    Z = request.Z,
-                    CreatedAtUtc = now,
-                };
-                record.DamageEvents.Add(damageEvent);
-                TrimDamageEvents(record);
+                    record.DamageEventIds.Add(eventId);
+                    Console.WriteLine($"[OnlineDamageDebug] Server accepted damage. instance={instanceId} event={eventId} source={participant.UserId} targetKind={targetKind} target={targetRuntimeId} damage={acceptedDamage} remaining={targetRemainingHp} died={targetDied}");
+                    DungeonDamageEventRecord damageEvent = new DungeonDamageEventRecord
+                    {
+                        EventId = eventId,
+                        Sequence = ++record.NextDamageEventSequence,
+                        SourceUserId = participant.UserId,
+                        TargetKind = targetKind,
+                        TargetRuntimeId = targetRuntimeId,
+                        Damage = acceptedDamage,
+                        StunDuration = Math.Max(0f, request.StunDuration),
+                        TargetRemainingHp = targetRemainingHp,
+                        TargetDied = targetDied,
+                        TargetShowCombatHealthBar = targetShowCombatHealthBar,
+                        X = request.X,
+                        Y = request.Y,
+                        Z = request.Z,
+                        CreatedAtUtc = now,
+                    };
+                    record.DamageEvents.Add(damageEvent);
+                    TrimDamageEvents(record);
+                }
             }
 
             record.UpdatedAtUtc = now;
@@ -1654,12 +1664,14 @@ internal sealed class DungeonInstanceRegistry
 
         if (enemy.IsDead)
         {
+            Console.WriteLine($"[OnlineDamageDebug] Server damage target already dead. runtime={runtimeId} damage={damage} hp={enemy.CurrentHp}");
             remainingHp = 0f;
             died = false;
             enemy.ShowCombatHealthBar = false;
             return true;
         }
 
+        float beforeHp = enemy.CurrentHp;
         float acceptedDamage = Math.Max(0f, damage);
         enemy.CurrentHp = Math.Max(0f, enemy.CurrentHp - acceptedDamage);
         if (enemy.CurrentHp <= 0f)
@@ -1675,7 +1687,43 @@ internal sealed class DungeonInstanceRegistry
         enemy.UpdatedAtUtc = DateTime.UtcNow;
         remainingHp = enemy.CurrentHp;
         record.AuthorityVersion++;
+        Console.WriteLine($"[OnlineDamageDebug] Server enemy hp changed. runtime={runtimeId} damage={acceptedDamage} before={beforeHp} after={remainingHp} died={died}");
         return true;
+    }
+
+    private static bool TryEnsureDamageTargetEnemy(
+        DungeonInstanceRecord record,
+        string targetRuntimeId,
+        DungeonEnemyAuthorityStateUpsertDto? incoming,
+        out bool shouldIgnoreDamage,
+        out string error)
+    {
+        shouldIgnoreDamage = false;
+        error = string.Empty;
+        if (incoming != null)
+        {
+            string incomingRuntimeId = NormalizeRequired(incoming.runtimeId);
+            if (string.IsNullOrWhiteSpace(incomingRuntimeId))
+                incomingRuntimeId = targetRuntimeId;
+
+            if (!string.Equals(incomingRuntimeId, targetRuntimeId, StringComparison.Ordinal))
+            {
+                error = "伤害目标敌人信息与目标标识不一致";
+                return false;
+            }
+        }
+
+        if (record.Enemies.ContainsKey(targetRuntimeId))
+            return true;
+
+        if (record.AuthorityInitialized)
+        {
+            Console.WriteLine($"[OnlineDamageDebug] Server ignored damage for missing authority enemy. target={targetRuntimeId} hasTargetEnemy={incoming != null}");
+            shouldIgnoreDamage = true;
+            return true;
+        }
+
+        return TryRegisterDamageTargetEnemy(record, targetRuntimeId, incoming, out error);
     }
 
     private static bool TryRegisterDamageTargetEnemy(
