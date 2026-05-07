@@ -333,6 +333,7 @@ namespace Game.Online
                 currentPoise = Mathf.Max(0f, enemy.CurrentPoise),
                 countsAsLevelBoss = enemy.CountsAsLevelBoss,
                 isDead = !enemy.IsAlive,
+                showCombatHealthBar = enemy.ShouldShowCombatHealthBar,
                 moveBlend = enemy.AnimatorMoveBlend,
                 moveForward = enemy.AnimatorMoveForward,
                 moveStrafe = enemy.AnimatorMoveStrafe,
@@ -565,12 +566,14 @@ namespace Game.Online
             {
                 Debug.Log($"[OnlineDungeonSessionCoordinator] 联机副本实时通道启动。UDP={_activeAidSession.dungeonRealtimeUdpPort} KCP={_activeAidSession.dungeonRealtimeKcpPort}");
                 MonoMgr.GetInstance().AddUpdateListener(TickRealtimeClient);
+                MonoMgr.GetInstance().AddLateUpdateListener(TickRealtimeClient);
             }
         }
 
         private void StopRealtimeClient()
         {
             MonoMgr.GetInstance().RemoveUpdateListener(TickRealtimeClient);
+            MonoMgr.GetInstance().RemoveLateUpdateListener(TickRealtimeClient);
             _realtimeClient.Stop();
         }
 
@@ -636,6 +639,7 @@ namespace Game.Online
                     currentPoise = snapshot.currentPoise,
                     countsAsLevelBoss = snapshot.countsAsLevelBoss,
                     isDead = snapshot.currentHp <= 0f,
+                    showCombatHealthBar = enemy.ShouldShowCombatHealthBar,
                     moveBlend = enemy.AnimatorMoveBlend,
                     moveForward = enemy.AnimatorMoveForward,
                     moveStrafe = enemy.AnimatorMoveStrafe,
@@ -732,7 +736,7 @@ namespace Game.Online
             if (enemy == null)
                 return;
 
-            enemy.ApplyOnlineAuthorityState(damageEvent.targetRemainingHp, damageEvent.targetDied);
+            enemy.ApplyOnlineAuthorityState(damageEvent.targetRemainingHp, damageEvent.targetDied, damageEvent.targetShowCombatHealthBar);
             CombatNumberDispatcher.PublishDamage(enemy.transform, damageEvent.damage, false);
         }
 
@@ -1070,7 +1074,7 @@ namespace Game.Online
 
             bool countsAsLevelBoss = IsFinalBossAuthorityContext(enemyState) || enemyState.countsAsLevelBoss;
             enemy.SetCountsAsLevelBoss(countsAsLevelBoss);
-            enemy.ApplyOnlineAuthorityState(enemyState.currentHp, enemyState.isDead);
+            enemy.ApplyOnlineAuthorityState(enemyState.currentHp, enemyState.isDead, enemyState.showCombatHealthBar);
             if (!ShouldDriveOnlineWorldSimulation())
             {
                 enemy.ApplyOnlineRemoteMovementPresentation(enemyState.moveBlend, enemyState.moveForward, enemyState.moveStrafe);

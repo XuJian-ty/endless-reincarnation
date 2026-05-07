@@ -146,6 +146,7 @@ namespace Game.Online
         public float currentPoise;
         public bool countsAsLevelBoss;
         public bool isDead;
+        public bool showCombatHealthBar;
         public float moveBlend;
         public float moveForward;
         public float moveStrafe;
@@ -169,6 +170,7 @@ namespace Game.Online
         public float stunDuration;
         public float targetRemainingHp;
         public bool targetDied;
+        public bool targetShowCombatHealthBar;
         public float x;
         public float y;
         public float z;

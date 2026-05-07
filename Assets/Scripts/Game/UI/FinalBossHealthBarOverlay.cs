@@ -51,7 +51,7 @@ namespace Game.UI
         private void LateUpdate()
         {
             EnemyController finalBoss = FindActiveFinalBoss();
-            bool shouldShow = finalBoss != null && finalBoss.IsAlive && finalBoss.IsInCombatState;
+            bool shouldShow = finalBoss != null && finalBoss.ShouldShowCombatHealthBar;
             SetVisible(shouldShow);
             if (!shouldShow)
                 return;

@@ -737,6 +737,7 @@ internal sealed class DungeonInstanceRegistry
                     enemy.Yaw = incoming.yaw;
                     enemy.CurrentPoise = Math.Max(0f, incoming.currentPoise);
                     enemy.CountsAsLevelBoss = incoming.countsAsLevelBoss;
+                    enemy.ShowCombatHealthBar = incoming.showCombatHealthBar;
                     enemy.MoveBlend = Math.Clamp(incoming.moveBlend, 0f, 1f);
                     enemy.MoveForward = Math.Clamp(incoming.moveForward, -1f, 1f);
                     enemy.MoveStrafe = Math.Clamp(incoming.moveStrafe, -1f, 1f);
@@ -1190,12 +1191,13 @@ internal sealed class DungeonInstanceRegistry
                 float acceptedDamage = Math.Max(0f, request.Damage);
                 float targetRemainingHp = 0f;
                 bool targetDied = false;
+                bool targetShowCombatHealthBar = false;
                 if (string.Equals(targetKind, "enemy", StringComparison.Ordinal))
                 {
                     if (!TryRegisterDamageTargetEnemy(record, targetRuntimeId, request.TargetEnemy, out error))
                         return false;
 
-                    if (!TryApplyEnemyDamage(record, targetRuntimeId, acceptedDamage, out targetRemainingHp, out targetDied, out error))
+                    if (!TryApplyEnemyDamage(record, targetRuntimeId, acceptedDamage, out targetRemainingHp, out targetDied, out targetShowCombatHealthBar, out error))
                         return false;
                 }
                 else if (string.Equals(targetKind, "player", StringComparison.Ordinal))
@@ -1216,6 +1218,7 @@ internal sealed class DungeonInstanceRegistry
                     StunDuration = Math.Max(0f, request.StunDuration),
                     TargetRemainingHp = targetRemainingHp,
                     TargetDied = targetDied,
+                    TargetShowCombatHealthBar = targetShowCombatHealthBar,
                     X = request.X,
                     Y = request.Y,
                     Z = request.Z,
@@ -1402,10 +1405,12 @@ internal sealed class DungeonInstanceRegistry
         float damage,
         out float remainingHp,
         out bool died,
+        out bool showCombatHealthBar,
         out string error)
     {
         remainingHp = 0f;
         died = false;
+        showCombatHealthBar = false;
         error = string.Empty;
 
         if (!record.AuthorityInitialized)
@@ -1424,6 +1429,7 @@ internal sealed class DungeonInstanceRegistry
         {
             remainingHp = 0f;
             died = false;
+            enemy.ShowCombatHealthBar = false;
             return true;
         }
 
@@ -1437,6 +1443,8 @@ internal sealed class DungeonInstanceRegistry
             died = true;
         }
 
+        enemy.ShowCombatHealthBar = !enemy.IsDead;
+        showCombatHealthBar = enemy.ShowCombatHealthBar;
         enemy.UpdatedAtUtc = DateTime.UtcNow;
         remainingHp = enemy.CurrentHp;
         record.AuthorityVersion++;
@@ -1482,6 +1490,7 @@ internal sealed class DungeonInstanceRegistry
         enemy.Yaw = incoming.yaw;
         enemy.CurrentPoise = Math.Max(0f, incoming.currentPoise);
         enemy.CountsAsLevelBoss = incoming.countsAsLevelBoss;
+        enemy.ShowCombatHealthBar = incoming.showCombatHealthBar;
         enemy.MoveBlend = Math.Clamp(incoming.moveBlend, 0f, 1f);
         enemy.MoveForward = Math.Clamp(incoming.moveForward, -1f, 1f);
         enemy.MoveStrafe = Math.Clamp(incoming.moveStrafe, -1f, 1f);
@@ -1776,6 +1785,7 @@ internal sealed class DungeonInstanceRegistry
             currentPoise = record.CurrentPoise,
             countsAsLevelBoss = record.CountsAsLevelBoss,
             isDead = record.IsDead,
+            showCombatHealthBar = record.ShowCombatHealthBar,
             moveBlend = record.MoveBlend,
             moveForward = record.MoveForward,
             moveStrafe = record.MoveStrafe,
@@ -1978,6 +1988,7 @@ internal sealed class DungeonInstanceRegistry
             stunDuration = record.StunDuration,
             targetRemainingHp = record.TargetRemainingHp,
             targetDied = record.TargetDied,
+            targetShowCombatHealthBar = record.TargetShowCombatHealthBar,
             x = record.X,
             y = record.Y,
             z = record.Z,
@@ -2055,6 +2066,7 @@ internal sealed class DungeonInstanceRegistry
                 enemyObject["z"] = enemy.Z;
                 enemyObject["yaw"] = enemy.Yaw;
                 enemyObject["countsAsLevelBoss"] = enemy.CountsAsLevelBoss;
+                enemyObject["showCombatHealthBar"] = enemy.ShowCombatHealthBar;
             }
         }
 
@@ -2685,6 +2697,7 @@ internal sealed class DungeonEnemyStateRecord
     public float CurrentPoise { get; set; }
     public bool CountsAsLevelBoss { get; set; }
     public bool IsDead { get; set; }
+    public bool ShowCombatHealthBar { get; set; }
     public float MoveBlend { get; set; }
     public float MoveForward { get; set; }
     public float MoveStrafe { get; set; }
@@ -2725,6 +2738,7 @@ internal sealed class DungeonDamageEventRecord
     public float StunDuration { get; init; }
     public float TargetRemainingHp { get; init; }
     public bool TargetDied { get; init; }
+    public bool TargetShowCombatHealthBar { get; init; }
     public float X { get; init; }
     public float Y { get; init; }
     public float Z { get; init; }
@@ -3018,6 +3032,7 @@ internal sealed class DungeonEnemyStateDto
     public float currentPoise { get; init; }
     public bool countsAsLevelBoss { get; init; }
     public bool isDead { get; init; }
+    public bool showCombatHealthBar { get; init; }
     public float moveBlend { get; init; }
     public float moveForward { get; init; }
     public float moveStrafe { get; init; }
@@ -3046,6 +3061,7 @@ internal sealed class DungeonEnemyAuthorityStateUpsertDto
     public float currentPoise { get; init; }
     public bool countsAsLevelBoss { get; init; }
     public bool isDead { get; init; }
+    public bool showCombatHealthBar { get; init; }
     public float moveBlend { get; init; }
     public float moveForward { get; init; }
     public float moveStrafe { get; init; }
@@ -3165,6 +3181,7 @@ internal sealed class DungeonDamageEventDto
     public float stunDuration { get; init; }
     public float targetRemainingHp { get; init; }
     public bool targetDied { get; init; }
+    public bool targetShowCombatHealthBar { get; init; }
     public float x { get; init; }
     public float y { get; init; }
     public float z { get; init; }

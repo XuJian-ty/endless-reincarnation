@@ -77,6 +77,7 @@ namespace Game.Presentation
         private bool _loggedMissingArchetypeError;
         private GameObject _poolSourcePrefab;
         private bool _onlineRemoteSimulationDisabled;
+        private bool _onlineAuthorityCombatVisible;
         private float _currentPoise;
         private bool _poiseInitialized;
         private string _runtimeId;
@@ -240,6 +241,7 @@ namespace Game.Presentation
                 };
             }
         }
+        public bool ShouldShowCombatHealthBar => IsAlive && (IsInCombatState || _onlineAuthorityCombatVisible);
         public bool IsInPatrolState => !_dead && !IsInCombatState;
         public bool HasSuperArmor => _temporarySuperArmorTimer > 0f || _stateScopedSuperArmorCount > 0;
         public bool HasInvincibility => _temporaryInvincibleTimer > 0f || _stateScopedInvincibleCount > 0;
@@ -671,6 +673,7 @@ namespace Game.Presentation
             _loggedAmbiguousVariantError = false;
             _loggedMissingStatsError = false;
             _loggedMissingArchetypeError = false;
+            _onlineAuthorityCombatVisible = false;
             _countsAsLevelBoss = false;
             _baseVisualScale = transform.localScale;
             _baseVisualScaleInitialized = true;
@@ -906,10 +909,17 @@ namespace Game.Presentation
 
         public void ApplyOnlineAuthorityState(float currentHp, bool isDead)
         {
+            ApplyOnlineAuthorityState(currentHp, isDead, _onlineAuthorityCombatVisible);
+        }
+
+        public void ApplyOnlineAuthorityState(float currentHp, bool isDead, bool showCombatHealthBar)
+        {
             EnsureInitialized();
             _stats.currentHp = Mathf.Clamp(currentHp, 0f, Mathf.Max(1f, _stats.maxHp));
+            _onlineAuthorityCombatVisible = _onlineRemoteSimulationDisabled && !isDead && showCombatHealthBar;
             if (isDead || _stats.currentHp <= 0f)
             {
+                _onlineAuthorityCombatVisible = false;
                 if (!_dead)
                 {
                     RefreshHeadHealthBarOnDeath();
@@ -1024,6 +1034,7 @@ namespace Game.Presentation
             _activeSkill = null;
             _activeSkillTargetPosition = null;
             _activeSkillSequence = 0;
+            _onlineAuthorityCombatVisible = false;
             _idleUntilTime = 0f;
             _decisionLockUntilTime = 0f;
             _isInPostCastRecovery = false;
@@ -1455,7 +1466,7 @@ namespace Game.Presentation
             }
 
             _headHealthBar.SetNormalized(CurrentHpRatio);
-            _headHealthBar.SetVisible(IsAlive && IsInCombatState);
+            _headHealthBar.SetVisible(ShouldShowCombatHealthBar);
         }
 
         private bool IsFinalBoss()
