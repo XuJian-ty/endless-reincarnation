@@ -28,6 +28,7 @@ public class UIManager : BaseManager<UIManager>
     // ── 面板缓存（私有，通过 GetPanel<T> 访问）──────────────────────────
     private readonly Dictionary<string, BasePanel> _panelDic =
         new Dictionary<string, BasePanel>();
+    private bool _loadingPanelActiveOrOpening;
 
     // ── 层级 Transform ────────────────────────────────────────────────────
     private Transform _bot;
@@ -79,9 +80,23 @@ public class UIManager : BaseManager<UIManager>
     public void ShowPanel<T>(string panelName, E_UI_Layer layer = E_UI_Layer.Mid,
                              UnityAction<T> callBack = null) where T : BasePanel
     {
+        bool isLoadingPanel = string.Equals(panelName, PanelNames.Loading, System.StringComparison.Ordinal);
+        if (isLoadingPanel)
+        {
+            _loadingPanelActiveOrOpening = true;
+            CloseBlockingPanelsForLoading();
+        }
+        else if (_loadingPanelActiveOrOpening && IsBlockingPanel(panelName))
+        {
+            GameplayUIInputBridge.NotifyPanelHidden(panelName);
+            return;
+        }
+
         if (_panelDic.TryGetValue(panelName, out var cached))
         {
             cached.ShowMe();
+            if (isLoadingPanel)
+                BringLoadingPanelToFront(cached);
             callBack?.Invoke(cached as T);
             TryPauseGameplayForPanel(panelName);
             return;
@@ -111,6 +126,8 @@ public class UIManager : BaseManager<UIManager>
             }
             _panelDic[panelName] = existing;
             existing.ShowMe();
+            if (isLoadingPanel)
+                BringLoadingPanelToFront(existing);
             callBack?.Invoke(existing);
             TryPauseGameplayForPanel(panelName);
             return;
@@ -118,12 +135,23 @@ public class UIManager : BaseManager<UIManager>
 
         ResMgr.GetInstance().LoadAsync<GameObject>("UI/" + panelName, obj =>
         {
+            if (!isLoadingPanel && _loadingPanelActiveOrOpening && IsBlockingPanel(panelName))
+            {
+                if (obj != null)
+                    GameObject.Destroy(obj);
+
+                GameplayUIInputBridge.NotifyPanelHidden(panelName);
+                return;
+            }
+
             if (_panelDic.TryGetValue(panelName, out var loadedCached))
             {
                 if (obj != null)
                     GameObject.Destroy(obj);
 
                 loadedCached.ShowMe();
+                if (isLoadingPanel)
+                    BringLoadingPanelToFront(loadedCached);
                 callBack?.Invoke(loadedCached as T);
                 TryPauseGameplayForPanel(panelName);
                 return;
@@ -138,6 +166,8 @@ public class UIManager : BaseManager<UIManager>
             if (obj == null)
             {
                 Debug.LogError($"[UIManager] 无法创建面板 '{panelName}'。");
+                if (isLoadingPanel)
+                    _loadingPanelActiveOrOpening = false;
                 return;
             }
 
@@ -162,6 +192,8 @@ public class UIManager : BaseManager<UIManager>
             if (panel == null)
             {
                 Debug.LogError($"[UIManager] 面板预制体 '{panelName}' 上未找到组件 {typeof(T).Name}，且补挂失败，已销毁该对象。");
+                if (isLoadingPanel)
+                    _loadingPanelActiveOrOpening = false;
                 GameObject.Destroy(obj);
                 return;
             }
@@ -169,6 +201,8 @@ public class UIManager : BaseManager<UIManager>
             _panelDic[panelName] = panel;
             callBack?.Invoke(panel);
             panel.ShowMe();
+            if (isLoadingPanel)
+                BringLoadingPanelToFront(panel);
             TryPauseGameplayForPanel(panelName);
         });
     }
@@ -176,6 +210,9 @@ public class UIManager : BaseManager<UIManager>
     /// <summary>隐藏并销毁面板。先从字典移除再销毁，避免 OnDisable 等链里再次调用 HidePanel 导致同一物体被销毁两次。</summary>
     public void HidePanel(string panelName)
     {
+        if (string.Equals(panelName, PanelNames.Loading, System.StringComparison.Ordinal))
+            _loadingPanelActiveOrOpening = false;
+
         bool hidAnyPanel = false;
         if (!_panelDic.TryGetValue(panelName, out var panel))
             panel = null;
@@ -229,6 +266,36 @@ public class UIManager : BaseManager<UIManager>
         return false;
     }
 
+    private void CloseBlockingPanelsForLoading()
+    {
+        GameplayUIInputBridge.ApplyNetworkPanelState(string.Empty, false);
+
+        var blockingPanels = PanelNames.BlockingPanels;
+        for (int i = 0; i < blockingPanels.Length; i++)
+        {
+            string blockingPanel = blockingPanels[i];
+            if (string.IsNullOrEmpty(blockingPanel) ||
+                string.Equals(blockingPanel, PanelNames.Loading, System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            HidePanel(blockingPanel);
+        }
+    }
+
+    private static void BringLoadingPanelToFront(BasePanel panel)
+    {
+        if (panel == null || panel.transform == null)
+            return;
+
+        Transform father = panel.transform.parent;
+        if (father != null)
+            father.SetAsLastSibling();
+
+        panel.transform.SetAsLastSibling();
+    }
+
     private void TryPauseGameplayForPanel(string panelName)
     {
         if (!IsBlockingPanel(panelName))
@@ -261,6 +328,9 @@ public class UIManager : BaseManager<UIManager>
 
     private bool HasAnyBlockingPanelOpen()
     {
+        if (_loadingPanelActiveOrOpening)
+            return true;
+
         var blockingPanels = PanelNames.BlockingPanels;
         for (int i = 0; i < blockingPanels.Length; i++)
         {
