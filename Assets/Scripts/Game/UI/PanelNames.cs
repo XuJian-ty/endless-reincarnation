@@ -58,6 +58,7 @@ namespace Game.UI
             SocialAddFriend,
             SocialFriendRequests,
             SocialAidRequestPopup,
+            Loading,
             PlayerProfile,
             DeathChoice,
             BossResult,
