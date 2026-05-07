@@ -590,7 +590,7 @@ namespace Game.GameFlow
             {
                 ChestInteractable chest = chests[i];
                 if (chest != null && openedChestIds.Contains(chest.GetSnapshotId()))
-                    UnityEngine.Object.Destroy(chest.gameObject);
+                    chest.DestroyOnlineSnapshotOwner();
             }
         }
 
@@ -628,6 +628,7 @@ namespace Game.GameFlow
                 if (currentBySnapshotId.TryGetValue(chestSnapshot.snapshotId, out ChestInteractable existingChest) && existingChest != null)
                 {
                     existingChest.ApplyOnlineSnapshotPose(chestSnapshot.snapshotId, position, rotation);
+                    OnlineDungeonSessionCoordinator.GetInstance()?.ApplyKnownOpenedOnlineChest(existingChest);
                     continue;
                 }
 
@@ -642,7 +643,7 @@ namespace Game.GameFlow
 
                 string snapshotId = chest.GetSnapshotId();
                 if (openedChestIds.Contains(snapshotId) || !snapshotIds.Contains(snapshotId))
-                    UnityEngine.Object.Destroy(chest.gameObject);
+                    chest.DestroyOnlineSnapshotOwner();
             }
         }
 
@@ -660,6 +661,7 @@ namespace Game.GameFlow
                 if (chest != null && string.Equals(chest.GetSnapshotId(), chestSnapshot.snapshotId, System.StringComparison.Ordinal))
                 {
                     chest.ApplyOnlineSnapshotPose(chestSnapshot.snapshotId, position, rotation);
+                    OnlineDungeonSessionCoordinator.GetInstance()?.ApplyKnownOpenedOnlineChest(chest);
                     return;
                 }
             }
@@ -688,6 +690,7 @@ namespace Game.GameFlow
             if (interactable == null)
                 interactable = ChestInteractable.EnsureOn(instance);
             interactable?.ApplyOnlineSnapshotIdentity(chestSnapshot.snapshotId);
+            OnlineDungeonSessionCoordinator.GetInstance()?.ApplyKnownOpenedOnlineChest(interactable);
         }
 
         private static void RestoreEnemySnapshots(LevelSnapshot snapshot)

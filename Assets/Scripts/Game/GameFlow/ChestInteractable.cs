@@ -190,12 +190,19 @@ namespace Game.GameFlow
         private void OpenChest()
         {
             if (_opened)
+            {
+                Debug.Log($"[OnlineLootDebug] Chest open ignored because already opened. chest={GetSnapshotId()} name={name} scene={gameObject.scene.name}");
                 return;
+            }
 
             OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
             if (onlineCoordinator.HasActiveSession)
             {
-                bool requested = !_pendingOnlineOpen && onlineCoordinator.TryRequestOpenOnlineChest(this, _dropCount);
+                string chestId = GetSnapshotId();
+                bool pendingBefore = _pendingOnlineOpen;
+                Debug.Log($"[OnlineLootDebug] Chest open input. chest={chestId} name={name} pending={pendingBefore} dropCount={_dropCount} scene={gameObject.scene.name}");
+                bool requested = !pendingBefore && onlineCoordinator.TryRequestOpenOnlineChest(this, _dropCount);
+                Debug.Log($"[OnlineLootDebug] Chest open request result. chest={chestId} requested={requested} pendingBefore={pendingBefore} scene={gameObject.scene.name}");
                 if (requested)
                 {
                     _pendingOnlineOpen = true;
@@ -216,8 +223,12 @@ namespace Game.GameFlow
         public void ApplyOnlineAuthorityOpened()
         {
             if (_opened)
+            {
+                Debug.Log($"[OnlineLootDebug] Chest authority open ignored because already opened. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
                 return;
+            }
 
+            Debug.Log($"[OnlineLootDebug] Chest authority open applied. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
             _opened = true;
             _pendingOnlineOpen = false;
             RecordOpenedSnapshot();
@@ -226,11 +237,19 @@ namespace Game.GameFlow
             CacheFadeMaterials();
         }
 
+        public void DestroyOnlineSnapshotOwner()
+        {
+            Transform owner = ResolveSnapshotOwnerTransform();
+            if (owner != null)
+                Destroy(owner.gameObject);
+        }
+
         public void CancelPendingOnlineOpen()
         {
             if (_opened)
                 return;
 
+            Debug.Log($"[OnlineLootDebug] Chest pending open canceled. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
             _pendingOnlineOpen = false;
         }
 

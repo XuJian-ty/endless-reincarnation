@@ -364,14 +364,6 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         if (syncPayload?.HasEvent == true)
         {
             string requestedEventId = string.IsNullOrWhiteSpace(syncPayload.EventId) ? string.Empty : syncPayload.EventId.Trim();
-            _logger.LogInformation("[OnlineDamageDebug] UDP damage event received. instance={InstanceId} user={UserId} event={EventId} targetKind={TargetKind} target={TargetRuntimeId} damage={Damage} afterSequence={AfterSequence}",
-                envelope.InstanceId,
-                envelope.UserId,
-                requestedEventId,
-                syncPayload.TargetKind,
-                syncPayload.TargetRuntimeId,
-                syncPayload.Damage,
-                afterSequence);
             var request = new AddDungeonDamageEventRequest
             {
                 EventId = requestedEventId,
@@ -408,14 +400,6 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             AckEvents = ackEvents,
             Events = events?.events ?? new List<DungeonDamageEventDto>(),
         };
-        if (!string.IsNullOrWhiteSpace(ackEventId) || payload.Events.Count > 0)
-            _logger.LogInformation("[OnlineDamageDebug] UDP damage snapshot send. instance={InstanceId} user={UserId} ack={AckEventId} ackCount={AckCount} eventCount={EventCount} afterSequence={AfterSequence}",
-                envelope.InstanceId,
-                envelope.UserId,
-                ackEventId,
-                ackEvents.Count,
-                payload.Events.Count,
-                afterSequence);
         await SendAsync(
             transport,
             remoteEndPoint,
@@ -455,6 +439,27 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         DungeonRewardStateDto? state;
         long afterVersion = Math.Max(0, syncPayload?.AfterVersion ?? 0);
         string action = syncPayload?.Action?.Trim() ?? string.Empty;
+        string actionTargetId = action switch
+        {
+            "openChest" => syncPayload?.ChestId?.Trim() ?? string.Empty,
+            "pickupDrop" => syncPayload?.DropId?.Trim() ?? string.Empty,
+            "claimKillReward" => syncPayload?.EnemyRuntimeId?.Trim() ?? string.Empty,
+            "enemyKill" => syncPayload?.EnemyRuntimeId?.Trim() ?? string.Empty,
+            _ => string.Empty,
+        };
+        if (!string.IsNullOrWhiteSpace(action))
+        {
+            _logger.LogInformation(
+                "[OnlineLootDebug] UDP reward action received. remote={RemoteEndPoint} instance={InstanceId} user={UserId} action={Action} target={Target} afterVersion={AfterVersion} sequence={Sequence}",
+                remoteEndPoint,
+                envelope.InstanceId,
+                envelope.UserId,
+                action,
+                actionTargetId,
+                afterVersion,
+                envelope.Sequence);
+        }
+
         if (string.Equals(action, "enemyKill", StringComparison.Ordinal))
         {
             ackAction = action;
@@ -571,6 +576,21 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             DropPickup = dropPickup,
             State = state,
         };
+        if (!string.IsNullOrWhiteSpace(action) || state != null || dropPickup != null)
+        {
+            _logger.LogInformation(
+                "[OnlineLootDebug] UDP reward snapshot send. remote={RemoteEndPoint} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} hasDropPickup={HasDropPickup} hasState={HasState} stateVersion={StateVersion} dropCount={DropCount} sequence={Sequence}",
+                remoteEndPoint,
+                envelope.InstanceId,
+                envelope.UserId,
+                ackAction,
+                ackTargetId,
+                dropPickup != null,
+                state != null,
+                state?.version ?? 0,
+                state?.drops.Count ?? 0,
+                envelope.Sequence);
+        }
         await SendAsync(
             transport,
             remoteEndPoint,
@@ -614,6 +634,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         string ackTargetId,
         CancellationToken cancellationToken)
     {
+        Console.WriteLine($"[OnlineLootDebug] UDP reward error send. remote={remoteEndPoint} instance={instanceId} user={userId} ackAction={ackAction} ackTarget={ackTargetId} message={message}");
         DungeonRealtimeErrorPayload payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
         payload = new DungeonRealtimeErrorPayload
         {

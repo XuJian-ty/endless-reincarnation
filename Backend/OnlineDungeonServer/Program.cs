@@ -1298,6 +1298,7 @@ internal sealed class DungeonInstanceRegistry
                 };
                 record.Chests[normalizedChestId] = chest;
                 record.AuthorityInitialized = true;
+                Console.WriteLine($"[OnlineLootDebug] Server registered chest from open request. instance={instanceId} chest={normalizedChestId} prefab={chest.PrefabId} user={participant.UserId}");
             }
 
             if (!chest.Opened)
@@ -1309,12 +1310,21 @@ internal sealed class DungeonInstanceRegistry
                 if (string.IsNullOrWhiteSpace(chest.PrefabId))
                     chest.PrefabId = NormalizeRequired(request.PrefabId);
                 if (!_rewardConfigStore.TryBuildChestDrops(record, request, normalizedChestId, out List<DungeonDropProposal>? chestDrops, out error))
+                {
+                    Console.WriteLine($"[OnlineLootDebug] Server open chest failed while building drops. instance={instanceId} chest={normalizedChestId} user={participant.UserId} prefab={chest.PrefabId} error={error}");
                     return false;
+                }
 
                 long nextRewardVersion = record.RewardStateVersion + 1;
+                int chestDropCount = chestDrops?.Count ?? 0;
                 AddDungeonDrops(record, normalizedChestId, chestDrops, now, nextRewardVersion);
                 record.RewardStateVersion = nextRewardVersion;
                 record.AuthorityVersion++;
+                Console.WriteLine($"[OnlineLootDebug] Server opened chest. instance={instanceId} chest={normalizedChestId} user={participant.UserId} dropCount={chestDropCount} rewardVersion={record.RewardStateVersion} authorityVersion={record.AuthorityVersion}");
+            }
+            else
+            {
+                Console.WriteLine($"[OnlineLootDebug] Server chest open request is duplicate. instance={instanceId} chest={normalizedChestId} user={participant.UserId} openedBy={chest.OpenedByUserId} rewardVersion={record.RewardStateVersion} authorityVersion={record.AuthorityVersion}");
             }
 
             record.UpdatedAtUtc = now;
@@ -1345,6 +1355,7 @@ internal sealed class DungeonInstanceRegistry
             if (string.IsNullOrWhiteSpace(normalizedDropId) || !record.Drops.TryGetValue(normalizedDropId, out DungeonDropRecord? drop))
             {
                 error = "副本掉落不存在";
+                Console.WriteLine($"[OnlineLootDebug] Server pickup rejected because drop is missing. instance={instanceId} drop={normalizedDropId} user={request.UserId}");
                 return false;
             }
 
@@ -1360,6 +1371,11 @@ internal sealed class DungeonInstanceRegistry
                 drop.PickedUpVersion = nextRewardVersion;
                 record.RewardStateVersion = nextRewardVersion;
                 record.UpdatedAtUtc = participant.LastSeenAtUtc;
+                Console.WriteLine($"[OnlineLootDebug] Server picked drop. instance={instanceId} drop={normalizedDropId} user={participant.UserId} itemType={drop.ItemType} rewardVersion={record.RewardStateVersion}");
+            }
+            else
+            {
+                Console.WriteLine($"[OnlineLootDebug] Server pickup request for already picked drop. instance={instanceId} drop={normalizedDropId} user={participant.UserId} pickedBy={drop.PickedUpByUserId} accepted={string.Equals(drop.PickedUpByUserId, participant.UserId, StringComparison.Ordinal)} rewardVersion={record.RewardStateVersion}");
             }
 
             result = new DungeonDropPickupResultDto
@@ -1442,7 +1458,6 @@ internal sealed class DungeonInstanceRegistry
                 if (shouldStoreDamageEvent)
                 {
                     record.DamageEventIds.Add(eventId);
-                    Console.WriteLine($"[OnlineDamageDebug] Server accepted damage. instance={instanceId} event={eventId} source={participant.UserId} targetKind={targetKind} target={targetRuntimeId} damage={acceptedDamage} remaining={targetRemainingHp} died={targetDied}");
                     DungeonDamageEventRecord damageEvent = new DungeonDamageEventRecord
                     {
                         EventId = eventId,
@@ -1664,14 +1679,12 @@ internal sealed class DungeonInstanceRegistry
 
         if (enemy.IsDead)
         {
-            Console.WriteLine($"[OnlineDamageDebug] Server damage target already dead. runtime={runtimeId} damage={damage} hp={enemy.CurrentHp}");
             remainingHp = 0f;
             died = false;
             enemy.ShowCombatHealthBar = false;
             return true;
         }
 
-        float beforeHp = enemy.CurrentHp;
         float acceptedDamage = Math.Max(0f, damage);
         enemy.CurrentHp = Math.Max(0f, enemy.CurrentHp - acceptedDamage);
         if (enemy.CurrentHp <= 0f)
@@ -1687,7 +1700,6 @@ internal sealed class DungeonInstanceRegistry
         enemy.UpdatedAtUtc = DateTime.UtcNow;
         remainingHp = enemy.CurrentHp;
         record.AuthorityVersion++;
-        Console.WriteLine($"[OnlineDamageDebug] Server enemy hp changed. runtime={runtimeId} damage={acceptedDamage} before={beforeHp} after={remainingHp} died={died}");
         return true;
     }
 
@@ -1718,7 +1730,6 @@ internal sealed class DungeonInstanceRegistry
 
         if (record.AuthorityInitialized)
         {
-            Console.WriteLine($"[OnlineDamageDebug] Server ignored damage for missing authority enemy. target={targetRuntimeId} hasTargetEnemy={incoming != null}");
             shouldIgnoreDamage = true;
             return true;
         }
