@@ -6862,7 +6862,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -7134,7 +7134,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -7260,7 +7260,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -7386,7 +7386,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -7512,7 +7512,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -7638,7 +7638,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -7764,7 +7764,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -8274,7 +8274,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -8392,7 +8392,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -8510,7 +8510,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -8628,7 +8628,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2
@@ -8746,7 +8746,7 @@ MonoBehaviour:
             onHitPhysicsEffects:
             - effectType: 0
               onHitTriggerDelay: 0
-              distance: 1
+              distance: 0.1
               height: 1
               durationMode: 0
               duration: 0.2

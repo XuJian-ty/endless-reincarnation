@@ -23,6 +23,7 @@ namespace Game.Online
         private const float WorldSnapshotSyncIntervalSeconds = 1f;
         private const float RemoteAvatarTimeoutSeconds = 3f;
         private const float WorldSnapshotWarningIntervalSeconds = 5f;
+        private const float OnlineEnemyFreezeDebugIntervalSeconds = 1.5f;
 
         private SocialAidSessionInfo _activeAidSession;
         private Vector3? _pendingSpawnPosition;
@@ -55,6 +56,8 @@ namespace Game.Online
         private float _onlineSceneLoadReleaseLocalTime;
         private bool _isApplyingWorldSnapshot;
         private float _nextWorldSnapshotWarningTime;
+        private float _nextOnlineEnemyFreezeDebugTime;
+        private float _nextOnlineEnemyFreezeApplyDebugTime;
         private readonly OnlineDungeonWorldSnapshotClient _worldSnapshotClient = new OnlineDungeonWorldSnapshotClient();
         private readonly OnlineDungeonRealtimeClient _realtimeClient = new OnlineDungeonRealtimeClient();
         private readonly HashSet<string> _appliedDamageEventIds = new HashSet<string>(StringComparer.Ordinal);
@@ -673,6 +676,9 @@ namespace Game.Online
         private void StartRealtimeClient(string currentUserId)
         {
             StopRealtimeClient();
+            _lastAppliedAuthorityStateVersion = 0;
+            _nextOnlineEnemyFreezeDebugTime = 0f;
+            _nextOnlineEnemyFreezeApplyDebugTime = 0f;
             _realtimeClient.Start(
                 _activeAidSession.dungeonServerUrl,
                 _activeAidSession.dungeonInstanceId,
@@ -695,6 +701,9 @@ namespace Game.Online
             MonoMgr.GetInstance().RemoveUpdateListener(TickRealtimeClient);
             MonoMgr.GetInstance().RemoveLateUpdateListener(TickRealtimeClient);
             _realtimeClient.Stop();
+            _lastAppliedAuthorityStateVersion = 0;
+            _nextOnlineEnemyFreezeDebugTime = 0f;
+            _nextOnlineEnemyFreezeApplyDebugTime = 0f;
         }
 
         private void TickRealtimeClient()
@@ -792,6 +801,13 @@ namespace Game.Online
 
         private void ApplyRealtimeAuthoritySnapshot(OnlineDungeonRealtimeAuthoritySnapshotInfo snapshot)
         {
+            if (!ShouldDriveOnlineWorldSimulation() && Time.unscaledTime >= _nextOnlineEnemyFreezeDebugTime)
+            {
+                OnlineDungeonAuthorityStateInfo state = snapshot?.state;
+                _nextOnlineEnemyFreezeDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
+                Debug.Log($"[OnlineEnemyFreezeDebug] Authority snapshot received. hasState={state != null} initialized={(state != null && state.initialized)} version={(state != null ? state.version : 0)} lastVersion={_lastAppliedAuthorityStateVersion} enemyCount={(state?.enemies != null ? state.enemies.Count : 0)} scene={SceneManager.GetActiveScene().name} worldScene={_lastAppliedWorldSnapshotSceneName} sceneReady={IsAuthorityStateSceneReady()}");
+            }
+
             ApplyAuthorityState(snapshot?.state);
         }
 
@@ -1259,10 +1275,24 @@ namespace Game.Online
         private void ApplyAuthorityState(OnlineDungeonAuthorityStateInfo state)
         {
             if (state == null || !state.initialized || state.version <= _lastAppliedAuthorityStateVersion)
+            {
+                if (!ShouldDriveOnlineWorldSimulation() && Time.unscaledTime >= _nextOnlineEnemyFreezeDebugTime)
+                {
+                    _nextOnlineEnemyFreezeDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
+                    Debug.Log($"[OnlineEnemyFreezeDebug] Authority state skipped. reason={(state == null ? "null" : !state.initialized ? "notInitialized" : "oldVersion")} version={(state != null ? state.version : 0)} lastVersion={_lastAppliedAuthorityStateVersion} scene={SceneManager.GetActiveScene().name}");
+                }
+
                 return;
+            }
 
             if (!ShouldDriveOnlineWorldSimulation() && !IsAuthorityStateSceneReady())
             {
+                if (Time.unscaledTime >= _nextOnlineEnemyFreezeDebugTime)
+                {
+                    _nextOnlineEnemyFreezeDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
+                    Debug.Log($"[OnlineEnemyFreezeDebug] Authority state delayed because scene is not ready. version={state.version} enemyCount={(state.enemies != null ? state.enemies.Count : 0)} activeScene={SceneManager.GetActiveScene().name} worldScene={_lastAppliedWorldSnapshotSceneName} pendingScene={_pendingSceneSyncName}");
+                }
+
                 return;
             }
 
@@ -1328,10 +1358,14 @@ namespace Game.Online
                 if (ShouldDriveOnlineWorldSimulation())
                     return;
 
+                Debug.Log($"[OnlineEnemyFreezeDebug] Authority enemy missing locally, spawning. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} hp={enemyState.currentHp} dead={enemyState.isDead} scene={SceneManager.GetActiveScene().name}");
                 RemoveDuplicateFinalBossesBeforeAuthoritySpawn(enemyState.runtimeId);
                 enemy = SpawnEnemyFromAuthorityState(enemyState, BuildOnlineDebugContext());
                 if (enemy == null)
+                {
+                    Debug.Log($"[OnlineEnemyFreezeDebug] Authority enemy spawn failed. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} dead={enemyState.isDead} scene={SceneManager.GetActiveScene().name}");
                     return;
+                }
             }
 
             if (!ShouldDriveOnlineWorldSimulation())
@@ -1344,6 +1378,12 @@ namespace Game.Online
             enemy.ApplyOnlineAuthorityState(enemyState.currentHp, enemyState.isDead, enemyState.showCombatHealthBar);
             if (!ShouldDriveOnlineWorldSimulation())
             {
+                if (Time.unscaledTime >= _nextOnlineEnemyFreezeApplyDebugTime && (enemyState.moveBlend > 0.05f || enemyState.activeSkillSequence > 0 || enemyState.isDead))
+                {
+                    _nextOnlineEnemyFreezeApplyDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
+                    Debug.Log($"[OnlineEnemyFreezeDebug] Apply enemy authority presentation. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} hp={enemyState.currentHp:F1} dead={enemyState.isDead} pos=({enemyState.x:F2},{enemyState.y:F2},{enemyState.z:F2}) yaw={enemyState.yaw:F1} move=({enemyState.moveBlend:F3},{enemyState.moveForward:F3},{enemyState.moveStrafe:F3}) skillSeq={enemyState.activeSkillSequence} skill={enemyState.activeSkillId} trigger={enemyState.activeSkillAnimationTrigger} scene={SceneManager.GetActiveScene().name}");
+                }
+
                 enemy.ApplyOnlineRemoteMovementPresentation(enemyState.moveBlend, enemyState.moveForward, enemyState.moveStrafe);
                 enemy.ApplyOnlineRemoteSkillPresentation(
                     enemyState.activeSkillSequence,
@@ -1797,8 +1837,15 @@ namespace Game.Online
             {
                 bootstrapper.ApplyOnlineWorldSnapshot(snapshot, () =>
                 {
+                    bool authoritySceneChanged = !string.Equals(_lastAppliedWorldSnapshotSceneName, sceneName, StringComparison.Ordinal);
                     _lastAppliedWorldSnapshotVersion = snapshotInfo.version;
                     _lastAppliedWorldSnapshotSceneName = sceneName;
+                    if (authoritySceneChanged)
+                    {
+                        _lastAppliedAuthorityStateVersion = 0;
+                        _nextOnlineEnemyFreezeDebugTime = 0f;
+                        _nextOnlineEnemyFreezeApplyDebugTime = 0f;
+                    }
                     _isApplyingWorldSnapshot = false;
                 });
             }

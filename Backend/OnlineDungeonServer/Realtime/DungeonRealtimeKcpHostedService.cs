@@ -90,6 +90,24 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             return;
         }
 
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.PlayerStateType, StringComparison.Ordinal))
+        {
+            HandlePlayerState(connectionId, envelope);
+            return;
+        }
+
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.EnemyAuthorityStateType, StringComparison.Ordinal))
+        {
+            HandleEnemyAuthorityState(connectionId, envelope);
+            return;
+        }
+
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.AuthorityPollType, StringComparison.Ordinal))
+        {
+            HandleAuthorityPoll(connectionId, envelope);
+            return;
+        }
+
         if (string.Equals(envelope.Type, DungeonRealtimeProtocol.UiPanelEventType, StringComparison.Ordinal)
             || string.Equals(envelope.Type, DungeonRealtimeProtocol.UiPanelPollType, StringComparison.Ordinal))
         {
@@ -146,6 +164,104 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             DungeonRealtimeProtocol.HelloAckType,
             envelope.Sequence,
             payload);
+    }
+
+    private void HandlePlayerState(int connectionId, DungeonRealtimeEnvelope envelope)
+    {
+        if (envelope.Payload == null)
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, "玩家实时状态为空");
+            return;
+        }
+
+        UpsertDungeonPlayerPoseRequest? request;
+        try
+        {
+            request = envelope.Payload.Value.Deserialize<UpsertDungeonPlayerPoseRequest>(DungeonRealtimeProtocol.JsonOptions);
+        }
+        catch
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, "玩家实时状态格式无效");
+            return;
+        }
+
+        if (request == null)
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, "玩家实时状态为空");
+            return;
+        }
+
+        if (!string.Equals(request.UserId, envelope.UserId, StringComparison.Ordinal)
+            || !string.Equals(request.JoinToken, envelope.JoinToken, StringComparison.Ordinal))
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, "玩家实时状态身份不匹配");
+            return;
+        }
+
+        if (!_registry.TryUpsertPlayerPose(envelope.InstanceId, request, out DungeonPlayerPoseListDto? poses, out string error))
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, error);
+            return;
+        }
+
+        var payload = new DungeonRealtimePlayerSnapshotPayload
+        {
+            Poses = poses?.poses ?? new List<DungeonPlayerPoseDto>(),
+        };
+        Send(connectionId, envelope.InstanceId, envelope.UserId, DungeonRealtimeProtocol.PlayerSnapshotType, envelope.Sequence, payload);
+    }
+
+    private void HandleEnemyAuthorityState(int connectionId, DungeonRealtimeEnvelope envelope)
+    {
+        if (envelope.Payload == null)
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, "敌人权威状态为空");
+            return;
+        }
+
+        DungeonRealtimeEnemyAuthorityStatePayload? request;
+        try
+        {
+            request = envelope.Payload.Value.Deserialize<DungeonRealtimeEnemyAuthorityStatePayload>(DungeonRealtimeProtocol.JsonOptions);
+        }
+        catch
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, "敌人权威状态格式无效");
+            return;
+        }
+
+        if (!_registry.TryUpsertEnemyAuthorityState(
+                envelope.InstanceId,
+                envelope.UserId,
+                envelope.JoinToken,
+                request?.Enemies,
+                out DungeonAuthorityStateDto? state,
+                out string error))
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, error);
+            return;
+        }
+
+        var payload = new DungeonRealtimeAuthoritySnapshotPayload
+        {
+            State = state,
+        };
+        Send(connectionId, envelope.InstanceId, envelope.UserId, DungeonRealtimeProtocol.AuthoritySnapshotType, envelope.Sequence, payload);
+    }
+
+    private void HandleAuthorityPoll(int connectionId, DungeonRealtimeEnvelope envelope)
+    {
+        if (!_registry.TryGetAuthorityState(envelope.InstanceId, envelope.UserId, envelope.JoinToken, out DungeonAuthorityStateDto? state, out string error))
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, error);
+            return;
+        }
+
+        var payload = new DungeonRealtimeAuthoritySnapshotPayload
+        {
+            State = state,
+        };
+        Send(connectionId, envelope.InstanceId, envelope.UserId, DungeonRealtimeProtocol.AuthoritySnapshotType, envelope.Sequence, payload);
     }
 
     private void HandleUiPanelSync(int connectionId, DungeonRealtimeEnvelope envelope)
