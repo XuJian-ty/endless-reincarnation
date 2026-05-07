@@ -1,5 +1,6 @@
 using Game.Data;
 using Game.Domain;
+using Game.Online;
 using Game.Saving;
 using Game.UI;
 using ProjectBase;
@@ -39,13 +40,27 @@ namespace Game.GameFlow
             if (gsm == null || run == null)
                 return false;
 
-            gsm.Player?.SaveTo(run);
-            Object.FindFirstObjectByType<LevelBootstrapper>()?.CaptureRuntimeSnapshot();
-            MarkOriginSnapshotBossTransitionStarted(run, bossId);
-
             _bossId = bossId.Trim();
             _bossDisplayName = string.IsNullOrWhiteSpace(bossDisplayName) ? _bossId : bossDisplayName.Trim();
             _originSceneName = SceneManager.GetActiveScene().name;
+            OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            if (onlineCoordinator != null && onlineCoordinator.HasActiveSession)
+            {
+                if (!onlineCoordinator.TryStartOnlineSceneLoad(SceneName, _bossId, _bossDisplayName, out string onlineLoadError))
+                {
+                    Debug.LogWarning($"[FinalBossDuelRuntimeContext] 联机最终 Boss 场景同步加载失败：{onlineLoadError}");
+                    return false;
+                }
+
+                gsm.Player?.SaveTo(run);
+                Object.FindFirstObjectByType<LevelBootstrapper>()?.CaptureRuntimeSnapshot();
+                MarkOriginSnapshotBossTransitionStarted(run, bossId);
+                return true;
+            }
+
+            gsm.Player?.SaveTo(run);
+            Object.FindFirstObjectByType<LevelBootstrapper>()?.CaptureRuntimeSnapshot();
+            MarkOriginSnapshotBossTransitionStarted(run, bossId);
             LoadSceneWithMainMenuStyleTransition(SceneName);
             return true;
         }

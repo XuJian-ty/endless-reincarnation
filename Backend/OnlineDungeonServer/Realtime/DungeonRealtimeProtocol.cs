@@ -5,7 +5,7 @@ namespace OnlineDungeonServer.Realtime;
 
 internal static class DungeonRealtimeProtocol
 {
-    public const int Version = 2;
+    public const int Version = 3;
     public const int DefaultPort = 5087;
     public const int DefaultKcpPort = 5088;
     public const int MaxDatagramBytes = 16 * 1024;
@@ -15,7 +15,7 @@ internal static class DungeonRealtimeProtocol
     public const string StateTransport = "udp-unreliable-snapshot";
     public const string EventTransport = "kcp-reliable-event";
     public const string SynchronizationMode = "state-sync-snapshot-interpolation";
-    public const string AuthoritySchema = "enemy-authority-v2-movement-skill-chest-reward";
+    public const string AuthoritySchema = "enemy-authority-v3-movement-skill-chest-reward-scene-load";
     public const string SessionLifecycleMode = "server-authoritative-session-close";
     public const string ErrorCodeGeneric = "error";
     public const string ErrorCodeSessionClosed = "sessionClosed";
@@ -31,6 +31,9 @@ internal static class DungeonRealtimeProtocol
     public const string UiPanelEventType = "uiPanelEvent";
     public const string UiPanelPollType = "uiPanelPoll";
     public const string UiPanelSnapshotType = "uiPanelSnapshot";
+    public const string SceneLoadEventType = "sceneLoadEvent";
+    public const string SceneLoadPollType = "sceneLoadPoll";
+    public const string SceneLoadSnapshotType = "sceneLoadSnapshot";
     public const string DamageEventType = "damageEvent";
     public const string DamagePollType = "damagePoll";
     public const string DamageSnapshotType = "damageSnapshot";
@@ -151,6 +154,22 @@ internal sealed class DungeonRealtimeUiPanelSnapshotPayload
     public string AckEventId { get; init; } = string.Empty;
     public List<DungeonUiPanelEventDto> Events { get; init; } = new();
     public DungeonUiPanelStateDto? State { get; init; }
+}
+
+internal sealed class DungeonRealtimeSceneLoadSyncPayload
+{
+    public string Action { get; init; } = string.Empty;
+    public string EventId { get; init; } = string.Empty;
+    public string TransitionId { get; init; } = string.Empty;
+    public string SceneName { get; init; } = string.Empty;
+    public string BossId { get; init; } = string.Empty;
+    public string BossDisplayName { get; init; } = string.Empty;
+}
+
+internal sealed class DungeonRealtimeSceneLoadSnapshotPayload
+{
+    public string AckEventId { get; init; } = string.Empty;
+    public DungeonSceneLoadStateDto? State { get; init; }
 }
 
 internal sealed class DungeonRealtimeDamageSyncPayload

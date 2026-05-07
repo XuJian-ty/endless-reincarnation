@@ -40,10 +40,19 @@ namespace Game.Online
         private long _lastReceivedDamageEventSequence;
         private long _lastReceivedUiPanelEventSequence;
         private long _lastAppliedUiPanelStateVersion;
+        private long _lastAppliedSceneLoadVersion;
         private long _lastAppliedRewardStateVersion;
         private string _lastUploadedWorldSnapshotJson = string.Empty;
         private string _lastUploadedWorldSnapshotSceneName = string.Empty;
         private string _pendingSceneSyncName = string.Empty;
+        private string _onlineSceneLoadTransitionId = string.Empty;
+        private string _onlineSceneLoadSceneName = string.Empty;
+        private string _completedOnlineSceneLoadTransitionId = string.Empty;
+        private string _completedOnlineSceneLoadSceneName = string.Empty;
+        private bool _onlineSceneLoadInProgress;
+        private bool _onlineSceneLoadReleased;
+        private bool _onlineSceneLoadReadySent;
+        private float _onlineSceneLoadReleaseLocalTime;
         private bool _isApplyingWorldSnapshot;
         private float _nextWorldSnapshotWarningTime;
         private readonly OnlineDungeonWorldSnapshotClient _worldSnapshotClient = new OnlineDungeonWorldSnapshotClient();
@@ -160,6 +169,7 @@ namespace Game.Online
             StartWorldSnapshotSync();
             StartDamageEventSync();
             StartUiPanelEventSync();
+            StartSceneLoadSync();
             StartRewardStateSync();
             TryEnterTargetLevel(currentUser.userId);
             return true;
@@ -389,6 +399,56 @@ namespace Game.Online
             return true;
         }
 
+        public bool TryStartOnlineSceneLoad(string sceneName, string bossId, string bossDisplayName, out string error)
+        {
+            error = string.Empty;
+            if (!HasActiveSession)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                error = "缺少联机场景加载目标";
+                return false;
+            }
+
+            if (!Application.CanStreamedLevelBeLoaded(sceneName))
+            {
+                error = $"副本目标场景未加入 Build Settings：{sceneName}";
+                return false;
+            }
+
+            SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
+            if (currentUser == null || string.IsNullOrWhiteSpace(currentUser.userId))
+            {
+                error = "当前未登录账号";
+                return false;
+            }
+
+            if (!IsWorldSnapshotPublisher(currentUser.userId))
+            {
+                error = "只有被援助方可以发起联机场景加载";
+                return false;
+            }
+
+            if (!_realtimeClient.IsRunning)
+            {
+                error = "联机副本实时通道未启动，无法发起场景加载同步";
+                return false;
+            }
+
+            OnlineDungeonSceneLoadEventRequest request = new OnlineDungeonSceneLoadEventRequest
+            {
+                eventId = Guid.NewGuid().ToString("N"),
+                action = "start",
+                transitionId = Guid.NewGuid().ToString("N"),
+                sceneName = sceneName.Trim(),
+                bossId = string.IsNullOrWhiteSpace(bossId) ? string.Empty : bossId.Trim(),
+                bossDisplayName = string.IsNullOrWhiteSpace(bossDisplayName) ? string.Empty : bossDisplayName.Trim(),
+            };
+            EnqueueRealtimeSceneLoadEvent(request);
+            return true;
+        }
+
         public bool TrySubmitEnemyKillReward(EnemyController enemy, EnemyRuntimeStats enemyStats, Vector3 deathPosition, System.Random rng)
         {
             if (!HasActiveSession || enemy == null)
@@ -421,6 +481,7 @@ namespace Game.Online
             StopWorldSnapshotSync();
             StopDamageEventSync();
             StopUiPanelEventSync();
+            StopSceneLoadSync();
             StopRewardStateSync();
             ClearRemoteAvatars();
             ClearOnlineDrops();
@@ -485,6 +546,51 @@ namespace Game.Online
             _appliedUiPanelEventIds.Clear();
         }
 
+        private void StartSceneLoadSync()
+        {
+            StopSceneLoadSync();
+        }
+
+        private void StopSceneLoadSync()
+        {
+            _lastAppliedSceneLoadVersion = 0;
+            _onlineSceneLoadTransitionId = string.Empty;
+            _onlineSceneLoadSceneName = string.Empty;
+            _completedOnlineSceneLoadTransitionId = string.Empty;
+            _completedOnlineSceneLoadSceneName = string.Empty;
+            _onlineSceneLoadInProgress = false;
+            _onlineSceneLoadReleased = false;
+            _onlineSceneLoadReadySent = false;
+            _onlineSceneLoadReleaseLocalTime = 0f;
+        }
+
+        public bool ShouldWaitForOnlineFinalBossAuthority()
+        {
+            return HasActiveSession && !ShouldDriveOnlineWorldSimulation();
+        }
+
+        public string BuildOnlineDebugContext()
+        {
+            SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
+            string currentUserId = currentUser != null ? currentUser.userId : string.Empty;
+            string hostUserId = _activeAidSession != null ? _activeAidSession.hostUserId : string.Empty;
+            string helperUserId = _activeAidSession != null ? _activeAidSession.helperUserId : string.Empty;
+            bool hasSession = HasActiveSession;
+            bool driveWorld = ShouldDriveOnlineWorldSimulation();
+            string role = "offline";
+            if (hasSession)
+            {
+                if (string.Equals(currentUserId, hostUserId, StringComparison.Ordinal))
+                    role = "host";
+                else if (string.Equals(currentUserId, helperUserId, StringComparison.Ordinal))
+                    role = "helper";
+                else
+                    role = driveWorld ? "worldAuthority" : "remoteParticipant";
+            }
+
+            return $"hasSession={hasSession} role={role} currentUser={currentUserId} hostUser={hostUserId} helperUser={helperUserId} isAidJoiner={IsAidJoinerRole} driveWorld={driveWorld} activeScene={SceneManager.GetActiveScene().name}";
+        }
+
         private void EnqueueRealtimeUiPanelEvent(OnlineDungeonUiPanelEventRequest request)
         {
             if (request == null)
@@ -494,6 +600,17 @@ namespace Game.Online
                 _realtimeClient.EnqueueUiPanelEvent(request);
             else
                 LogWorldSnapshotWarning("联机副本实时通道未启动，副本面板事件无法提交。");
+        }
+
+        private void EnqueueRealtimeSceneLoadEvent(OnlineDungeonSceneLoadEventRequest request)
+        {
+            if (request == null)
+                return;
+
+            if (_realtimeClient.IsRunning)
+                _realtimeClient.EnqueueSceneLoadEvent(request);
+            else
+                LogWorldSnapshotWarning("联机副本实时通道未启动，场景加载同步事件无法提交。");
         }
 
         private void StartRewardStateSync()
@@ -589,6 +706,7 @@ namespace Game.Online
                 ApplyRealtimeAuthoritySnapshot,
                 () => _lastReceivedUiPanelEventSequence,
                 ApplyRealtimeUiPanelSnapshot,
+                ApplyRealtimeSceneLoadSnapshot,
                 () => _lastReceivedDamageEventSequence,
                 ApplyRealtimeDamageSnapshot,
                 ApplyRealtimeRewardSnapshot,
@@ -681,6 +799,11 @@ namespace Game.Online
         {
             ApplyUiPanelEvents(snapshot?.events);
             ApplyUiPanelState(snapshot?.state);
+        }
+
+        private void ApplyRealtimeSceneLoadSnapshot(OnlineDungeonRealtimeSceneLoadSnapshotInfo snapshot)
+        {
+            ApplySceneLoadState(snapshot?.state);
         }
 
         private void ApplyRealtimeDamageSnapshot(OnlineDungeonRealtimeDamageSnapshotInfo snapshot)
@@ -1095,12 +1218,18 @@ namespace Game.Online
                 return;
 
             if (!ShouldDriveOnlineWorldSimulation() && !IsAuthorityStateSceneReady())
+            {
+                Debug.Log($"[OnlineBossDebug] Skip authority state because scene is not ready. version={state.version} lastSnapshotScene={_lastAppliedWorldSnapshotSceneName} context={BuildOnlineDebugContext()}");
                 return;
+            }
 
             if (state.enemies != null)
             {
+                Debug.Log($"[OnlineBossDebug] Apply authority enemies. version={state.version} count={state.enemies.Count} context={BuildOnlineDebugContext()}");
                 for (int i = 0; i < state.enemies.Count; i++)
                     ApplyEnemyAuthorityState(state.enemies[i]);
+
+                PruneEnemiesMissingFromAuthorityState(state.enemies);
             }
 
             if (state.chests != null)
@@ -1146,12 +1275,15 @@ namespace Game.Online
                 return;
 
             EnemyController enemy = EnemyController.FindByRuntimeId(enemyState.runtimeId);
+            if (enemyState.enemyType == (int)EnemyType.Boss)
+                Debug.Log($"[OnlineBossDebug] Apply boss authority. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} found={enemy != null} hp={enemyState.currentHp} dead={enemyState.isDead} countsAsLevelBoss={enemyState.countsAsLevelBoss} context={BuildOnlineDebugContext()}");
             if (enemy == null)
             {
                 if (ShouldDriveOnlineWorldSimulation())
                     return;
 
-                enemy = SpawnEnemyFromAuthorityState(enemyState);
+                RemoveDuplicateFinalBossesBeforeAuthoritySpawn(enemyState.runtimeId);
+                enemy = SpawnEnemyFromAuthorityState(enemyState, BuildOnlineDebugContext());
                 if (enemy == null)
                     return;
             }
@@ -1177,7 +1309,7 @@ namespace Game.Online
             }
         }
 
-        private static EnemyController SpawnEnemyFromAuthorityState(OnlineDungeonEnemyAuthorityInfo enemyState)
+        private static EnemyController SpawnEnemyFromAuthorityState(OnlineDungeonEnemyAuthorityInfo enemyState, string debugContext)
         {
             if (enemyState == null || string.IsNullOrWhiteSpace(enemyState.enemyId) || enemyState.isDead)
                 return null;
@@ -1196,6 +1328,8 @@ namespace Game.Online
                 countsAsLevelBoss = IsFinalBossAuthorityContext(enemyState) || enemyState.countsAsLevelBoss,
             };
             EnemyController enemy = EnemySpawnRuntime.SpawnEnemyFromSnapshot(snapshot, EnemySpawnRuntime.BuildVariantCatalog());
+            if (enemyState.enemyType == (int)EnemyType.Boss)
+                Debug.Log($"[OnlineBossDebug] Spawn boss from authority. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} spawned={enemy != null} countsAsLevelBoss={snapshot.countsAsLevelBoss} context={debugContext}");
             enemy?.SetOnlineRemoteSimulationDisabled(true);
             return enemy;
         }
@@ -1205,6 +1339,52 @@ namespace Game.Online
             return enemyState != null
                    && enemyState.enemyType == (int)EnemyType.Boss
                    && FinalBossDuelSceneRuntime.IsFinalBossDuelScene();
+        }
+
+        private void PruneEnemiesMissingFromAuthorityState(List<OnlineDungeonEnemyAuthorityInfo> enemyStates)
+        {
+            if (ShouldDriveOnlineWorldSimulation() || enemyStates == null)
+                return;
+
+            HashSet<string> authorityRuntimeIds = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = 0; i < enemyStates.Count; i++)
+            {
+                OnlineDungeonEnemyAuthorityInfo enemyState = enemyStates[i];
+                if (enemyState != null && !string.IsNullOrWhiteSpace(enemyState.runtimeId))
+                    authorityRuntimeIds.Add(enemyState.runtimeId.Trim());
+            }
+
+            EnemyController[] enemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                EnemyController enemy = enemies[i];
+                if (enemy == null || authorityRuntimeIds.Contains(enemy.RuntimeId))
+                    continue;
+
+                if (enemy.EnemyCategory == EnemyType.Boss)
+                    Debug.Log($"[OnlineBossDebug] Prune local boss missing from authority. runtime={enemy.RuntimeId} enemyId={enemy.EnemyId} context={BuildOnlineDebugContext()}");
+                UnityEngine.Object.Destroy(enemy.gameObject);
+            }
+        }
+
+        private void RemoveDuplicateFinalBossesBeforeAuthoritySpawn(string authorityRuntimeId)
+        {
+            if (ShouldDriveOnlineWorldSimulation() || string.IsNullOrWhiteSpace(authorityRuntimeId) || !FinalBossDuelSceneRuntime.IsFinalBossDuelScene())
+                return;
+
+            EnemyController[] enemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                EnemyController enemy = enemies[i];
+                if (enemy == null || enemy.EnemyCategory != EnemyType.Boss)
+                    continue;
+
+                if (string.Equals(enemy.RuntimeId, authorityRuntimeId, StringComparison.Ordinal))
+                    continue;
+
+                Debug.Log($"[OnlineBossDebug] Remove duplicate final boss before authority spawn. localRuntime={enemy.RuntimeId} authorityRuntime={authorityRuntimeId} enemyId={enemy.EnemyId} context={BuildOnlineDebugContext()}");
+                UnityEngine.Object.Destroy(enemy.gameObject);
+            }
         }
 
         private void ApplyUiPanelEvents(List<OnlineDungeonUiPanelEventInfo> panelEvents)
@@ -1271,6 +1451,151 @@ namespace Game.Online
             GameplayUIInputBridge.ApplyNetworkPanelState(PanelNames.SkillTree, false);
             GameplayUIInputBridge.ApplyNetworkPanelState(PanelNames.KeyConfig, false);
             GameplayUIInputBridge.ApplyNetworkPanelState(PanelNames.Menu, false);
+        }
+
+        private void ApplySceneLoadState(OnlineDungeonSceneLoadStateInfo state)
+        {
+            if (!HasActiveSession)
+                return;
+
+            if (state == null || state.version <= _lastAppliedSceneLoadVersion)
+            {
+                if (state != null)
+                    Debug.Log($"[OnlineSceneLoadDebug] Skip sceneLoad snapshot by version. incoming={state.version} last={_lastAppliedSceneLoadVersion} transition={state.transitionId} active={state.active} released={state.released} context={BuildOnlineDebugContext()}");
+                return;
+            }
+
+            Debug.Log($"[OnlineSceneLoadDebug] Apply sceneLoad state. version={state.version} last={_lastAppliedSceneLoadVersion} active={state.active} released={state.released} transition={state.transitionId} scene={state.sceneName} ready={state.readyCount}/{state.participantCount} completed={state.completedCount}/{state.participantCount} inProgress={_onlineSceneLoadInProgress} localTransition={_onlineSceneLoadTransitionId} completedLocal={_completedOnlineSceneLoadTransitionId} completedScene={_completedOnlineSceneLoadSceneName} context={BuildOnlineDebugContext()}");
+
+            if (!state.active || string.IsNullOrWhiteSpace(state.transitionId) || string.IsNullOrWhiteSpace(state.sceneName))
+            {
+                Debug.Log($"[OnlineSceneLoadDebug] SceneLoad inactive or invalid. version={state.version} transition={state.transitionId} scene={state.sceneName} context={BuildOnlineDebugContext()}");
+                _lastAppliedSceneLoadVersion = state.version;
+                return;
+            }
+
+            if (string.Equals(_completedOnlineSceneLoadTransitionId, state.transitionId, StringComparison.Ordinal))
+            {
+                Debug.Log($"[OnlineSceneLoadDebug] Skip completed local transition. transition={state.transitionId} version={state.version} context={BuildOnlineDebugContext()}");
+                _lastAppliedSceneLoadVersion = state.version;
+                return;
+            }
+
+            if (state.released && _onlineSceneLoadReleaseLocalTime <= 0f && !TryResolveSceneLoadReleaseLocalTime(state, out _onlineSceneLoadReleaseLocalTime))
+            {
+                Debug.LogWarning($"[OnlineSceneLoadDebug] Released sceneLoad missing/invalid release time. transition={state.transitionId} releaseAt={state.releaseAtUtc} context={BuildOnlineDebugContext()}");
+                return;
+            }
+
+            if (!_onlineSceneLoadInProgress || !string.Equals(_onlineSceneLoadTransitionId, state.transitionId, StringComparison.Ordinal))
+                BeginOnlineSceneLoad(state);
+
+            _lastAppliedSceneLoadVersion = state.version;
+            if (string.Equals(_onlineSceneLoadTransitionId, state.transitionId, StringComparison.Ordinal) && state.released)
+            {
+                Debug.Log($"[OnlineDungeonSessionCoordinator] 联机场景加载屏障已放行：{state.sceneName} ready={state.readyCount}/{state.participantCount}");
+                _onlineSceneLoadReleased = true;
+            }
+        }
+
+        private void BeginOnlineSceneLoad(OnlineDungeonSceneLoadStateInfo state)
+        {
+            string sceneName = state.sceneName.Trim();
+            if (!Application.CanStreamedLevelBeLoaded(sceneName))
+            {
+                LogWorldSnapshotWarning($"副本目标场景未加入 Build Settings：{sceneName}");
+                return;
+            }
+
+            if (FinalBossDuelSceneRuntime.IsFinalBossDuelSceneName(sceneName))
+                FinalBossDuelRuntimeContext.AdoptOnlineChallenge(state.bossId, state.bossDisplayName);
+
+            Debug.Log($"[OnlineSceneLoadDebug] Begin online scene load. transition={state.transitionId} scene={sceneName} released={state.released} releaseAt={state.releaseAtUtc} inProgress={_onlineSceneLoadInProgress} previousTransition={_onlineSceneLoadTransitionId} context={BuildOnlineDebugContext()}");
+            _pendingSceneSyncName = sceneName;
+            _onlineSceneLoadTransitionId = state.transitionId.Trim();
+            _onlineSceneLoadSceneName = sceneName;
+            _onlineSceneLoadInProgress = true;
+            _onlineSceneLoadReleased = state.released;
+            _onlineSceneLoadReadySent = false;
+            _onlineSceneLoadReleaseLocalTime = 0f;
+            if (state.released && TryResolveSceneLoadReleaseLocalTime(state, out float releaseLocalTime))
+                _onlineSceneLoadReleaseLocalTime = releaseLocalTime;
+            AdoptTargetLevelRuntimeContext(Mathf.Max(1, _activeAidSession.hostLevelIndex));
+            Debug.Log($"[OnlineDungeonSessionCoordinator] 开始联机场景加载屏障：{sceneName}");
+            LoadSceneWithProgressWaitingForOnlineRelease(
+                sceneName,
+                () => IsOnlineSceneLoadActivationAllowed(sceneName),
+                MarkOnlineSceneLoadReady,
+                FinishOnlineSceneLoad);
+        }
+
+        private bool IsOnlineSceneLoadActivationAllowed(string sceneName)
+        {
+            return _onlineSceneLoadReleased
+                   && string.Equals(_onlineSceneLoadSceneName, sceneName, StringComparison.Ordinal)
+                   && _onlineSceneLoadReleaseLocalTime > 0f
+                   && Time.unscaledTime >= _onlineSceneLoadReleaseLocalTime;
+        }
+
+        private bool TryResolveSceneLoadReleaseLocalTime(OnlineDungeonSceneLoadStateInfo state, out float localTime)
+        {
+            localTime = 0f;
+            if (state == null || string.IsNullOrWhiteSpace(state.releaseAtUtc))
+                return false;
+
+            return _realtimeClient.TryConvertServerUtcToLocalTime(state.releaseAtUtc, out localTime);
+        }
+
+        private void MarkOnlineSceneLoadReady()
+        {
+            if (_onlineSceneLoadReadySent || string.IsNullOrWhiteSpace(_onlineSceneLoadTransitionId))
+            {
+                Debug.Log($"[OnlineSceneLoadDebug] Skip ready send. readySent={_onlineSceneLoadReadySent} transition={_onlineSceneLoadTransitionId} context={BuildOnlineDebugContext()}");
+                return;
+            }
+
+            _onlineSceneLoadReadySent = true;
+            Debug.Log($"[OnlineDungeonSessionCoordinator] 本机联机场景加载已到 100%，等待其他玩家：{_onlineSceneLoadSceneName}");
+            OnlineDungeonSceneLoadEventRequest request = new OnlineDungeonSceneLoadEventRequest
+            {
+                eventId = Guid.NewGuid().ToString("N"),
+                action = "ready",
+                transitionId = _onlineSceneLoadTransitionId,
+            };
+            EnqueueRealtimeSceneLoadEvent(request);
+        }
+
+        private void FinishOnlineSceneLoad()
+        {
+            Debug.Log($"[OnlineSceneLoadDebug] Finish online scene load. transition={_onlineSceneLoadTransitionId} scene={_onlineSceneLoadSceneName} context={BuildOnlineDebugContext()}");
+            SendOnlineSceneLoadComplete();
+            _completedOnlineSceneLoadTransitionId = _onlineSceneLoadTransitionId;
+            _completedOnlineSceneLoadSceneName = _onlineSceneLoadSceneName;
+            _pendingSceneSyncName = string.Empty;
+            _onlineSceneLoadTransitionId = string.Empty;
+            _onlineSceneLoadSceneName = string.Empty;
+            _onlineSceneLoadInProgress = false;
+            _onlineSceneLoadReleased = false;
+            _onlineSceneLoadReadySent = false;
+            _onlineSceneLoadReleaseLocalTime = 0f;
+        }
+
+        private void SendOnlineSceneLoadComplete()
+        {
+            if (string.IsNullOrWhiteSpace(_onlineSceneLoadTransitionId))
+            {
+                Debug.Log($"[OnlineSceneLoadDebug] Skip complete send because transition is empty. context={BuildOnlineDebugContext()}");
+                return;
+            }
+
+            OnlineDungeonSceneLoadEventRequest request = new OnlineDungeonSceneLoadEventRequest
+            {
+                eventId = Guid.NewGuid().ToString("N"),
+                action = "complete",
+                transitionId = _onlineSceneLoadTransitionId,
+            };
+            Debug.Log($"[OnlineSceneLoadDebug] Send complete. eventId={request.eventId} transition={request.transitionId} scene={_onlineSceneLoadSceneName} context={BuildOnlineDebugContext()}");
+            EnqueueRealtimeSceneLoadEvent(request);
         }
 
         private IEnumerator UploadWorldSnapshotAfterFrame()
@@ -1389,12 +1714,17 @@ namespace Game.Online
                 string.IsNullOrWhiteSpace(snapshotInfo.snapshotJson) ||
                 snapshotInfo.version <= _lastAppliedWorldSnapshotVersion)
             {
+                if (snapshotInfo != null)
+                    Debug.Log($"[OnlineSceneLoadDebug] Skip world snapshot. version={snapshotInfo.version} last={_lastAppliedWorldSnapshotVersion} scene={snapshotInfo.sceneName} context={BuildOnlineDebugContext()}");
                 return;
             }
 
             LevelBootstrapper bootstrapper = UnityEngine.Object.FindFirstObjectByType<LevelBootstrapper>();
             if (bootstrapper == null || !IsActiveTargetLevelScene())
+            {
+                Debug.Log($"[OnlineSceneLoadDebug] Skip world snapshot because active target scene not ready. version={snapshotInfo.version} snapshotScene={snapshotInfo.sceneName} bootstrapper={bootstrapper != null} context={BuildOnlineDebugContext()}");
                 return;
+            }
 
             LevelSnapshot snapshot;
             try
@@ -1425,10 +1755,19 @@ namespace Game.Online
 
             if (!IsSceneActive(sceneName))
             {
+                if (ShouldIgnoreWorldSnapshotSceneSwitch(sceneName))
+                {
+                    Debug.Log($"[OnlineSceneLoadDebug] Ignore world snapshot scene switch after sceneLoad barrier. snapshotVersion={snapshotInfo.version} snapshotScene={sceneName} completedScene={_completedOnlineSceneLoadSceneName} pending={_pendingSceneSyncName} context={BuildOnlineDebugContext()}");
+                    _lastAppliedWorldSnapshotVersion = snapshotInfo.version;
+                    return;
+                }
+
+                Debug.Log($"[OnlineSceneLoadDebug] World snapshot requests scene load. snapshotVersion={snapshotInfo.version} snapshotScene={sceneName} pending={_pendingSceneSyncName} onlineInProgress={_onlineSceneLoadInProgress} onlineScene={_onlineSceneLoadSceneName} context={BuildOnlineDebugContext()}");
                 TryLoadOnlineScene(sceneName, snapshot);
                 return;
             }
 
+            Debug.Log($"[OnlineSceneLoadDebug] Apply world snapshot in active scene. version={snapshotInfo.version} scene={sceneName} context={BuildOnlineDebugContext()}");
             _isApplyingWorldSnapshot = true;
             try
             {
@@ -1513,10 +1852,34 @@ namespace Game.Online
             return string.Equals(SceneManager.GetActiveScene().name, sceneName, StringComparison.Ordinal);
         }
 
+        private bool ShouldIgnoreWorldSnapshotSceneSwitch(string snapshotSceneName)
+        {
+            if (ShouldDriveOnlineWorldSimulation() ||
+                string.IsNullOrWhiteSpace(snapshotSceneName) ||
+                string.IsNullOrWhiteSpace(_completedOnlineSceneLoadTransitionId) ||
+                string.IsNullOrWhiteSpace(_completedOnlineSceneLoadSceneName))
+                return false;
+
+            if (string.Equals(_pendingSceneSyncName, snapshotSceneName, StringComparison.Ordinal))
+                return false;
+
+            return !string.Equals(snapshotSceneName, _completedOnlineSceneLoadSceneName, StringComparison.Ordinal);
+        }
+
         private void TryLoadOnlineScene(string sceneName, LevelSnapshot snapshot)
         {
-            if (string.Equals(_pendingSceneSyncName, sceneName, StringComparison.Ordinal))
+            Debug.Log($"[OnlineSceneLoadDebug] TryLoadOnlineScene called. scene={sceneName} pending={_pendingSceneSyncName} onlineInProgress={_onlineSceneLoadInProgress} onlineScene={_onlineSceneLoadSceneName} onlineTransition={_onlineSceneLoadTransitionId} context={BuildOnlineDebugContext()}");
+            if (_onlineSceneLoadInProgress && string.Equals(_onlineSceneLoadSceneName, sceneName, StringComparison.Ordinal))
+            {
+                Debug.Log($"[OnlineSceneLoadDebug] TryLoadOnlineScene skipped by online scene load in progress. scene={sceneName} transition={_onlineSceneLoadTransitionId} context={BuildOnlineDebugContext()}");
                 return;
+            }
+
+            if (string.Equals(_pendingSceneSyncName, sceneName, StringComparison.Ordinal))
+            {
+                Debug.Log($"[OnlineSceneLoadDebug] TryLoadOnlineScene skipped by pending scene. scene={sceneName} context={BuildOnlineDebugContext()}");
+                return;
+            }
 
             if (!Application.CanStreamedLevelBeLoaded(sceneName))
             {
@@ -1525,7 +1888,10 @@ namespace Game.Online
             }
 
             if (FinalBossDuelSceneRuntime.IsFinalBossDuelSceneName(sceneName) && !TryAdoptFinalBossChallenge(snapshot))
+            {
+                Debug.Log($"[OnlineSceneLoadDebug] TryLoadOnlineScene skipped because final boss challenge cannot be adopted. scene={sceneName} context={BuildOnlineDebugContext()}");
                 return;
+            }
 
             _pendingSceneSyncName = sceneName;
             if (snapshot != null)
@@ -2063,6 +2429,29 @@ namespace Game.Online
             ui.ShowPanel<LoadingPanel>(PanelNames.Loading, PanelLayers.Loading, _ =>
             {
                 ScenesMgr.GetInstance().LoadSceneAsyn(sceneName, () =>
+                {
+                    ui.HidePanel(PanelNames.Loading);
+                    ui.HidePanel(PanelNames.MainMenuBackground);
+                    onSceneLoaded?.Invoke();
+                });
+            });
+        }
+
+        private static void LoadSceneWithProgressWaitingForOnlineRelease(string sceneName, Func<bool> canActivate, Action readyToActivate, Action onSceneLoaded = null)
+        {
+            UIManager ui = UIManager.GetInstance();
+            UnityEngine.Events.UnityAction readyAction = () => readyToActivate?.Invoke();
+            if (ui == null)
+            {
+                ScenesMgr.GetInstance().LoadSceneAsynWaitingForActivation(sceneName, canActivate, readyAction, () => onSceneLoaded?.Invoke());
+                return;
+            }
+
+            MainMenuBackgroundPanel.RequestLoadingTransitionShow();
+            ui.ShowPanel<MainMenuBackgroundPanel>(PanelNames.MainMenuBackground, PanelLayers.MainMenuBackground);
+            ui.ShowPanel<LoadingPanel>(PanelNames.Loading, PanelLayers.Loading, _ =>
+            {
+                ScenesMgr.GetInstance().LoadSceneAsynWaitingForActivation(sceneName, canActivate, readyAction, () =>
                 {
                     ui.HidePanel(PanelNames.Loading);
                     ui.HidePanel(PanelNames.MainMenuBackground);

@@ -888,6 +888,199 @@ internal sealed class DungeonInstanceRegistry
         }
     }
 
+    public bool TryStartSceneLoad(
+        string instanceId,
+        StartDungeonSceneLoadRequest request,
+        out DungeonSceneLoadStateDto? state,
+        out string error)
+    {
+        state = null;
+        error = string.Empty;
+
+        if (!TryGetRecord(instanceId, out DungeonInstanceRecord record, out error))
+            return false;
+
+        lock (record.SyncRoot)
+        {
+            if (!TryValidateParticipantCore(record, request.UserId, request.JoinToken, out DungeonParticipantRecord? participantOrNull, out error))
+                return false;
+
+            DungeonParticipantRecord participant = participantOrNull!;
+            if (!string.Equals(participant.UserId, record.TemplateOwnerUserId, StringComparison.Ordinal))
+            {
+                error = "只有被援助方可以发起联机场景加载";
+                return false;
+            }
+
+            string transitionId = NormalizeRequired(request.TransitionId);
+            if (string.IsNullOrWhiteSpace(transitionId))
+            {
+                error = "缺少场景加载会话标识";
+                return false;
+            }
+
+            string sceneName = NormalizeRequired(request.SceneName);
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                error = "缺少场景名称";
+                return false;
+            }
+
+            DateTime now = DateTime.UtcNow;
+            participant.IsConnected = true;
+            participant.LastSeenAtUtc = now;
+            if (record.SceneLoadActive)
+            {
+                state = ToSceneLoadStateDto(record);
+                return true;
+            }
+
+            if (!record.SceneLoadActive || !string.Equals(record.SceneLoadTransitionId, transitionId, StringComparison.Ordinal))
+            {
+                record.SceneLoadActive = true;
+                record.SceneLoadReleased = false;
+                record.SceneLoadTransitionId = transitionId;
+                record.SceneLoadSceneName = sceneName;
+                record.SceneLoadBossId = NormalizeRequired(request.BossId);
+                record.SceneLoadBossDisplayName = NormalizeRequired(request.BossDisplayName);
+                record.SceneLoadReadyUserIds.Clear();
+                record.SceneLoadCompletedUserIds.Clear();
+                record.SceneLoadReleaseAtUtc = null;
+                record.SceneLoadVersion++;
+            }
+
+            record.UpdatedAtUtc = now;
+            state = ToSceneLoadStateDto(record);
+            return true;
+        }
+    }
+
+    public bool TryMarkSceneLoadReady(
+        string instanceId,
+        MarkDungeonSceneLoadReadyRequest request,
+        out DungeonSceneLoadStateDto? state,
+        out string error)
+    {
+        state = null;
+        error = string.Empty;
+
+        if (!TryGetRecord(instanceId, out DungeonInstanceRecord record, out error))
+            return false;
+
+        lock (record.SyncRoot)
+        {
+            if (!TryValidateParticipantCore(record, request.UserId, request.JoinToken, out DungeonParticipantRecord? participantOrNull, out error))
+                return false;
+
+            string transitionId = NormalizeRequired(request.TransitionId);
+            if (string.IsNullOrWhiteSpace(transitionId))
+            {
+                error = "缺少场景加载会话标识";
+                return false;
+            }
+
+            if (!record.SceneLoadActive || !string.Equals(record.SceneLoadTransitionId, transitionId, StringComparison.Ordinal))
+            {
+                error = "场景加载会话不存在或已过期";
+                return false;
+            }
+
+            DungeonParticipantRecord participant = participantOrNull!;
+            DateTime now = DateTime.UtcNow;
+            participant.IsConnected = true;
+            participant.LastSeenAtUtc = now;
+            if (record.SceneLoadReadyUserIds.Add(participant.UserId))
+                record.SceneLoadVersion++;
+
+            if (!record.SceneLoadReleased && AreAllSceneLoadParticipantsReady(record))
+            {
+                record.SceneLoadReleased = true;
+                record.SceneLoadReleaseAtUtc = DateTime.UtcNow.AddMilliseconds(500);
+                record.SceneLoadVersion++;
+            }
+
+            record.UpdatedAtUtc = now;
+            state = ToSceneLoadStateDto(record);
+            return true;
+        }
+    }
+
+    public bool TryCompleteSceneLoad(
+        string instanceId,
+        CompleteDungeonSceneLoadRequest request,
+        out DungeonSceneLoadStateDto? state,
+        out string error)
+    {
+        state = null;
+        error = string.Empty;
+
+        if (!TryGetRecord(instanceId, out DungeonInstanceRecord record, out error))
+            return false;
+
+        lock (record.SyncRoot)
+        {
+            if (!TryValidateParticipantCore(record, request.UserId, request.JoinToken, out DungeonParticipantRecord? participantOrNull, out error))
+                return false;
+
+            string transitionId = NormalizeRequired(request.TransitionId);
+            if (string.IsNullOrWhiteSpace(transitionId))
+            {
+                error = "缺少场景加载会话标识";
+                return false;
+            }
+
+            if (!record.SceneLoadActive || !string.Equals(record.SceneLoadTransitionId, transitionId, StringComparison.Ordinal))
+            {
+                state = ToSceneLoadStateDto(record);
+                return true;
+            }
+
+            DungeonParticipantRecord participant = participantOrNull!;
+            DateTime now = DateTime.UtcNow;
+            participant.IsConnected = true;
+            participant.LastSeenAtUtc = now;
+            if (record.SceneLoadCompletedUserIds.Add(participant.UserId))
+                record.SceneLoadVersion++;
+
+            if (AreAllSceneLoadParticipantsComplete(record))
+            {
+                record.SceneLoadActive = false;
+                record.SceneLoadReleased = false;
+                record.SceneLoadVersion++;
+            }
+
+            record.UpdatedAtUtc = now;
+            state = ToSceneLoadStateDto(record);
+            return true;
+        }
+    }
+
+    public bool TryGetSceneLoadState(
+        string instanceId,
+        string userId,
+        string joinToken,
+        out DungeonSceneLoadStateDto? state,
+        out string error)
+    {
+        state = null;
+        error = string.Empty;
+
+        if (!TryGetRecord(instanceId, out DungeonInstanceRecord record, out error))
+            return false;
+
+        lock (record.SyncRoot)
+        {
+            if (!TryValidateParticipantCore(record, userId, joinToken, out DungeonParticipantRecord? participantOrNull, out error))
+                return false;
+
+            DungeonParticipantRecord participant = participantOrNull!;
+            participant.IsConnected = true;
+            participant.LastSeenAtUtc = DateTime.UtcNow;
+            state = ToSceneLoadStateDto(record);
+            return true;
+        }
+    }
+
     public bool TryAddEnemyKill(string instanceId, AddDungeonEnemyKillRequest request, out DungeonRewardStateDto? state, out string error)
     {
         state = null;
@@ -1874,6 +2067,58 @@ internal sealed class DungeonInstanceRegistry
         };
     }
 
+    private static DungeonSceneLoadStateDto ToSceneLoadStateDto(DungeonInstanceRecord record)
+    {
+        return new DungeonSceneLoadStateDto
+        {
+            version = record.SceneLoadVersion,
+            active = record.SceneLoadActive,
+            released = record.SceneLoadReleased,
+            transitionId = record.SceneLoadTransitionId,
+            sceneName = record.SceneLoadSceneName,
+            bossId = record.SceneLoadBossId,
+            bossDisplayName = record.SceneLoadBossDisplayName,
+            releaseAtUtc = record.SceneLoadReleaseAtUtc,
+            readyUserIds = record.SceneLoadReadyUserIds
+                .OrderBy(userId => userId)
+                .ToList(),
+            completedUserIds = record.SceneLoadCompletedUserIds
+                .OrderBy(userId => userId)
+                .ToList(),
+            participantCount = record.Participants.Count,
+            readyCount = record.SceneLoadReadyUserIds.Count,
+            completedCount = record.SceneLoadCompletedUserIds.Count,
+        };
+    }
+
+    private static bool AreAllSceneLoadParticipantsReady(DungeonInstanceRecord record)
+    {
+        if (record.Participants.Count <= 0)
+            return false;
+
+        foreach (string userId in record.Participants.Keys)
+        {
+            if (!record.SceneLoadReadyUserIds.Contains(userId))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool AreAllSceneLoadParticipantsComplete(DungeonInstanceRecord record)
+    {
+        if (record.Participants.Count <= 0)
+            return false;
+
+        foreach (string userId in record.Participants.Keys)
+        {
+            if (!record.SceneLoadCompletedUserIds.Contains(userId))
+                return false;
+        }
+
+        return true;
+    }
+
     private static void AddDungeonDrops(
         DungeonInstanceRecord record,
         string enemyRuntimeId,
@@ -2685,6 +2930,16 @@ internal sealed class DungeonInstanceRecord
     public string OpenPanelName { get; set; } = string.Empty;
     public string UiPanelStateUpdatedByUserId { get; set; } = string.Empty;
     public DateTime UiPanelStateUpdatedAtUtc { get; set; }
+    public long SceneLoadVersion { get; set; }
+    public bool SceneLoadActive { get; set; }
+    public bool SceneLoadReleased { get; set; }
+    public string SceneLoadTransitionId { get; set; } = string.Empty;
+    public string SceneLoadSceneName { get; set; } = string.Empty;
+    public string SceneLoadBossId { get; set; } = string.Empty;
+    public string SceneLoadBossDisplayName { get; set; } = string.Empty;
+    public DateTime? SceneLoadReleaseAtUtc { get; set; }
+    public HashSet<string> SceneLoadReadyUserIds { get; } = new(StringComparer.Ordinal);
+    public HashSet<string> SceneLoadCompletedUserIds { get; } = new(StringComparer.Ordinal);
     public long RewardStateVersion { get; set; }
     public Dictionary<string, DungeonKillRewardRecord> KillRewards { get; } = new(StringComparer.Ordinal);
     public Dictionary<string, DungeonDropRecord> Drops { get; } = new(StringComparer.Ordinal);
@@ -2941,6 +3196,30 @@ internal sealed class AddDungeonUiPanelEventRequest
     public bool Open { get; init; }
 }
 
+internal sealed class StartDungeonSceneLoadRequest
+{
+    public string? UserId { get; init; }
+    public string? JoinToken { get; init; }
+    public string? TransitionId { get; init; }
+    public string? SceneName { get; init; }
+    public string? BossId { get; init; }
+    public string? BossDisplayName { get; init; }
+}
+
+internal sealed class MarkDungeonSceneLoadReadyRequest
+{
+    public string? UserId { get; init; }
+    public string? JoinToken { get; init; }
+    public string? TransitionId { get; init; }
+}
+
+internal sealed class CompleteDungeonSceneLoadRequest
+{
+    public string? UserId { get; init; }
+    public string? JoinToken { get; init; }
+    public string? TransitionId { get; init; }
+}
+
 internal sealed class AddDungeonEnemyKillRequest
     : IDungeonDropOriginRequest
 {
@@ -3170,6 +3449,23 @@ internal sealed class DungeonUiPanelStateDto
     public bool hasOpenPanel { get; init; }
     public string updatedByUserId { get; init; } = string.Empty;
     public DateTime updatedAtUtc { get; init; }
+}
+
+internal sealed class DungeonSceneLoadStateDto
+{
+    public long version { get; init; }
+    public bool active { get; init; }
+    public bool released { get; init; }
+    public string transitionId { get; init; } = string.Empty;
+    public string sceneName { get; init; } = string.Empty;
+    public string bossId { get; init; } = string.Empty;
+    public string bossDisplayName { get; init; } = string.Empty;
+    public DateTime? releaseAtUtc { get; init; }
+    public List<string> readyUserIds { get; init; } = new();
+    public List<string> completedUserIds { get; init; } = new();
+    public int participantCount { get; init; }
+    public int readyCount { get; init; }
+    public int completedCount { get; init; }
 }
 
 internal sealed class DungeonRewardStateDto
