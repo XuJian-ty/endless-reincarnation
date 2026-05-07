@@ -12,7 +12,7 @@ namespace Game.Online
 {
     public sealed class OnlineDungeonRealtimeClient : IDisposable
     {
-        private const int ProtocolVersion = 2;
+        private const int ProtocolVersion = 3;
         private const int ReceiveBufferBytes = 16 * 1024;
         private const float HelloRetryIntervalSeconds = 1f;
         private const float HelloTimeoutSeconds = 8f;
@@ -20,6 +20,7 @@ namespace Game.Online
         private const float EnemyAuthorityStateSendIntervalSeconds = 0.1f;
         private const float AuthorityPollIntervalSeconds = 0.1f;
         private const float UiPanelPollIntervalSeconds = 0.1f;
+        private const float SceneLoadPollIntervalSeconds = 0.1f;
         private const float DamagePollIntervalSeconds = 0.05f;
         private const float RewardPollIntervalSeconds = 0.25f;
         private const int MaxPendingReliableEvents = 256;
@@ -28,7 +29,7 @@ namespace Game.Online
         private const string ExpectedStateTransport = "udp-unreliable-snapshot";
         private const string ExpectedEventTransport = "kcp-reliable-event";
         private const string ExpectedSynchronizationMode = "state-sync-snapshot-interpolation";
-        private const string ExpectedAuthoritySchema = "enemy-authority-v2-movement-skill-chest-reward";
+        private const string ExpectedAuthoritySchema = "enemy-authority-v3-movement-skill-chest-reward-scene-load";
         private const string ExpectedSessionLifecycleMode = "server-authoritative-session-close";
         private const string ExpectedStateChannel = "state";
         private const string ExpectedEventChannel = "event";
@@ -47,6 +48,7 @@ namespace Game.Online
         private float _nextEnemyAuthorityStateSendTime;
         private float _nextAuthorityPollTime;
         private float _nextUiPanelPollTime;
+        private float _nextSceneLoadPollTime;
         private float _nextDamagePollTime;
         private float _nextRewardPollTime;
         private int _lastPlayerStateSendFrame = -1;
@@ -55,6 +57,7 @@ namespace Game.Online
         private bool _hasServerClockOffset;
         private double _serverUtcToLocalTimeOffsetSeconds;
         private readonly ReliableEventQueue<OnlineDungeonUiPanelEventRequest> _pendingUiPanelEvents = new ReliableEventQueue<OnlineDungeonUiPanelEventRequest>(MaxPendingReliableEvents, "面板同步");
+        private readonly ReliableEventQueue<OnlineDungeonSceneLoadEventRequest> _pendingSceneLoadEvents = new ReliableEventQueue<OnlineDungeonSceneLoadEventRequest>(MaxPendingReliableEvents, "场景加载同步");
         private readonly ReliableEventQueue<OnlineDungeonDamageEventRequest> _pendingDamageEvents = new ReliableEventQueue<OnlineDungeonDamageEventRequest>(MaxPendingReliableEvents, "伤害同步");
         private readonly ReliableEventQueue<OnlineDungeonRealtimeRewardSyncPayload> _pendingRewardActions = new ReliableEventQueue<OnlineDungeonRealtimeRewardSyncPayload>(MaxPendingReliableEvents, "奖励同步");
 
@@ -113,6 +116,7 @@ namespace Game.Online
             _nextEnemyAuthorityStateSendTime = 0f;
             _nextAuthorityPollTime = 0f;
             _nextUiPanelPollTime = 0f;
+            _nextSceneLoadPollTime = 0f;
             _nextDamagePollTime = 0f;
             _nextRewardPollTime = 0f;
             _lastPlayerStateSendFrame = -1;
@@ -121,6 +125,7 @@ namespace Game.Online
             _hasServerClockOffset = false;
             _serverUtcToLocalTimeOffsetSeconds = 0d;
             _pendingUiPanelEvents.Clear();
+            _pendingSceneLoadEvents.Clear();
             _pendingDamageEvents.Clear();
             _pendingRewardActions.Clear();
         }
@@ -136,6 +141,7 @@ namespace Game.Online
             _hasServerClockOffset = false;
             _serverUtcToLocalTimeOffsetSeconds = 0d;
             _pendingUiPanelEvents.Clear();
+            _pendingSceneLoadEvents.Clear();
             _pendingDamageEvents.Clear();
             _pendingRewardActions.Clear();
 
@@ -154,6 +160,7 @@ namespace Game.Online
             Action<OnlineDungeonRealtimeAuthoritySnapshotInfo> onAuthoritySnapshot,
             Func<long> getUiPanelAfterSequence,
             Action<OnlineDungeonRealtimeUiPanelSnapshotInfo> onUiPanelSnapshot,
+            Action<OnlineDungeonRealtimeSceneLoadSnapshotInfo> onSceneLoadSnapshot,
             Func<long> getDamageAfterSequence,
             Action<OnlineDungeonRealtimeDamageSnapshotInfo> onDamageSnapshot,
             Action<OnlineDungeonRealtimeRewardSnapshotInfo> onRewardSnapshot,
@@ -208,6 +215,12 @@ namespace Game.Online
                 _nextUiPanelPollTime = Time.unscaledTime + UiPanelPollIntervalSeconds;
             }
 
+            if (IsConnected && Time.unscaledTime >= _nextSceneLoadPollTime)
+            {
+                SendNextSceneLoadSync(onError);
+                _nextSceneLoadPollTime = Time.unscaledTime + SceneLoadPollIntervalSeconds;
+            }
+
             if (IsConnected && Time.unscaledTime >= _nextAuthorityPollTime && _lastAuthorityPollFrame != Time.frameCount)
             {
                 SendAuthorityPoll(onError);
@@ -227,7 +240,7 @@ namespace Game.Online
                 _nextRewardPollTime = Time.unscaledTime + RewardPollIntervalSeconds;
             }
 
-            ReceiveAvailable(onPlayerSnapshot, onAuthoritySnapshot, onUiPanelSnapshot, onDamageSnapshot, onRewardSnapshot, onConnected, onError);
+            ReceiveAvailable(onPlayerSnapshot, onAuthoritySnapshot, onUiPanelSnapshot, onSceneLoadSnapshot, onDamageSnapshot, onRewardSnapshot, onConnected, onError);
         }
 
         public void EnqueueUiPanelEvent(OnlineDungeonUiPanelEventRequest request)
@@ -236,6 +249,15 @@ namespace Game.Online
                 return;
 
             _pendingUiPanelEvents.Enqueue(request);
+        }
+
+        public void EnqueueSceneLoadEvent(OnlineDungeonSceneLoadEventRequest request)
+        {
+            if (request == null)
+                return;
+
+            _pendingSceneLoadEvents.Enqueue(request);
+            _nextSceneLoadPollTime = 0f;
         }
 
         public void EnqueueDamageEvent(OnlineDungeonDamageEventRequest request)
@@ -400,6 +422,35 @@ namespace Game.Online
             Send(envelope, onError);
         }
 
+        private void SendNextSceneLoadSync(Action<string> onError)
+        {
+            OnlineDungeonSceneLoadEventRequest request = null;
+            _pendingSceneLoadEvents.TryPeekDue(Time.unscaledTime, ReliableEventResendIntervalSeconds, out request);
+            var payload = new OnlineDungeonRealtimeSceneLoadSyncPayload
+            {
+                action = request != null ? request.action : string.Empty,
+                eventId = request != null ? request.eventId : string.Empty,
+                transitionId = request != null ? request.transitionId : string.Empty,
+                sceneName = request != null ? request.sceneName : string.Empty,
+                bossId = request != null ? request.bossId : string.Empty,
+                bossDisplayName = request != null ? request.bossDisplayName : string.Empty,
+            };
+            var envelope = new OnlineDungeonRealtimeEnvelope
+            {
+                version = ProtocolVersion,
+                type = request != null ? "sceneLoadEvent" : "sceneLoadPoll",
+                channel = "event",
+                instanceId = _instanceId,
+                userId = _userId,
+                joinToken = _joinToken,
+                sequence = ++_sequence,
+                payload = JObject.FromObject(payload),
+            };
+            if (request != null)
+                Debug.Log($"[OnlineSceneLoadDebug] Send sceneLoad event. action={request.action} eventId={request.eventId} transition={request.transitionId} scene={request.sceneName} connected={IsConnected} sequence={envelope.sequence}");
+            Send(envelope, onError);
+        }
+
         private void SendAuthorityPoll(Action<string> onError)
         {
             var envelope = new OnlineDungeonRealtimeEnvelope
@@ -516,14 +567,15 @@ namespace Game.Online
             Action<OnlineDungeonRealtimePlayerSnapshotInfo> onPlayerSnapshot,
             Action<OnlineDungeonRealtimeAuthoritySnapshotInfo> onAuthoritySnapshot,
             Action<OnlineDungeonRealtimeUiPanelSnapshotInfo> onUiPanelSnapshot,
+            Action<OnlineDungeonRealtimeSceneLoadSnapshotInfo> onSceneLoadSnapshot,
             Action<OnlineDungeonRealtimeDamageSnapshotInfo> onDamageSnapshot,
             Action<OnlineDungeonRealtimeRewardSnapshotInfo> onRewardSnapshot,
             Action onConnected,
             Action<string> onError)
         {
-            ReceiveFromTransport(_eventTransport, onPlayerSnapshot, onAuthoritySnapshot, onUiPanelSnapshot, onDamageSnapshot, onRewardSnapshot, onConnected, onError);
+            ReceiveFromTransport(_eventTransport, onPlayerSnapshot, onAuthoritySnapshot, onUiPanelSnapshot, onSceneLoadSnapshot, onDamageSnapshot, onRewardSnapshot, onConnected, onError);
             if (!ReferenceEquals(_stateTransport, _eventTransport))
-                ReceiveFromTransport(_stateTransport, onPlayerSnapshot, onAuthoritySnapshot, onUiPanelSnapshot, onDamageSnapshot, onRewardSnapshot, onConnected, onError);
+                ReceiveFromTransport(_stateTransport, onPlayerSnapshot, onAuthoritySnapshot, onUiPanelSnapshot, onSceneLoadSnapshot, onDamageSnapshot, onRewardSnapshot, onConnected, onError);
         }
 
         private void ReceiveFromTransport(
@@ -531,6 +583,7 @@ namespace Game.Online
             Action<OnlineDungeonRealtimePlayerSnapshotInfo> onPlayerSnapshot,
             Action<OnlineDungeonRealtimeAuthoritySnapshotInfo> onAuthoritySnapshot,
             Action<OnlineDungeonRealtimeUiPanelSnapshotInfo> onUiPanelSnapshot,
+            Action<OnlineDungeonRealtimeSceneLoadSnapshotInfo> onSceneLoadSnapshot,
             Action<OnlineDungeonRealtimeDamageSnapshotInfo> onDamageSnapshot,
             Action<OnlineDungeonRealtimeRewardSnapshotInfo> onRewardSnapshot,
             Action onConnected,
@@ -613,6 +666,20 @@ namespace Game.Online
                     continue;
                 }
 
+                if (string.Equals(envelope.type, "sceneLoadSnapshot", StringComparison.Ordinal))
+                {
+                    OnlineDungeonRealtimeSceneLoadSnapshotInfo snapshot = envelope.payload != null
+                        ? envelope.payload.ToObject<OnlineDungeonRealtimeSceneLoadSnapshotInfo>()
+                        : null;
+                    if (snapshot != null)
+                    {
+                        Debug.Log($"[OnlineSceneLoadDebug] Receive sceneLoad snapshot. ack={snapshot.ackEventId} version={snapshot.state?.version ?? 0} active={snapshot.state?.active ?? false} released={snapshot.state?.released ?? false} transition={snapshot.state?.transitionId} scene={snapshot.state?.sceneName} ready={snapshot.state?.readyCount ?? 0}/{snapshot.state?.participantCount ?? 0} completed={snapshot.state?.completedCount ?? 0}/{snapshot.state?.participantCount ?? 0} releaseAt={snapshot.state?.releaseAtUtc}");
+                        AcknowledgeSceneLoadEvent(snapshot.ackEventId);
+                        onSceneLoadSnapshot?.Invoke(snapshot);
+                    }
+                    continue;
+                }
+
                 if (string.Equals(envelope.type, "damageSnapshot", StringComparison.Ordinal))
                 {
                     OnlineDungeonRealtimeDamageSnapshotInfo snapshot = envelope.payload != null
@@ -688,6 +755,15 @@ namespace Game.Online
                 return;
 
             _pendingUiPanelEvents.DequeueIfHeadMatches(request =>
+                request != null && string.Equals(request.eventId, eventId, StringComparison.Ordinal));
+        }
+
+        private void AcknowledgeSceneLoadEvent(string eventId)
+        {
+            if (string.IsNullOrWhiteSpace(eventId))
+                return;
+
+            _pendingSceneLoadEvents.DequeueIfHeadMatches(request =>
                 request != null && string.Equals(request.eventId, eventId, StringComparison.Ordinal));
         }
 
@@ -1218,6 +1294,16 @@ namespace Game.Online
             public long afterSequence;
         }
 
+        private sealed class OnlineDungeonRealtimeSceneLoadSyncPayload
+        {
+            public string action;
+            public string eventId;
+            public string transitionId;
+            public string sceneName;
+            public string bossId;
+            public string bossDisplayName;
+        }
+
         private sealed class OnlineDungeonRealtimeDamageSyncPayload
         {
             public bool hasEvent;
@@ -1274,6 +1360,42 @@ namespace Game.Online
         public string ackEventId;
         public List<OnlineDungeonUiPanelEventInfo> events;
         public OnlineDungeonUiPanelStateInfo state;
+    }
+
+    [Serializable]
+    public sealed class OnlineDungeonSceneLoadEventRequest
+    {
+        public string eventId;
+        public string action;
+        public string transitionId;
+        public string sceneName;
+        public string bossId;
+        public string bossDisplayName;
+    }
+
+    [Serializable]
+    public sealed class OnlineDungeonRealtimeSceneLoadSnapshotInfo
+    {
+        public string ackEventId;
+        public OnlineDungeonSceneLoadStateInfo state;
+    }
+
+    [Serializable]
+    public sealed class OnlineDungeonSceneLoadStateInfo
+    {
+        public long version;
+        public bool active;
+        public bool released;
+        public string transitionId;
+        public string sceneName;
+        public string bossId;
+        public string bossDisplayName;
+        public string releaseAtUtc;
+        public List<string> readyUserIds;
+        public List<string> completedUserIds;
+        public int participantCount;
+        public int readyCount;
+        public int completedCount;
     }
 
     [Serializable]

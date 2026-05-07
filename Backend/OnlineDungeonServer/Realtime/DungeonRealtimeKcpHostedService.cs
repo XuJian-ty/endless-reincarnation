@@ -97,6 +97,13 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             return;
         }
 
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.SceneLoadEventType, StringComparison.Ordinal)
+            || string.Equals(envelope.Type, DungeonRealtimeProtocol.SceneLoadPollType, StringComparison.Ordinal))
+        {
+            HandleSceneLoadSync(connectionId, envelope);
+            return;
+        }
+
         if (string.Equals(envelope.Type, DungeonRealtimeProtocol.DamageEventType, StringComparison.Ordinal)
             || string.Equals(envelope.Type, DungeonRealtimeProtocol.DamagePollType, StringComparison.Ordinal))
         {
@@ -198,6 +205,87 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             State = state,
         };
         Send(connectionId, envelope.InstanceId, envelope.UserId, DungeonRealtimeProtocol.UiPanelSnapshotType, envelope.Sequence, payload);
+    }
+
+    private void HandleSceneLoadSync(int connectionId, DungeonRealtimeEnvelope envelope)
+    {
+        DungeonRealtimeSceneLoadSyncPayload? syncPayload = null;
+        if (envelope.Payload != null)
+        {
+            try
+            {
+                syncPayload = envelope.Payload.Value.Deserialize<DungeonRealtimeSceneLoadSyncPayload>(DungeonRealtimeProtocol.JsonOptions);
+            }
+            catch
+            {
+                SendError(connectionId, envelope.InstanceId, envelope.UserId, "场景加载实时事件格式无效");
+                return;
+            }
+        }
+
+        string ackEventId = string.Empty;
+        DungeonSceneLoadStateDto? state;
+        string action = syncPayload?.Action?.Trim() ?? string.Empty;
+        if (string.Equals(action, "start", StringComparison.Ordinal))
+        {
+            ackEventId = syncPayload?.EventId?.Trim() ?? string.Empty;
+            var request = new StartDungeonSceneLoadRequest
+            {
+                UserId = envelope.UserId,
+                JoinToken = envelope.JoinToken,
+                TransitionId = syncPayload?.TransitionId,
+                SceneName = syncPayload?.SceneName,
+                BossId = syncPayload?.BossId,
+                BossDisplayName = syncPayload?.BossDisplayName,
+            };
+            if (!_registry.TryStartSceneLoad(envelope.InstanceId, request, out state, out string startError))
+            {
+                SendError(connectionId, envelope.InstanceId, envelope.UserId, startError);
+                return;
+            }
+        }
+        else if (string.Equals(action, "ready", StringComparison.Ordinal))
+        {
+            ackEventId = syncPayload?.EventId?.Trim() ?? string.Empty;
+            var request = new MarkDungeonSceneLoadReadyRequest
+            {
+                UserId = envelope.UserId,
+                JoinToken = envelope.JoinToken,
+                TransitionId = syncPayload?.TransitionId,
+            };
+            if (!_registry.TryMarkSceneLoadReady(envelope.InstanceId, request, out state, out string readyError))
+            {
+                SendError(connectionId, envelope.InstanceId, envelope.UserId, readyError);
+                return;
+            }
+        }
+        else if (string.Equals(action, "complete", StringComparison.Ordinal))
+        {
+            ackEventId = syncPayload?.EventId?.Trim() ?? string.Empty;
+            var request = new CompleteDungeonSceneLoadRequest
+            {
+                UserId = envelope.UserId,
+                JoinToken = envelope.JoinToken,
+                TransitionId = syncPayload?.TransitionId,
+            };
+            if (!_registry.TryCompleteSceneLoad(envelope.InstanceId, request, out state, out string completeError))
+            {
+                SendError(connectionId, envelope.InstanceId, envelope.UserId, completeError);
+                return;
+            }
+        }
+        else if (!_registry.TryGetSceneLoadState(envelope.InstanceId, envelope.UserId, envelope.JoinToken, out state, out string stateError))
+        {
+            SendError(connectionId, envelope.InstanceId, envelope.UserId, stateError);
+            return;
+        }
+
+        var payload = new DungeonRealtimeSceneLoadSnapshotPayload
+        {
+            AckEventId = ackEventId,
+            State = state,
+        };
+        Send(connectionId, envelope.InstanceId, envelope.UserId, DungeonRealtimeProtocol.SceneLoadSnapshotType, envelope.Sequence, payload);
     }
 
     private void HandleDamageSync(int connectionId, DungeonRealtimeEnvelope envelope)

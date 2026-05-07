@@ -53,8 +53,12 @@ namespace Game.GameFlow
             _transitioning = false;
             StripRegularLevelGameplayObjects();
             if (ShouldWaitForOnlineAuthorityBoss())
+            {
+                Debug.Log($"[OnlineBossDebug] FinalBossDuelScene waits for online authority boss; local boss spawn skipped. context={OnlineDungeonSessionCoordinator.GetInstance().BuildOnlineDebugContext()}");
                 return true;
+            }
 
+            Debug.Log($"[OnlineBossDebug] FinalBossDuelScene will spawn local authority boss. context={OnlineDungeonSessionCoordinator.GetInstance().BuildOnlineDebugContext()}");
             RegisterBossListener();
             host.StartCoroutine(SpawnSelectedBossNextFrame());
             return true;
@@ -63,7 +67,9 @@ namespace Game.GameFlow
         private static bool ShouldWaitForOnlineAuthorityBoss()
         {
             OnlineDungeonSessionCoordinator coordinator = OnlineDungeonSessionCoordinator.GetInstance();
-            return coordinator.HasActiveSession && !coordinator.ShouldDriveOnlineWorldSimulation();
+            bool wait = coordinator.ShouldWaitForOnlineFinalBossAuthority();
+            Debug.Log($"[OnlineBossDebug] ShouldWaitForOnlineAuthorityBoss={wait} context={coordinator.BuildOnlineDebugContext()}");
+            return wait;
         }
 
         private static IEnumerator SpawnSelectedBossNextFrame()
@@ -71,7 +77,10 @@ namespace Game.GameFlow
             yield return null;
 
             if (_transitioning || HasLivingFinalBoss())
+            {
+                Debug.Log($"[OnlineBossDebug] Local final boss spawn skipped. transitioning={_transitioning} hasLiving={HasLivingFinalBoss()} context={OnlineDungeonSessionCoordinator.GetInstance().BuildOnlineDebugContext()}");
                 yield break;
+            }
 
             if (!TryResolveBossSpawnPosition(out Vector3 position))
             {
@@ -80,6 +89,7 @@ namespace Game.GameFlow
             }
 
             EnemySpawnVariantCatalog catalog = EnemySpawnRuntime.BuildVariantCatalog();
+            Debug.Log($"[OnlineBossDebug] Spawning local final boss. bossId={FinalBossDuelRuntimeContext.CurrentBossId} position={position} context={OnlineDungeonSessionCoordinator.GetInstance().BuildOnlineDebugContext()}");
             if (!EnemySpawnRuntime.TrySpawnSingleEnemy(
                     FinalBossDuelRuntimeContext.CurrentBossId,
                     EnemyType.Boss,
