@@ -49,6 +49,9 @@ namespace Game.Online
         private float _nextUiPanelPollTime;
         private float _nextDamagePollTime;
         private float _nextRewardPollTime;
+        private int _lastPlayerStateSendFrame = -1;
+        private int _lastEnemyAuthorityStateSendFrame = -1;
+        private int _lastAuthorityPollFrame = -1;
         private bool _hasServerClockOffset;
         private double _serverUtcToLocalTimeOffsetSeconds;
         private readonly ReliableEventQueue<OnlineDungeonUiPanelEventRequest> _pendingUiPanelEvents = new ReliableEventQueue<OnlineDungeonUiPanelEventRequest>(MaxPendingReliableEvents, "面板同步");
@@ -112,6 +115,9 @@ namespace Game.Online
             _nextUiPanelPollTime = 0f;
             _nextDamagePollTime = 0f;
             _nextRewardPollTime = 0f;
+            _lastPlayerStateSendFrame = -1;
+            _lastEnemyAuthorityStateSendFrame = -1;
+            _lastAuthorityPollFrame = -1;
             _hasServerClockOffset = false;
             _serverUtcToLocalTimeOffsetSeconds = 0d;
             _pendingUiPanelEvents.Clear();
@@ -175,22 +181,24 @@ namespace Game.Online
                     return;
                 }
             }
-            else if (buildPlayerState != null && Time.unscaledTime >= _nextPlayerStateSendTime)
+            else if (buildPlayerState != null && Time.unscaledTime >= _nextPlayerStateSendTime && _lastPlayerStateSendFrame != Time.frameCount)
             {
                 OnlineDungeonPlayerPoseRequest request = buildPlayerState();
                 if (request != null)
                     SendPlayerState(request, onError);
 
                 _nextPlayerStateSendTime = Time.unscaledTime + PlayerStateSendIntervalSeconds;
+                _lastPlayerStateSendFrame = Time.frameCount;
             }
 
-            if (IsConnected && buildEnemyAuthorityState != null && Time.unscaledTime >= _nextEnemyAuthorityStateSendTime)
+            if (IsConnected && buildEnemyAuthorityState != null && Time.unscaledTime >= _nextEnemyAuthorityStateSendTime && _lastEnemyAuthorityStateSendFrame != Time.frameCount)
             {
                 OnlineDungeonEnemyAuthorityStateSyncRequest request = buildEnemyAuthorityState();
                 if (request != null)
                     SendEnemyAuthorityState(request, onError);
 
                 _nextEnemyAuthorityStateSendTime = Time.unscaledTime + EnemyAuthorityStateSendIntervalSeconds;
+                _lastEnemyAuthorityStateSendFrame = Time.frameCount;
             }
 
             if (IsConnected && Time.unscaledTime >= _nextUiPanelPollTime)
@@ -199,10 +207,11 @@ namespace Game.Online
                 _nextUiPanelPollTime = Time.unscaledTime + UiPanelPollIntervalSeconds;
             }
 
-            if (IsConnected && Time.unscaledTime >= _nextAuthorityPollTime)
+            if (IsConnected && Time.unscaledTime >= _nextAuthorityPollTime && _lastAuthorityPollFrame != Time.frameCount)
             {
                 SendAuthorityPoll(onError);
                 _nextAuthorityPollTime = Time.unscaledTime + AuthorityPollIntervalSeconds;
+                _lastAuthorityPollFrame = Time.frameCount;
             }
 
             if (IsConnected && Time.unscaledTime >= _nextDamagePollTime)
@@ -878,6 +887,7 @@ namespace Game.Online
                 }
 
                 _client.Send(new ArraySegment<byte>(bytes), KcpChannel.Reliable);
+                _client.TickOutgoing();
             }
 
             public bool TryReceive(out byte[] bytes)
