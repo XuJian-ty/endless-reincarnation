@@ -56,8 +56,18 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
         if (channel != KcpChannel.Reliable)
             return;
 
-        if (segment.Array == null || segment.Count <= 0 || segment.Count > DungeonRealtimeProtocol.MaxDatagramBytes)
+        if (segment.Array == null || segment.Count <= 0)
             return;
+
+        if (segment.Count > DungeonRealtimeProtocol.MaxReliableMessageBytes)
+        {
+            _logger.LogWarning(
+                "Online dungeon KCP message too large. connection={ConnectionId} bytes={Bytes} max={MaxBytes}",
+                connectionId,
+                segment.Count,
+                DungeonRealtimeProtocol.MaxReliableMessageBytes);
+            return;
+        }
 
         DungeonRealtimeEnvelope? envelope;
         try
@@ -688,8 +698,18 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             Payload = payloadElement,
         };
         byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(response, DungeonRealtimeProtocol.JsonOptions);
-        if (bytes.Length > DungeonRealtimeProtocol.MaxDatagramBytes)
+        if (bytes.Length > DungeonRealtimeProtocol.MaxReliableMessageBytes)
+        {
+            _logger.LogWarning(
+                "Online dungeon KCP message too large to send. connection={ConnectionId} type={Type} instance={InstanceId} user={UserId} bytes={Bytes} max={MaxBytes}",
+                connectionId,
+                type,
+                instanceId,
+                userId,
+                bytes.Length,
+                DungeonRealtimeProtocol.MaxReliableMessageBytes);
             return;
+        }
 
         _server.Send(connectionId, new ArraySegment<byte>(bytes), KcpChannel.Reliable);
     }

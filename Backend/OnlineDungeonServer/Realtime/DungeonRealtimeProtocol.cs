@@ -9,6 +9,7 @@ internal static class DungeonRealtimeProtocol
     public const int DefaultPort = 5087;
     public const int DefaultKcpPort = 5088;
     public const int MaxDatagramBytes = 16 * 1024;
+    public const int MaxReliableMessageBytes = 64 * 1024;
 
     public const string ChannelUnreliableState = "state";
     public const string ChannelReliableEvent = "event";
