@@ -13,7 +13,7 @@ namespace Game.Online
     public sealed class OnlineDungeonRealtimeClient : IDisposable
     {
         private const int ProtocolVersion = 3;
-        private const int ReceiveBufferBytes = 16 * 1024;
+        private const int ReceiveBufferBytes = 64 * 1024;
         private const float HelloRetryIntervalSeconds = 1f;
         private const float HelloTimeoutSeconds = 8f;
         private const float PlayerStateSendIntervalSeconds = 0.05f;
@@ -637,7 +637,10 @@ namespace Game.Online
                     continue;
 
                 if (bytes.Length > ReceiveBufferBytes)
+                {
+                    Debug.LogWarning($"[OnlineDungeonRealtimeClient] 实时消息过大，已丢弃。bytes={bytes.Length} max={ReceiveBufferBytes}");
                     continue;
+                }
 
                 OnlineDungeonRealtimeEnvelope envelope;
                 try
