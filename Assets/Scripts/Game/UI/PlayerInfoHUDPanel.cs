@@ -14,6 +14,8 @@ namespace Game.UI
     /// </summary>
     public class PlayerInfoHUDPanel : BasePanel
     {
+        [SerializeField] private Sprite socialHubButtonBackground;
+
         // ── 缓存控件（Awake 后填充）──────────────────────────────────────
         private Text _playerNameText;
         private Text _levelText;
@@ -213,10 +215,22 @@ namespace Game.UI
             rect.anchorMax = new Vector2(0f, 0f);
             rect.pivot = new Vector2(0f, 0f);
             rect.anchoredPosition = new Vector2(24f, 24f);
-            rect.sizeDelta = new Vector2(112f, 44f);
+            rect.sizeDelta = socialHubButtonBackground != null
+                ? new Vector2(58f, 56f)
+                : new Vector2(112f, 44f);
 
             Image image = buttonObject.GetComponent<Image>();
-            image.color = new Color(0.18f, 0.45f, 0.72f, 0.92f);
+            if (socialHubButtonBackground != null)
+            {
+                image.sprite = socialHubButtonBackground;
+                image.type = Image.Type.Simple;
+                image.preserveAspect = true;
+                image.color = Color.white;
+            }
+            else
+            {
+                image.color = new Color(0.18f, 0.45f, 0.72f, 0.92f);
+            }
             image.raycastTarget = true;
 
             _socialHubButton = buttonObject.GetComponent<Button>();
@@ -238,10 +252,10 @@ namespace Game.UI
             Text label = labelObject.GetComponent<Text>();
             label.text = "社交";
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.fontSize = 20;
+            label.fontSize = socialHubButtonBackground != null ? 10 : 20;
             label.fontStyle = FontStyle.Bold;
             label.alignment = TextAnchor.MiddleCenter;
-            label.color = Color.white;
+            label.color = socialHubButtonBackground != null ? Color.black : Color.white;
             label.raycastTarget = false;
 
             _socialButtonBuilt = true;
@@ -259,9 +273,10 @@ namespace Game.UI
             Image image = _socialHubButton.targetGraphic as Image;
             if (image != null)
             {
-                image.color = loggedIn
-                    ? new Color(0.18f, 0.45f, 0.72f, 0.92f)
-                    : new Color(0.25f, 0.28f, 0.32f, 0.7f);
+                bool hasCustomBackground = image.sprite == socialHubButtonBackground && socialHubButtonBackground != null;
+                image.color = hasCustomBackground
+                    ? (loggedIn ? Color.white : new Color(0.65f, 0.65f, 0.65f, 0.7f))
+                    : (loggedIn ? new Color(0.18f, 0.45f, 0.72f, 0.92f) : new Color(0.25f, 0.28f, 0.32f, 0.7f));
             }
         }
     }
