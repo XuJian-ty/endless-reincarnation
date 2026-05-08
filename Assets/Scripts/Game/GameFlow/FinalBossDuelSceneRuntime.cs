@@ -9,6 +9,7 @@ using ProjectBase;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Video;
 
 namespace Game.GameFlow
 {
@@ -19,6 +20,7 @@ namespace Game.GameFlow
     {
         private const float BossResultPanelDelay = 1.5f;
         private static bool _transitioning;
+        private static bool _onlineVictoryAidJoiner;
 
         public static bool IsFinalBossDuelScene()
         {
@@ -51,13 +53,14 @@ namespace Game.GameFlow
                 return false;
 
             _transitioning = false;
+            _onlineVictoryAidJoiner = false;
             StripRegularLevelGameplayObjects();
+            RegisterBossListener();
             if (ShouldWaitForOnlineAuthorityBoss())
             {
                 return true;
             }
 
-            RegisterBossListener();
             host.StartCoroutine(SpawnSelectedBossNextFrame());
             return true;
         }
@@ -104,10 +107,18 @@ namespace Game.GameFlow
             if (!string.Equals(bossId, FinalBossDuelRuntimeContext.CurrentBossId, System.StringComparison.OrdinalIgnoreCase))
                 return;
 
-            if (OnlineDungeonSessionCoordinator.GetInstance().TryHandleBossDefeatedSessionEnd())
+            OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            if (onlineCoordinator != null && onlineCoordinator.HasActiveSession)
+            {
+                _transitioning = true;
+                _onlineVictoryAidJoiner = onlineCoordinator.IsAidJoinerRole;
+                CleanupListeners();
+                MonoMgr.GetInstance().StartCoroutine(ShowOnlineBossVictoryFlowAfterDelay(bossId));
                 return;
+            }
 
             _transitioning = true;
+            _onlineVictoryAidJoiner = false;
             CleanupListeners();
             MonoMgr.GetInstance().StartCoroutine(ShowBossResultPanelAfterDelay(bossId));
         }
@@ -117,6 +128,82 @@ namespace Game.GameFlow
             if (BossResultPanelDelay > 0f)
                 yield return new WaitForSecondsRealtime(BossResultPanelDelay);
 
+            if (TryPlayBossVictoryCutscene(bossId, () => CompleteBossVictoryFlow(bossId)))
+                yield break;
+
+            CompleteBossVictoryFlow(bossId);
+        }
+
+        private static IEnumerator ShowOnlineBossVictoryFlowAfterDelay(string bossId)
+        {
+            if (BossResultPanelDelay > 0f)
+                yield return new WaitForSecondsRealtime(BossResultPanelDelay);
+
+            if (TryPlayBossVictoryCutscene(bossId, () => CompleteOnlineBossVictoryFlow(bossId)))
+                yield break;
+
+            CompleteOnlineBossVictoryFlow(bossId);
+        }
+
+        private static bool TryPlayBossVictoryCutscene(string bossId, System.Action onComplete)
+        {
+            BossVictoryCutsceneConfigSO config = ConfigManager.GetInstance()?.GetBossVictoryCutsceneConfig();
+            if (config == null)
+            {
+                Debug.LogWarning("[FinalBossDuelSceneRuntime] 未找到 Boss 胜利过场动画配置。");
+                return false;
+            }
+
+            VideoClip video = config.GetCutsceneVideo(bossId);
+            if (video == null)
+            {
+                Debug.LogWarning($"[FinalBossDuelSceneRuntime] Boss 未配置胜利过场视频：{bossId}");
+                return false;
+            }
+
+            UIManager ui = UIManager.GetInstance();
+            if (ui == null)
+                return false;
+
+            ui.ShowPanel<BossVictoryCutscenePanel>(
+                PanelNames.BossVictoryCutscene,
+                PanelLayers.BossVictoryCutscene,
+                panel => panel.Play(video, onComplete));
+            return true;
+        }
+
+        public static bool IsBossVictoryTransitioning()
+        {
+            return _transitioning && IsFinalBossDuelScene();
+        }
+
+        private static void CompleteOnlineBossVictoryFlow(string bossId)
+        {
+            OnlineDungeonSessionCoordinator onlineCoordinator = OnlineDungeonSessionCoordinator.GetInstance();
+            bool wasAidJoiner = _onlineVictoryAidJoiner;
+            if (wasAidJoiner)
+                HideBossVictoryCutscenePanel();
+
+            if (onlineCoordinator != null && onlineCoordinator.TryHandleBossDefeatedSessionEnd())
+            {
+                _transitioning = false;
+                _onlineVictoryAidJoiner = false;
+                return;
+            }
+
+            if (wasAidJoiner)
+            {
+                _transitioning = false;
+                _onlineVictoryAidJoiner = false;
+                return;
+            }
+
+            _onlineVictoryAidJoiner = false;
+            CompleteBossVictoryFlow(bossId);
+        }
+
+        private static void CompleteBossVictoryFlow(string bossId)
+        {
             ShowBossResultPanel(bossId);
             _transitioning = false;
         }
@@ -140,18 +227,21 @@ namespace Game.GameFlow
                     hasNextLevel,
                     () =>
                     {
+                        HideBossVictoryCutscenePanel();
                         FinalBossDuelRuntimeContext.ClearChallenge();
                         gsm.RestartCurrentLevelAtEntrance();
                     },
                     hasNextLevel
                         ? () =>
                         {
+                            HideBossVictoryCutscenePanel();
                             gsm.RecordBossDefeat(bossId, false);
                             FinalBossDuelRuntimeContext.ClearChallenge();
                             gsm.TryAdvanceToNextLevel();
                         }
                         : () =>
                         {
+                            HideBossVictoryCutscenePanel();
                             gsm.RecordBossDefeat(bossId, false);
                             if (!FinalBossDuelRuntimeContext.ExitToOrigin())
                             {
@@ -159,6 +249,11 @@ namespace Game.GameFlow
                                 Debug.LogWarning("[FinalBossDuelSceneRuntime] 返回原场景失败，未能完成继续探索。");
                             }
                         }));
+        }
+
+        private static void HideBossVictoryCutscenePanel()
+        {
+            UIManager.GetInstance()?.HidePanel(PanelNames.BossVictoryCutscene);
         }
 
         private static void RegisterBossListener()

@@ -1870,6 +1870,12 @@ namespace Game.Online
 
             if (IsAidJoinerRole)
             {
+                if (FinalBossDuelSceneRuntime.IsBossVictoryTransitioning())
+                {
+                    Debug.Log($"[OnlineDungeonSessionCoordinator] 联机副本已关闭，援助方等待 Boss 胜利过场结束后返回原关卡。Reason={error}");
+                    return true;
+                }
+
                 Debug.Log($"[OnlineDungeonSessionCoordinator] 联机副本已关闭，援助方返回原关卡。Reason={error}");
                 ReturnAidJoinerToOwnLevel(true);
             }

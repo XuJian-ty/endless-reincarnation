@@ -34,6 +34,7 @@ namespace Game
         private BackpackUIConfigSO _backpackUIConfig;
         private BuffConfigSO _buffConfig;
         private PlayerStateRuleDatabaseSO _playerStateRuleDatabase;
+        private BossVictoryCutsceneConfigSO _bossVictoryCutsceneConfig;
         private EnemyArchetypeSO[] _enemyArchetypes;
         private Dictionary<string, EnemyArchetypeSO> _enemyArchetypesById;
         private Dictionary<EnemyType, List<EnemyArchetypeSO>> _enemyArchetypesByType;
@@ -207,6 +208,13 @@ namespace Game
             if (_playerStateRuleDatabase == null)
                 _playerStateRuleDatabase = Resources.Load<PlayerStateRuleDatabaseSO>(ConfigPathPrefix + "玩家状态规则");
             return _playerStateRuleDatabase;
+        }
+
+        public BossVictoryCutsceneConfigSO GetBossVictoryCutsceneConfig()
+        {
+            if (_bossVictoryCutsceneConfig == null)
+                _bossVictoryCutsceneConfig = Resources.Load<BossVictoryCutsceneConfigSO>(ConfigPathPrefix + "Boss胜利过场动画配置");
+            return _bossVictoryCutsceneConfig;
         }
 
         private void EnsureEnemyArchetypeCache()
