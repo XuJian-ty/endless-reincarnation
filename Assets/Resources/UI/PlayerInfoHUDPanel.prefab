@@ -365,6 +365,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 503fb4484fcbe8e43b6dc5c4050050d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  socialHubButtonBackground: {fileID: 21300000, guid: 02e03cb234d98954e94361191abe1c33,
+    type: 3}
 --- !u!1 &1762444036362546095
 GameObject:
   m_ObjectHideFlags: 0
