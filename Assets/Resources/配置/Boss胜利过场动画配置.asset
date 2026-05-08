@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73f1a4efc4d446b483356fb87745fb0d, type: 3}
+  m_Name: "Boss\u80DC\u5229\u8FC7\u573A\u52A8\u753B\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  entries:
+  - bossId: boss_1
+    cutsceneVideo: {fileID: 32900000, guid: d7cd5244b2146a64c8462e9831f1c234, type: 3}
+  - bossId: boss_2
+    cutsceneVideo: {fileID: 32900000, guid: 5911e1c37b3d65e47b2beac2bc886da2, type: 3}
+  - bossId: boss_3
+    cutsceneVideo: {fileID: 32900000, guid: 03d961cd7aa75214088911a7962849fe, type: 3}
+  - bossId: boss_4
+    cutsceneVideo: {fileID: 32900000, guid: d7cd5244b2146a64c8462e9831f1c234, type: 3}
+  - bossId: boss_5
+    cutsceneVideo: {fileID: 32900000, guid: 8bbbaec9e46b2b3489e630c732f60434, type: 3}

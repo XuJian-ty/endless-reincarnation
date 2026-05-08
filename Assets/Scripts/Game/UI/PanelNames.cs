@@ -37,6 +37,7 @@ namespace Game.UI
         public const string FloatingNumberOverlay = "FloatingNumberOverlay";
         public const string BossArrivalNotice = "BossArrivalNoticePanel";
         public const string DeathChoice = "DeathChoicePanel";
+        public const string BossVictoryCutscene = "BossVictoryCutscenePanel";
         public const string BossResult = "BossResultPanel";
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace Game.UI
             Loading,
             PlayerProfile,
             DeathChoice,
+            BossVictoryCutscene,
             BossResult,
         };
     }
@@ -96,6 +98,7 @@ namespace Game.UI
         public const E_UI_Layer FloatingNumberOverlay = E_UI_Layer.Bot;
         public const E_UI_Layer BossArrivalNotice = E_UI_Layer.Top;
         public const E_UI_Layer DeathChoice = E_UI_Layer.System;
+        public const E_UI_Layer BossVictoryCutscene = E_UI_Layer.System;
         public const E_UI_Layer BossResult = E_UI_Layer.System;
     }
 }
