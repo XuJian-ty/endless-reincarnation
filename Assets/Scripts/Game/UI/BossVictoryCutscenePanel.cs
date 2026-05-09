@@ -12,7 +12,20 @@ namespace Game.UI
     /// </summary>
     public class BossVictoryCutscenePanel : BasePanel
     {
+        [Header("水印遮挡")]
+        [SerializeField] private Sprite watermarkCoverSprite;
+        [SerializeField] private Vector2 watermarkCoverSize = new Vector2(320f, 96f);
+        [SerializeField] private Vector2 watermarkCoverOffset = new Vector2(-42f, 42f);
+        [SerializeField] private Color watermarkCoverColor = new Color(0.75f, 0.86f, 1f, 0.92f);
+        [SerializeField] private bool showTopLeftCover = true;
+        [SerializeField] private Sprite topLeftCoverSprite;
+        [SerializeField] private Vector2 topLeftCoverSize = new Vector2(320f, 96f);
+        [SerializeField] private Vector2 topLeftCoverOffset = new Vector2(42f, -42f);
+        [SerializeField] private Color topLeftCoverColor = new Color(0.75f, 0.86f, 1f, 0.92f);
+
         private RawImage _videoImage;
+        private Image _watermarkCoverImage;
+        private Image _topLeftCoverImage;
         private VideoPlayer _videoPlayer;
         private RenderTexture _renderTexture;
         private Coroutine _playRoutine;
@@ -118,7 +131,7 @@ namespace Game.UI
 
         private void EnsureRuntimeUi()
         {
-            if (_videoImage != null && _videoPlayer != null)
+            if (_videoImage != null && _videoPlayer != null && _watermarkCoverImage != null && (!showTopLeftCover || _topLeftCoverImage != null))
                 return;
 
             RectTransform rootRect = transform as RectTransform;
@@ -137,6 +150,29 @@ namespace Game.UI
             _videoImage.color = Color.white;
             _videoImage.raycastTarget = true;
 
+            _watermarkCoverImage = CreateCoverImage(
+                "Img_WatermarkCover",
+                new Vector2(1f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(1f, 0f),
+                watermarkCoverOffset,
+                watermarkCoverSize,
+                watermarkCoverSprite,
+                watermarkCoverColor);
+
+            if (showTopLeftCover)
+            {
+                _topLeftCoverImage = CreateCoverImage(
+                    "Img_TopLeftCover",
+                    new Vector2(0f, 1f),
+                    new Vector2(0f, 1f),
+                    new Vector2(0f, 1f),
+                    topLeftCoverOffset,
+                    topLeftCoverSize,
+                    topLeftCoverSprite,
+                    topLeftCoverColor);
+            }
+
             _videoPlayer = gameObject.GetComponent<VideoPlayer>();
             if (_videoPlayer == null)
                 _videoPlayer = gameObject.AddComponent<VideoPlayer>();
@@ -146,6 +182,34 @@ namespace Game.UI
             _videoPlayer.errorReceived -= OnVideoErrorReceived;
             _videoPlayer.errorReceived += OnVideoErrorReceived;
             EnsureVideoTarget();
+        }
+
+        private Image CreateCoverImage(
+            string objectName,
+            Vector2 anchorMin,
+            Vector2 anchorMax,
+            Vector2 pivot,
+            Vector2 anchoredPosition,
+            Vector2 size,
+            Sprite sprite,
+            Color color)
+        {
+            GameObject coverObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            coverObject.transform.SetParent(transform, false);
+
+            RectTransform coverRect = coverObject.GetComponent<RectTransform>();
+            coverRect.anchorMin = anchorMin;
+            coverRect.anchorMax = anchorMax;
+            coverRect.pivot = pivot;
+            coverRect.anchoredPosition = anchoredPosition;
+            coverRect.sizeDelta = size;
+
+            Image coverImage = coverObject.GetComponent<Image>();
+            coverImage.sprite = sprite;
+            coverImage.type = Image.Type.Simple;
+            coverImage.color = color;
+            coverImage.raycastTarget = false;
+            return coverImage;
         }
 
         private void OnVideoErrorReceived(VideoPlayer source, string message)

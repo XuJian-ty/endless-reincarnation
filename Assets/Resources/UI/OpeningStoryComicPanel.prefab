@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 200000000000000001}
   - component: {fileID: 114000000000000001}
   m_Layer: 5
-  m_Name: BossVictoryCutscenePanel
+  m_Name: OpeningStoryComicPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,16 +45,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000000000000001}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 178f9b4d18434dd2be3a6f65ad1992c0, type: 3}
+  m_Script: {fileID: 11500000, guid: 9cfc1296e5f3476fba82d61d3d6b3c7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  watermarkCoverSprite: {fileID: 21300000, guid: 1e93b508def4529438e23d672383bd93,
-    type: 3}
-  watermarkCoverSize: {x: 375, y: 147}
-  watermarkCoverOffset: {x: -70, y: 40}
-  watermarkCoverColor: {r: 0.75, g: 0.86, b: 1, a: 1}
-  showTopLeftCover: 1
-  topLeftCoverSprite: {fileID: 21300000, guid: 1e93b508def4529438e23d672383bd93, type: 3}
-  topLeftCoverSize: {x: 375, y: 147}
-  topLeftCoverOffset: {x: 70, y: -40}
-  topLeftCoverColor: {r: 0.75, g: 0.86, b: 1, a: 1}
+  firstPage: {fileID: 21300000, guid: 640a0dd95fe73e54bb31a3c5fa0ba1a1, type: 3}
+  secondPage: {fileID: 21300000, guid: 778b2a689aec95946862686ba7a21431, type: 3}
+  thirdPage: {fileID: 21300000, guid: 67b8afb5b87186f48b5ed251507e53b4, type: 3}
+  continuePrompt: "\u6309\u4E0B\u4EFB\u610F\u952E\u7EE7\u7EED"

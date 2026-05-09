@@ -42,7 +42,7 @@ MonoBehaviour:
     edgeRouteOverrides: []
   - nodeId: passive_2
     actionId: passive_2
-    position: {x: 539.445, y: 349.01608}
+    position: {x: 538.8957, y: 351.2137}
     predecessorNodeIds:
     - Skill1
     edgeRouteOverrides: []
@@ -96,7 +96,7 @@ MonoBehaviour:
     edgeRouteOverrides: []
   - nodeId: passive_11
     actionId: passive_11
-    position: {x: 298.22678, y: 705.6658}
+    position: {x: 301.44434, y: 705.6658}
     predecessorNodeIds:
     - passive_5
     edgeRouteOverrides: []
@@ -108,7 +108,7 @@ MonoBehaviour:
     edgeRouteOverrides: []
   - nodeId: Attack0
     actionId: Attack0
-    position: {x: 100, y: 944}
+    position: {x: 100, y: 946.1451}
     predecessorNodeIds: []
     edgeRouteOverrides: []
   - nodeId: Attack1

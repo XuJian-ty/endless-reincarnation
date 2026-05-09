@@ -110,8 +110,9 @@ namespace Game.GameFlow
 
             BindCameraToPlayer();
 
+            Debug.Log($"[OpeningStoryDebug] Level entry buff check. level={run.levelIndex} pendingBuffSelection={run.pendingBuffSelection} scene={SceneManager.GetActiveScene().name}");
             if (run.pendingBuffSelection)
-                ShowBuffSelection();
+                StartCoroutine(ShowOpeningStoryComicOrBuffSelectionAfterLoading(run));
 
             LevelUIModelLocator.Set(new LevelUIModel(gsm));
 
@@ -438,6 +439,40 @@ namespace Game.GameFlow
                 PanelNames.BuffSelect,
                 PanelLayers.BuffSelect,
                 panel => panel.ShowWithBuffs(selectedBuffs, OnBuffSelected));
+        }
+
+        private void ShowOpeningStoryComicOrBuffSelection(RunData run)
+        {
+            if (run == null || run.levelIndex != 1)
+            {
+                Debug.Log($"[OpeningStoryDebug] Skip opening story and show buff directly. runNull={run == null} level={(run != null ? run.levelIndex : 0)} scene={SceneManager.GetActiveScene().name}");
+                ShowBuffSelection();
+                return;
+            }
+
+            UIManager ui = UIManager.GetInstance();
+            if (ui == null)
+            {
+                Debug.LogWarning($"[OpeningStoryDebug] UIManager missing, show buff directly. level={run.levelIndex} scene={SceneManager.GetActiveScene().name}");
+                ShowBuffSelection();
+                return;
+            }
+
+            Debug.Log($"[OpeningStoryDebug] Request opening story panel before buff selection. level={run.levelIndex} scene={SceneManager.GetActiveScene().name}");
+            ui.ShowPanel<OpeningStoryComicPanel>(
+                PanelNames.OpeningStoryComic,
+                PanelLayers.OpeningStoryComic,
+                panel => panel.Play(ShowBuffSelection));
+        }
+
+        private System.Collections.IEnumerator ShowOpeningStoryComicOrBuffSelectionAfterLoading(RunData run)
+        {
+            UIManager ui = UIManager.GetInstance();
+            while (ui != null && ui.GetPanel<LoadingPanel>(PanelNames.Loading) != null)
+                yield return null;
+
+            yield return null;
+            ShowOpeningStoryComicOrBuffSelection(run);
         }
 
         private void OnBuffSelected(string buffId)

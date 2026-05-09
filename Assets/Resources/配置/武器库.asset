@@ -19,7 +19,7 @@ MonoBehaviour:
     type: 0
     common:
       hp:
-        min: 6000000
+        min: 60000
         max: 1000
       mp:
         min: 300
@@ -147,7 +147,7 @@ MonoBehaviour:
     type: 1
     common:
       hp:
-        min: 6000000
+        min: 60000
         max: 1000
       mp:
         min: 300

@@ -30,6 +30,7 @@ namespace Game.UI
         /// <summary>主界面背景（主菜单场景底层全屏图，与 MainMenuPanel 同由 UIManager 加载，放在 Bot 层）</summary>
         public const string MainMenuBackground = "MainMenuBackground";
         public const string Loading      = "LoadingPanel";
+        public const string OpeningStoryComic = "OpeningStoryComicPanel";
         public const string BuffSelect   = "BuffSelectPanel";
         public const string PlayerInfoHUD = "PlayerInfoHUDPanel";
         public const string PlayerProfile = "PlayerProfilePanel";
@@ -60,6 +61,7 @@ namespace Game.UI
             SocialFriendRequests,
             SocialAidRequestPopup,
             Loading,
+            OpeningStoryComic,
             PlayerProfile,
             DeathChoice,
             BossVictoryCutscene,
@@ -91,6 +93,7 @@ namespace Game.UI
         public const E_UI_Layer SocialAidRequestPopup = E_UI_Layer.Top;
         public const E_UI_Layer MainMenuBackground = E_UI_Layer.Bot;
         public const E_UI_Layer Loading     = E_UI_Layer.System;
+        public const E_UI_Layer OpeningStoryComic = E_UI_Layer.System;
         public const E_UI_Layer BuffSelect  = E_UI_Layer.System;
         public const E_UI_Layer PlayerInfoHUD = E_UI_Layer.Bot;
         public const E_UI_Layer PlayerProfile = E_UI_Layer.System;
