@@ -48,3 +48,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 178f9b4d18434dd2be3a6f65ad1992c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  watermarkCoverSprite: {fileID: 21300000, guid: 1e93b508def4529438e23d672383bd93,
+    type: 3}
+  watermarkCoverSize: {x: 375, y: 147}
+  watermarkCoverOffset: {x: -70, y: 40}
+  watermarkCoverColor: {r: 0.75, g: 0.86, b: 1, a: 1}
+  showTopLeftCover: 1
+  topLeftCoverSprite: {fileID: 21300000, guid: 1e93b508def4529438e23d672383bd93, type: 3}
+  topLeftCoverSize: {x: 375, y: 147}
+  topLeftCoverOffset: {x: 70, y: -40}
+  topLeftCoverColor: {r: 0.75, g: 0.86, b: 1, a: 1}

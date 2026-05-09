@@ -17,6 +17,19 @@ namespace Game.UI
     {
         private const string ShopSlotResourcePath = "UI/ShopSlot";
         private const int DefaultSlotCount = 6;
+        private static readonly string[] PreferredShopFontNames =
+        {
+            "Microsoft YaHei UI",
+            "Microsoft YaHei",
+            "DengXian",
+            "SimHei",
+            "SimSun",
+            "NSimSun",
+            "Arial Unicode MS",
+        };
+
+        private static Font _preferredShopFont;
+        private static bool _preferredShopFontResolved;
 
         [Serializable]
         private sealed class ShopSlotBinding
@@ -81,6 +94,9 @@ namespace Game.UI
             ResolveReferences();
             EnsureSlotBindings(GetRequiredSlotCount());
             BindSlotButtons();
+
+            if (gameObject.activeInHierarchy && HasRequiredBindings())
+                RefreshView();
         }
 
         private void ResolveReferences()
@@ -175,6 +191,9 @@ namespace Game.UI
 
                 HutaoShopInteractable.ShopOfferViewData offer = _shopSource.GetShopOfferViewData(i);
                 ApplySlotBackground(slot, offer.rarity);
+                ApplyPreferredShopFont(slot.nameText);
+                ApplyPreferredShopFont(slot.priceText);
+                ApplyPreferredShopFont(slot.countText);
                 if (slot.icon != null)
                     slot.icon.sprite = offer.icon;
                 if (slot.nameText != null)
@@ -261,9 +280,45 @@ namespace Game.UI
             if (_goldText == null)
                 return;
 
+            ApplyPreferredShopFont(_goldText);
+
             Game.Domain.PlayerModel player = GameStateMachine.GetInstance()?.Player;
             int gold = player != null ? player.Gold : 0;
             _goldText.text = $"金币数量：{gold}";
+        }
+
+        private static void ApplyPreferredShopFont(Text text)
+        {
+            if (text == null)
+                return;
+
+            Font preferredFont = ResolvePreferredShopFont(text.font);
+            if (preferredFont == null || text.font == preferredFont)
+                return;
+
+            text.font = preferredFont;
+        }
+
+        private static Font ResolvePreferredShopFont(Font fallbackFont)
+        {
+            if (_preferredShopFont != null)
+                return _preferredShopFont;
+
+            if (_preferredShopFontResolved)
+                return fallbackFont;
+
+            _preferredShopFontResolved = true;
+
+            try
+            {
+                _preferredShopFont = Font.CreateDynamicFontFromOSFont(PreferredShopFontNames, 32);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[ShopPanel] 创建商店文字字体失败：{ex.GetType().Name}: {ex.Message}");
+            }
+
+            return _preferredShopFont != null ? _preferredShopFont : fallbackFont;
         }
 
         private void OnSlotClicked(int slotIndex)

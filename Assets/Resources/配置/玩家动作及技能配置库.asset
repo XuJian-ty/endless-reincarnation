@@ -1175,8 +1175,8 @@ MonoBehaviour:
     isPassive: 0
     entryGroup: 1
     supportedAttackModes: 3
-    talentCost: 1
-    mpCost: 0
+    talentCost: 0
+    mpCost: 100
     cooldownSeconds: 0
     actionPolicies:
     - action: 1
@@ -1227,8 +1227,8 @@ MonoBehaviour:
     isPassive: 0
     entryGroup: 1
     supportedAttackModes: 3
-    talentCost: 1
-    mpCost: 0
+    talentCost: 0
+    mpCost: 100
     cooldownSeconds: 0
     actionPolicies:
     - action: 1
@@ -1280,7 +1280,7 @@ MonoBehaviour:
     entryGroup: 1
     supportedAttackModes: 3
     talentCost: 0
-    mpCost: 0
+    mpCost: 150
     cooldownSeconds: 0
     actionPolicies:
     - action: 1
@@ -1331,8 +1331,8 @@ MonoBehaviour:
     isPassive: 0
     entryGroup: 1
     supportedAttackModes: 3
-    talentCost: 1
-    mpCost: 0
+    talentCost: 0
+    mpCost: 200
     cooldownSeconds: 0
     actionPolicies:
     - action: 1
