@@ -88,7 +88,7 @@ public class UIManager : BaseManager<UIManager>
         }
         else if (_loadingPanelActiveOrOpening && IsBlockingPanel(panelName))
         {
-            Debug.Log($"[OpeningStoryDebug] UI blocked panel while loading is active. panel={panelName}");
+            Debug.Log($"[OpeningStory] UI blocked panel while loading is active. panel={panelName}");
             GameplayUIInputBridge.NotifyPanelHidden(panelName);
             return;
         }
@@ -138,7 +138,7 @@ public class UIManager : BaseManager<UIManager>
         {
             if (!isLoadingPanel && _loadingPanelActiveOrOpening && IsBlockingPanel(panelName))
             {
-                Debug.Log($"[OpeningStoryDebug] UI blocked async panel while loading is active. panel={panelName}");
+                Debug.Log($"[OpeningStory] UI blocked async panel while loading is active. panel={panelName}");
                 if (obj != null)
                     GameObject.Destroy(obj);
 

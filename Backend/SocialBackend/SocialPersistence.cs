@@ -1,606 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Data.Common;
-using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-
-internal sealed class SocialDbContext : DbContext
-{
-    public SocialDbContext(DbContextOptions<SocialDbContext> options) : base(options)
-    {
-    }
-
-    public DbSet<SocialUserEntity> Users => Set<SocialUserEntity>();
-    public DbSet<FriendLinkEntity> FriendLinks => Set<FriendLinkEntity>();
-    public DbSet<FriendRequestEntity> FriendRequests => Set<FriendRequestEntity>();
-    public DbSet<SocialMessageEntity> Messages => Set<SocialMessageEntity>();
-    public DbSet<SaveSlotEntity> SaveSlots => Set<SaveSlotEntity>();
-    public DbSet<ActiveSaveContextEntity> ActiveSaveContexts => Set<ActiveSaveContextEntity>();
-    public DbSet<AidRequestEntity> AidRequests => Set<AidRequestEntity>();
-    public DbSet<AidSessionEntity> AidSessions => Set<AidSessionEntity>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<SocialUserEntity>(entity =>
-        {
-            entity.ToTable("users");
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.UserId).IsRequired();
-            entity.Property(x => x.Username).IsRequired();
-            entity.Property(x => x.NormalizedUsername).IsRequired();
-            entity.Property(x => x.PasswordHash).IsRequired();
-            entity.HasIndex(x => x.UserId).IsUnique();
-            entity.HasIndex(x => x.NormalizedUsername).IsUnique();
-        });
-
-        modelBuilder.Entity<FriendLinkEntity>(entity =>
-        {
-            entity.ToTable("friend_links");
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.UserAId).IsRequired();
-            entity.Property(x => x.UserBId).IsRequired();
-            entity.Property(x => x.UserARemark).IsRequired();
-            entity.Property(x => x.UserBRemark).IsRequired();
-            entity.HasIndex(x => new { x.UserAId, x.UserBId }).IsUnique();
-        });
-
-        modelBuilder.Entity<FriendRequestEntity>(entity =>
-        {
-            entity.ToTable("friend_requests");
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.RequestId).IsRequired();
-            entity.Property(x => x.RequesterUserId).IsRequired();
-            entity.Property(x => x.TargetUserId).IsRequired();
-            entity.Property(x => x.Status).IsRequired();
-            entity.Property(x => x.Message).IsRequired();
-            entity.Property(x => x.RequesterRemark).IsRequired();
-            entity.Property(x => x.TargetRemark).IsRequired();
-            entity.HasIndex(x => x.RequestId).IsUnique();
-            entity.HasIndex(x => new { x.TargetUserId, x.Status, x.CreatedAtUtc });
-            entity.HasIndex(x => new { x.RequesterUserId, x.TargetUserId, x.Status });
-        });
-
-        modelBuilder.Entity<SocialMessageEntity>(entity =>
-        {
-            entity.ToTable("messages");
-            entity.HasKey(x => x.MessageId);
-            entity.Property(x => x.FromUserId).IsRequired();
-            entity.Property(x => x.ToUserId).IsRequired();
-            entity.Property(x => x.Content).IsRequired();
-            entity.HasIndex(x => new { x.FromUserId, x.ToUserId, x.MessageId });
-        });
-
-        modelBuilder.Entity<SaveSlotEntity>(entity =>
-        {
-            entity.ToTable("save_slots");
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.SaveId).IsRequired();
-            entity.Property(x => x.UserId).IsRequired();
-            entity.Property(x => x.PlayerName).IsRequired();
-            entity.Property(x => x.SaveJson).IsRequired();
-            entity.HasIndex(x => x.SaveId).IsUnique();
-            entity.HasIndex(x => new { x.UserId, x.UpdatedAtUtc });
-        });
-
-        modelBuilder.Entity<ActiveSaveContextEntity>(entity =>
-        {
-            entity.ToTable("active_save_contexts");
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.UserId).IsRequired();
-            entity.Property(x => x.SaveId).IsRequired();
-            entity.HasIndex(x => x.UserId).IsUnique();
-        });
-
-        modelBuilder.Entity<AidRequestEntity>(entity =>
-        {
-            entity.ToTable("aid_requests");
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.RequestId).IsRequired();
-            entity.Property(x => x.HostUserId).IsRequired();
-            entity.Property(x => x.HostSaveId).IsRequired();
-            entity.Property(x => x.HelperUserId).IsRequired();
-            entity.Property(x => x.Status).IsRequired();
-            entity.HasIndex(x => x.RequestId).IsUnique();
-            entity.HasIndex(x => new { x.HelperUserId, x.Status, x.CreatedAtUtc });
-        });
-
-        modelBuilder.Entity<AidSessionEntity>(entity =>
-        {
-            entity.ToTable("aid_sessions");
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.SessionId).IsRequired();
-            entity.Property(x => x.HostUserId).IsRequired();
-            entity.Property(x => x.HostSaveId).IsRequired();
-            entity.Property(x => x.HelperUserId).IsRequired();
-            entity.Property(x => x.HelperSaveId).IsRequired();
-            entity.Property(x => x.DungeonServerUrl).IsRequired();
-            entity.Property(x => x.DungeonInstanceId).IsRequired();
-            entity.Property(x => x.DungeonJoinToken).IsRequired();
-            entity.Property(x => x.DungeonParticipantsJson).IsRequired();
-            entity.Property(x => x.Status).IsRequired();
-            entity.HasIndex(x => x.SessionId).IsUnique();
-            entity.HasIndex(x => new { x.HostUserId, x.Status });
-            entity.HasIndex(x => new { x.HelperUserId, x.Status });
-        });
-    }
-}
-
-internal sealed class SocialUserEntity
-{
-    public int Id { get; set; }
-    public string UserId { get; set; } = string.Empty;
-    public string Username { get; set; } = string.Empty;
-    public string NormalizedUsername { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
-    public DateTime CreatedAtUtc { get; set; }
-}
-
-internal sealed class FriendLinkEntity
-{
-    public int Id { get; set; }
-    public string UserAId { get; set; } = string.Empty;
-    public string UserBId { get; set; } = string.Empty;
-    public string UserARemark { get; set; } = string.Empty;
-    public string UserBRemark { get; set; } = string.Empty;
-    public DateTime CreatedAtUtc { get; set; }
-}
-
-internal sealed class FriendRequestEntity
-{
-    public int Id { get; set; }
-    public string RequestId { get; set; } = string.Empty;
-    public string RequesterUserId { get; set; } = string.Empty;
-    public string TargetUserId { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public string RequesterRemark { get; set; } = string.Empty;
-    public string TargetRemark { get; set; } = string.Empty;
-    public DateTime CreatedAtUtc { get; set; }
-    public DateTime UpdatedAtUtc { get; set; }
-}
-
-internal sealed class SocialMessageEntity
-{
-    public long MessageId { get; set; }
-    public string FromUserId { get; set; } = string.Empty;
-    public string ToUserId { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-    public DateTime SentAtUtc { get; set; }
-}
-
-internal sealed class SaveSlotEntity
-{
-    public int Id { get; set; }
-    public string SaveId { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
-    public string PlayerName { get; set; } = string.Empty;
-    public string PortraitId { get; set; } = string.Empty;
-    public int LevelIndex { get; set; }
-    public int Version { get; set; }
-    public string SaveJson { get; set; } = string.Empty;
-    public DateTime CreatedAtUtc { get; set; }
-    public DateTime UpdatedAtUtc { get; set; }
-}
-
-internal sealed class ActiveSaveContextEntity
-{
-    public int Id { get; set; }
-    public string UserId { get; set; } = string.Empty;
-    public string SaveId { get; set; } = string.Empty;
-    public string PlayerName { get; set; } = string.Empty;
-    public string PortraitId { get; set; } = string.Empty;
-    public int LevelIndex { get; set; }
-    public DateTime UpdatedAtUtc { get; set; }
-}
-
-internal sealed class AidRequestEntity
-{
-    public int Id { get; set; }
-    public string RequestId { get; set; } = string.Empty;
-    public string HostUserId { get; set; } = string.Empty;
-    public string HostSaveId { get; set; } = string.Empty;
-    public string HostPlayerName { get; set; } = string.Empty;
-    public int HostLevelIndex { get; set; }
-    public float HostPlayerX { get; set; }
-    public float HostPlayerY { get; set; }
-    public float HostPlayerZ { get; set; }
-    public float HostPlayerYaw { get; set; }
-    public string HelperUserId { get; set; } = string.Empty;
-    public string HelperPlayerName { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public DateTime CreatedAtUtc { get; set; }
-    public DateTime UpdatedAtUtc { get; set; }
-}
-
-internal sealed class AidSessionEntity
-{
-    public int Id { get; set; }
-    public string SessionId { get; set; } = string.Empty;
-    public string RequestId { get; set; } = string.Empty;
-    public string HostUserId { get; set; } = string.Empty;
-    public string HostSaveId { get; set; } = string.Empty;
-    public string HostPlayerName { get; set; } = string.Empty;
-    public int HostLevelIndex { get; set; }
-    public float HostPlayerX { get; set; }
-    public float HostPlayerY { get; set; }
-    public float HostPlayerZ { get; set; }
-    public float HostPlayerYaw { get; set; }
-    public string HelperUserId { get; set; } = string.Empty;
-    public string HelperSaveId { get; set; } = string.Empty;
-    public string HelperPlayerName { get; set; } = string.Empty;
-    public int HelperLevelIndex { get; set; }
-    public string DungeonServerUrl { get; set; } = string.Empty;
-    public string DungeonInstanceId { get; set; } = string.Empty;
-    public int DungeonRealtimeUdpPort { get; set; }
-    public int DungeonRealtimeKcpPort { get; set; }
-    public string DungeonJoinToken { get; set; } = string.Empty;
-    public string DungeonParticipantsJson { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public DateTime CreatedAtUtc { get; set; }
-    public DateTime UpdatedAtUtc { get; set; }
-}
-
-internal static class SocialDbInitializer
-{
-    public static void Initialize(IServiceProvider services)
-    {
-        using IServiceScope scope = services.CreateScope();
-        IDbContextFactory<SocialDbContext> factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<SocialDbContext>>();
-        using SocialDbContext db = factory.CreateDbContext();
-        EnsureSchema(db);
-    }
-
-    private static void EnsureSchema(SocialDbContext db)
-    {
-        db.Database.OpenConnection();
-        try
-        {
-            db.Database.ExecuteSqlRaw(
-                """
-                CREATE TABLE IF NOT EXISTS users (
-                    Id INTEGER NOT NULL CONSTRAINT PK_users PRIMARY KEY AUTOINCREMENT,
-                    UserId TEXT NOT NULL,
-                    Username TEXT NOT NULL,
-                    NormalizedUsername TEXT NOT NULL,
-                    PasswordHash TEXT NOT NULL,
-                    CreatedAtUtc TEXT NOT NULL
-                );
-                """);
-            db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_users_UserId ON users (UserId);");
-            db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_users_NormalizedUsername ON users (NormalizedUsername);");
-
-            db.Database.ExecuteSqlRaw(
-                """
-                CREATE TABLE IF NOT EXISTS friend_links (
-                    Id INTEGER NOT NULL CONSTRAINT PK_friend_links PRIMARY KEY AUTOINCREMENT,
-                    UserAId TEXT NOT NULL,
-                    UserBId TEXT NOT NULL,
-                    UserARemark TEXT NOT NULL DEFAULT '',
-                    UserBRemark TEXT NOT NULL DEFAULT '',
-                    CreatedAtUtc TEXT NOT NULL
-                );
-                """);
-            db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_friend_links_UserAId_UserBId ON friend_links (UserAId, UserBId);");
-
-            db.Database.ExecuteSqlRaw(
-                """
-                CREATE TABLE IF NOT EXISTS friend_requests (
-                    Id INTEGER NOT NULL CONSTRAINT PK_friend_requests PRIMARY KEY AUTOINCREMENT,
-                    RequestId TEXT NOT NULL,
-                    RequesterUserId TEXT NOT NULL,
-                    TargetUserId TEXT NOT NULL,
-                    Status TEXT NOT NULL,
-                    Message TEXT NOT NULL,
-                    RequesterRemark TEXT NOT NULL DEFAULT '',
-                    TargetRemark TEXT NOT NULL DEFAULT '',
-                    CreatedAtUtc TEXT NOT NULL,
-                    UpdatedAtUtc TEXT NOT NULL
-                );
-                """);
-            db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_friend_requests_RequestId ON friend_requests (RequestId);");
-            db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_friend_requests_TargetUserId_Status_CreatedAtUtc ON friend_requests (TargetUserId, Status, CreatedAtUtc);");
-            db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_friend_requests_RequesterUserId_TargetUserId_Status ON friend_requests (RequesterUserId, TargetUserId, Status);");
-
-            db.Database.ExecuteSqlRaw(
-                """
-                CREATE TABLE IF NOT EXISTS messages (
-                    MessageId INTEGER NOT NULL CONSTRAINT PK_messages PRIMARY KEY AUTOINCREMENT,
-                    FromUserId TEXT NOT NULL,
-                    ToUserId TEXT NOT NULL,
-                    Content TEXT NOT NULL,
-                    SentAtUtc TEXT NOT NULL
-                );
-                """);
-            db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_messages_FromUserId_ToUserId_MessageId ON messages (FromUserId, ToUserId, MessageId);");
-
-            db.Database.ExecuteSqlRaw(
-                """
-                CREATE TABLE IF NOT EXISTS save_slots (
-                    Id INTEGER NOT NULL CONSTRAINT PK_save_slots PRIMARY KEY AUTOINCREMENT,
-                    SaveId TEXT NOT NULL,
-                    UserId TEXT NOT NULL,
-                    PlayerName TEXT NOT NULL,
-                    PortraitId TEXT NOT NULL DEFAULT 'UI图片/天依',
-                    LevelIndex INTEGER NOT NULL,
-                    Version INTEGER NOT NULL,
-                    SaveJson TEXT NOT NULL,
-                    CreatedAtUtc TEXT NOT NULL,
-                    UpdatedAtUtc TEXT NOT NULL
-                );
-                """);
-            db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_save_slots_SaveId ON save_slots (SaveId);");
-            db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_save_slots_UserId_UpdatedAtUtc ON save_slots (UserId, UpdatedAtUtc);");
-
-            db.Database.ExecuteSqlRaw(
-                """
-                CREATE TABLE IF NOT EXISTS active_save_contexts (
-                    Id INTEGER NOT NULL CONSTRAINT PK_active_save_contexts PRIMARY KEY AUTOINCREMENT,
-                    UserId TEXT NOT NULL,
-                    SaveId TEXT NOT NULL,
-                    PlayerName TEXT NOT NULL,
-                    PortraitId TEXT NOT NULL DEFAULT 'UI图片/天依',
-                    LevelIndex INTEGER NOT NULL,
-                    UpdatedAtUtc TEXT NOT NULL
-                );
-                """);
-            db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_active_save_contexts_UserId ON active_save_contexts (UserId);");
-
-            db.Database.ExecuteSqlRaw(
-                """
-                CREATE TABLE IF NOT EXISTS aid_requests (
-                    Id INTEGER NOT NULL CONSTRAINT PK_aid_requests PRIMARY KEY AUTOINCREMENT,
-                    RequestId TEXT NOT NULL,
-                    HostUserId TEXT NOT NULL,
-                    HostSaveId TEXT NOT NULL,
-                    HostPlayerName TEXT NOT NULL,
-                    HostLevelIndex INTEGER NOT NULL,
-                    HostPlayerX REAL NOT NULL DEFAULT 0,
-                    HostPlayerY REAL NOT NULL DEFAULT 0,
-                    HostPlayerZ REAL NOT NULL DEFAULT 0,
-                    HostPlayerYaw REAL NOT NULL DEFAULT 0,
-                    HelperUserId TEXT NOT NULL,
-                    HelperPlayerName TEXT NOT NULL,
-                    Status TEXT NOT NULL,
-                    Message TEXT NOT NULL,
-                    CreatedAtUtc TEXT NOT NULL,
-                    UpdatedAtUtc TEXT NOT NULL
-                );
-                """);
-            db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_aid_requests_RequestId ON aid_requests (RequestId);");
-            db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_aid_requests_HelperUserId_Status_CreatedAtUtc ON aid_requests (HelperUserId, Status, CreatedAtUtc);");
-
-            db.Database.ExecuteSqlRaw(
-                """
-                CREATE TABLE IF NOT EXISTS aid_sessions (
-                    Id INTEGER NOT NULL CONSTRAINT PK_aid_sessions PRIMARY KEY AUTOINCREMENT,
-                    SessionId TEXT NOT NULL,
-                    RequestId TEXT NOT NULL,
-                    HostUserId TEXT NOT NULL,
-                    HostSaveId TEXT NOT NULL,
-                    HostPlayerName TEXT NOT NULL,
-                    HostLevelIndex INTEGER NOT NULL,
-                    HostPlayerX REAL NOT NULL DEFAULT 0,
-                    HostPlayerY REAL NOT NULL DEFAULT 0,
-                    HostPlayerZ REAL NOT NULL DEFAULT 0,
-                    HostPlayerYaw REAL NOT NULL DEFAULT 0,
-                    HelperUserId TEXT NOT NULL,
-                    HelperSaveId TEXT NOT NULL,
-                    HelperPlayerName TEXT NOT NULL,
-                    HelperLevelIndex INTEGER NOT NULL,
-                    DungeonServerUrl TEXT NOT NULL DEFAULT '',
-                    DungeonInstanceId TEXT NOT NULL DEFAULT '',
-                    DungeonRealtimeUdpPort INTEGER NOT NULL DEFAULT 0,
-                    DungeonRealtimeKcpPort INTEGER NOT NULL DEFAULT 0,
-                    DungeonJoinToken TEXT NOT NULL DEFAULT '',
-                    DungeonParticipantsJson TEXT NOT NULL DEFAULT '[]',
-                    Status TEXT NOT NULL,
-                    CreatedAtUtc TEXT NOT NULL,
-                    UpdatedAtUtc TEXT NOT NULL
-                );
-                """);
-            db.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_aid_sessions_SessionId ON aid_sessions (SessionId);");
-            db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_aid_sessions_HostUserId_Status ON aid_sessions (HostUserId, Status);");
-            db.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_aid_sessions_HelperUserId_Status ON aid_sessions (HelperUserId, Status);");
-
-            EnsureColumnExists(db.Database.GetDbConnection(), "friend_links", "UserARemark", "ALTER TABLE friend_links ADD COLUMN UserARemark TEXT NOT NULL DEFAULT '';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "friend_links", "UserBRemark", "ALTER TABLE friend_links ADD COLUMN UserBRemark TEXT NOT NULL DEFAULT '';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "friend_requests", "RequesterRemark", "ALTER TABLE friend_requests ADD COLUMN RequesterRemark TEXT NOT NULL DEFAULT '';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "friend_requests", "TargetRemark", "ALTER TABLE friend_requests ADD COLUMN TargetRemark TEXT NOT NULL DEFAULT '';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "save_slots", "PortraitId", "ALTER TABLE save_slots ADD COLUMN PortraitId TEXT NOT NULL DEFAULT 'UI图片/天依';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "active_save_contexts", "PortraitId", "ALTER TABLE active_save_contexts ADD COLUMN PortraitId TEXT NOT NULL DEFAULT 'UI图片/天依';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_requests", "HostPlayerX", "ALTER TABLE aid_requests ADD COLUMN HostPlayerX REAL NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_requests", "HostPlayerY", "ALTER TABLE aid_requests ADD COLUMN HostPlayerY REAL NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_requests", "HostPlayerZ", "ALTER TABLE aid_requests ADD COLUMN HostPlayerZ REAL NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_requests", "HostPlayerYaw", "ALTER TABLE aid_requests ADD COLUMN HostPlayerYaw REAL NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "HostPlayerX", "ALTER TABLE aid_sessions ADD COLUMN HostPlayerX REAL NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "HostPlayerY", "ALTER TABLE aid_sessions ADD COLUMN HostPlayerY REAL NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "HostPlayerZ", "ALTER TABLE aid_sessions ADD COLUMN HostPlayerZ REAL NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "HostPlayerYaw", "ALTER TABLE aid_sessions ADD COLUMN HostPlayerYaw REAL NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonServerUrl", "ALTER TABLE aid_sessions ADD COLUMN DungeonServerUrl TEXT NOT NULL DEFAULT '';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonInstanceId", "ALTER TABLE aid_sessions ADD COLUMN DungeonInstanceId TEXT NOT NULL DEFAULT '';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonRealtimeUdpPort", "ALTER TABLE aid_sessions ADD COLUMN DungeonRealtimeUdpPort INTEGER NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonRealtimeKcpPort", "ALTER TABLE aid_sessions ADD COLUMN DungeonRealtimeKcpPort INTEGER NOT NULL DEFAULT 0;");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonJoinToken", "ALTER TABLE aid_sessions ADD COLUMN DungeonJoinToken TEXT NOT NULL DEFAULT '';");
-            EnsureColumnExists(db.Database.GetDbConnection(), "aid_sessions", "DungeonParticipantsJson", "ALTER TABLE aid_sessions ADD COLUMN DungeonParticipantsJson TEXT NOT NULL DEFAULT '[]';");
-        }
-        finally
-        {
-            db.Database.CloseConnection();
-        }
-    }
-
-    private static void EnsureColumnExists(DbConnection connection, string tableName, string columnName, string alterSql)
-    {
-        using DbCommand pragma = connection.CreateCommand();
-        pragma.CommandText = $"PRAGMA table_info({tableName});";
-        using DbDataReader reader = pragma.ExecuteReader();
-
-        while (reader.Read())
-        {
-            string existingColumnName = reader["name"]?.ToString();
-            if (string.Equals(existingColumnName, columnName, StringComparison.OrdinalIgnoreCase))
-                return;
-        }
-
-        reader.Close();
-        using DbCommand alter = connection.CreateCommand();
-        alter.CommandText = alterSql;
-        alter.ExecuteNonQuery();
-    }
-}
-
-internal sealed class OnlineDungeonClient
-{
-    private readonly HttpClient _httpClient;
-
-    public OnlineDungeonClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
-    public bool TryCreateInstance(
-        string dungeonServerUrl,
-        CreateDungeonInstanceRequest request,
-        out DungeonInstanceInfo? instance,
-        out string error)
-    {
-        instance = null;
-        error = string.Empty;
-
-        string normalizedServerUrl = NormalizeServerUrl(dungeonServerUrl);
-        if (string.IsNullOrWhiteSpace(normalizedServerUrl))
-        {
-            error = "联机副本服务地址为空";
-            return false;
-        }
-
-        try
-        {
-            HttpResponseMessage response = _httpClient.PostAsJsonAsync($"{normalizedServerUrl}/api/dungeons", request)
-                .GetAwaiter()
-                .GetResult();
-            DungeonApiResponse<DungeonInstanceInfo>? apiResponse = response.Content
-                .ReadFromJsonAsync<DungeonApiResponse<DungeonInstanceInfo>>()
-                .GetAwaiter()
-                .GetResult();
-
-            if (!response.IsSuccessStatusCode || apiResponse == null || !apiResponse.success || apiResponse.data == null)
-            {
-                error = apiResponse?.message ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(error))
-                    error = $"联机副本服务返回 HTTP {(int)response.StatusCode}";
-                return false;
-            }
-
-            instance = apiResponse.data;
-            return true;
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            return false;
-        }
-    }
-
-    public bool TryJoinInstance(
-        string dungeonServerUrl,
-        string instanceId,
-        JoinDungeonInstanceRequest request,
-        out string error)
-    {
-        error = string.Empty;
-
-        string normalizedServerUrl = NormalizeServerUrl(dungeonServerUrl);
-        string normalizedInstanceId = string.IsNullOrWhiteSpace(instanceId) ? string.Empty : instanceId.Trim();
-        if (string.IsNullOrWhiteSpace(normalizedServerUrl) || string.IsNullOrWhiteSpace(normalizedInstanceId))
-        {
-            error = "联机副本服务地址或副本标识为空";
-            return false;
-        }
-
-        try
-        {
-            HttpResponseMessage response = _httpClient.PostAsJsonAsync(
-                    $"{normalizedServerUrl}/api/dungeons/{Uri.EscapeDataString(normalizedInstanceId)}/participants/join",
-                    request)
-                .GetAwaiter()
-                .GetResult();
-            DungeonApiResponse<DungeonInstanceInfo>? apiResponse = response.Content
-                .ReadFromJsonAsync<DungeonApiResponse<DungeonInstanceInfo>>()
-                .GetAwaiter()
-                .GetResult();
-
-            if (response.IsSuccessStatusCode && apiResponse != null && apiResponse.success)
-                return true;
-
-            error = apiResponse?.message ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(error))
-                error = $"联机副本服务返回 HTTP {(int)response.StatusCode}";
-            return false;
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            return false;
-        }
-    }
-
-    public bool TryCloseInstance(
-        string dungeonServerUrl,
-        string instanceId,
-        string reason,
-        out string error)
-    {
-        error = string.Empty;
-
-        string normalizedServerUrl = NormalizeServerUrl(dungeonServerUrl);
-        string normalizedInstanceId = string.IsNullOrWhiteSpace(instanceId) ? string.Empty : instanceId.Trim();
-        if (string.IsNullOrWhiteSpace(normalizedServerUrl) || string.IsNullOrWhiteSpace(normalizedInstanceId))
-        {
-            error = "联机副本服务地址或副本标识为空";
-            return false;
-        }
-
-        try
-        {
-            HttpResponseMessage response = _httpClient.PostAsJsonAsync(
-                    $"{normalizedServerUrl}/api/dungeons/{Uri.EscapeDataString(normalizedInstanceId)}/close",
-                    new CloseDungeonInstanceRequest { reason = reason })
-                .GetAwaiter()
-                .GetResult();
-            DungeonApiResponse<DungeonInstanceInfo>? apiResponse = response.Content
-                .ReadFromJsonAsync<DungeonApiResponse<DungeonInstanceInfo>>()
-                .GetAwaiter()
-                .GetResult();
-
-            if (response.IsSuccessStatusCode && apiResponse != null && apiResponse.success)
-                return true;
-
-            error = apiResponse?.message ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(error))
-                error = $"联机副本服务返回 HTTP {(int)response.StatusCode}";
-            return false;
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            return false;
-        }
-    }
-
-    private static string NormalizeServerUrl(string value)
-    {
-        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().TrimEnd('/');
-    }
-
-}
 
 internal sealed class SocialAppService
 {
-    private const string DefaultDungeonServerUrl = "http://127.0.0.1:5086";
     private const string AidRequestPending = "pending";
     private const string AidRequestAccepted = "accepted";
     private const string AidRequestRejected = "rejected";
@@ -615,14 +19,19 @@ internal sealed class SocialAppService
 
     private readonly IDbContextFactory<SocialDbContext> _dbContextFactory;
     private readonly OnlineDungeonClient _onlineDungeonClient;
+    private readonly string _defaultDungeonServerUrl;
 
-    public SocialAppService(IDbContextFactory<SocialDbContext> dbContextFactory, OnlineDungeonClient onlineDungeonClient)
+    public SocialAppService(
+        IDbContextFactory<SocialDbContext> dbContextFactory,
+        OnlineDungeonClient onlineDungeonClient,
+        IConfiguration configuration)
     {
         _dbContextFactory = dbContextFactory;
         _onlineDungeonClient = onlineDungeonClient;
+        _defaultDungeonServerUrl = NormalizeServerUrl(configuration["OnlineDungeon:DefaultServerUrl"], "http://127.0.0.1:5086");
     }
 
-    private static string ResolveDungeonServerUrl(string requestHost)
+    private string ResolveDungeonServerUrl(string requestHost)
     {
         string host = string.IsNullOrWhiteSpace(requestHost) ? "127.0.0.1" : requestHost.Trim();
         int colonIndex = host.IndexOf(':');
@@ -632,7 +41,17 @@ internal sealed class SocialAppService
         if (string.IsNullOrWhiteSpace(host))
             host = "127.0.0.1";
 
+        if (string.Equals(host, "127.0.0.1", StringComparison.Ordinal) ||
+            string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
+            return _defaultDungeonServerUrl;
+
         return $"http://{host}:5086";
+    }
+
+    private static string NormalizeServerUrl(string? value, string fallback)
+    {
+        string normalized = string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+        return normalized.TrimEnd('/');
     }
 
     public bool TryRegister(AuthRequest request, out SocialUserDto? user, out string error)
@@ -654,7 +73,7 @@ internal sealed class SocialAppService
             UserId = Guid.NewGuid().ToString("N"),
             Username = username,
             NormalizedUsername = normalizedUsername,
-            PasswordHash = ComputeSha256(password),
+            PasswordHash = HashPassword(password),
             CreatedAtUtc = DateTime.UtcNow,
         };
 
@@ -674,7 +93,7 @@ internal sealed class SocialAppService
 
         string normalizedUsername = NormalizeUsername(username);
         SocialUserEntity? entity = db.Users.FirstOrDefault(record => record.NormalizedUsername == normalizedUsername);
-        if (entity == null || !string.Equals(entity.PasswordHash, ComputeSha256(password), StringComparison.Ordinal))
+        if (entity == null || !VerifyPassword(password, entity.PasswordHash))
         {
             error = "账号名或密码错误";
             return false;
@@ -811,7 +230,7 @@ internal sealed class SocialAppService
             {
                 userId = user.UserId,
                 username = user.Username,
-                remark = friendRemarks.TryGetValue(user.UserId, out string remark) ? remark : string.Empty,
+                remark = friendRemarks.TryGetValue(user.UserId, out string? remark) ? remark ?? string.Empty : string.Empty,
             })
             .ToList();
     }
@@ -855,18 +274,20 @@ internal sealed class SocialAppService
         for (int i = 0; i < friends.Count; i++)
         {
             SocialUserEntity friend = friends[i];
-            bool isOnline = activeContexts.TryGetValue(friend.UserId, out ActiveSaveContextEntity activeContext)
+            bool hasActiveContext = activeContexts.TryGetValue(friend.UserId, out ActiveSaveContextEntity? activeContext);
+            bool isOnline = hasActiveContext
+                            && activeContext != null
                             && DateTime.UtcNow - activeContext.UpdatedAtUtc <= ActivePresenceWindow;
-            SaveSlotEntity latestSlot = null;
+            SaveSlotEntity? latestSlot = null;
             latestSlots.TryGetValue(friend.UserId, out latestSlot);
 
-            string playerName = isOnline
+            string? playerName = isOnline && activeContext != null
                 ? activeContext.PlayerName
                 : latestSlot?.PlayerName;
-            string portraitId = isOnline
+            string? portraitId = isOnline && activeContext != null
                 ? activeContext.PortraitId
                 : latestSlot?.PortraitId;
-            int levelIndex = isOnline
+            int levelIndex = isOnline && activeContext != null
                 ? activeContext.LevelIndex
                 : (latestSlot != null ? latestSlot.LevelIndex : 1);
 
@@ -874,7 +295,7 @@ internal sealed class SocialAppService
             {
                 userId = friend.UserId,
                 username = friend.Username,
-                remark = friendRemarks.TryGetValue(friend.UserId, out string remark) ? remark : string.Empty,
+                remark = friendRemarks.TryGetValue(friend.UserId, out string? remark) ? remark ?? string.Empty : string.Empty,
                 playerName = string.IsNullOrWhiteSpace(playerName) ? friend.Username : playerName,
                 portraitId = string.IsNullOrWhiteSpace(portraitId) ? "UI图片/天依" : portraitId,
                 levelIndex = Math.Max(1, levelIndex),
@@ -1643,10 +1064,52 @@ internal sealed class SocialAppService
         return true;
     }
 
-    private static string ComputeSha256(string rawValue)
+    private static string HashPassword(string password)
     {
-        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawValue));
-        return Convert.ToHexString(bytes);
+        const int iterations = 100_000;
+        byte[] salt = RandomNumberGenerator.GetBytes(16);
+        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(password),
+            salt,
+            iterations,
+            HashAlgorithmName.SHA256,
+            32);
+
+        return $"pbkdf2-sha256${iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+    }
+
+    private static bool VerifyPassword(string password, string storedHash)
+    {
+        string[] parts = string.IsNullOrWhiteSpace(storedHash)
+            ? Array.Empty<string>()
+            : storedHash.Split('$');
+
+        if (parts.Length != 4 || !string.Equals(parts[0], "pbkdf2-sha256", StringComparison.Ordinal))
+            return false;
+
+        if (!int.TryParse(parts[1], out int iterations) || iterations < 10_000)
+            return false;
+
+        byte[] salt;
+        byte[] expectedHash;
+        try
+        {
+            salt = Convert.FromBase64String(parts[2]);
+            expectedHash = Convert.FromBase64String(parts[3]);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        byte[] actualHash = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(password),
+            salt,
+            iterations,
+            HashAlgorithmName.SHA256,
+            expectedHash.Length);
+
+        return CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
     }
 
     private static HashSet<string> CollectFriendIds(SocialDbContext db, string userId)
@@ -1780,7 +1243,7 @@ internal sealed class SocialAppService
 
         string playerName = latestSlot != null && !string.IsNullOrWhiteSpace(latestSlot.PlayerName)
             ? latestSlot.PlayerName
-            : requester?.Username;
+            : requester?.Username ?? string.Empty;
         string portraitId = latestSlot != null && !string.IsNullOrWhiteSpace(latestSlot.PortraitId)
             ? latestSlot.PortraitId
             : "UI图片/天依";
@@ -1981,204 +1444,4 @@ internal sealed class SocialAppService
     {
         return string.CompareOrdinal(left, right) >= 0 ? left : right;
     }
-}
-
-internal class SaveSlotSummaryDto
-{
-    public string saveId { get; set; } = string.Empty;
-    public string playerName { get; set; } = string.Empty;
-    public string portraitId { get; set; } = string.Empty;
-    public int levelIndex { get; set; }
-    public int version { get; set; }
-    public string updatedAtUtc { get; set; } = string.Empty;
-}
-
-internal sealed class SaveSlotContentDto : SaveSlotSummaryDto
-{
-    public string saveJson { get; set; } = string.Empty;
-}
-
-internal sealed class UpsertSaveRequest
-{
-    public string userId { get; set; } = string.Empty;
-    public string playerName { get; set; } = string.Empty;
-    public string portraitId { get; set; } = string.Empty;
-    public int levelIndex { get; set; }
-    public int version { get; set; }
-    public string saveJson { get; set; } = string.Empty;
-}
-
-internal sealed class SetActiveSaveContextRequest
-{
-    public string userId { get; set; } = string.Empty;
-    public string saveId { get; set; } = string.Empty;
-}
-
-internal sealed class ClearActiveSaveContextRequest
-{
-    public string userId { get; set; } = string.Empty;
-}
-
-internal sealed class ActiveSaveContextDto
-{
-    public string userId { get; set; } = string.Empty;
-    public string saveId { get; set; } = string.Empty;
-    public string playerName { get; set; } = string.Empty;
-    public string portraitId { get; set; } = string.Empty;
-    public int levelIndex { get; set; }
-    public string updatedAtUtc { get; set; } = string.Empty;
-}
-
-internal sealed class CreateAidRequestRequest
-{
-    public string hostUserId { get; set; } = string.Empty;
-    public string helperUserId { get; set; } = string.Empty;
-    public string message { get; set; } = string.Empty;
-    public float hostPlayerX { get; set; }
-    public float hostPlayerY { get; set; }
-    public float hostPlayerZ { get; set; }
-    public float hostPlayerYaw { get; set; }
-}
-
-internal sealed class RespondAidRequestRequest
-{
-    public string helperUserId { get; set; } = string.Empty;
-    public string requestId { get; set; } = string.Empty;
-    public string decision { get; set; } = string.Empty;
-}
-
-internal sealed class CloseAidSessionRequest
-{
-    public string requesterUserId { get; set; } = string.Empty;
-    public string sessionId { get; set; } = string.Empty;
-}
-
-internal sealed class CreateDungeonInstanceRequest
-{
-    public string instanceId { get; set; } = string.Empty;
-    public string templateOwnerUserId { get; set; } = string.Empty;
-    public string templateSaveId { get; set; } = string.Empty;
-    public int levelIndex { get; set; }
-    public int difficulty { get; set; }
-    public int seed { get; set; }
-    public int maxPlayers { get; set; }
-}
-
-internal sealed class DungeonInstanceInfo
-{
-    public string instanceId { get; set; } = string.Empty;
-    public string status { get; set; } = string.Empty;
-    public int realtimeUdpPort { get; set; }
-    public int realtimeKcpPort { get; set; }
-}
-
-internal sealed class JoinDungeonInstanceRequest
-{
-    public string userId { get; set; } = string.Empty;
-    public string saveId { get; set; } = string.Empty;
-    public string displayName { get; set; } = string.Empty;
-    public string joinToken { get; set; } = string.Empty;
-}
-
-internal sealed class CloseDungeonInstanceRequest
-{
-    public string reason { get; set; } = string.Empty;
-}
-
-internal sealed class DungeonApiResponse<T>
-{
-    public bool success { get; set; }
-    public string message { get; set; } = string.Empty;
-    public T? data { get; set; }
-}
-
-internal sealed class AidRequestDto
-{
-    public string requestId { get; set; } = string.Empty;
-    public string hostUserId { get; set; } = string.Empty;
-    public string hostSaveId { get; set; } = string.Empty;
-    public string hostPlayerName { get; set; } = string.Empty;
-    public int hostLevelIndex { get; set; }
-    public float hostPlayerX { get; set; }
-    public float hostPlayerY { get; set; }
-    public float hostPlayerZ { get; set; }
-    public float hostPlayerYaw { get; set; }
-    public string helperUserId { get; set; } = string.Empty;
-    public string helperPlayerName { get; set; } = string.Empty;
-    public string status { get; set; } = string.Empty;
-    public string message { get; set; } = string.Empty;
-    public string createdAtUtc { get; set; } = string.Empty;
-    public string updatedAtUtc { get; set; } = string.Empty;
-}
-
-internal sealed class AidSessionDto
-{
-    public string sessionId { get; set; } = string.Empty;
-    public string requestId { get; set; } = string.Empty;
-    public string hostUserId { get; set; } = string.Empty;
-    public string hostSaveId { get; set; } = string.Empty;
-    public string hostPlayerName { get; set; } = string.Empty;
-    public int hostLevelIndex { get; set; }
-    public float hostPlayerX { get; set; }
-    public float hostPlayerY { get; set; }
-    public float hostPlayerZ { get; set; }
-    public float hostPlayerYaw { get; set; }
-    public string helperUserId { get; set; } = string.Empty;
-    public string helperSaveId { get; set; } = string.Empty;
-    public string helperPlayerName { get; set; } = string.Empty;
-    public int helperLevelIndex { get; set; }
-    public string dungeonServerUrl { get; set; } = string.Empty;
-    public string dungeonInstanceId { get; set; } = string.Empty;
-    public int dungeonRealtimeUdpPort { get; set; }
-    public int dungeonRealtimeKcpPort { get; set; }
-    public string dungeonJoinToken { get; set; } = string.Empty;
-    public List<DungeonSessionParticipantDto> participants { get; set; } = new();
-    public string status { get; set; } = string.Empty;
-    public string createdAtUtc { get; set; } = string.Empty;
-    public string updatedAtUtc { get; set; } = string.Empty;
-}
-
-internal sealed class DungeonParticipantInfo
-{
-    public string userId { get; set; } = string.Empty;
-    public string saveId { get; set; } = string.Empty;
-    public string displayName { get; set; } = string.Empty;
-    public int levelIndex { get; set; }
-    public string joinToken { get; set; } = string.Empty;
-}
-
-internal sealed class DungeonSessionParticipantDto
-{
-    public string userId { get; set; } = string.Empty;
-    public string saveId { get; set; } = string.Empty;
-    public string displayName { get; set; } = string.Empty;
-    public int levelIndex { get; set; }
-}
-
-internal sealed class FriendPresenceDto
-{
-    public string userId { get; set; } = string.Empty;
-    public string username { get; set; } = string.Empty;
-    public string remark { get; set; } = string.Empty;
-    public string playerName { get; set; } = string.Empty;
-    public string portraitId { get; set; } = string.Empty;
-    public int levelIndex { get; set; }
-    public bool isOnline { get; set; }
-    public bool isHelping { get; set; }
-}
-
-internal sealed class FriendRequestDto
-{
-    public string requestId { get; set; } = string.Empty;
-    public string requesterUserId { get; set; } = string.Empty;
-    public string requesterUsername { get; set; } = string.Empty;
-    public string requesterPlayerName { get; set; } = string.Empty;
-    public string requesterPortraitId { get; set; } = string.Empty;
-    public string targetUserId { get; set; } = string.Empty;
-    public string status { get; set; } = string.Empty;
-    public string message { get; set; } = string.Empty;
-    public string requesterRemark { get; set; } = string.Empty;
-    public string targetRemark { get; set; } = string.Empty;
-    public string createdAtUtc { get; set; } = string.Empty;
-    public string updatedAtUtc { get; set; } = string.Empty;
 }

@@ -23,7 +23,7 @@ namespace Game.Online
         private const float WorldSnapshotSyncIntervalSeconds = 1f;
         private const float RemoteAvatarTimeoutSeconds = 3f;
         private const float WorldSnapshotWarningIntervalSeconds = 5f;
-        private const float OnlineEnemyFreezeDebugIntervalSeconds = 1.5f;
+        private const float OnlineAuthorityIntervalSeconds = 1.5f;
 
         private SocialAidSessionInfo _activeAidSession;
         private Vector3? _pendingSpawnPosition;
@@ -56,8 +56,8 @@ namespace Game.Online
         private float _onlineSceneLoadReleaseLocalTime;
         private bool _isApplyingWorldSnapshot;
         private float _nextWorldSnapshotWarningTime;
-        private float _nextOnlineEnemyFreezeDebugTime;
-        private float _nextOnlineEnemyFreezeApplyDebugTime;
+        private float _nextOnlineAuthorityTime;
+        private float _nextOnlineAuthorityApplyLogTime;
         private readonly OnlineDungeonWorldSnapshotClient _worldSnapshotClient = new OnlineDungeonWorldSnapshotClient();
         private readonly OnlineDungeonRealtimeClient _realtimeClient = new OnlineDungeonRealtimeClient();
         private readonly HashSet<string> _appliedDamageEventIds = new HashSet<string>(StringComparer.Ordinal);
@@ -677,8 +677,8 @@ namespace Game.Online
         {
             StopRealtimeClient();
             _lastAppliedAuthorityStateVersion = 0;
-            _nextOnlineEnemyFreezeDebugTime = 0f;
-            _nextOnlineEnemyFreezeApplyDebugTime = 0f;
+            _nextOnlineAuthorityTime = 0f;
+            _nextOnlineAuthorityApplyLogTime = 0f;
             _realtimeClient.Start(
                 _activeAidSession.dungeonServerUrl,
                 _activeAidSession.dungeonInstanceId,
@@ -702,8 +702,8 @@ namespace Game.Online
             MonoMgr.GetInstance().RemoveLateUpdateListener(TickRealtimeClient);
             _realtimeClient.Stop();
             _lastAppliedAuthorityStateVersion = 0;
-            _nextOnlineEnemyFreezeDebugTime = 0f;
-            _nextOnlineEnemyFreezeApplyDebugTime = 0f;
+            _nextOnlineAuthorityTime = 0f;
+            _nextOnlineAuthorityApplyLogTime = 0f;
         }
 
         private void TickRealtimeClient()
@@ -801,11 +801,11 @@ namespace Game.Online
 
         private void ApplyRealtimeAuthoritySnapshot(OnlineDungeonRealtimeAuthoritySnapshotInfo snapshot)
         {
-            if (!ShouldDriveOnlineWorldSimulation() && Time.unscaledTime >= _nextOnlineEnemyFreezeDebugTime)
+            if (!ShouldDriveOnlineWorldSimulation() && Time.unscaledTime >= _nextOnlineAuthorityTime)
             {
                 OnlineDungeonAuthorityStateInfo state = snapshot?.state;
-                _nextOnlineEnemyFreezeDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
-                Debug.Log($"[OnlineEnemyFreezeDebug] Authority snapshot received. hasState={state != null} initialized={(state != null && state.initialized)} version={(state != null ? state.version : 0)} lastVersion={_lastAppliedAuthorityStateVersion} enemyCount={(state?.enemies != null ? state.enemies.Count : 0)} scene={SceneManager.GetActiveScene().name} worldScene={_lastAppliedWorldSnapshotSceneName} sceneReady={IsAuthorityStateSceneReady()}");
+                _nextOnlineAuthorityTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
+                Debug.Log($"[OnlineAuthority] Authority snapshot received. hasState={state != null} initialized={(state != null && state.initialized)} version={(state != null ? state.version : 0)} lastVersion={_lastAppliedAuthorityStateVersion} enemyCount={(state?.enemies != null ? state.enemies.Count : 0)} scene={SceneManager.GetActiveScene().name} worldScene={_lastAppliedWorldSnapshotSceneName} sceneReady={IsAuthorityStateSceneReady()}");
             }
 
             ApplyAuthorityState(snapshot?.state);
@@ -837,7 +837,7 @@ namespace Game.Online
                 && ((snapshot.state.drops != null && snapshot.state.drops.Count > 0)
                     || (snapshot.state.killRewards != null && snapshot.state.killRewards.Count > 0));
             if (!string.IsNullOrWhiteSpace(snapshot.ackAction) || snapshot.rejected || snapshot.dropPickup != null || hasRewardStateItems)
-                Debug.Log($"[OnlineLootDebug] Reward snapshot received. ackAction={snapshot.ackAction} ackTarget={snapshot.ackTargetId} rejected={snapshot.rejected} hasDropPickup={snapshot.dropPickup != null} hasState={snapshot.state != null} stateVersion={(snapshot.state != null ? snapshot.state.version : 0)} dropCount={(snapshot.state?.drops != null ? snapshot.state.drops.Count : 0)} lastVersion={_lastAppliedRewardStateVersion} pendingChests={_pendingOnlineChestOpens.Count} pendingDrops={_pendingOnlineDropPickups.Count} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Reward snapshot received. ackAction={snapshot.ackAction} ackTarget={snapshot.ackTargetId} rejected={snapshot.rejected} hasDropPickup={snapshot.dropPickup != null} hasState={snapshot.state != null} stateVersion={(snapshot.state != null ? snapshot.state.version : 0)} dropCount={(snapshot.state?.drops != null ? snapshot.state.drops.Count : 0)} lastVersion={_lastAppliedRewardStateVersion} pendingChests={_pendingOnlineChestOpens.Count} pendingDrops={_pendingOnlineDropPickups.Count} scene={SceneManager.GetActiveScene().name}");
             if (snapshot.rejected)
             {
                 ResetRejectedRewardPending(snapshot.ackAction, snapshot.ackTargetId);
@@ -919,7 +919,7 @@ namespace Game.Online
             if (state.version <= _lastAppliedRewardStateVersion)
                 return;
 
-            Debug.Log($"[OnlineLootDebug] Apply reward state. version={state.version} lastVersion={_lastAppliedRewardStateVersion} killRewardCount={(state.killRewards != null ? state.killRewards.Count : 0)} dropCount={(state.drops != null ? state.drops.Count : 0)} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OnlineReward] Apply reward state. version={state.version} lastVersion={_lastAppliedRewardStateVersion} killRewardCount={(state.killRewards != null ? state.killRewards.Count : 0)} dropCount={(state.drops != null ? state.drops.Count : 0)} scene={SceneManager.GetActiveScene().name}");
             if (state.killRewards != null)
             {
                 for (int i = 0; i < state.killRewards.Count; i++)
@@ -993,13 +993,13 @@ namespace Game.Online
         {
             if (drop == null || string.IsNullOrWhiteSpace(drop.dropId))
             {
-                Debug.Log("[OnlineLootDebug] Online drop state skipped because drop or dropId is empty.");
+                Debug.Log("[OnlineReward] Online drop state skipped because drop or dropId is empty.");
                 return;
             }
 
             if (drop.pickedUp)
             {
-                Debug.Log($"[OnlineLootDebug] Online drop state says picked up. drop={drop.dropId} pickedBy={drop.pickedUpByUserId} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Online drop state says picked up. drop={drop.dropId} pickedBy={drop.pickedUpByUserId} scene={SceneManager.GetActiveScene().name}");
                 RemoveOnlineDrop(drop.dropId);
                 return;
             }
@@ -1010,47 +1010,47 @@ namespace Game.Online
             DroppedPickupRuntime pickup = DroppedPickupRuntime.SpawnOnlineDrop(drop);
             if (pickup == null)
             {
-                Debug.Log($"[OnlineLootDebug] Online drop state spawn failed. drop={drop.dropId} itemType={drop.itemType} count={drop.count} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Online drop state spawn failed. drop={drop.dropId} itemType={drop.itemType} count={drop.count} scene={SceneManager.GetActiveScene().name}");
                 return;
             }
 
             _spawnedDropIds.Add(drop.dropId);
             _onlineDrops[drop.dropId] = pickup;
-            Debug.Log($"[OnlineLootDebug] Online drop state spawned. drop={drop.dropId} itemType={drop.itemType} spawnedDrops={_onlineDrops.Count} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OnlineReward] Online drop state spawned. drop={drop.dropId} itemType={drop.itemType} spawnedDrops={_onlineDrops.Count} scene={SceneManager.GetActiveScene().name}");
         }
 
         public bool TryRequestPickupOnlineDrop(string dropId)
         {
             if (!HasActiveSession || string.IsNullOrWhiteSpace(dropId))
             {
-                Debug.Log($"[OnlineLootDebug] Drop pickup request rejected before user check. drop={dropId} hasSession={HasActiveSession} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Drop pickup request rejected before user check. drop={dropId} hasSession={HasActiveSession} scene={SceneManager.GetActiveScene().name}");
                 return false;
             }
 
             SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
             if (currentUser == null || string.IsNullOrWhiteSpace(currentUser.userId))
             {
-                Debug.Log($"[OnlineLootDebug] Drop pickup request rejected because current user is missing. drop={dropId} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Drop pickup request rejected because current user is missing. drop={dropId} scene={SceneManager.GetActiveScene().name}");
                 return false;
             }
 
             string normalizedDropId = dropId.Trim();
             if (_pendingOnlineDropPickups.Contains(normalizedDropId))
             {
-                Debug.Log($"[OnlineLootDebug] Drop pickup request rejected because already pending. drop={normalizedDropId} pendingDrops={_pendingOnlineDropPickups.Count} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Drop pickup request rejected because already pending. drop={normalizedDropId} pendingDrops={_pendingOnlineDropPickups.Count} scene={SceneManager.GetActiveScene().name}");
                 return false;
             }
 
             if (!_realtimeClient.IsRunning)
             {
-                Debug.Log($"[OnlineLootDebug] Drop pickup request rejected because realtime is not running. drop={normalizedDropId} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Drop pickup request rejected because realtime is not running. drop={normalizedDropId} scene={SceneManager.GetActiveScene().name}");
                 LogWorldSnapshotWarning("联机副本实时通道未启动，副本掉落无法拾取。");
                 return false;
             }
 
             _pendingOnlineDropPickups.Add(normalizedDropId);
             _realtimeClient.EnqueueDropPickup(normalizedDropId);
-            Debug.Log($"[OnlineLootDebug] Drop pickup request queued. drop={normalizedDropId} pendingDrops={_pendingOnlineDropPickups.Count} lastRewardVersion={_lastAppliedRewardStateVersion} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OnlineReward] Drop pickup request queued. drop={normalizedDropId} pendingDrops={_pendingOnlineDropPickups.Count} lastRewardVersion={_lastAppliedRewardStateVersion} scene={SceneManager.GetActiveScene().name}");
             return true;
         }
 
@@ -1058,33 +1058,33 @@ namespace Game.Online
         {
             if (!HasActiveSession || chest == null)
             {
-                Debug.Log($"[OnlineLootDebug] Chest open request rejected before user check. chest={(chest != null ? chest.GetSnapshotId() : string.Empty)} hasSession={HasActiveSession} chestNull={chest == null} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Chest open request rejected before user check. chest={(chest != null ? chest.GetSnapshotId() : string.Empty)} hasSession={HasActiveSession} chestNull={chest == null} scene={SceneManager.GetActiveScene().name}");
                 return false;
             }
 
             SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
             if (currentUser == null || string.IsNullOrWhiteSpace(currentUser.userId))
             {
-                Debug.Log($"[OnlineLootDebug] Chest open request rejected because current user is missing. chest={chest.GetSnapshotId()} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Chest open request rejected because current user is missing. chest={chest.GetSnapshotId()} scene={SceneManager.GetActiveScene().name}");
                 return false;
             }
 
             if (!chest.TryBuildSnapshot(out ChestSnapshotSave snapshot) || snapshot == null || string.IsNullOrWhiteSpace(snapshot.snapshotId))
             {
-                Debug.Log($"[OnlineLootDebug] Chest open request rejected because snapshot is invalid. chest={chest.GetSnapshotId()} snapshotNull={snapshot == null} dropCount={dropCount} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Chest open request rejected because snapshot is invalid. chest={chest.GetSnapshotId()} snapshotNull={snapshot == null} dropCount={dropCount} scene={SceneManager.GetActiveScene().name}");
                 return false;
             }
 
             string chestId = snapshot.snapshotId.Trim();
             if (_openedOnlineChests.Contains(chestId) || _pendingOnlineChestOpens.Contains(chestId))
             {
-                Debug.Log($"[OnlineLootDebug] Chest open request rejected because opened or pending. chest={chestId} opened={_openedOnlineChests.Contains(chestId)} pending={_pendingOnlineChestOpens.Contains(chestId)} pendingChests={_pendingOnlineChestOpens.Count} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Chest open request rejected because opened or pending. chest={chestId} opened={_openedOnlineChests.Contains(chestId)} pending={_pendingOnlineChestOpens.Contains(chestId)} pendingChests={_pendingOnlineChestOpens.Count} scene={SceneManager.GetActiveScene().name}");
                 return false;
             }
 
             if (!_realtimeClient.IsRunning)
             {
-                Debug.Log($"[OnlineLootDebug] Chest open request rejected because realtime is not running. chest={chestId} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Chest open request rejected because realtime is not running. chest={chestId} scene={SceneManager.GetActiveScene().name}");
                 LogWorldSnapshotWarning("联机副本实时通道未启动，副本宝箱无法开启。");
                 return false;
             }
@@ -1103,7 +1103,7 @@ namespace Game.Online
                 yaw = snapshot.yaw,
             });
 
-            Debug.Log($"[OnlineLootDebug] Chest open request queued. chest={chestId} prefab={snapshot.prefabId} dropCount={Mathf.Max(1, dropCount)} pendingChests={_pendingOnlineChestOpens.Count} lastRewardVersion={_lastAppliedRewardStateVersion} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OnlineReward] Chest open request queued. chest={chestId} prefab={snapshot.prefabId} dropCount={Mathf.Max(1, dropCount)} pendingChests={_pendingOnlineChestOpens.Count} lastRewardVersion={_lastAppliedRewardStateVersion} scene={SceneManager.GetActiveScene().name}");
             return true;
         }
 
@@ -1120,7 +1120,7 @@ namespace Game.Online
             if (!_openedOnlineChests.Contains(chestId))
                 return false;
 
-            Debug.Log($"[OnlineLootDebug] Apply known opened chest to runtime. chest={chestId} name={chest.name} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OnlineReward] Apply known opened chest to runtime. chest={chestId} name={chest.name} scene={SceneManager.GetActiveScene().name}");
             chest.ApplyOnlineAuthorityOpened();
             return true;
         }
@@ -1154,7 +1154,7 @@ namespace Game.Online
             string normalizedTargetId = targetId != null ? targetId.Trim() : string.Empty;
             if (string.Equals(action, "pickupDrop", StringComparison.Ordinal))
             {
-                Debug.Log($"[OnlineLootDebug] Reset rejected pickup pending. drop={normalizedTargetId} removed={_pendingOnlineDropPickups.Contains(normalizedTargetId)} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Reset rejected pickup pending. drop={normalizedTargetId} removed={_pendingOnlineDropPickups.Contains(normalizedTargetId)} scene={SceneManager.GetActiveScene().name}");
                 if (!string.IsNullOrWhiteSpace(normalizedTargetId))
                     _pendingOnlineDropPickups.Remove(normalizedTargetId);
                 return;
@@ -1170,7 +1170,7 @@ namespace Game.Online
             if (!string.Equals(action, "openChest", StringComparison.Ordinal) || string.IsNullOrWhiteSpace(normalizedTargetId))
                 return;
 
-            Debug.Log($"[OnlineLootDebug] Reset rejected chest pending. chest={normalizedTargetId} removed={_pendingOnlineChestOpens.Contains(normalizedTargetId)} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OnlineReward] Reset rejected chest pending. chest={normalizedTargetId} removed={_pendingOnlineChestOpens.Contains(normalizedTargetId)} scene={SceneManager.GetActiveScene().name}");
             _pendingOnlineChestOpens.Remove(normalizedTargetId);
             ChestInteractable[] chests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int i = 0; i < chests.Length; i++)
@@ -1187,7 +1187,7 @@ namespace Game.Online
                 return;
 
             string dropId = result.drop != null ? result.drop.dropId : string.Empty;
-            Debug.Log($"[OnlineLootDebug] Drop pickup result received. accepted={result.accepted} drop={dropId} pickedUp={(result.drop != null && result.drop.pickedUp)} hasState={result.state != null} stateVersion={(result.state != null ? result.state.version : 0)} pendingBefore={(string.IsNullOrWhiteSpace(dropId) ? false : _pendingOnlineDropPickups.Contains(dropId))} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OnlineReward] Drop pickup result received. accepted={result.accepted} drop={dropId} pickedUp={(result.drop != null && result.drop.pickedUp)} hasState={result.state != null} stateVersion={(result.state != null ? result.state.version : 0)} pendingBefore={(string.IsNullOrWhiteSpace(dropId) ? false : _pendingOnlineDropPickups.Contains(dropId))} scene={SceneManager.GetActiveScene().name}");
             if (!string.IsNullOrWhiteSpace(dropId))
             {
                 _pendingOnlineDropPickups.Remove(dropId);
@@ -1211,7 +1211,7 @@ namespace Game.Online
             PlayerModel player = GameStateMachine.GetInstance().Player;
             if (player == null)
             {
-                Debug.Log($"[OnlineLootDebug] Apply picked drop skipped because player model is missing. drop={drop.dropId} itemType={drop.itemType} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Apply picked drop skipped because player model is missing. drop={drop.dropId} itemType={drop.itemType} scene={SceneManager.GetActiveScene().name}");
                 return;
             }
 
@@ -1220,7 +1220,7 @@ namespace Game.Online
                 WeaponInstance weapon = JsonConvert.DeserializeObject<WeaponInstance>(drop.payloadJson);
                 bool canAdd = weapon != null && player.CanAddWeapon();
                 bool added = canAdd && player.AddWeapon(weapon);
-                Debug.Log($"[OnlineLootDebug] Apply picked weapon drop. drop={drop.dropId} weaponNull={weapon == null} canAdd={canAdd} added={added} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Apply picked weapon drop. drop={drop.dropId} weaponNull={weapon == null} canAdd={canAdd} added={added} scene={SceneManager.GetActiveScene().name}");
                 if (added)
                     EventCenter.GetInstance().EventTrigger(GameEvents.ItemPickedUp, weapon);
             }
@@ -1230,7 +1230,7 @@ namespace Game.Online
                 string itemId = stack != null ? stack.itemId : drop.payloadJson;
                 int count = stack != null ? Mathf.Max(1, stack.count) : Mathf.Max(1, drop.count);
                 bool canAdd = !string.IsNullOrWhiteSpace(itemId) && player.CanAddStackable(itemId, count);
-                Debug.Log($"[OnlineLootDebug] Apply picked stack drop. drop={drop.dropId} item={itemId} count={count} canAdd={canAdd} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Apply picked stack drop. drop={drop.dropId} item={itemId} count={count} canAdd={canAdd} scene={SceneManager.GetActiveScene().name}");
                 if (canAdd)
                 {
                     player.AddItemCount(itemId, count);
@@ -1245,14 +1245,14 @@ namespace Game.Online
         {
             if (!_onlineDrops.TryGetValue(dropId, out DroppedPickupRuntime pickup))
             {
-                Debug.Log($"[OnlineLootDebug] Remove online drop skipped because runtime is missing. drop={dropId} spawnedContains={_spawnedDropIds.Contains(dropId)} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Remove online drop skipped because runtime is missing. drop={dropId} spawnedContains={_spawnedDropIds.Contains(dropId)} scene={SceneManager.GetActiveScene().name}");
                 return;
             }
 
             _onlineDrops.Remove(dropId);
             _spawnedDropIds.Remove(dropId);
             _pendingOnlineDropPickups.Remove(dropId);
-            Debug.Log($"[OnlineLootDebug] Remove online drop runtime. drop={dropId} pickupNull={pickup == null} remainingDrops={_onlineDrops.Count} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OnlineReward] Remove online drop runtime. drop={dropId} pickupNull={pickup == null} remainingDrops={_onlineDrops.Count} scene={SceneManager.GetActiveScene().name}");
             if (pickup != null)
                 UnityEngine.Object.Destroy(pickup.gameObject);
         }
@@ -1276,10 +1276,10 @@ namespace Game.Online
         {
             if (state == null || !state.initialized || state.version <= _lastAppliedAuthorityStateVersion)
             {
-                if (!ShouldDriveOnlineWorldSimulation() && Time.unscaledTime >= _nextOnlineEnemyFreezeDebugTime)
+                if (!ShouldDriveOnlineWorldSimulation() && Time.unscaledTime >= _nextOnlineAuthorityTime)
                 {
-                    _nextOnlineEnemyFreezeDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
-                    Debug.Log($"[OnlineEnemyFreezeDebug] Authority state skipped. reason={(state == null ? "null" : !state.initialized ? "notInitialized" : "oldVersion")} version={(state != null ? state.version : 0)} lastVersion={_lastAppliedAuthorityStateVersion} scene={SceneManager.GetActiveScene().name}");
+                    _nextOnlineAuthorityTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
+                    Debug.Log($"[OnlineAuthority] Authority state skipped. reason={(state == null ? "null" : !state.initialized ? "notInitialized" : "oldVersion")} version={(state != null ? state.version : 0)} lastVersion={_lastAppliedAuthorityStateVersion} scene={SceneManager.GetActiveScene().name}");
                 }
 
                 return;
@@ -1287,10 +1287,10 @@ namespace Game.Online
 
             if (!ShouldDriveOnlineWorldSimulation() && !IsAuthorityStateSceneReady())
             {
-                if (Time.unscaledTime >= _nextOnlineEnemyFreezeDebugTime)
+                if (Time.unscaledTime >= _nextOnlineAuthorityTime)
                 {
-                    _nextOnlineEnemyFreezeDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
-                    Debug.Log($"[OnlineEnemyFreezeDebug] Authority state delayed because scene is not ready. version={state.version} enemyCount={(state.enemies != null ? state.enemies.Count : 0)} activeScene={SceneManager.GetActiveScene().name} worldScene={_lastAppliedWorldSnapshotSceneName} pendingScene={_pendingSceneSyncName}");
+                    _nextOnlineAuthorityTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
+                    Debug.Log($"[OnlineAuthority] Authority state delayed because scene is not ready. version={state.version} enemyCount={(state.enemies != null ? state.enemies.Count : 0)} activeScene={SceneManager.GetActiveScene().name} worldScene={_lastAppliedWorldSnapshotSceneName} pendingScene={_pendingSceneSyncName}");
                 }
 
                 return;
@@ -1336,7 +1336,7 @@ namespace Game.Online
                     }
                 }
 
-                Debug.Log($"[OnlineLootDebug] Apply chest authority opened. chest={chestId} openedAdded={openedAdded} pendingBefore={pendingBefore} pendingRemoved={pendingRemoved} matched={matchedCount} scanned={chests.Length} openedBy={chestState.openedByUserId} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineReward] Apply chest authority opened. chest={chestId} openedAdded={openedAdded} pendingBefore={pendingBefore} pendingRemoved={pendingRemoved} matched={matchedCount} scanned={chests.Length} openedBy={chestState.openedByUserId} scene={SceneManager.GetActiveScene().name}");
                 return;
             }
 
@@ -1358,12 +1358,12 @@ namespace Game.Online
                 if (ShouldDriveOnlineWorldSimulation())
                     return;
 
-                Debug.Log($"[OnlineEnemyFreezeDebug] Authority enemy missing locally, spawning. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} hp={enemyState.currentHp} dead={enemyState.isDead} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OnlineAuthority] Authority enemy missing locally, spawning. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} hp={enemyState.currentHp} dead={enemyState.isDead} scene={SceneManager.GetActiveScene().name}");
                 RemoveDuplicateFinalBossesBeforeAuthoritySpawn(enemyState.runtimeId);
                 enemy = SpawnEnemyFromAuthorityState(enemyState, BuildOnlineDebugContext());
                 if (enemy == null)
                 {
-                    Debug.Log($"[OnlineEnemyFreezeDebug] Authority enemy spawn failed. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} dead={enemyState.isDead} scene={SceneManager.GetActiveScene().name}");
+                    Debug.Log($"[OnlineAuthority] Authority enemy spawn failed. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} dead={enemyState.isDead} scene={SceneManager.GetActiveScene().name}");
                     return;
                 }
             }
@@ -1378,10 +1378,10 @@ namespace Game.Online
             enemy.ApplyOnlineAuthorityState(enemyState.currentHp, enemyState.isDead, enemyState.showCombatHealthBar);
             if (!ShouldDriveOnlineWorldSimulation())
             {
-                if (Time.unscaledTime >= _nextOnlineEnemyFreezeApplyDebugTime && (enemyState.moveBlend > 0.05f || enemyState.activeSkillSequence > 0 || enemyState.isDead))
+                if (Time.unscaledTime >= _nextOnlineAuthorityApplyLogTime && (enemyState.moveBlend > 0.05f || enemyState.activeSkillSequence > 0 || enemyState.isDead))
                 {
-                    _nextOnlineEnemyFreezeApplyDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
-                    Debug.Log($"[OnlineEnemyFreezeDebug] Apply enemy authority presentation. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} hp={enemyState.currentHp:F1} dead={enemyState.isDead} pos=({enemyState.x:F2},{enemyState.y:F2},{enemyState.z:F2}) yaw={enemyState.yaw:F1} move=({enemyState.moveBlend:F3},{enemyState.moveForward:F3},{enemyState.moveStrafe:F3}) skillSeq={enemyState.activeSkillSequence} skill={enemyState.activeSkillId} trigger={enemyState.activeSkillAnimationTrigger} scene={SceneManager.GetActiveScene().name}");
+                    _nextOnlineAuthorityApplyLogTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
+                    Debug.Log($"[OnlineAuthority] Apply enemy authority presentation. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} hp={enemyState.currentHp:F1} dead={enemyState.isDead} pos=({enemyState.x:F2},{enemyState.y:F2},{enemyState.z:F2}) yaw={enemyState.yaw:F1} move=({enemyState.moveBlend:F3},{enemyState.moveForward:F3},{enemyState.moveStrafe:F3}) skillSeq={enemyState.activeSkillSequence} skill={enemyState.activeSkillId} trigger={enemyState.activeSkillAnimationTrigger} scene={SceneManager.GetActiveScene().name}");
                 }
 
                 enemy.ApplyOnlineRemoteMovementPresentation(enemyState.moveBlend, enemyState.moveForward, enemyState.moveStrafe);
@@ -1843,8 +1843,8 @@ namespace Game.Online
                     if (authoritySceneChanged)
                     {
                         _lastAppliedAuthorityStateVersion = 0;
-                        _nextOnlineEnemyFreezeDebugTime = 0f;
-                        _nextOnlineEnemyFreezeApplyDebugTime = 0f;
+                        _nextOnlineAuthorityTime = 0f;
+                        _nextOnlineAuthorityApplyLogTime = 0f;
                     }
                     _isApplyingWorldSnapshot = false;
                 });

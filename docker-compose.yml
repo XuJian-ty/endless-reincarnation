@@ -1,0 +1,50 @@
+name: endless-reincarnation
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: endless-reincarnation-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: endless_reincarnation_social
+      MYSQL_USER: endless
+      MYSQL_PASSWORD: endless_dev_password
+      MYSQL_ROOT_PASSWORD: root_dev_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  social-backend:
+    build:
+      context: .
+      dockerfile: Backend/SocialBackend/Dockerfile
+    container_name: endless-reincarnation-social
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__SocialDatabase: Server=mysql;Port=3306;Database=endless_reincarnation_social;User=endless;Password=endless_dev_password;TreatTinyAsBoolean=false;
+      OnlineDungeon__DefaultServerUrl: http://online-dungeon-server:5086
+    ports:
+      - "5076:5076"
+
+  online-dungeon-server:
+    build:
+      context: .
+      dockerfile: Backend/OnlineDungeonServer/Dockerfile
+    container_name: endless-reincarnation-dungeon
+    restart: unless-stopped
+    ports:
+      - "5086:5086"
+      - "5087:5087/udp"
+      - "5088:5088"
+
+volumes:
+  mysql_data:

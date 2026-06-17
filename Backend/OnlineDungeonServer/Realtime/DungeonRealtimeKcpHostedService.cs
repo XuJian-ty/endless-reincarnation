@@ -509,7 +509,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
         if (!string.IsNullOrWhiteSpace(action))
         {
             _logger.LogInformation(
-                "[OnlineLootDebug] KCP reward action received. connection={ConnectionId} instance={InstanceId} user={UserId} action={Action} target={Target} afterVersion={AfterVersion} sequence={Sequence}",
+                "[OnlineReward] KCP reward action received. connection={ConnectionId} instance={InstanceId} user={UserId} action={Action} target={Target} afterVersion={AfterVersion} sequence={Sequence}",
                 connectionId,
                 envelope.InstanceId,
                 envelope.UserId,
@@ -638,7 +638,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
         if (!string.IsNullOrWhiteSpace(action) || state != null || dropPickup != null)
         {
             _logger.LogInformation(
-                "[OnlineLootDebug] KCP reward snapshot send. connection={ConnectionId} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} hasDropPickup={HasDropPickup} hasState={HasState} stateVersion={StateVersion} dropCount={DropCount} sequence={Sequence}",
+                "[OnlineReward] KCP reward snapshot send. connection={ConnectionId} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} hasDropPickup={HasDropPickup} hasState={HasState} stateVersion={StateVersion} dropCount={DropCount} sequence={Sequence}",
                 connectionId,
                 envelope.InstanceId,
                 envelope.UserId,
@@ -662,7 +662,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
     private void SendRewardError(int connectionId, string instanceId, string userId, string message, string ackAction, string ackTargetId)
     {
         _logger.LogWarning(
-            "[OnlineLootDebug] KCP reward error send. connection={ConnectionId} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} message={Message}",
+            "[OnlineReward] KCP reward error send. connection={ConnectionId} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} message={Message}",
             connectionId,
             instanceId,
             userId,

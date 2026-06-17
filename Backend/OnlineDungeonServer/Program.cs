@@ -1298,7 +1298,7 @@ internal sealed class DungeonInstanceRegistry
                 };
                 record.Chests[normalizedChestId] = chest;
                 record.AuthorityInitialized = true;
-                Console.WriteLine($"[OnlineLootDebug] Server registered chest from open request. instance={instanceId} chest={normalizedChestId} prefab={chest.PrefabId} user={participant.UserId}");
+                Console.WriteLine($"[OnlineReward] Server registered chest from open request. instance={instanceId} chest={normalizedChestId} prefab={chest.PrefabId} user={participant.UserId}");
             }
 
             if (!chest.Opened)
@@ -1311,7 +1311,7 @@ internal sealed class DungeonInstanceRegistry
                     chest.PrefabId = NormalizeRequired(request.PrefabId);
                 if (!_rewardConfigStore.TryBuildChestDrops(record, request, normalizedChestId, out List<DungeonDropProposal>? chestDrops, out error))
                 {
-                    Console.WriteLine($"[OnlineLootDebug] Server open chest failed while building drops. instance={instanceId} chest={normalizedChestId} user={participant.UserId} prefab={chest.PrefabId} error={error}");
+                    Console.WriteLine($"[OnlineReward] Server open chest failed while building drops. instance={instanceId} chest={normalizedChestId} user={participant.UserId} prefab={chest.PrefabId} error={error}");
                     return false;
                 }
 
@@ -1320,11 +1320,11 @@ internal sealed class DungeonInstanceRegistry
                 AddDungeonDrops(record, normalizedChestId, chestDrops, now, nextRewardVersion);
                 record.RewardStateVersion = nextRewardVersion;
                 record.AuthorityVersion++;
-                Console.WriteLine($"[OnlineLootDebug] Server opened chest. instance={instanceId} chest={normalizedChestId} user={participant.UserId} dropCount={chestDropCount} rewardVersion={record.RewardStateVersion} authorityVersion={record.AuthorityVersion}");
+                Console.WriteLine($"[OnlineReward] Server opened chest. instance={instanceId} chest={normalizedChestId} user={participant.UserId} dropCount={chestDropCount} rewardVersion={record.RewardStateVersion} authorityVersion={record.AuthorityVersion}");
             }
             else
             {
-                Console.WriteLine($"[OnlineLootDebug] Server chest open request is duplicate. instance={instanceId} chest={normalizedChestId} user={participant.UserId} openedBy={chest.OpenedByUserId} rewardVersion={record.RewardStateVersion} authorityVersion={record.AuthorityVersion}");
+                Console.WriteLine($"[OnlineReward] Server chest open request is duplicate. instance={instanceId} chest={normalizedChestId} user={participant.UserId} openedBy={chest.OpenedByUserId} rewardVersion={record.RewardStateVersion} authorityVersion={record.AuthorityVersion}");
             }
 
             record.UpdatedAtUtc = now;
@@ -1355,7 +1355,7 @@ internal sealed class DungeonInstanceRegistry
             if (string.IsNullOrWhiteSpace(normalizedDropId) || !record.Drops.TryGetValue(normalizedDropId, out DungeonDropRecord? drop))
             {
                 error = "副本掉落不存在";
-                Console.WriteLine($"[OnlineLootDebug] Server pickup rejected because drop is missing. instance={instanceId} drop={normalizedDropId} user={request.UserId}");
+                Console.WriteLine($"[OnlineReward] Server pickup rejected because drop is missing. instance={instanceId} drop={normalizedDropId} user={request.UserId}");
                 return false;
             }
 
@@ -1371,11 +1371,11 @@ internal sealed class DungeonInstanceRegistry
                 drop.PickedUpVersion = nextRewardVersion;
                 record.RewardStateVersion = nextRewardVersion;
                 record.UpdatedAtUtc = participant.LastSeenAtUtc;
-                Console.WriteLine($"[OnlineLootDebug] Server picked drop. instance={instanceId} drop={normalizedDropId} user={participant.UserId} itemType={drop.ItemType} rewardVersion={record.RewardStateVersion}");
+                Console.WriteLine($"[OnlineReward] Server picked drop. instance={instanceId} drop={normalizedDropId} user={participant.UserId} itemType={drop.ItemType} rewardVersion={record.RewardStateVersion}");
             }
             else
             {
-                Console.WriteLine($"[OnlineLootDebug] Server pickup request for already picked drop. instance={instanceId} drop={normalizedDropId} user={participant.UserId} pickedBy={drop.PickedUpByUserId} accepted={string.Equals(drop.PickedUpByUserId, participant.UserId, StringComparison.Ordinal)} rewardVersion={record.RewardStateVersion}");
+                Console.WriteLine($"[OnlineReward] Server pickup request for already picked drop. instance={instanceId} drop={normalizedDropId} user={participant.UserId} pickedBy={drop.PickedUpByUserId} accepted={string.Equals(drop.PickedUpByUserId, participant.UserId, StringComparison.Ordinal)} rewardVersion={record.RewardStateVersion}");
             }
 
             result = new DungeonDropPickupResultDto

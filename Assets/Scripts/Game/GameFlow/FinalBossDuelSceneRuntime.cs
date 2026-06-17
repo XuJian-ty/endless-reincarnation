@@ -54,7 +54,6 @@ namespace Game.GameFlow
 
             _transitioning = false;
             _onlineVictoryAidJoiner = false;
-            StripRegularLevelGameplayObjects();
             RegisterBossListener();
             if (ShouldWaitForOnlineAuthorityBoss())
             {
@@ -265,30 +264,6 @@ namespace Game.GameFlow
         private static void CleanupListeners()
         {
             EventCenter.GetInstance().RemoveEventListener<string>(GameEvents.BossDefeated, HandleBossDefeated);
-        }
-
-        private static void StripRegularLevelGameplayObjects()
-        {
-            DestroyOwnerGameObjects<LevelEnemySpawner>(FindObjectsInactive.Include);
-            DestroyOwnerGameObjects<LevelLocalEnemySpawner>(FindObjectsInactive.Include);
-            DestroyOwnerGameObjects<LevelDirector>(FindObjectsInactive.Include);
-            DestroyOwnerGameObjects<ChestInteractable>(FindObjectsInactive.Include);
-            DestroyOwnerGameObjects<HutaoShopInteractable>(FindObjectsInactive.Include);
-            DestroyOwnerGameObjects<DroppedPickupRuntime>(FindObjectsInactive.Include);
-            DestroyOwnerGameObjects<EnemyController>(FindObjectsInactive.Include);
-        }
-
-        private static void DestroyOwnerGameObjects<T>(FindObjectsInactive includeInactive) where T : Component
-        {
-            T[] components = Object.FindObjectsByType<T>(includeInactive, FindObjectsSortMode.None);
-            for (int i = 0; i < components.Length; i++)
-            {
-                T component = components[i];
-                if (component == null)
-                    continue;
-
-                Object.Destroy(component.gameObject);
-            }
         }
 
         private static bool HasLivingFinalBoss()

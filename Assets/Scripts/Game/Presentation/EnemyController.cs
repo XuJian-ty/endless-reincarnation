@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -61,9 +61,9 @@ namespace Game.Presentation
         private readonly Collider[] _onlineRemoteVisualOverlapBuffer = new Collider[32];
         private SkillTimelineRunner _onlineRemoteVisualTimelineRunner;
         private int _onlineRemoteVisualSkillSequence;
-        private const float OnlineEnemyFreezeDebugIntervalSeconds = 1.5f;
-        private float _nextOnlineRemoteMovementDebugTime;
-        private float _nextOnlineRemoteHeartbeatDebugTime;
+        private const float OnlineAuthorityIntervalSeconds = 1.5f;
+        private float _nextOnlineRemoteMovementLogTime;
+        private float _nextOnlineRemoteHeartbeatLogTime;
         private float _lastOnlineRemoteMovementApplyTime;
         private float _lastOnlineRemoteSkillApplyTime;
         private int _lastLoggedMissingRemoteSkillSequence;
@@ -268,7 +268,7 @@ namespace Game.Presentation
         public void SetOnlineRemoteSimulationDisabled(bool disabled)
         {
             if (_onlineRemoteSimulationDisabled != disabled)
-                Debug.Log($"[OnlineEnemyFreezeDebug] Remote simulation flag changed. runtime={RuntimeId} enemyId={EnemyId} disabled={disabled} scene={gameObject.scene.name}");
+                Debug.Log($"[OnlineAuthority] Remote simulation flag changed. runtime={RuntimeId} enemyId={EnemyId} disabled={disabled} scene={gameObject.scene.name}");
 
             _onlineRemoteSimulationDisabled = disabled;
             EnemyAI ai = GetComponent<EnemyAI>();
@@ -605,10 +605,10 @@ namespace Game.Presentation
         {
             if (!_onlineRemoteSimulationDisabled)
             {
-                if (Time.unscaledTime >= _nextOnlineRemoteMovementDebugTime)
+                if (Time.unscaledTime >= _nextOnlineRemoteMovementLogTime)
                 {
-                    _nextOnlineRemoteMovementDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
-                    Debug.Log($"[OnlineEnemyFreezeDebug] Remote movement ignored because simulation is enabled. runtime={RuntimeId} enemyId={EnemyId} move=({moveBlend:F3},{moveForward:F3},{moveStrafe:F3}) scene={gameObject.scene.name}");
+                    _nextOnlineRemoteMovementLogTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
+                    Debug.Log($"[OnlineAuthority] Remote movement ignored because simulation is enabled. runtime={RuntimeId} enemyId={EnemyId} move=({moveBlend:F3},{moveForward:F3},{moveStrafe:F3}) scene={gameObject.scene.name}");
                 }
 
                 return;
@@ -619,10 +619,10 @@ namespace Game.Presentation
             Animator animator = GetComponent<Animator>();
             if (animator == null)
             {
-                if (Time.unscaledTime >= _nextOnlineRemoteMovementDebugTime)
+                if (Time.unscaledTime >= _nextOnlineRemoteMovementLogTime)
                 {
-                    _nextOnlineRemoteMovementDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
-                    Debug.Log($"[OnlineEnemyFreezeDebug] Remote movement has no animator. runtime={RuntimeId} enemyId={EnemyId} move=({moveBlend:F3},{moveForward:F3},{moveStrafe:F3}) scene={gameObject.scene.name}");
+                    _nextOnlineRemoteMovementLogTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
+                    Debug.Log($"[OnlineAuthority] Remote movement has no animator. runtime={RuntimeId} enemyId={EnemyId} move=({moveBlend:F3},{moveForward:F3},{moveStrafe:F3}) scene={gameObject.scene.name}");
                 }
 
                 return;
@@ -635,11 +635,11 @@ namespace Game.Presentation
             if (hasMoveY)
                 animator.SetFloat("MoveY", _animatorMoveSigned);
 
-            if (Time.unscaledTime >= _nextOnlineRemoteMovementDebugTime && (moveBlend > 0.05f || moveForward > 0.05f || moveStrafe > 0.05f || !hasMoveX || !hasMoveY))
+            if (Time.unscaledTime >= _nextOnlineRemoteMovementLogTime && (moveBlend > 0.05f || moveForward > 0.05f || moveStrafe > 0.05f || !hasMoveX || !hasMoveY))
             {
-                _nextOnlineRemoteMovementDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
+                _nextOnlineRemoteMovementLogTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
                 AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                Debug.Log($"[OnlineEnemyFreezeDebug] Remote movement applied. runtime={RuntimeId} enemyId={EnemyId} move=({moveBlend:F3},{moveForward:F3},{moveStrafe:F3}) hasMoveX={hasMoveX} hasMoveY={hasMoveY} animatorSpeed={animator.speed:F2} stateHash={stateInfo.shortNameHash} normalized={stateInfo.normalizedTime:F2} scene={gameObject.scene.name}");
+                Debug.Log($"[OnlineAuthority] Remote movement applied. runtime={RuntimeId} enemyId={EnemyId} move=({moveBlend:F3},{moveForward:F3},{moveStrafe:F3}) hasMoveX={hasMoveX} hasMoveY={hasMoveY} animatorSpeed={animator.speed:F2} stateHash={stateInfo.shortNameHash} normalized={stateInfo.normalizedTime:F2} scene={gameObject.scene.name}");
             }
         }
 
@@ -984,7 +984,7 @@ namespace Game.Presentation
                 if (!_onlineRemoteSimulationDisabled && activeSkillSequence > 0 && activeSkillSequence != _lastLoggedMissingRemoteSkillSequence)
                 {
                     _lastLoggedMissingRemoteSkillSequence = activeSkillSequence;
-                    Debug.Log($"[OnlineEnemyFreezeDebug] Remote skill ignored because simulation is enabled. runtime={RuntimeId} enemyId={EnemyId} sequence={activeSkillSequence} slot={activeSkillSlot} skill={activeSkillId} scene={gameObject.scene.name}");
+                    Debug.Log($"[OnlineAuthority] Remote skill ignored because simulation is enabled. runtime={RuntimeId} enemyId={EnemyId} sequence={activeSkillSequence} slot={activeSkillSlot} skill={activeSkillId} scene={gameObject.scene.name}");
                 }
 
                 return;
@@ -1000,7 +1000,7 @@ namespace Game.Presentation
                 if (activeSkillSequence != _lastLoggedMissingRemoteSkillSequence)
                 {
                     _lastLoggedMissingRemoteSkillSequence = activeSkillSequence;
-                    Debug.Log($"[OnlineEnemyFreezeDebug] Remote skill missing definition. runtime={RuntimeId} enemyId={EnemyId} sequence={activeSkillSequence} slot={activeSkillSlot} skill={activeSkillId} trigger={activeSkillAnimationTrigger} scene={gameObject.scene.name}");
+                    Debug.Log($"[OnlineAuthority] Remote skill missing definition. runtime={RuntimeId} enemyId={EnemyId} sequence={activeSkillSequence} slot={activeSkillSlot} skill={activeSkillId} trigger={activeSkillAnimationTrigger} scene={gameObject.scene.name}");
                 }
 
                 return;
@@ -1015,7 +1015,7 @@ namespace Game.Presentation
                 : resolvedSkill != null ? resolvedSkill.AnimationTrigger : definition.GetAnimationTriggerOrEmpty();
             SetOnlineRemoteVisualTrigger(triggerName);
             _lastOnlineRemoteSkillApplyTime = Time.unscaledTime;
-            Debug.Log($"[OnlineEnemyFreezeDebug] Remote skill applied. runtime={RuntimeId} enemyId={EnemyId} sequence={activeSkillSequence} slot={activeSkillSlot} skill={activeSkillId} trigger={triggerName} hasTarget={hasActiveSkillTarget} scene={gameObject.scene.name}");
+            Debug.Log($"[OnlineAuthority] Remote skill applied. runtime={RuntimeId} enemyId={EnemyId} sequence={activeSkillSequence} slot={activeSkillSlot} skill={activeSkillId} trigger={triggerName} hasTarget={hasActiveSkillTarget} scene={gameObject.scene.name}");
 
             _onlineRemoteVisualTimelineRunner?.Stop();
             _onlineRemoteVisualTimelineRunner = new SkillTimelineRunner();
@@ -1040,10 +1040,10 @@ namespace Game.Presentation
 
         private void LogOnlineRemoteHeartbeat()
         {
-            if (Time.unscaledTime < _nextOnlineRemoteHeartbeatDebugTime)
+            if (Time.unscaledTime < _nextOnlineRemoteHeartbeatLogTime)
                 return;
 
-            _nextOnlineRemoteHeartbeatDebugTime = Time.unscaledTime + OnlineEnemyFreezeDebugIntervalSeconds;
+            _nextOnlineRemoteHeartbeatLogTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
             Animator animator = GetComponent<Animator>();
             bool hasAnimator = animator != null;
             float animatorSpeed = hasAnimator ? animator.speed : 0f;
@@ -1056,7 +1056,7 @@ namespace Game.Presentation
                 normalizedTime = stateInfo.normalizedTime;
             }
 
-            Debug.Log($"[OnlineEnemyFreezeDebug] Remote enemy heartbeat. runtime={RuntimeId} enemyId={EnemyId} hp={CurrentHp:F1} dead={_dead} move=({_animatorMoveBlend:F3},{_animatorMoveSigned:F3},{_animatorMoveStrafe:F3}) hasAnimator={hasAnimator} animatorSpeed={animatorSpeed:F2} stateHash={stateHash} normalized={normalizedTime:F2} timelineActive={_onlineRemoteVisualTimelineRunner != null} visualSkillSeq={_onlineRemoteVisualSkillSequence} secondsSinceMove={(Time.unscaledTime - _lastOnlineRemoteMovementApplyTime):F2} secondsSinceSkill={(Time.unscaledTime - _lastOnlineRemoteSkillApplyTime):F2} scene={gameObject.scene.name}");
+            Debug.Log($"[OnlineAuthority] Remote enemy heartbeat. runtime={RuntimeId} enemyId={EnemyId} hp={CurrentHp:F1} dead={_dead} move=({_animatorMoveBlend:F3},{_animatorMoveSigned:F3},{_animatorMoveStrafe:F3}) hasAnimator={hasAnimator} animatorSpeed={animatorSpeed:F2} stateHash={stateHash} normalized={normalizedTime:F2} timelineActive={_onlineRemoteVisualTimelineRunner != null} visualSkillSeq={_onlineRemoteVisualSkillSequence} secondsSinceMove={(Time.unscaledTime - _lastOnlineRemoteMovementApplyTime):F2} secondsSinceSkill={(Time.unscaledTime - _lastOnlineRemoteSkillApplyTime):F2} scene={gameObject.scene.name}");
         }
 
         private void RotateOnlineRemoteVisualToward(Vector3 targetPosition)
