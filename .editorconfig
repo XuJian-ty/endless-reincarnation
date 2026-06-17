@@ -1,0 +1,22 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+
+[*.cs]
+charset = utf-8
+end_of_line = crlf
+
+[*.json]
+charset = utf-8
+end_of_line = crlf
+
+[*.md]
+charset = utf-8
+end_of_line = crlf
+
+[*.txt]
+charset = utf-8
+end_of_line = crlf

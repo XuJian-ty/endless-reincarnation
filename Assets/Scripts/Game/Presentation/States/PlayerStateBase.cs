@@ -1,0 +1,543 @@
+using UnityEngine;
+using Game.Data;
+using System;
+
+namespace Game.Presentation
+{
+    /// <summary>
+    /// 所有玩家状态的抽象基类（State Pattern + Template Method Pattern）。
+    ///
+    /// 设计原则：
+    ///   - 状态只负责「切换决策」，不包含复杂计时/逻辑
+    ///   - GetPolicyFor() 是每个状态的「中断策略表」，PlayerStateMachine 据此
+    ///     决定新输入是立即打断、缓存还是忽略
+    ///   - CompleteWithPending() 供自然结束的状态调用，优先消费预输入，无则走默认
+    ///   - Flyweight：每种状态仅实例化一次，被复用，OnEnter/OnExit 替代构造/析构
+    ///
+    /// 默认策略：
+    ///   优先读取玩家动作及技能配置库中的动作策略表；
+    ///   若当前状态没有对应配置，则回退为 Ignore。
+    /// </summary>
+    public abstract class PlayerStateBase : IPlayerStateWithDuration
+    {
+        protected IPlayerContext Ctx { get; private set; }
+        protected virtual string ActionId => TrimStateSuffix(GetType().Name);
+        protected virtual string PolicyActionId => ActionId;
+
+        private float _stateAge;
+        private SkillTimelineRunner _timelineRunner;
+        private SkillTimelineRunner _auxiliaryTimelineRunner;
+        private string _timelineActionId;
+        private string _auxiliaryTimelineActionId;
+        private int _entrySequence;
+        private static int s_nextEntrySequence;
+
+        /// <summary>当前状态已持续运行的时间（秒）。子类可用于时序/首帧保护。</summary>
+        protected float StateAge => _stateAge;
+
+        // ── 生命周期（由状态机调用，不可 override）──────────────────────
+        internal void Enter(IPlayerContext ctx)
+        {
+            Ctx       = ctx;
+            _stateAge = 0f;
+            _entrySequence = ++s_nextEntrySequence;
+            ApplyActionPlaybackSpeed();
+            ApplyActionMovementSpeed();
+            OnEnter();
+        }
+
+        internal void Exit()
+        {
+            StopAuxiliaryTimelineSkill();
+            StopTimelineSkill();
+            ResetActionPlaybackSpeed();
+            ResetActionMovementSpeed();
+            OnExit();
+            Ctx = null;
+        }
+
+        internal void Tick(float dt, in PlayerInputData input)
+        {
+            _stateAge += dt;
+            ApplyActionPlaybackSpeed();
+            ApplyActionMovementSpeed();
+            TickTimelines(dt);
+            OnTick(dt, in input);
+        }
+
+        // ── 子类实现点（Template Method）────────────────────────────────
+        protected abstract void OnEnter();
+        protected virtual  void OnExit() { }
+        protected abstract void OnTick(float dt, in PlayerInputData input);
+
+        /// <summary>当前状态对应的动作 ID，供 HUD/调试用；默认 None。</summary>
+        public virtual GameAction CurrentActionId => GameAction.None;
+        public string CurrentRuntimeActionId => string.IsNullOrWhiteSpace(ActionId) ? string.Empty : ActionId.Trim();
+        public int EntrySequence => _entrySequence;
+        public float ElapsedSeconds => _stateAge;
+        public virtual float RemainingTime => -1f;
+        public virtual float NormalizedProgress => -1f;
+
+        public bool TryGetCurrentCameraOverride(float lookTargetHeight, out SkillTimelineRunner.CameraOverrideRequest request)
+        {
+            request = default;
+
+            if (_timelineRunner != null && _timelineRunner.TryGetCurrentCameraOverride(lookTargetHeight, out request))
+                return true;
+
+            return _auxiliaryTimelineRunner != null
+                   && _auxiliaryTimelineRunner.TryGetCurrentCameraOverride(lookTargetHeight, out request);
+        }
+
+        // ── 策略表（Strategy Pattern）────────────────────────────────────
+        public virtual TransitionPolicy GetPolicyFor(GameAction action)
+            => ResolveConfiguredPolicy(action, TransitionPolicy.Ignore);
+
+        // ── 过渡辅助 ─────────────────────────────────────────────────────
+        /// <summary>
+        /// 动画播放完成检测：当前状态为一次性动画且进度 >= threshold 时为 true；带 0.1s 保护期。
+        /// </summary>
+        protected bool AnimNearEnd(float threshold = 0.9f)
+            => _stateAge > 0.1f && Ctx.Anim.IsCurrentStateNearEnd(threshold);
+
+        protected bool AnimNearConfiguredEnd(float fallbackThreshold = 0.9f)
+            => AnimNearEnd(GetConfiguredNaturalExitThreshold(fallbackThreshold));
+
+        /// <summary>状态自然结束时调用。优先消费预输入并执行；若无预输入，执行 fallback。</summary>
+        protected void CompleteWithPending(System.Action fallback)
+        {
+            var pending = Ctx.StateMachine.ConsumePending();
+            if (!pending.IsEmpty)
+                Ctx.StateMachine.ExecuteAction(pending);
+            else
+                fallback?.Invoke();
+        }
+
+        protected void GoTo<T>() where T : PlayerStateBase, new()
+            => Ctx.StateMachine.ChangeState<T>();
+
+        protected void GoTo<T>(System.Action<T> configure) where T : PlayerStateBase, new()
+            => Ctx.StateMachine.ChangeState(configure);
+
+        protected bool IsGrounded => Ctx.Mover.IsGrounded;
+
+        protected bool HasExceededFallTransitionDelay(float dt)
+        {
+            return Ctx?.Mover != null && Ctx.Mover.HasExceededFallTransitionDelay(dt);
+        }
+
+        protected SkillConfigEntry ResolvePlayerActionEntry(string actionId = null)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim();
+            if (string.IsNullOrWhiteSpace(resolvedActionId))
+                return null;
+
+            var skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            return skillDb != null ? skillDb.GetEntryByActionId(resolvedActionId) : null;
+        }
+
+        protected SkillConfigEntry ResolveBaseActionEntry(string baseActionId = null)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
+            if (string.IsNullOrWhiteSpace(resolvedActionId))
+                return null;
+
+            var skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            return skillDb != null ? skillDb.GetBaseEntry(resolvedActionId) : null;
+        }
+
+        protected string ResolveConfiguredFormActionId(PlayerFormActionSlot actionSlot, string fallbackActionId)
+        {
+            string normalizedFallbackActionId = string.IsNullOrWhiteSpace(fallbackActionId)
+                ? actionSlot.ToString()
+                : fallbackActionId.Trim();
+
+            SkillConfigDatabaseSO skillDb = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (Ctx?.PlayerModel == null || skillDb == null)
+                return normalizedFallbackActionId;
+
+            return Ctx.PlayerModel.ResolveCurrentFormActionId(actionSlot, skillDb, normalizedFallbackActionId);
+        }
+
+        protected SkillConfigEntry ResolveCurrentActionEntry()
+        {
+            return ResolvePlayerActionEntry(ActionId);
+        }
+
+        protected SkillConfigEntry ResolveCurrentBaseActionEntry()
+        {
+            return ResolveBaseActionEntry(ActionId);
+        }
+
+        protected bool TriggerConfiguredActionByActionId(string actionId = null, string fallbackTrigger = null)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim();
+            SkillConfigEntry entry = ResolvePlayerActionEntry(resolvedActionId);
+            string triggerName = ResolveConfiguredAnimationTrigger(entry, resolvedActionId, fallbackTrigger);
+            return Ctx.Anim.TriggerAction(triggerName);
+        }
+
+        protected bool TriggerConfiguredBaseAction(string baseActionId = null, string fallbackTrigger = null)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
+            SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
+            string triggerName = ResolveConfiguredAnimationTrigger(entry, resolvedActionId, fallbackTrigger);
+            return Ctx.Anim.TriggerAction(triggerName);
+        }
+
+        protected void StartTimelineSkill(string skillId, float overrideDuration = -1f)
+        {
+            StartTimelineSkill(skillId, overrideDuration, ActionId);
+        }
+
+        protected void StartConfiguredTimelineByActionId(string actionId = null, float overrideDuration = -1f)
+        {
+            SkillConfigEntry entry = ResolvePlayerActionEntry(actionId);
+            string skillId = ResolveRuntimeSkillId(entry);
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            StartTimelineSkill(entry, overrideDuration, string.IsNullOrWhiteSpace(actionId) ? ActionId : actionId.Trim());
+        }
+
+        protected void StartConfiguredBaseActionTimeline(string baseActionId = null, float overrideDuration = -1f)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
+            StartConfiguredBaseActionTimelineInternal(resolvedActionId, overrideDuration, true);
+        }
+
+        protected void UpdateConfiguredBaseActionTimeline(string baseActionId = null, float overrideDuration = -1f)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? ActionId : baseActionId.Trim();
+            StartConfiguredBaseActionTimelineInternal(resolvedActionId, overrideDuration, false);
+        }
+
+        protected void UpdateConfiguredAuxiliaryBaseActionTimeline(string baseActionId, float overrideDuration = -1f)
+        {
+            string resolvedActionId = string.IsNullOrWhiteSpace(baseActionId) ? string.Empty : baseActionId.Trim();
+            if (string.IsNullOrWhiteSpace(resolvedActionId))
+            {
+                StopAuxiliaryTimelineSkill();
+                return;
+            }
+
+            StartConfiguredAuxiliaryBaseActionTimelineInternal(resolvedActionId, overrideDuration, false);
+        }
+
+        protected void StartTimelineSkill(string skillId, float overrideDuration, string actionId)
+        {
+            StartTimelineSkill(ref _timelineRunner, ref _timelineActionId, null, skillId, overrideDuration, actionId);
+        }
+
+        protected void StartTimelineSkill(SkillConfigEntry entry, float overrideDuration, string actionId)
+        {
+            string skillId = ResolveRuntimeSkillId(entry);
+            StartTimelineSkill(ref _timelineRunner, ref _timelineActionId, entry, skillId, overrideDuration, actionId);
+        }
+
+        protected void StopTimelineSkill()
+        {
+            StopTimelineSkill(ref _timelineRunner, ref _timelineActionId);
+        }
+
+        protected void StopAuxiliaryTimelineSkill()
+        {
+            StopTimelineSkill(ref _auxiliaryTimelineRunner, ref _auxiliaryTimelineActionId);
+        }
+
+        protected float GetCurrentMovementSpeedMultiplier()
+        {
+            return _timelineRunner != null
+                ? _timelineRunner.CurrentMovementSpeedMultiplier
+                : 1f;
+        }
+
+        protected TransitionPolicy ResolveConfiguredPolicy(GameAction action, TransitionPolicy fallback)
+        {
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
+            if (entry != null && entry.TryGetPolicy(action, out TransitionPolicy configured))
+                return configured;
+
+            return fallback;
+        }
+
+        protected float GetConfiguredPendingReleaseThreshold(GameAction pendingAction, float fallbackThreshold)
+        {
+            if (TryGetConfiguredPendingReleaseThreshold(pendingAction, out float configured))
+                return configured;
+
+            return fallbackThreshold;
+        }
+
+        protected bool TryGetConfiguredPendingReleaseThreshold(GameAction pendingAction, out float threshold)
+        {
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
+            GameAction resolvedPendingAction = Ctx?.StateMachine != null
+                ? Ctx.StateMachine.ResolvePendingRuleAction(pendingAction)
+                : pendingAction;
+
+            if (entry != null && entry.TryGetPendingReleaseThreshold(resolvedPendingAction, out float configured))
+            {
+                threshold = configured;
+                return true;
+            }
+
+            threshold = 0f;
+            return false;
+        }
+
+        protected float GetConfiguredNaturalExitThreshold(float fallbackThreshold)
+        {
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
+            if (entry != null && entry.overrideNaturalExitNormalizedTime)
+                return entry.naturalExitNormalizedTime;
+
+            return fallbackThreshold;
+        }
+
+        protected PlayerStateNaturalExitTarget GetConfiguredNaturalExitTarget(PlayerStateNaturalExitTarget fallbackTarget)
+        {
+            SkillConfigEntry entry = ResolveCurrentPolicyEntry();
+            if (entry == null)
+                return fallbackTarget;
+
+            PlayerStateNaturalExitTarget configured = entry.naturalExitTarget;
+            return configured != PlayerStateNaturalExitTarget.None ? configured : fallbackTarget;
+        }
+
+        private SkillConfigEntry ResolveCurrentPolicyEntry()
+        {
+            return ResolvePlayerActionEntry(PolicyActionId);
+        }
+
+        protected void GoToConfiguredNaturalExit(PlayerStateNaturalExitTarget fallbackTarget)
+        {
+            switch (GetConfiguredNaturalExitTarget(fallbackTarget))
+            {
+                case PlayerStateNaturalExitTarget.IdleState:
+                    GoTo<IdleState>();
+                    break;
+                case PlayerStateNaturalExitTarget.ChargeLoopState:
+                    GoTo<ChargeLoopState>();
+                    break;
+                case PlayerStateNaturalExitTarget.FallState:
+                    GoTo<FallState>();
+                    break;
+                case PlayerStateNaturalExitTarget.FallAttackLoopState:
+                    GoTo<FallAttackLoopState>();
+                    break;
+            }
+        }
+
+        private string ResolveConfiguredAnimationTrigger(SkillConfigEntry entry, string resolvedActionId, string fallbackTrigger)
+        {
+            if (entry != null)
+            {
+                SharedSkillDefinition definition = Ctx?.PlayerModel != null
+                    ? Ctx.PlayerModel.ResolveSkillEffectDefinition(entry)
+                    : entry.ResolveSkillEffectDefinition();
+
+                if (definition != null)
+                {
+                    string definitionTrigger = definition.GetResolvedAnimationTrigger();
+                    if (!string.IsNullOrWhiteSpace(definitionTrigger))
+                        return definitionTrigger;
+                }
+
+                string entryTrigger = entry.GetResolvedAnimationTrigger();
+                if (!string.IsNullOrWhiteSpace(entryTrigger))
+                    return entryTrigger;
+            }
+
+            if (!string.IsNullOrWhiteSpace(fallbackTrigger))
+                return fallbackTrigger.Trim();
+
+            return string.IsNullOrWhiteSpace(resolvedActionId) ? string.Empty : resolvedActionId;
+        }
+
+        private void StartConfiguredBaseActionTimelineInternal(string resolvedActionId, float overrideDuration, bool forceRestart)
+        {
+            SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
+            string skillId = ResolveRuntimeSkillId(entry);
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            if (!forceRestart
+                && _timelineRunner != null
+                && !string.IsNullOrWhiteSpace(_timelineActionId)
+                && string.Equals(_timelineActionId, resolvedActionId, StringComparison.Ordinal))
+                return;
+
+            StartTimelineSkill(entry, overrideDuration, resolvedActionId);
+        }
+
+        private void StartConfiguredAuxiliaryBaseActionTimelineInternal(string resolvedActionId, float overrideDuration, bool forceRestart)
+        {
+            SkillConfigEntry entry = ResolveBaseActionEntry(resolvedActionId);
+            string skillId = ResolveRuntimeSkillId(entry);
+            if (string.IsNullOrWhiteSpace(skillId))
+            {
+                StopAuxiliaryTimelineSkill();
+                return;
+            }
+
+            if (!forceRestart
+                && _auxiliaryTimelineRunner != null
+                && !string.IsNullOrWhiteSpace(_auxiliaryTimelineActionId)
+                && string.Equals(_auxiliaryTimelineActionId, resolvedActionId, StringComparison.Ordinal))
+                return;
+
+            StartTimelineSkill(ref _auxiliaryTimelineRunner, ref _auxiliaryTimelineActionId, entry, skillId, overrideDuration, resolvedActionId);
+        }
+
+        private string ResolveRuntimeSkillId(SkillConfigEntry entry)
+        {
+            if (entry == null)
+                return string.Empty;
+
+            if (Ctx?.PlayerModel != null)
+                return Ctx.PlayerModel.ResolveSkillEffectId(entry);
+
+            return entry.GetResolvedSkillId();
+        }
+
+        private void StartTimelineSkill(ref SkillTimelineRunner runner, ref string runningActionId, SkillConfigEntry entry, string skillId, float overrideDuration, string actionId)
+        {
+            StopTimelineSkill(ref runner, ref runningActionId);
+
+            if (string.IsNullOrWhiteSpace(skillId))
+                return;
+
+            SharedSkillDefinition def = entry != null && Ctx?.PlayerModel != null
+                ? Ctx.PlayerModel.ResolveSkillEffectDefinition(entry)
+                : entry != null
+                    ? entry.ResolveSkillEffectDefinition(skillId)
+                    : null;
+            if (def == null)
+            {
+                var sharedDb = ConfigManager.GetInstance()?.GetSkillEffectDatabase();
+                if (sharedDb == null)
+                    return;
+
+                def = sharedDb.GetEntry(skillId);
+            }
+
+            if (def == null)
+                return;
+
+            var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
+            if (player == null)
+                return;
+
+            def = PlayerBuffRuntimeUtility.BuildRuntimeSkillDefinition(player.transform, def, actionId);
+            var ctx = new PlayerSkillExecutionContext(player);
+            runner = new SkillTimelineRunner();
+            runner.Begin(
+                def,
+                ctx,
+                overrideDuration,
+                PlayerBuffRuntimeUtility.GetActionCastSpeedMultiplier(Ctx?.PlayerModel, actionId),
+                () => ResolveExternalLocalCastSpeedMultiplier(player.transform));
+            runningActionId = actionId;
+            ApplyActionPlaybackSpeed();
+            ApplyActionMovementSpeed();
+        }
+
+        private void StopTimelineSkill(ref SkillTimelineRunner runner, ref string runningActionId)
+        {
+            if (runner == null)
+                return;
+
+            var player = Ctx?.Transform != null ? Ctx.Transform.GetComponent<PlayerController>() : null;
+            if (player != null)
+                player.DetachOrStopTimelineRunner(runner);
+            else
+                runner.Stop();
+
+            runner = null;
+            runningActionId = null;
+        }
+
+        private void TickTimelines(float dt)
+        {
+            _timelineRunner?.Tick(dt);
+            _auxiliaryTimelineRunner?.Tick(dt);
+        }
+
+        private static string TrimStateSuffix(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            string normalized = value.Trim();
+            return normalized.EndsWith("State")
+                ? normalized.Substring(0, normalized.Length - "State".Length)
+                : normalized;
+        }
+
+        private void ApplyActionPlaybackSpeed()
+        {
+            if (Ctx?.Anim == null)
+                return;
+
+            float playbackSpeed = ResolveCurrentActionCastSpeedMultiplier();
+            if (IsUpperBodyAttackAction(ActionId))
+            {
+                Ctx.Anim.SetPlaybackSpeed(1f);
+                Ctx.Anim.SetUpperBodyPlaybackSpeed(playbackSpeed);
+                return;
+            }
+
+            Ctx.Anim.SetUpperBodyPlaybackSpeed(1f);
+            Ctx.Anim.SetPlaybackSpeed(playbackSpeed);
+        }
+
+        private void ResetActionPlaybackSpeed()
+        {
+            if (Ctx?.Anim == null)
+                return;
+
+            Ctx.Anim.SetPlaybackSpeed(1f);
+            Ctx.Anim.SetUpperBodyPlaybackSpeed(1f);
+        }
+
+        private void ApplyActionMovementSpeed()
+        {
+            if (Ctx?.Mover == null)
+                return;
+
+            Ctx.Mover.SetMotionSpeedMultiplier(GetCurrentMovementSpeedMultiplier());
+        }
+
+        private void ResetActionMovementSpeed()
+        {
+            if (Ctx?.Mover == null)
+                return;
+
+            Ctx.Mover.SetMotionSpeedMultiplier(1f);
+        }
+
+        private float ResolveCurrentActionCastSpeedMultiplier()
+        {
+            if (_timelineRunner != null)
+                return _timelineRunner.CurrentCastSpeedMultiplier;
+
+            float baseSpeed = PlayerBuffRuntimeUtility.GetActionCastSpeedMultiplier(Ctx?.PlayerModel, ActionId);
+            return baseSpeed * ResolveExternalLocalCastSpeedMultiplier(Ctx?.Transform);
+        }
+
+        private static float ResolveExternalLocalCastSpeedMultiplier(Transform actorTransform)
+        {
+            if (actorTransform == null)
+                return 1f;
+
+            PlayerController player = actorTransform.GetComponent<PlayerController>();
+            return player != null ? player.LocalCastSpeedMultiplier : 1f;
+        }
+
+        private static bool IsUpperBodyAttackAction(string actionId)
+        {
+            return PlayerActionRouting.IsRangedActionName(actionId?.Trim());
+        }
+    }
+}
