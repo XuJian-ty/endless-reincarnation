@@ -25,4 +25,3 @@
 \- For new features, new data structures, and new config fields, do not add legacy-data fallback, legacy-logic fallback, or hidden compatibility fallback unless the user explicitly asks for it.
 
 \- Treat editor-exposed fields and current config values as the only source of truth; if new logic is not wired correctly, surface the problem instead of silently falling back to old paths.
-

@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://0.0.0.0:5076");
+string[] urls = builder.Configuration.GetSection("Urls").Get<string[]>()
+    ?? new[] { "http://0.0.0.0:5076" };
+builder.WebHost.UseUrls(urls);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -11,13 +13,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.WriteIndented = true;
 });
 
-string dataDirectory = Path.Combine(AppContext.BaseDirectory, "Data");
-Directory.CreateDirectory(dataDirectory);
-string databasePath = Path.Combine(dataDirectory, "social.db");
+string connectionString = builder.Configuration.GetConnectionString("SocialDatabase")
+    ?? throw new InvalidOperationException("Missing ConnectionStrings:SocialDatabase configuration.");
+string mySqlServerVersion = builder.Configuration["Database:MySqlServerVersion"] ?? "8.4.0";
 
 builder.Services.AddDbContextFactory<SocialDbContext>(options =>
 {
-    options.UseSqlite($"Data Source={databasePath}");
+    options.UseMySql(connectionString, ServerVersion.Parse(mySqlServerVersion));
 });
 builder.Services.AddHttpClient<OnlineDungeonClient>();
 builder.Services.AddSingleton<SocialAppService>();
@@ -31,7 +33,7 @@ app.MapGet("/api/health", () =>
     {
         status = "ok",
         utcNow = DateTime.UtcNow,
-        database = databasePath,
+        database = "mysql",
     }, "平台服务已启动"));
 });
 
@@ -258,95 +260,3 @@ app.MapPost("/api/aid/session/close", (CloseAidSessionRequest request, SocialApp
 });
 
 app.Run();
-
-internal sealed class ApiResponse<T>
-{
-    public bool success { get; set; }
-    public string message { get; set; } = string.Empty;
-    public T? data { get; set; }
-
-    public static ApiResponse<T> Ok(T data, string message)
-    {
-        return new ApiResponse<T>
-        {
-            success = true,
-            message = message,
-            data = data,
-        };
-    }
-
-    public static ApiResponse<T> Fail(string message)
-    {
-        return new ApiResponse<T>
-        {
-            success = false,
-            message = message,
-            data = default,
-        };
-    }
-}
-
-internal sealed class AuthRequest
-{
-    public string username { get; set; } = string.Empty;
-    public string password { get; set; } = string.Empty;
-}
-
-internal sealed class AddFriendRequest
-{
-    public string requesterUserId { get; set; } = string.Empty;
-    public string targetUsername { get; set; } = string.Empty;
-    public string message { get; set; } = string.Empty;
-    public string remark { get; set; } = string.Empty;
-}
-
-internal sealed class RespondFriendRequestRequest
-{
-    public string targetUserId { get; set; } = string.Empty;
-    public string requestId { get; set; } = string.Empty;
-    public string decision { get; set; } = string.Empty;
-    public string remark { get; set; } = string.Empty;
-}
-
-internal sealed class RemoveFriendRequest
-{
-    public string requesterUserId { get; set; } = string.Empty;
-    public string friendUserId { get; set; } = string.Empty;
-}
-
-internal sealed class SendMessageRequest
-{
-    public string fromUserId { get; set; } = string.Empty;
-    public string toUserId { get; set; } = string.Empty;
-    public string content { get; set; } = string.Empty;
-}
-
-internal sealed class SocialUserDto
-{
-    public string userId { get; set; } = string.Empty;
-    public string username { get; set; } = string.Empty;
-}
-
-internal sealed class SocialUserSearchDto
-{
-    public string userId { get; set; } = string.Empty;
-    public string username { get; set; } = string.Empty;
-    public bool isFriend { get; set; }
-    public bool hasPendingFriendRequest { get; set; }
-}
-
-internal sealed class SocialFriendDto
-{
-    public string userId { get; set; } = string.Empty;
-    public string username { get; set; } = string.Empty;
-    public string remark { get; set; } = string.Empty;
-}
-
-internal sealed class SocialMessageDto
-{
-    public long messageId { get; set; }
-    public string fromUserId { get; set; } = string.Empty;
-    public string toUserId { get; set; } = string.Empty;
-    public string content { get; set; } = string.Empty;
-    public string sentAtUtc { get; set; } = string.Empty;
-}

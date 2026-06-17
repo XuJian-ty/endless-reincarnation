@@ -8,6 +8,7 @@
 /[Uu]ser[Ss]ettings/
 /Backend/**/bin/
 /Backend/**/obj/
+/Backend/**/publish/
 /Backend/**/.dotnet/
 /Backend/**/Data/
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using Game.Domain;
 using Game.Presentation;
@@ -110,7 +110,7 @@ namespace Game.GameFlow
 
             BindCameraToPlayer();
 
-            Debug.Log($"[OpeningStoryDebug] Level entry buff check. level={run.levelIndex} pendingBuffSelection={run.pendingBuffSelection} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OpeningStory] Level entry buff check. level={run.levelIndex} pendingBuffSelection={run.pendingBuffSelection} scene={SceneManager.GetActiveScene().name}");
             if (run.pendingBuffSelection)
                 StartCoroutine(ShowOpeningStoryComicOrBuffSelectionAfterLoading(run));
 
@@ -445,7 +445,7 @@ namespace Game.GameFlow
         {
             if (run == null || run.levelIndex != 1)
             {
-                Debug.Log($"[OpeningStoryDebug] Skip opening story and show buff directly. runNull={run == null} level={(run != null ? run.levelIndex : 0)} scene={SceneManager.GetActiveScene().name}");
+                Debug.Log($"[OpeningStory] Skip opening story and show buff directly. runNull={run == null} level={(run != null ? run.levelIndex : 0)} scene={SceneManager.GetActiveScene().name}");
                 ShowBuffSelection();
                 return;
             }
@@ -453,12 +453,12 @@ namespace Game.GameFlow
             UIManager ui = UIManager.GetInstance();
             if (ui == null)
             {
-                Debug.LogWarning($"[OpeningStoryDebug] UIManager missing, show buff directly. level={run.levelIndex} scene={SceneManager.GetActiveScene().name}");
+                Debug.LogWarning($"[OpeningStory] UIManager missing, show buff directly. level={run.levelIndex} scene={SceneManager.GetActiveScene().name}");
                 ShowBuffSelection();
                 return;
             }
 
-            Debug.Log($"[OpeningStoryDebug] Request opening story panel before buff selection. level={run.levelIndex} scene={SceneManager.GetActiveScene().name}");
+            Debug.Log($"[OpeningStory] Request opening story panel before buff selection. level={run.levelIndex} scene={SceneManager.GetActiveScene().name}");
             ui.ShowPanel<OpeningStoryComicPanel>(
                 PanelNames.OpeningStoryComic,
                 PanelLayers.OpeningStoryComic,

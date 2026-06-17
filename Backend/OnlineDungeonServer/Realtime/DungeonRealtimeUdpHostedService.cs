@@ -475,7 +475,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         if (!string.IsNullOrWhiteSpace(action))
         {
             _logger.LogInformation(
-                "[OnlineLootDebug] UDP reward action received. remote={RemoteEndPoint} instance={InstanceId} user={UserId} action={Action} target={Target} afterVersion={AfterVersion} sequence={Sequence}",
+                "[OnlineReward] UDP reward action received. remote={RemoteEndPoint} instance={InstanceId} user={UserId} action={Action} target={Target} afterVersion={AfterVersion} sequence={Sequence}",
                 remoteEndPoint,
                 envelope.InstanceId,
                 envelope.UserId,
@@ -604,7 +604,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         if (!string.IsNullOrWhiteSpace(action) || state != null || dropPickup != null)
         {
             _logger.LogInformation(
-                "[OnlineLootDebug] UDP reward snapshot send. remote={RemoteEndPoint} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} hasDropPickup={HasDropPickup} hasState={HasState} stateVersion={StateVersion} dropCount={DropCount} sequence={Sequence}",
+                "[OnlineReward] UDP reward snapshot send. remote={RemoteEndPoint} instance={InstanceId} user={UserId} ackAction={AckAction} ackTarget={AckTarget} hasDropPickup={HasDropPickup} hasState={HasState} stateVersion={StateVersion} dropCount={DropCount} sequence={Sequence}",
                 remoteEndPoint,
                 envelope.InstanceId,
                 envelope.UserId,
@@ -659,7 +659,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
         string ackTargetId,
         CancellationToken cancellationToken)
     {
-        Console.WriteLine($"[OnlineLootDebug] UDP reward error send. remote={remoteEndPoint} instance={instanceId} user={userId} ackAction={ackAction} ackTarget={ackTargetId} message={message}");
+        Console.WriteLine($"[OnlineReward] UDP reward error send. remote={remoteEndPoint} instance={instanceId} user={userId} ackAction={ackAction} ackTarget={ackTargetId} message={message}");
         DungeonRealtimeErrorPayload payload = DungeonRealtimeProtocol.CreateErrorPayload(message);
         payload = new DungeonRealtimeErrorPayload
         {

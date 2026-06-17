@@ -191,7 +191,7 @@ namespace Game.GameFlow
         {
             if (_opened)
             {
-                Debug.Log($"[OnlineLootDebug] Chest open ignored because already opened. chest={GetSnapshotId()} name={name} scene={gameObject.scene.name}");
+                Debug.Log($"[OnlineReward] Chest open ignored because already opened. chest={GetSnapshotId()} name={name} scene={gameObject.scene.name}");
                 return;
             }
 
@@ -200,9 +200,9 @@ namespace Game.GameFlow
             {
                 string chestId = GetSnapshotId();
                 bool pendingBefore = _pendingOnlineOpen;
-                Debug.Log($"[OnlineLootDebug] Chest open input. chest={chestId} name={name} pending={pendingBefore} dropCount={_dropCount} scene={gameObject.scene.name}");
+                Debug.Log($"[OnlineReward] Chest open input. chest={chestId} name={name} pending={pendingBefore} dropCount={_dropCount} scene={gameObject.scene.name}");
                 bool requested = !pendingBefore && onlineCoordinator.TryRequestOpenOnlineChest(this, _dropCount);
-                Debug.Log($"[OnlineLootDebug] Chest open request result. chest={chestId} requested={requested} pendingBefore={pendingBefore} scene={gameObject.scene.name}");
+                Debug.Log($"[OnlineReward] Chest open request result. chest={chestId} requested={requested} pendingBefore={pendingBefore} scene={gameObject.scene.name}");
                 if (requested)
                 {
                     _pendingOnlineOpen = true;
@@ -224,11 +224,11 @@ namespace Game.GameFlow
         {
             if (_opened)
             {
-                Debug.Log($"[OnlineLootDebug] Chest authority open ignored because already opened. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
+                Debug.Log($"[OnlineReward] Chest authority open ignored because already opened. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
                 return;
             }
 
-            Debug.Log($"[OnlineLootDebug] Chest authority open applied. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
+            Debug.Log($"[OnlineReward] Chest authority open applied. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
             _opened = true;
             _pendingOnlineOpen = false;
             RecordOpenedSnapshot();
@@ -249,7 +249,7 @@ namespace Game.GameFlow
             if (_opened)
                 return;
 
-            Debug.Log($"[OnlineLootDebug] Chest pending open canceled. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
+            Debug.Log($"[OnlineReward] Chest pending open canceled. chest={GetSnapshotId()} name={name} pending={_pendingOnlineOpen} scene={gameObject.scene.name}");
             _pendingOnlineOpen = false;
         }
 

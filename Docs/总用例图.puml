@@ -1,0 +1,67 @@
+@startuml
+top to bottom direction
+
+skinparam backgroundColor transparent
+skinparam shadowing false
+skinparam defaultFontName "Microsoft YaHei"
+skinparam linetype ortho
+skinparam actor {
+  BorderColor #333333
+  FontColor #111111
+}
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+  FontColor #111111
+}
+skinparam rectangle {
+  BorderColor #333333
+  FontColor #111111
+}
+
+actor "玩家" as Player
+
+rectangle "《无尽轮回》游戏系统" {
+  usecase "进入关卡并推进流程" as UC_Level
+  usecase "角色控制与战斗" as UC_Combat
+  usecase "背包、商店与角色成长管理" as UC_Growth
+  usecase "Boss挑战与战斗回忆" as UC_Boss
+  usecase "菜单设置与进度保存" as UC_Menu
+  usecase "新建游戏或读取存档" as UC_Save
+  usecase "账号登录" as UC_Login
+  usecase "好友关系管理" as UC_Friend
+  usecase "好友聊天" as UC_Chat
+  usecase "双人援助联机副本" as UC_Coop
+
+  UC_Level -[hidden]down- UC_Combat
+  UC_Combat -[hidden]down- UC_Growth
+  UC_Growth -[hidden]down- UC_Boss
+  UC_Boss -[hidden]down- UC_Menu
+  UC_Menu -[hidden]down- UC_Save
+  UC_Save -[hidden]down- UC_Login
+  UC_Login -[hidden]down- UC_Friend
+  UC_Friend -[hidden]down- UC_Chat
+  UC_Chat -[hidden]down- UC_Coop
+}
+
+Player -[hidden]right- UC_Menu
+
+UC_Level -left- Player
+UC_Combat -left- Player
+UC_Growth -left- Player
+UC_Boss -left- Player
+UC_Menu -left- Player
+UC_Save -left- Player
+UC_Login -left- Player
+UC_Friend -left- Player
+UC_Chat -left- Player
+UC_Coop -left- Player
+
+UC_Level ..> UC_Combat : <<include>>
+UC_Level ..> UC_Growth : <<include>>
+UC_Menu ..> UC_Save : <<extend>>
+UC_Chat ..> UC_Friend : <<include>>
+UC_Coop ..> UC_Friend : <<include>>
+UC_Coop ..> UC_Level : <<include>>
+
+@enduml
