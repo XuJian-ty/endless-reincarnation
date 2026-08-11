@@ -15,20 +15,20 @@ MonoBehaviour:
   tasks:
   - spawnType: 0
     specificSpawnId: 
-    spawnRadius: 15
+    spawnRadius: 16
     countMode: 1
     fixedCount: 1
-    randomMinCount: 2
-    randomMaxCount: 3
-    spawnMinSpacing: 1
+    randomMinCount: 4
+    randomMaxCount: 6
+    spawnMinSpacing: 2.5
   - spawnType: 2
     specificSpawnId: 
-    spawnRadius: 15
+    spawnRadius: 14
     countMode: 1
     fixedCount: 3
-    randomMinCount: 1
-    randomMaxCount: 2
-    spawnMinSpacing: 2
+    randomMinCount: 3
+    randomMaxCount: 4
+    spawnMinSpacing: 4
   - spawnType: 3
     specificSpawnId: 
     spawnRadius: 15

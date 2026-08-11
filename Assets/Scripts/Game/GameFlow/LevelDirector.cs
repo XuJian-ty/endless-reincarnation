@@ -274,6 +274,10 @@ namespace Game.GameFlow
             if (_bossSpawned || _bossDefeated || _bossSpawnRoutine != null)
                 return;
 
+            RogueliteRegionFlowController regionFlow = FindFirstObjectByType<RogueliteRegionFlowController>();
+            if (regionFlow != null && !regionFlow.IsBossRegionReady)
+                return;
+
             if (HasLivingBoss())
             {
                 _bossSpawned = true;
@@ -347,7 +351,7 @@ namespace Game.GameFlow
             if (TrySpawnBoss())
                 _bossSpawned = true;
             else
-                Debug.LogWarning("[LevelDirector] Boss 决战场景切换失败。");
+                Debug.LogWarning("[LevelDirector] Boss 在当前关卡生成失败。");
 
             _bossSpawnRoutine = null;
             _bossSpawnReadyTime = -1f;
@@ -426,7 +430,26 @@ namespace Game.GameFlow
             if (string.IsNullOrEmpty(bossId))
                 return false;
 
-            return FinalBossDuelRuntimeContext.BeginChallenge(bossId, bossId);
+            RogueliteRegionFlowController regionFlow = FindFirstObjectByType<RogueliteRegionFlowController>();
+            if (regionFlow == null || !regionFlow.TryGetBossSpawnPoint(out Vector3 configuredSpawnPoint))
+                return false;
+
+            if (!UnityEngine.AI.NavMesh.SamplePosition(
+                    configuredSpawnPoint,
+                    out UnityEngine.AI.NavMeshHit navMeshHit,
+                    6f,
+                    UnityEngine.AI.NavMesh.AllAreas))
+            {
+                Debug.LogError($"[LevelDirector] Boss 生成点未落在 NavMesh：{configuredSpawnPoint}", this);
+                return false;
+            }
+
+            return EnemySpawnRuntime.TrySpawnSingleEnemy(
+                bossId,
+                EnemyType.Boss,
+                navMeshHit.position,
+                _bossVariantCatalog,
+                true);
         }
 
         private bool HasLivingBoss()
@@ -456,32 +479,19 @@ namespace Game.GameFlow
             if (bossVariants == null || bossVariants.Count == 0)
                 return string.Empty;
 
-            var run = GameStateMachine.GetInstance()?.CurrentRun;
-            if (run?.defeatedBossIds == null || run.defeatedBossIds.Count == 0)
-            {
-                EnemySpawnVariantInfo randomVariant = bossVariants[_bossRng.Next(0, bossVariants.Count)];
-                return randomVariant != null ? randomVariant.spawnId : string.Empty;
-            }
-
-            var undefeatedBossIds = new System.Collections.Generic.List<string>();
+            string configuredBossId = $"boss_{ResolveCurrentLevelIndex()}";
             for (int i = 0; i < bossVariants.Count; i++)
             {
                 EnemySpawnVariantInfo variant = bossVariants[i];
                 if (variant == null || string.IsNullOrWhiteSpace(variant.spawnId))
                     continue;
 
-                string bossId = variant.spawnId;
-                if (!run.defeatedBossIds.Contains(bossId))
-                    undefeatedBossIds.Add(bossId);
+                if (string.Equals(variant.spawnId, configuredBossId, System.StringComparison.Ordinal))
+                    return variant.spawnId;
             }
 
-            if (undefeatedBossIds.Count == 0)
-            {
-                EnemySpawnVariantInfo randomVariant = bossVariants[_bossRng.Next(0, bossVariants.Count)];
-                return randomVariant != null ? randomVariant.spawnId : string.Empty;
-            }
-
-            return undefeatedBossIds[_bossRng.Next(0, undefeatedBossIds.Count)];
+            Debug.LogError($"[LevelDirector] 当前关卡缺少对应 Boss 配置：{configuredBossId}", this);
+            return string.Empty;
         }
 
         private bool TrySampleBossNearPlayer(out Vector3 position)

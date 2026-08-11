@@ -215,9 +215,8 @@ namespace Game.GameFlow
 
         private static bool IsStackableDrop(string dropId)
         {
-            return dropId == PlayerModel.ItemIds.PotionHp
-                   || dropId == PlayerModel.ItemIds.PotionMp
-                   || dropId == PlayerModel.ItemIds.Nectar;
+            return !string.IsNullOrWhiteSpace(dropId)
+                   && ConfigManager.GetInstance()?.GetItemDisplayDatabase()?.GetEntry(dropId.Trim()) != null;
         }
 
         private static string ResolveDropId(LevelConfigData levelConfig, System.Random rng, EnemyType enemyType)

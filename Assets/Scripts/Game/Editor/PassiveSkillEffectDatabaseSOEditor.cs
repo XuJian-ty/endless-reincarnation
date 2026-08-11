@@ -207,7 +207,8 @@ namespace Game.Editor
 
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("displayName"), new GUIContent("显示名称"));
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("effectDescription"), new GUIContent("技能效果描述"));
-                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("mutationTalentCost"));
+                    using (new EditorGUI.DisabledScope(isDefaultEntry))
+                        EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("mutationUnlockItemId"));
                     EditorGUILayout.PropertyField(statModifierProperty, true);
                 }
             }

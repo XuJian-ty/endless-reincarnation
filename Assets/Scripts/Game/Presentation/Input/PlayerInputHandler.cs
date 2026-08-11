@@ -14,6 +14,7 @@ namespace Game.Presentation
     /// 职责划分：
     ///   - 持续输入（Move、Look）：直接从 InputAction 读取当前值
     ///   - 双击奔跑检测：内部维护时间戳，识别 WASD 双击
+    ///   - Shift 两段式输入：短按松开产生闪避，长按持续产生狂奔请求
     ///   - LMB 三段式事件（AttackTap / ChargeStart / ChargeRelease）：
     ///       由 PlayerController 的 Send Messages 回调写入，
     ///       此类仅暴露 Register 方法，在 ManualUpdate 中打包后归零
@@ -23,6 +24,8 @@ namespace Game.Presentation
     /// </summary>
     public class PlayerInputHandler : MonoBehaviour
     {
+        private const float DodgeHoldDuration = 0.2f;
+
         // ── 双击奔跑配置 ──────────────────────────────────────────────────
         [SerializeField] private float _doubleTapWindow = 0.25f;
 
@@ -43,6 +46,9 @@ namespace Game.Presentation
         // ── 其他单帧标记 ──────────────────────────────────────────────────
         private bool _jumpReceived;
         private bool _dodgeReceived;
+        private bool _dodgePressActive;
+        private bool _dodgeHoldActivated;
+        private float _dodgePressStartedAt;
         private bool _altAttackReceived;
 
         // ── InputAction 引用（在 Inspector 绑定或由 PlayerInput 注入）────
@@ -69,6 +75,7 @@ namespace Game.Presentation
         //   必须将委托存为字段，才能正确取消订阅，避免内存泄漏和野引用回调。
         private System.Action<InputAction.CallbackContext> _onJump;
         private System.Action<InputAction.CallbackContext> _onDodge;
+        private System.Action<InputAction.CallbackContext> _onDodgeCanceled;
         private System.Action<InputAction.CallbackContext> _onFallAttack;
 #endif
 
@@ -92,12 +99,14 @@ namespace Game.Presentation
 
         private void SubscribeDirectActions()
         {
-            _onJump       = _ => _jumpReceived      = true;
-            _onDodge      = _ => _dodgeReceived     = true;
-            _onFallAttack = _ => _altAttackReceived = true;
+            _onJump          = _ => _jumpReceived      = true;
+            _onDodge         = _ => BeginDodgePress();
+            _onDodgeCanceled = _ => EndDodgePress();
+            _onFallAttack    = _ => _altAttackReceived = true;
 
             _jumpAction.performed       += _onJump;
             _dodgeAction.performed      += _onDodge;
+            _dodgeAction.canceled       += _onDodgeCanceled;
             _fallAttackAction.performed += _onFallAttack;
         }
 
@@ -134,6 +143,7 @@ namespace Game.Presentation
 
             _jumpAction.performed       -= _onJump;
             _dodgeAction.performed      -= _onDodge;
+            _dodgeAction.canceled       -= _onDodgeCanceled;
             _fallAttackAction.performed -= _onFallAttack;
             ClearSkillSubscriptions();
         }
@@ -151,6 +161,7 @@ namespace Game.Presentation
             var moveRaw = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
             var lookRaw = _lookAction?.ReadValue<Vector2>() ?? Vector2.zero;
             UpdateRunDetection(moveRaw);
+            UpdateDodgeHold();
 
             // 实时同步 LMB 按压状态：Hold Interaction 的 canceled 不走 Send Messages，
             // 所以用 action phase 判断——只有 Started 或 Performed 才算按住
@@ -167,6 +178,7 @@ namespace Game.Presentation
                 moveInput:            moveRaw,
                 lookDelta:            lookRaw,
                 isRunRequested:       _isRunRequested,
+                isSprintRequested:    _dodgePressActive && _dodgeHoldActivated,
                 isLmbHeld:            _isLmbHeld,
                 jumpPressed:          Consume(ref _jumpReceived),
                 dodgePressed:         Consume(ref _dodgeReceived),
@@ -198,6 +210,35 @@ namespace Game.Presentation
             }
 
             _wasMoving = isMovingNow;
+        }
+
+        private void BeginDodgePress()
+        {
+            if (_dodgePressActive)
+                return;
+
+            _dodgePressActive = true;
+            _dodgeHoldActivated = false;
+            _dodgePressStartedAt = Time.unscaledTime;
+        }
+
+        private void UpdateDodgeHold()
+        {
+            if (_dodgePressActive && Time.unscaledTime - _dodgePressStartedAt >= DodgeHoldDuration)
+                _dodgeHoldActivated = true;
+        }
+
+        private void EndDodgePress()
+        {
+            if (!_dodgePressActive)
+                return;
+
+            float heldDuration = Time.unscaledTime - _dodgePressStartedAt;
+            if (!_dodgeHoldActivated && heldDuration < DodgeHoldDuration)
+                _dodgeReceived = true;
+
+            _dodgePressActive = false;
+            _dodgeHoldActivated = false;
         }
 
         // ── 工具方法 ──────────────────────────────────────────────────────

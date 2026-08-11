@@ -411,6 +411,17 @@ namespace Game.Presentation
             _stateScopedInvincibleCount = Mathf.Max(0, _stateScopedInvincibleCount - 1);
         }
 
+        /// <summary>
+        /// 环境坠落等不可规避事件的死亡入口，不受闪避或临时无敌影响。
+        /// </summary>
+        public void ForceEnvironmentalDeath()
+        {
+            if (!_initialized || _deathSequenceStarted) return;
+
+            PlayerModel.CurrentHp = 0f;
+            HandleDeath();
+        }
+
         private void HandleDeath()
         {
             if (_deathSequenceStarted) return;
@@ -649,7 +660,7 @@ namespace Game.Presentation
             }
 
             Vector2 moveInput = _inputHandler != null ? _inputHandler.CurrentInput.MoveInput : Vector2.zero;
-            bool isRunning = _inputHandler != null && _inputHandler.CurrentInput.IsRunRequested;
+            bool isRunning = _inputHandler != null && _inputHandler.CurrentInput.IsRunningRequested;
             if (moveInput.sqrMagnitude > 0.01f)
             {
                 StateMachine.ChangeState<MoveState>(state => state.InitialIsRunning = isRunning);

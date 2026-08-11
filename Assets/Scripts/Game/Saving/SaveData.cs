@@ -53,6 +53,8 @@ namespace Game.Saving
         public List<string> equippedSkillActionIds = new List<string>();
         /// <summary>技能动作到当前所选变异 skillId 的映射；缺省时回退到动作配置中的默认 skillId。</summary>
         public List<SkillMutationSelectionSave> selectedSkillMutations = new List<SkillMutationSelectionSave>();
+        /// <summary>已经使用专属道具永久解锁的技能变异方向。</summary>
+        public List<SkillMutationUnlockSave> unlockedSkillMutations = new List<SkillMutationUnlockSave>();
         public List<string> defeatedBossIds  = new List<string>();
         public bool         isGameCleared;
 
@@ -71,6 +73,13 @@ namespace Game.Saving
 
     [Serializable]
     public class SkillMutationSelectionSave
+    {
+        public string actionId;
+        public string skillId;
+    }
+
+    [Serializable]
+    public class SkillMutationUnlockSave
     {
         public string actionId;
         public string skillId;
@@ -132,6 +141,7 @@ namespace Game.Saving
         public List<ShopSnapshotSave> shops = new List<ShopSnapshotSave>();
         public GlobalSpawnerSnapshotSave globalSpawner;
         public List<LocalSpawnerSnapshotSave> localSpawners = new List<LocalSpawnerSnapshotSave>();
+        public RogueliteRegionFlowSnapshotSave regionFlow;
         public LevelDirectorSnapshotSave levelDirector;
     }
 
@@ -222,11 +232,23 @@ namespace Game.Saving
     public class LocalSpawnerSnapshotSave
     {
         public string spawnerId;
+        public bool isActivated;
+        public bool initialTaskStarted;
         public bool isFinished;
         public int executedTaskCount;
         public int attemptCount;
         public float taskTimer;
         public List<int> plannedSpawnCounts = new List<int>();
+    }
+
+    [Serializable]
+    public class RogueliteRegionFlowSnapshotSave
+    {
+        public string flowId;
+        public string currentRegionId;
+        public List<string> enteredRegionIds = new List<string>();
+        public List<string> clearedRegionIds = new List<string>();
+        public List<string> buffClaimedRegionIds = new List<string>();
     }
 
     [Serializable]

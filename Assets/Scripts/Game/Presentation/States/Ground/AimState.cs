@@ -71,8 +71,10 @@ namespace Game.Presentation
 
             Ctx.Anim.SetAimLayerActive(false);
             Vector3 moveDirection = Ctx.GetMoveDirection(input.MoveInput);
-            bool isRunning = input.IsRunRequested;
-            float moveSpeed = isRunning ? Ctx.RunSpeed : Ctx.WalkSpeed;
+            bool isRunning = input.IsRunningRequested;
+            float moveSpeed = input.IsSprintRequested
+                ? Ctx.RunSpeed * 2f
+                : isRunning ? Ctx.RunSpeed : Ctx.WalkSpeed;
             float blendScale = isRunning ? 1f : 0.5f;
             Ctx.Mover.SetHorizontalVelocity(moveDirection * moveSpeed);
             Vector3 localDirection = Ctx.Transform.InverseTransformDirection(moveDirection.normalized);
@@ -105,7 +107,7 @@ namespace Game.Presentation
 
             if (input.MoveInput.sqrMagnitude > 0.01f)
             {
-                bool isRunning = input.IsRunRequested;
+                bool isRunning = input.IsRunningRequested;
                 GoTo<MoveState>(state => state.InitialIsRunning = isRunning);
                 return;
             }

@@ -909,10 +909,9 @@ namespace Game.Data
         [TextArea(2, 5)]
         public string effectDescription = "";
 
-        [InspectorLabel("变异天赋点消耗")]
-        [Tooltip("在技能树中切换到该变异方向时需要消耗的天赋点数。")]
-        [Min(0)]
-        public int mutationTalentCost = 0;
+        [InspectorLabel("变异解锁道具ID")]
+        [Tooltip("首次解锁该变异方向时消耗的道具 ID。默认方向留空，每个变异方向必须配置不同道具。")]
+        public string mutationUnlockItemId = "";
 
         [InspectorLabel("显示名称")]
         [Tooltip("用于技能树变异面板展示该技能效果的名称。留空时回退为技能ID。")]

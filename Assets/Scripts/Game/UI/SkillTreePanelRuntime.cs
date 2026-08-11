@@ -26,7 +26,10 @@ namespace Game.UI
             public string skillId;
             public string label;
             public string description;
-            public int mutationTalentCost;
+            public string unlockItemId;
+            public string unlockItemDisplayName;
+            public int unlockItemCount;
+            public bool isUnlocked;
             public bool isCurrent;
             public bool isSelected;
         }
@@ -802,7 +805,9 @@ namespace Game.UI
             {
                 _mutationHintText.text = options.Count > 0
                     ? selectedOption != null
-                        ? "已选择变异方向，点击下方“确定变异”后才会生效。"
+                        ? selectedOption.isUnlocked
+                            ? "该方向已经解锁，可以免费切换。"
+                            : "该方向尚未解锁，确认后会消耗一个专属变异道具。"
                         : "选择一个变异方向，然后点击下方“确定变异”。"
                     : "当前技能没有可用的变异方向。";
             }
@@ -811,7 +816,9 @@ namespace Game.UI
                 _confirmMutationButton.interactable = selectedOption != null;
 
             if (_confirmMutationButtonText != null)
-                _confirmMutationButtonText.text = "确定变异";
+                _confirmMutationButtonText.text = selectedOption != null && !selectedOption.isUnlocked
+                    ? "使用道具解锁并变异"
+                    : "确定变异";
 
             for (int i = 0; i < options.Count; i++)
                 CreateMutationOptionButton(entry, options[i]);
@@ -855,6 +862,7 @@ namespace Game.UI
                 skillId = currentSkillId.Trim(),
                 label = ResolveMutationOptionLabel(entry, currentSkillId.Trim(), string.Empty),
                 description = ResolveMutationOptionDescription(entry, entry != null ? entry.GetResolvedSkillId() : string.Empty, currentSkillId.Trim(), string.Empty),
+                isUnlocked = true,
                 isCurrent = true,
             };
         }
@@ -880,14 +888,15 @@ namespace Game.UI
                         if (string.IsNullOrWhiteSpace(skillId))
                             continue;
 
-                        result.Add(new MutationOptionData
+                        MutationOptionData mutationOption = new MutationOptionData
                         {
                             skillId = skillId,
                             label = ResolveMutationOptionLabel(entry, skillId, option.displayName),
                             description = ResolveMutationOptionDescription(entry, defaultSkillId, skillId, option.effectDescription),
-                            mutationTalentCost = Mathf.Max(0, option.mutationTalentCost),
                             isCurrent = string.Equals(currentSkillId, skillId, StringComparison.Ordinal)
-                        });
+                        };
+                        PopulateMutationUnlockState(entry, player, mutationOption);
+                        result.Add(mutationOption);
                     }
                 }
 
@@ -905,18 +914,38 @@ namespace Game.UI
                         continue;
 
                     string label = ResolveMutationOptionLabel(entry, skillId, option.displayName);
-                    result.Add(new MutationOptionData
+                    MutationOptionData mutationOption = new MutationOptionData
                     {
                         skillId = skillId,
                         label = label,
                         description = ResolveMutationOptionDescription(entry, defaultSkillId, skillId, option.effectDescription),
-                        mutationTalentCost = Mathf.Max(0, option.mutationTalentCost),
                         isCurrent = string.Equals(currentSkillId, skillId, StringComparison.Ordinal)
-                    });
+                    };
+                    PopulateMutationUnlockState(entry, player, mutationOption);
+                    result.Add(mutationOption);
                 }
             }
 
             return result;
+        }
+
+        private void PopulateMutationUnlockState(SkillConfigEntry entry, PlayerModel player, MutationOptionData option)
+        {
+            if (entry == null || option == null)
+                return;
+
+            option.unlockItemId = entry.ResolveMutationUnlockItemId(option.skillId);
+            option.isUnlocked = player != null && player.IsSkillMutationUnlocked(entry.GetResolvedActionId(), option.skillId, _skillConfig);
+            option.unlockItemCount = player != null && !string.IsNullOrWhiteSpace(option.unlockItemId)
+                ? player.GetItemCount(option.unlockItemId)
+                : 0;
+
+            ItemDisplayEntry itemEntry = !string.IsNullOrWhiteSpace(option.unlockItemId)
+                ? ConfigManager.GetInstance()?.GetItemDisplayDatabase()?.GetEntry(option.unlockItemId)
+                : null;
+            option.unlockItemDisplayName = !string.IsNullOrWhiteSpace(itemEntry?.displayName)
+                ? itemEntry.displayName.Trim()
+                : option.unlockItemId;
         }
 
         private string ResolveMutationOptionDescription(SkillConfigEntry entry, string defaultSkillId, string skillId, string explicitDescription)
@@ -1113,18 +1142,33 @@ namespace Game.UI
                 return;
             }
 
-            int mutationTalentCost = Mathf.Max(0, selectedOption.mutationTalentCost);
-            if (mutationTalentCost > 0 && !player.TryConsumeItem(PlayerModel.ItemIds.TalentPoint, mutationTalentCost))
+            bool unlockedNow = false;
+            if (!selectedOption.isUnlocked)
             {
-                SetStatus($"变异天赋点不足，切换 {GetDisplayName(entry)} 需要 {mutationTalentCost} 点。", true);
-                return;
+                if (string.IsNullOrWhiteSpace(selectedOption.unlockItemId))
+                {
+                    SetStatus($"{selectedOption.label} 未配置变异解锁道具。", true);
+                    return;
+                }
+
+                if (selectedOption.unlockItemCount <= 0)
+                {
+                    SetStatus($"缺少 {selectedOption.unlockItemDisplayName}，无法解锁 {selectedOption.label}。", true);
+                    return;
+                }
+
+                if (!player.TryUnlockSkillMutation(entry.GetResolvedActionId(), selectedOption.skillId, _skillConfig))
+                {
+                    SetStatus($"使用 {selectedOption.unlockItemDisplayName} 解锁失败。", true);
+                    return;
+                }
+
+                unlockedNow = true;
+                EventCenter.GetInstance().EventTrigger(GameEvents.InventoryChanged);
             }
 
             if (!player.TrySetSelectedSkillVariant(entry.GetResolvedActionId(), selectedOption.skillId, _skillConfig))
             {
-                if (mutationTalentCost > 0)
-                    player.AddItemCount(PlayerModel.ItemIds.TalentPoint, mutationTalentCost);
-
                 SetStatus($"{GetDisplayName(entry)} 的变异切换失败。", true);
                 return;
             }
@@ -1132,7 +1176,9 @@ namespace Game.UI
             PersistPlayerChanges(true);
             HideMutationPanel();
             RefreshAll();
-            SetStatus($"已将 {GetDisplayName(entry)} 变异为 {selectedOption.label}。", false);
+            SetStatus(unlockedNow
+                ? $"已解锁 {selectedOption.label}，并将 {GetDisplayName(entry)} 切换到该方向。"
+                : $"已将 {GetDisplayName(entry)} 变异为 {selectedOption.label}。", false);
         }
 
         private static MutationOptionData FindMutationOption(List<MutationOptionData> options, string skillId)
@@ -1169,7 +1215,9 @@ namespace Game.UI
             if (option == null)
                 return string.Empty;
 
-            string costText = $"变异天赋点消耗：{Mathf.Max(0, option.mutationTalentCost)}";
+            string costText = option.isUnlocked
+                ? "状态：已解锁，可自由切换"
+                : $"解锁道具：{option.unlockItemDisplayName}（持有 {Mathf.Max(0, option.unlockItemCount)}）";
             if (string.IsNullOrWhiteSpace(option.description))
                 return $"{option.label}\n{costText}";
 

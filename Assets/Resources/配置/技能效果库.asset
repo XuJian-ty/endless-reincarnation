@@ -20,7 +20,7 @@ MonoBehaviour:
       entries:
       - skillId: NormalIdle
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6B63\u5E38\u5F85\u673A"
         animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
@@ -35,7 +35,7 @@ MonoBehaviour:
       entries:
       - skillId: NormalWalk
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6B63\u5E38\u8D70\u8DEF"
         animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
@@ -64,7 +64,7 @@ MonoBehaviour:
       entries:
       - skillId: NormalRun
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6B63\u5E38\u8DD1\u6B65"
         animationTrigger: NormalLocomotion
         ignoreAnimationDamageEvents: 0
@@ -93,7 +93,7 @@ MonoBehaviour:
       entries:
       - skillId: AimIdle
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u5C04\u51FB\u5F85\u673A"
         animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
       entries:
       - skillId: AimWalk
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u5C04\u51FB\u8D70\u8DEF"
         animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
@@ -137,7 +137,7 @@ MonoBehaviour:
       entries:
       - skillId: AimRun
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u5C04\u51FB\u8DD1\u6B65"
         animationTrigger: AimLocomotion
         ignoreAnimationDamageEvents: 0
@@ -166,7 +166,7 @@ MonoBehaviour:
       entries:
       - skillId: Jump
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u8DF3\u8DC3"
         animationTrigger: Jump
         ignoreAnimationDamageEvents: 0
@@ -194,7 +194,7 @@ MonoBehaviour:
       entries:
       - skillId: AirJump
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u7A7A\u4E2D\u8DF3\u8DC3"
         animationTrigger: AirJump
         ignoreAnimationDamageEvents: 0
@@ -222,7 +222,7 @@ MonoBehaviour:
       entries:
       - skillId: Dodge
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u95EA\u907F"
         animationTrigger: Dodge
         ignoreAnimationDamageEvents: 0
@@ -250,7 +250,7 @@ MonoBehaviour:
       entries:
       - skillId: Fall
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u5760\u843D"
         animationTrigger: Fall
         ignoreAnimationDamageEvents: 0
@@ -265,7 +265,7 @@ MonoBehaviour:
       entries:
       - skillId: Land
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u7740\u9646"
         animationTrigger: Land
         ignoreAnimationDamageEvents: 0
@@ -293,7 +293,7 @@ MonoBehaviour:
       entries:
       - skillId: Attack0
         effectDescription: "\u8FD1\u6218\u666E\u653B1\u6BB5\uFF0C\u5FEB\u901F\u524D\u6325\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u8FD1\u6218\u666E\u653B1\u6BB5"
         animationTrigger: Attack0
         ignoreAnimationDamageEvents: 1
@@ -438,7 +438,7 @@ MonoBehaviour:
             onHitTriggerDelay: 0
             distance: 1
             height: 1
-            durationMode: 1
+            durationMode: 0
             duration: 8.766667
         attributeEvents: []
         vfxEvents:
@@ -574,7 +574,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: Attack0_Variant1
         effectDescription: "\u8FD1\u6218\u666E\u653B1\u6BB5\uFF0C\u5FEB\u901F\u524D\u6325\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_attack0_attack0_variant1
         displayName: Attack0_Variant1
         animationTrigger: Attack0
         ignoreAnimationDamageEvents: 1
@@ -963,7 +963,7 @@ MonoBehaviour:
             destroyMode: 0
             duration: 0
         - eventId: evt_3
-          startTime: 0.20000002
+          startTime: 0.26666668
           triggerMode: 0
           activeDuration: 0
           activeDurationMode: 0
@@ -1050,7 +1050,7 @@ MonoBehaviour:
       entries:
       - skillId: Attack1
         effectDescription: "\u8FD1\u6218\u666E\u653B2\u6BB5\uFF0C\u8FDE\u6BB5\u6325\u780D\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u8FD1\u6218\u666E\u653B2\u6BB5"
         animationTrigger: Attack1
         ignoreAnimationDamageEvents: 1
@@ -1344,7 +1344,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: Attack1_Variant1
         effectDescription: "\u8FD1\u6218\u666E\u653B2\u6BB5\uFF0C\u8FDE\u6BB5\u8FFD\u51FB\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_attack1_attack1_variant1
         displayName: Attack1_Variant1
         animationTrigger: Attack1
         ignoreAnimationDamageEvents: 1
@@ -1827,7 +1827,7 @@ MonoBehaviour:
       entries:
       - skillId: Attack2
         effectDescription: "\u8FD1\u6218\u666E\u653B3\u6BB5\uFF0C\u5411\u524D\u7A81\u523A\u8FFD\u51FB\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u8FD1\u6218\u666E\u653B3\u6BB5"
         animationTrigger: Attack2
         ignoreAnimationDamageEvents: 1
@@ -2201,7 +2201,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: Attack2_Variant1
         effectDescription: "\u8FD1\u6218\u666E\u653B3\u6BB5\uFF0C\u5411\u524D\u7A81\u523A\u8FFD\u51FB\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_attack2_attack2_variant1
         displayName: Attack2_Variant1
         animationTrigger: Attack2
         ignoreAnimationDamageEvents: 1
@@ -2808,7 +2808,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: Attack2_Variant2
         effectDescription: "\u8FD1\u6218\u666E\u653B3\u6BB5\uFF0C\u5411\u524D\u7A81\u523A\u8FFD\u51FB\uFF0C\u9020\u6210\u57FA\u7840\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_attack2_attack2_variant2
         displayName: Attack2_Variant2
         animationTrigger: Attack2
         ignoreAnimationDamageEvents: 1
@@ -3192,7 +3192,7 @@ MonoBehaviour:
       entries:
       - skillId: Attack3
         effectDescription: "\u8FD1\u6218\u666E\u653B4\u6BB5\uFF0C\u7EC8\u7ED3\u4E00\u51FB\uFF0C\u9020\u6210\u66F4\u5F3A\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u8FD1\u6218\u666E\u653B4\u6BB5"
         animationTrigger: Attack3
         ignoreAnimationDamageEvents: 1
@@ -3357,8 +3357,8 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6663020237317949801, guid: 1f0754f224af04141b10edc780c129e6,
               type: 3}
             anchor: 0
-            useFollowDuration: 1
-            followDuration: 1.2
+            useFollowDuration: 0
+            followDuration: 0
             offset: {x: 0, y: 0, z: 10.654}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
@@ -3440,7 +3440,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: Attack3_Variant1
         effectDescription: "\u8FD1\u6218\u666E\u653B4\u6BB5\uFF0C\u7EC8\u7ED3\u4E00\u51FB\uFF0C\u9020\u6210\u66F4\u5F3A\u8FD1\u6218\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_attack3_attack3_variant1
         displayName: Attack3_Variant1
         animationTrigger: Attack3
         ignoreAnimationDamageEvents: 1
@@ -3690,7 +3690,7 @@ MonoBehaviour:
       entries:
       - skillId: AirAttack
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u7A7A\u4E2D\u666E\u653B"
         animationTrigger: AirAttack
         ignoreAnimationDamageEvents: 1
@@ -3973,7 +3973,7 @@ MonoBehaviour:
       entries:
       - skillId: ChargeStart
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u84C4\u529B\u5F00\u59CB"
         animationTrigger: ChargeStart
         ignoreAnimationDamageEvents: 0
@@ -4001,7 +4001,7 @@ MonoBehaviour:
       entries:
       - skillId: ChargeLoop
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u84C4\u529B\u5FAA\u73AF"
         animationTrigger: ChargeLoop
         ignoreAnimationDamageEvents: 0
@@ -4082,7 +4082,7 @@ MonoBehaviour:
       entries:
       - skillId: ChargeRelease
         effectDescription: "\u8FD1\u6218\u84C4\u529B\u91CA\u653E\uFF0C\u5BF9\u524D\u65B9\u9020\u6210\u66F4\u9AD8\u8303\u56F4\u4F24\u5BB3\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u8FD1\u6218\u84C4\u529B\u91CA\u653E"
         animationTrigger: ChargeRelease
         ignoreAnimationDamageEvents: 1
@@ -4443,7 +4443,7 @@ MonoBehaviour:
       entries:
       - skillId: FallAttackStart
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u4E0B\u843D\u653B\u51FB\u5F00\u59CB"
         animationTrigger: FallAttackStart
         ignoreAnimationDamageEvents: 0
@@ -4471,7 +4471,7 @@ MonoBehaviour:
       entries:
       - skillId: FallAttackLoop
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u4E0B\u843D\u653B\u51FB\u5FAA\u73AF"
         animationTrigger: FallAttackLoop
         ignoreAnimationDamageEvents: 0
@@ -4505,7 +4505,7 @@ MonoBehaviour:
       entries:
       - skillId: FallAttackLand
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u4E0B\u843D\u653B\u51FB\u7740\u9646"
         animationTrigger: FallAttackLand
         ignoreAnimationDamageEvents: 1
@@ -4740,7 +4740,7 @@ MonoBehaviour:
       entries:
       - skillId: HitStun
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u53D7\u51FB"
         animationTrigger: HitStun
         ignoreAnimationDamageEvents: 0
@@ -4755,7 +4755,7 @@ MonoBehaviour:
       entries:
       - skillId: PlayerDeath
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6B7B\u4EA1"
         animationTrigger: Dead
         ignoreAnimationDamageEvents: 0
@@ -4770,7 +4770,7 @@ MonoBehaviour:
       entries:
       - skillId: Shoot
         effectDescription: "\u8FDC\u7A0B\u666E\u653B(\u70B9\u5C04)\uFF0C\u671D\u524D\u65B9\u53D1\u5C04\u4E00\u6B21\u666E\u901A\u5B50\u5F39\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u666E\u901A\u70B9\u5C04"
         animationTrigger: Shoot
         ignoreAnimationDamageEvents: 1
@@ -5042,7 +5042,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: Shoot_Variant1
         effectDescription: "\u5411\u524D\u65B9\u53D1\u5C043\u679A\u7279\u6B8A\u5B50\u5F39\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_shoot_shoot_variant1
         displayName: "\u5C04\u51FB\u53D8\u5F021"
         animationTrigger: Shoot
         ignoreAnimationDamageEvents: 1
@@ -6182,7 +6182,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: Shoot_Variant2
         effectDescription: "\u5411\u524D\u65B9\u53D1\u5C046\u679A\u7BAD\u77E2\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_shoot_shoot_variant2
         displayName: "\u5C04\u51FB\u53D8\u5F022"
         animationTrigger: Shoot
         ignoreAnimationDamageEvents: 1
@@ -6784,7 +6784,7 @@ MonoBehaviour:
       entries:
       - skillId: ShootCharge
         effectDescription: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\uFF0C\u6301\u7EED\u5411\u524D\u65B9\u5C04\u51FB\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)"
         animationTrigger: Shoot_Charge
         ignoreAnimationDamageEvents: 1
@@ -7056,7 +7056,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: ShootCharge_Variant1
         effectDescription: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\uFF0C\u6301\u7EED\u5411\u524D\u65B9\u53D1\u5C043\u679A\u7279\u6B8A\u5B50\u5F39\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_shootcharge_shootcharge_variant1
         displayName: "\u6301\u7EED\u5C04\u51FB\u53D8\u5F021"
         animationTrigger: Shoot_Charge
         ignoreAnimationDamageEvents: 1
@@ -8196,7 +8196,7 @@ MonoBehaviour:
         cameraEvents: []
       - skillId: ShootCharge_Variant2
         effectDescription: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\uFF0C\u6301\u7EED\u5411\u524D\u65B9\u53D1\u5C046\u679A\u7BAD\u77E2\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: mutation_unlock_shootcharge_shootcharge_variant2
         displayName: ShootCharge_Variant2
         animationTrigger: Shoot_Charge
         ignoreAnimationDamageEvents: 1
@@ -9126,7 +9126,7 @@ MonoBehaviour:
       entries:
       - skillId: Aim
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u7784\u51C6"
         animationTrigger: Aim
         ignoreAnimationDamageEvents: 1
@@ -9141,7 +9141,7 @@ MonoBehaviour:
       entries:
       - skillId: Skill0
         effectDescription: "\u4E3B\u52A80\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u4E3B\u52A80"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -9340,7 +9340,7 @@ MonoBehaviour:
             magnitude: 0.2
             usePercent: 0
             durationMode: 0
-            duration: 5
+            duration: 0
         vfxEvents:
         - eventId: evt_1
           startTime: 0
@@ -9482,7 +9482,7 @@ MonoBehaviour:
       entries:
       - skillId: Skill1
         effectDescription: "\u4E3B\u52A81\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u4E3B\u52A81"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -9724,7 +9724,7 @@ MonoBehaviour:
       entries:
       - skillId: Skill2
         effectDescription: "\u4E3B\u52A82\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u4E3B\u52A82"
         animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
@@ -10243,7 +10243,7 @@ MonoBehaviour:
       entries:
       - skillId: Skill3
         effectDescription: "\u4E3B\u52A83\uFF0C\u89E3\u9501\u540E\u53EF\u62D6\u62FD\u5230\u4E0B\u65B9\u6280\u80FD\u69FD\u4F4D\u4E2D\u91CA\u653E\u3002"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u4E3B\u52A83"
         animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
@@ -10894,7 +10894,7 @@ MonoBehaviour:
       entries:
       - skillId: melee_minionSkill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -11052,7 +11052,7 @@ MonoBehaviour:
       entries:
       - skillId: ranged_minionSkill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -11197,7 +11197,7 @@ MonoBehaviour:
       entries:
       - skillId: elite_1Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -11373,7 +11373,7 @@ MonoBehaviour:
       entries:
       - skillId: elite_1Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -11478,7 +11478,7 @@ MonoBehaviour:
       entries:
       - skillId: elite_2Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -11781,7 +11781,7 @@ MonoBehaviour:
       entries:
       - skillId: elite_2Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -11959,7 +11959,7 @@ MonoBehaviour:
       entries:
       - skillId: guardian_1Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -12174,7 +12174,7 @@ MonoBehaviour:
       entries:
       - skillId: guardian_1Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -12213,7 +12213,7 @@ MonoBehaviour:
       entries:
       - skillId: guardian_2Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -12322,7 +12322,7 @@ MonoBehaviour:
       entries:
       - skillId: guardian_2Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -12427,7 +12427,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_1Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -12581,7 +12581,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_1Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -12670,7 +12670,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_1Skill2
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD2"
         animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
@@ -12785,7 +12785,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_1Skill3
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD3"
         animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
@@ -12831,7 +12831,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_2Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -12920,7 +12920,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_2Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -13009,7 +13009,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_2Skill2
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD2"
         animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
@@ -13124,7 +13124,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_2Skill3
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD3"
         animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
@@ -13163,7 +13163,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_3Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -13278,7 +13278,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_3Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -13367,7 +13367,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_3Skill2
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD2"
         animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
@@ -13482,7 +13482,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_3Skill3
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD3"
         animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
@@ -13608,7 +13608,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_4Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -13710,7 +13710,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_4Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -13812,7 +13812,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_4Skill2
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD2"
         animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
@@ -13927,7 +13927,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_4Skill3
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD3"
         animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
@@ -13973,7 +13973,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_5Skill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -14075,7 +14075,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_5Skill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1
@@ -14164,7 +14164,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_5Skill2
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD2"
         animationTrigger: Skill2
         ignoreAnimationDamageEvents: 1
@@ -14279,7 +14279,7 @@ MonoBehaviour:
       entries:
       - skillId: boss_5Skill3
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD3"
         animationTrigger: Skill3
         ignoreAnimationDamageEvents: 1
@@ -14412,7 +14412,7 @@ MonoBehaviour:
       entries:
       - skillId: elite_flySkill0
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD0"
         animationTrigger: Skill0
         ignoreAnimationDamageEvents: 1
@@ -14499,7 +14499,7 @@ MonoBehaviour:
       entries:
       - skillId: elite_flySkill1
         effectDescription: 
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         displayName: "\u6280\u80FD1"
         animationTrigger: Skill1
         ignoreAnimationDamageEvents: 1

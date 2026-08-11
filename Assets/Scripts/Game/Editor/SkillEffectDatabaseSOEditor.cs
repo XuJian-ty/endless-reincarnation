@@ -259,7 +259,8 @@ namespace Game.Editor
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("displayName"), new GUIContent("显示名称"));
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("animationTrigger"), new GUIContent("动画 Trigger"));
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("effectDescription"), new GUIContent("技能效果描述"));
-                    EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("mutationTalentCost"));
+                    using (new EditorGUI.DisabledScope(isDefaultEntry))
+                        EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("mutationUnlockItemId"));
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("ignoreAnimationDamageEvents"));
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("damageEvents"), new GUIContent("命中事件列表"), true);
                     EditorGUILayout.PropertyField(entryProperty.FindPropertyRelative("physicsEvents"), new GUIContent("物理事件列表"), true);

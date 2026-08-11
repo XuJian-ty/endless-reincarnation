@@ -33,3 +33,168 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 5009e374c77051341a10e7a86026d75f, type: 3}
     description: "\u6B7B\u4EA1\u65F6\u53EF\u6D88\u80171\u4E2A\u4ED9\u9732\u590D\u6D3B\uFF0C\u5E76\u56DE\u6EDA\u81F3\u68C0\u67E5\u70B9\u4E14\u5173\u5361\u96BE\u5EA6+1\u3002"
     rarity: 3
+  - itemId: mutation_unlock_attack0_attack0_variant1
+    displayName: "\u8FD1\u6218\u666E\u653B1\u6BB5\xB7Attack0_Variant1\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: cbaec46a2d7d48fea0db5a7f26933a1c, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FD1\u6218\u666E\u653B1\u6BB5\u201D\u7684\u201CAttack0_Variant1\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_attack1_attack1_variant1
+    displayName: "\u8FD1\u6218\u666E\u653B2\u6BB5\xB7Attack1_Variant1\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: cbaec46a2d7d48fea0db5a7f26933a1c, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FD1\u6218\u666E\u653B2\u6BB5\u201D\u7684\u201CAttack1_Variant1\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_attack2_attack2_variant1
+    displayName: "\u8FD1\u6218\u666E\u653B3\u6BB5\xB7Attack2_Variant1\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: cbaec46a2d7d48fea0db5a7f26933a1c, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FD1\u6218\u666E\u653B3\u6BB5\u201D\u7684\u201CAttack2_Variant1\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_attack2_attack2_variant2
+    displayName: "\u8FD1\u6218\u666E\u653B3\u6BB5\xB7Attack2_Variant2\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b51c67a9bac411d82c6f2e971f68764, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FD1\u6218\u666E\u653B3\u6BB5\u201D\u7684\u201CAttack2_Variant2\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_attack3_attack3_variant1
+    displayName: "\u8FD1\u6218\u666E\u653B4\u6BB5\xB7Attack3_Variant1\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: cbaec46a2d7d48fea0db5a7f26933a1c, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FD1\u6218\u666E\u653B4\u6BB5\u201D\u7684\u201CAttack3_Variant1\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_shoot_shoot_variant1
+    displayName: "\u8FDC\u7A0B\u666E\u653B(\u70B9\u5C04)\xB7\u5C04\u51FB\u53D8\u5F021\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 8c193e4973324883bce1fd34a51373f5, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FDC\u7A0B\u666E\u653B(\u70B9\u5C04)\u201D\u7684\u201C\u5C04\u51FB\u53D8\u5F021\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_shoot_shoot_variant2
+    displayName: "\u8FDC\u7A0B\u666E\u653B(\u70B9\u5C04)\xB7\u5C04\u51FB\u53D8\u5F022\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c90b78c91582455fa71d697fd521400a, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FDC\u7A0B\u666E\u653B(\u70B9\u5C04)\u201D\u7684\u201C\u5C04\u51FB\u53D8\u5F022\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_shootcharge_shootcharge_variant1
+    displayName: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\xB7\u6301\u7EED\u5C04\u51FB\u53D8\u5F021\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 8c193e4973324883bce1fd34a51373f5, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\u201D\u7684\u201C\u6301\u7EED\u5C04\u51FB\u53D8\u5F021\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_shootcharge_shootcharge_variant2
+    displayName: "\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\xB7ShootCharge_Variant2\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c90b78c91582455fa71d697fd521400a, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u8FDC\u7A0B\u84C4\u529B(\u6301\u7EED\u5C04\u51FB)\u201D\u7684\u201CShootCharge_Variant2\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_1_passive_1_variant1
+    displayName: "\u751F\u547D\xB7\u589E\u52A0\u9AD8\u989D\u8840\u91CF\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u751F\u547D\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u8840\u91CF\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_1_passive_1_variant2
+    displayName: "\u751F\u547D\xB7\u589E\u52A0\u5DE8\u989D\u8840\u91CF\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u751F\u547D\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u8840\u91CF\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_2_passive_2_variant1
+    displayName: "\u6CD5\u529B\xB7\u589E\u52A0\u9AD8\u989D\u84DD\u91CF\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u6CD5\u529B\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u84DD\u91CF\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_2_passive_2_variant2
+    displayName: "\u6CD5\u529B\xB7\u589E\u52A0\u5DE8\u989D\u84DD\u91CF\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u6CD5\u529B\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u84DD\u91CF\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_3_passive_3_variant1
+    displayName: "\u653B\u51FB\xB7\u589E\u52A0\u9AD8\u989D\u653B\u51FB\u529B\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u653B\u51FB\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u653B\u51FB\u529B\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_3_passive_3_variant2
+    displayName: "\u653B\u51FB\xB7\u589E\u52A0\u5DE8\u989D\u653B\u51FB\u529B\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u653B\u51FB\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u653B\u51FB\u529B\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_4_passive_4_variant1
+    displayName: "\u9632\u5FA1\xB7\u589E\u52A0\u9AD8\u989D\u9632\u5FA1\u529B\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u9632\u5FA1\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u9632\u5FA1\u529B\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_4_passive_4_variant2
+    displayName: "\u9632\u5FA1\xB7\u589E\u52A0\u5DE8\u989D\u9632\u5FA1\u529B\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u9632\u5FA1\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u9632\u5FA1\u529B\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_5_passive_5_variant1
+    displayName: "\u56DE\u8840\xB7\u589E\u52A0\u9AD8\u989D\u6BCF\u79D2\u56DE\u8840\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u56DE\u8840\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u6BCF\u79D2\u56DE\u8840\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_5_passive_5_variant2
+    displayName: "\u56DE\u8840\xB7\u589E\u52A0\u5DE8\u989D\u6BCF\u79D2\u56DE\u8840\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u56DE\u8840\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u6BCF\u79D2\u56DE\u8840\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_6_passive_6_variant1
+    displayName: "\u56DE\u84DD\xB7\u589E\u52A0\u9AD8\u989D\u6BCF\u79D2\u56DE\u84DD\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u56DE\u84DD\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u6BCF\u79D2\u56DE\u84DD\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_6_passive_6_variant2
+    displayName: "\u56DE\u84DD\xB7\u589E\u52A0\u5DE8\u989D\u6BCF\u79D2\u56DE\u84DD\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u56DE\u84DD\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u6BCF\u79D2\u56DE\u84DD\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_7_passive_7_variant1
+    displayName: "\u66B4\u51FB\xB7\u589E\u52A0\u9AD8\u989D\u66B4\u51FB\u7387\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u66B4\u51FB\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u66B4\u51FB\u7387\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_7_passive_7_variant2
+    displayName: "\u66B4\u51FB\xB7\u589E\u52A0\u5DE8\u989D\u66B4\u51FB\u7387\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u66B4\u51FB\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u66B4\u51FB\u7387\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_8_passive_8_variant1
+    displayName: "\u7206\u4F24\xB7\u589E\u52A0\u9AD8\u989D\u66B4\u51FB\u4F24\u5BB3\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u7206\u4F24\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u66B4\u51FB\u4F24\u5BB3\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_8_passive_8_variant2
+    displayName: "\u7206\u4F24\xB7\u589E\u52A0\u5DE8\u989D\u66B4\u51FB\u4F24\u5BB3\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u7206\u4F24\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u66B4\u51FB\u4F24\u5BB3\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_9_passive_9_variant1
+    displayName: "\u653B\u901F\xB7\u589E\u52A0\u9AD8\u989D\u653B\u901F\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u653B\u901F\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u653B\u901F\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_9_passive_9_variant2
+    displayName: "\u653B\u901F\xB7\u589E\u52A0\u5DE8\u989D\u653B\u901F\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u653B\u901F\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u653B\u901F\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_10_passive_10_variant1
+    displayName: "\u79FB\u901F\xB7\u589E\u52A0\u9AD8\u989D\u79FB\u901F\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u79FB\u901F\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u79FB\u901F\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_10_passive_10_variant2
+    displayName: "\u79FB\u901F\xB7\u589E\u52A0\u5DE8\u989D\u79FB\u901F\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u79FB\u901F\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u79FB\u901F\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_11_passive_11_variant1
+    displayName: "\u5438\u8840\xB7\u589E\u52A0\u9AD8\u989D\u5438\u8840\u6BD4\u4F8B\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u5438\u8840\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u5438\u8840\u6BD4\u4F8B\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_11_passive_11_variant2
+    displayName: "\u5438\u8840\xB7\u589E\u52A0\u5DE8\u989D\u5438\u8840\u6BD4\u4F8B\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u5438\u8840\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u5438\u8840\u6BD4\u4F8B\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2
+  - itemId: mutation_unlock_passive_12_passive_12_variant1
+    displayName: "\u589E\u4F24\xB7\u589E\u52A0\u9AD8\u989D\u589E\u4F24\u6BD4\u4F8B\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: c559bf39862d41bb87eed2963d5f7992, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u589E\u4F24\u201D\u7684\u201C\u589E\u52A0\u9AD8\u989D\u589E\u4F24\u6BD4\u4F8B\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 1
+  - itemId: mutation_unlock_passive_12_passive_12_variant2
+    displayName: "\u589E\u4F24\xB7\u589E\u52A0\u5DE8\u989D\u589E\u4F24\u6BD4\u4F8B\u53D8\u5F02\u6838\u5FC3"
+    icon: {fileID: 21300000, guid: 7b20e04d86424656991ee4d9c402aa11, type: 3}
+    description: "\u7528\u4E8E\u6C38\u4E45\u89E3\u9501\u201C\u589E\u4F24\u201D\u7684\u201C\u589E\u52A0\u5DE8\u989D\u589E\u4F24\u6BD4\u4F8B\u201D\u53D8\u5F02\u65B9\u5411\u3002\u89E3\u9501\u540E\u53EF\u514D\u8D39\u81EA\u7531\u5207\u6362\u3002"
+    rarity: 2

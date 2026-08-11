@@ -40,6 +40,7 @@ namespace Game.Domain
         private readonly InventorySlot[] _slots = new InventorySlot[SlotCount];
         private readonly string[] _equippedSkillActionIds = new string[SkillSlotCount];
         private readonly Dictionary<string, string> _selectedSkillVariantIds = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _unlockedSkillMutationKeys = new HashSet<string>(StringComparer.Ordinal);
         /// <summary>仅存金币与天赋点；药剂、仙露等在 _slots 中</summary>
         private readonly Dictionary<string, int> _currency = new Dictionary<string, int>();
         private PlayerAttackMode _currentAttackMode = PlayerAttackMode.Melee;
@@ -305,6 +306,12 @@ namespace Game.Domain
                 return false;
 
             string defaultSkillId = entry.GetResolvedSkillId();
+            if (!string.Equals(defaultSkillId, normalizedSkillId, StringComparison.Ordinal)
+                && !IsSkillMutationUnlocked(normalizedActionId, normalizedSkillId, resolvedConfig))
+            {
+                return false;
+            }
+
             bool changed;
             if (string.Equals(defaultSkillId, normalizedSkillId, StringComparison.Ordinal))
             {
@@ -328,6 +335,51 @@ namespace Game.Domain
                 RefreshUnlockedSkillEffects(resolvedConfig);
 
             NotifyLoadoutChanged();
+            return true;
+        }
+
+        public bool IsSkillMutationUnlocked(string actionId, string skillId, SkillConfigDatabaseSO config)
+        {
+            SkillConfigDatabaseSO resolvedConfig = config ?? ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            string normalizedActionId = ResolveUnlockedActionId(actionId, resolvedConfig);
+            string normalizedSkillId = NormalizeId(skillId);
+            if (string.IsNullOrWhiteSpace(normalizedActionId) || string.IsNullOrWhiteSpace(normalizedSkillId) || resolvedConfig == null)
+                return false;
+
+            SkillConfigEntry entry = resolvedConfig.GetEntryByActionId(normalizedActionId);
+            if (entry == null || !entry.ContainsSkillVariant(normalizedSkillId))
+                return false;
+
+            if (string.Equals(entry.GetResolvedSkillId(), normalizedSkillId, StringComparison.Ordinal))
+                return true;
+
+            return _unlockedSkillMutationKeys.Contains(BuildSkillMutationKey(normalizedActionId, normalizedSkillId));
+        }
+
+        public bool TryUnlockSkillMutation(string actionId, string skillId, SkillConfigDatabaseSO config)
+        {
+            SkillConfigDatabaseSO resolvedConfig = config ?? ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            string normalizedActionId = ResolveUnlockedActionId(actionId, resolvedConfig);
+            string normalizedSkillId = NormalizeId(skillId);
+            if (string.IsNullOrWhiteSpace(normalizedActionId) || string.IsNullOrWhiteSpace(normalizedSkillId) || resolvedConfig == null)
+                return false;
+
+            SkillConfigEntry entry = resolvedConfig.GetEntryByActionId(normalizedActionId);
+            if (entry == null || !entry.ContainsSkillVariant(normalizedSkillId))
+                return false;
+
+            if (string.Equals(entry.GetResolvedSkillId(), normalizedSkillId, StringComparison.Ordinal))
+                return true;
+
+            string mutationKey = BuildSkillMutationKey(normalizedActionId, normalizedSkillId);
+            if (_unlockedSkillMutationKeys.Contains(mutationKey))
+                return true;
+
+            string unlockItemId = entry.ResolveMutationUnlockItemId(normalizedSkillId);
+            if (string.IsNullOrWhiteSpace(unlockItemId) || !TryConsumeItem(unlockItemId, 1))
+                return false;
+
+            _unlockedSkillMutationKeys.Add(mutationKey);
             return true;
         }
 
@@ -809,6 +861,7 @@ namespace Game.Domain
             for (int i = 0; i < SlotCount; i++) _slots[i].Clear();
             for (int i = 0; i < SkillSlotCount; i++) _equippedSkillActionIds[i] = string.Empty;
             _selectedSkillVariantIds.Clear();
+            _unlockedSkillMutationKeys.Clear();
             _currency.Clear();
 
             if (run.player != null)
@@ -880,6 +933,7 @@ namespace Game.Domain
                         UnlockedActionIds.Add(normalizedActionId);
                 }
             }
+            LoadUnlockedSkillMutations(run);
             LoadSelectedSkillVariants(run);
             LoadEquippedSkillActions(run);
             ClearBuffModifiers();
@@ -944,6 +998,24 @@ namespace Game.Domain
                     {
                         actionId = actionId,
                         skillId = selectedSkillId
+                    });
+                }
+            }
+
+            run.unlockedSkillMutations = new List<SkillMutationUnlockSave>();
+            if (_unlockedSkillMutationKeys.Count > 0)
+            {
+                List<string> mutationKeys = new List<string>(_unlockedSkillMutationKeys);
+                mutationKeys.Sort(StringComparer.Ordinal);
+                for (int i = 0; i < mutationKeys.Count; i++)
+                {
+                    if (!TrySplitSkillMutationKey(mutationKeys[i], out string actionId, out string skillId))
+                        continue;
+
+                    run.unlockedSkillMutations.Add(new SkillMutationUnlockSave
+                    {
+                        actionId = actionId,
+                        skillId = skillId
                     });
                 }
             }
@@ -1027,6 +1099,9 @@ namespace Game.Domain
                 return;
 
             SkillConfigDatabaseSO config = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (config == null)
+                return;
+
             for (int i = 0; i < run.selectedSkillMutations.Count; i++)
             {
                 SkillMutationSelectionSave selection = run.selectedSkillMutations[i];
@@ -1035,12 +1110,6 @@ namespace Game.Domain
                 if (string.IsNullOrWhiteSpace(actionId) || string.IsNullOrWhiteSpace(selectedSkillId))
                     continue;
 
-                if (config == null)
-                {
-                    _selectedSkillVariantIds[actionId] = selectedSkillId;
-                    continue;
-                }
-
                 SkillConfigEntry entry = config.GetEntryByActionId(actionId);
                 if (entry == null || !entry.ContainsSkillVariant(selectedSkillId))
                     continue;
@@ -1048,7 +1117,41 @@ namespace Game.Domain
                 if (string.Equals(entry.GetResolvedSkillId(), selectedSkillId, StringComparison.Ordinal))
                     continue;
 
+                if (!IsSkillMutationUnlocked(actionId, selectedSkillId, config))
+                    continue;
+
                 _selectedSkillVariantIds[actionId] = selectedSkillId;
+            }
+        }
+
+        private void LoadUnlockedSkillMutations(RunData run)
+        {
+            _unlockedSkillMutationKeys.Clear();
+            if (run?.unlockedSkillMutations == null || run.unlockedSkillMutations.Count == 0)
+                return;
+
+            SkillConfigDatabaseSO config = ConfigManager.GetInstance()?.GetSkillConfigDatabase();
+            if (config == null)
+                return;
+
+            for (int i = 0; i < run.unlockedSkillMutations.Count; i++)
+            {
+                SkillMutationUnlockSave unlock = run.unlockedSkillMutations[i];
+                string actionId = ResolveUnlockedActionId(unlock?.actionId, config);
+                string skillId = NormalizeId(unlock?.skillId);
+                if (string.IsNullOrWhiteSpace(actionId) || string.IsNullOrWhiteSpace(skillId))
+                    continue;
+
+                SkillConfigEntry entry = config.GetEntryByActionId(actionId);
+                if (entry == null
+                    || !entry.ContainsSkillVariant(skillId)
+                    || string.Equals(entry.GetResolvedSkillId(), skillId, StringComparison.Ordinal)
+                    || string.IsNullOrWhiteSpace(entry.ResolveMutationUnlockItemId(skillId)))
+                {
+                    continue;
+                }
+
+                _unlockedSkillMutationKeys.Add(BuildSkillMutationKey(actionId, skillId));
             }
         }
 
@@ -1060,6 +1163,27 @@ namespace Game.Domain
         private static string NormalizeId(string value)
         {
             return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+        }
+
+        private static string BuildSkillMutationKey(string actionId, string skillId)
+        {
+            return $"{actionId}\u001f{skillId}";
+        }
+
+        private static bool TrySplitSkillMutationKey(string mutationKey, out string actionId, out string skillId)
+        {
+            actionId = string.Empty;
+            skillId = string.Empty;
+            if (string.IsNullOrEmpty(mutationKey))
+                return false;
+
+            int separatorIndex = mutationKey.IndexOf('\u001f');
+            if (separatorIndex <= 0 || separatorIndex >= mutationKey.Length - 1)
+                return false;
+
+            actionId = mutationKey.Substring(0, separatorIndex);
+            skillId = mutationKey.Substring(separatorIndex + 1);
+            return true;
         }
 
         private string ResolveUnlockedActionId(string entryId, SkillConfigDatabaseSO config = null)

@@ -15,7 +15,7 @@ namespace Game.Saving
     /// </summary>
     public class SaveSystem : BaseManager<SaveSystem>
     {
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
         public const string DefaultPortraitId = "UI图片/天依";
 
         private ISaveStorage _storage;

@@ -15,9 +15,8 @@ MonoBehaviour:
   levels:
   - levelIndex: 1
     sceneName: Level_1
-    sceneGuid: 
-    globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
-      type: 2}
+    sceneGuid: 760ade7542e0bdc418001d0c87986079
+    globalSpawnPlanLibrary: {fileID: 0}
     globalSpawnPlanIndex: 0
     minionGoldReward: 10
     minionExpReward: 5
@@ -34,6 +33,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.006
     chestDropEntries:
     - itemType: weapon_common
       weight: 0.3
@@ -45,6 +110,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.004
     guardianGoldReward: 50
     guardianExpReward: 25
     guardianTalentReward: 2
@@ -110,10 +241,9 @@ MonoBehaviour:
       maxCount: 1
   - levelIndex: 2
     sceneName: Level_2
-    sceneGuid: 
-    globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
-      type: 2}
-    globalSpawnPlanIndex: 1
+    sceneGuid: e1444d6c00a81054e8a1beb852f9005a
+    globalSpawnPlanLibrary: {fileID: 0}
+    globalSpawnPlanIndex: 0
     minionGoldReward: 10
     minionExpReward: 5
     eliteGoldReward: 30
@@ -131,6 +261,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.006
     chestDropEntries:
     - itemType: weapon_common
       weight: 0.15
@@ -144,6 +340,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.004
     guardianGoldReward: 0
     guardianExpReward: 25
     guardianTalentReward: 2
@@ -213,10 +475,9 @@ MonoBehaviour:
       maxCount: 1
   - levelIndex: 3
     sceneName: Level_3
-    sceneGuid: 
-    globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
-      type: 2}
-    globalSpawnPlanIndex: 2
+    sceneGuid: e9b0842cecfcd1448a569fc702058bcb
+    globalSpawnPlanLibrary: {fileID: 0}
+    globalSpawnPlanIndex: 0
     minionGoldReward: 10
     minionExpReward: 5
     eliteGoldReward: 30
@@ -232,6 +493,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.006
     chestDropEntries:
     - itemType: weapon_rare
       weight: 0.2
@@ -243,6 +570,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.004
     guardianGoldReward: 0
     guardianExpReward: 25
     guardianTalentReward: 2
@@ -308,10 +701,9 @@ MonoBehaviour:
       maxCount: 2
   - levelIndex: 4
     sceneName: Level_4
-    sceneGuid: 
-    globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
-      type: 2}
-    globalSpawnPlanIndex: 3
+    sceneGuid: 1cf2301c9ba3400449b798c3f9d442fd
+    globalSpawnPlanLibrary: {fileID: 0}
+    globalSpawnPlanIndex: 0
     minionGoldReward: 10
     minionExpReward: 5
     eliteGoldReward: 30
@@ -327,6 +719,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.006
     chestDropEntries:
     - itemType: weapon_epic
       weight: 0.3
@@ -338,6 +796,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.004
     guardianGoldReward: 0
     guardianExpReward: 25
     guardianTalentReward: 2
@@ -403,10 +927,9 @@ MonoBehaviour:
       maxCount: 2
   - levelIndex: 5
     sceneName: Level_5
-    sceneGuid: 
-    globalSpawnPlanLibrary: {fileID: 11400000, guid: 4698ac158ac0061449709857ff5c84a9,
-      type: 2}
-    globalSpawnPlanIndex: 4
+    sceneGuid: 0a816fbb13f3c474eb76f3b79d25870d
+    globalSpawnPlanLibrary: {fileID: 0}
+    globalSpawnPlanIndex: 0
     minionGoldReward: 10
     minionExpReward: 5
     eliteGoldReward: 30
@@ -420,6 +943,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.006
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.006
     chestDropEntries:
     - itemType: weapon_legendary
       weight: 0.4
@@ -429,6 +1018,72 @@ MonoBehaviour:
       weight: 0.25
     - itemType: nectar
       weight: 0.1
+    - itemType: mutation_unlock_attack0_attack0_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack1_attack1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_attack2_attack2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_attack3_attack3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shoot_shoot_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_shootcharge_shootcharge_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_1_passive_1_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_2_passive_2_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_3_passive_3_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_4_passive_4_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_5_passive_5_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_6_passive_6_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_7_passive_7_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_8_passive_8_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_9_passive_9_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_10_passive_10_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_11_passive_11_variant2
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant1
+      weight: 0.004
+    - itemType: mutation_unlock_passive_12_passive_12_variant2
+      weight: 0.004
     guardianGoldReward: 0
     guardianExpReward: 25
     guardianTalentReward: 2

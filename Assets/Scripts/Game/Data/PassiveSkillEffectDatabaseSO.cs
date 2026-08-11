@@ -19,9 +19,9 @@ namespace Game.Data
         [TextArea(2, 5)]
         public string effectDescription = "";
 
-        [InspectorLabel("变异天赋点消耗")]
-        [Min(0)]
-        public int mutationTalentCost = 0;
+        [InspectorLabel("变异解锁道具ID")]
+        [Tooltip("首次解锁该变异方向时消耗的道具 ID。默认方向留空，每个变异方向必须配置不同道具。")]
+        public string mutationUnlockItemId = "";
 
         [InspectorLabel("属性加成")]
         public StatModifier statModifier = new StatModifier();

@@ -14,7 +14,10 @@ namespace Game.Presentation
         public readonly Vector2 MoveInput;
         public readonly Vector2 LookDelta;
         public readonly bool    IsRunRequested;
+        public readonly bool    IsSprintRequested;
         public readonly bool    IsLmbHeld;
+
+        public bool IsRunningRequested => IsRunRequested || IsSprintRequested;
 
         // ── 单帧事件（触发帧 true，ManualUpdate 后归零）──────────────────
         public readonly bool JumpPressed;
@@ -33,7 +36,7 @@ namespace Game.Presentation
         public int PressedSkillCount => _pressedSkillIndices != null ? _pressedSkillIndices.Count : 0;
 
         public PlayerInputData(
-            Vector2 moveInput, Vector2 lookDelta, bool isRunRequested, bool isLmbHeld,
+            Vector2 moveInput, Vector2 lookDelta, bool isRunRequested, bool isSprintRequested, bool isLmbHeld,
             bool jumpPressed, bool dodgePressed,
             bool attackTapPressed, bool chargeStartPressed, bool chargeReleasePressed,
             bool altAttackPressed,
@@ -42,6 +45,7 @@ namespace Game.Presentation
             MoveInput            = moveInput;
             LookDelta            = lookDelta;
             IsRunRequested       = isRunRequested;
+            IsSprintRequested    = isSprintRequested;
             IsLmbHeld            = isLmbHeld;
             JumpPressed          = jumpPressed;
             DodgePressed         = dodgePressed;
