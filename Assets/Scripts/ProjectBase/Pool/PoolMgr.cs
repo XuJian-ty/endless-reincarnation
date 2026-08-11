@@ -47,7 +47,7 @@ public class PoolData
     /// 从抽屉里面 取东西
     /// </summary>
     /// <returns></returns>
-    public GameObject GetObj()
+    public GameObject GetObj(bool activate = true)
     {
         while (poolStack.Count > 0)
         {
@@ -58,10 +58,11 @@ public class PoolData
                 continue;
             }
 
-            //激活 让其显示
-            obj.SetActive(true);
             //断开了父子关系
             obj.transform.SetParent(null, false);
+            //需要在指定生成点取出时，先保持失活，避免 NavMeshAgent 在旧位置启用。
+            if (activate)
+                obj.SetActive(true);
             RefreshDrawerName();
             return obj;
         }
@@ -203,6 +204,33 @@ public class PoolMgr : BaseManager<PoolMgr>
         GameObject obj = Object.Instantiate(prefab, parent);
         obj.name = prefab.name;
         PrepareSpawnedObject(obj, parent);
+        return obj;
+    }
+
+    /// <summary>
+    /// 在指定世界坐标同步获取 prefab。对象池实例会先完成定位，再激活其运行时组件。
+    /// </summary>
+    public GameObject GetObjSync(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
+    {
+        if (prefab == null)
+            return null;
+
+        EnsurePoolRoot();
+        string key = RegisterPrefab(prefab);
+        if (poolDic.TryGetValue(key, out PoolData data) && data != null && data.HasAvailableObject())
+        {
+            GameObject pooledObject = data.GetObj(false);
+            if (pooledObject != null)
+            {
+                pooledObject.transform.SetParent(parent, false);
+                pooledObject.transform.SetPositionAndRotation(position, rotation);
+                pooledObject.SetActive(true);
+                return pooledObject;
+            }
+        }
+
+        GameObject obj = Object.Instantiate(prefab, position, rotation, parent);
+        obj.name = prefab.name;
         return obj;
     }
 

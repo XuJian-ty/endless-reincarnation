@@ -8,6 +8,7 @@ using Game.Saving;
 using Game.Social;
 using Game.UI;
 using ProjectBase;
+using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
 namespace Game.GameFlow
@@ -188,6 +189,7 @@ namespace Game.GameFlow
             CaptureShopSnapshots(run.levelSnapshot);
             CaptureGroundDropSnapshots(run.levelSnapshot);
             CaptureSpawnerSnapshots(run.levelSnapshot);
+            CaptureRegionFlowSnapshot(run.levelSnapshot);
             CaptureLevelDirectorSnapshot(run.levelSnapshot);
         }
 
@@ -291,6 +293,7 @@ namespace Game.GameFlow
         {
             if (playerController == null) return;
 
+            pos = ResolveSafeCampaignSpawnPosition(pos);
             var cc = playerController.GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
             playerController.transform.position = pos;
@@ -344,8 +347,36 @@ namespace Game.GameFlow
                 spawnRotation = spawnTransform != null ? spawnTransform.rotation : prefab.transform.rotation;
             }
 
+            spawnPosition = ResolveSafeCampaignSpawnPosition(spawnPosition);
             playerController = Instantiate(prefab, spawnPosition, spawnRotation);
             playerController.name = prefab.name;
+        }
+
+        private Vector3 ResolveSafeCampaignSpawnPosition(Vector3 requestedPosition)
+        {
+            string sceneName = SceneManager.GetActiveScene().name;
+            bool isCampaignLevel = sceneName == "Level_1" ||
+                                   sceneName == "Level_2" ||
+                                   sceneName == "Level_3" ||
+                                   sceneName == "Level_4" ||
+                                   sceneName == "Level_5";
+            if (!isCampaignLevel)
+                return requestedPosition;
+
+            if (NavMesh.SamplePosition(requestedPosition, out NavMeshHit requestedHit, 2.5f, NavMesh.AllAreas))
+                return requestedHit.position + Vector3.up * 0.08f;
+
+            Transform configuredSpawn = GetSpawnTransform();
+            if (configuredSpawn != null && NavMesh.SamplePosition(configuredSpawn.position, out NavMeshHit configuredHit, 7f, NavMesh.AllAreas))
+            {
+                Debug.LogWarning(
+                    $"[LevelBootstrapper] 请求出生坐标 {requestedPosition:F2} 不在导航地面，" +
+                    $"已改用场景出生点 {configuredHit.position:F2}。");
+                return configuredHit.position + Vector3.up * 0.08f;
+            }
+
+            Debug.LogError($"[LevelBootstrapper] {sceneName} 的请求出生坐标和配置出生点都没有可用导航地面。");
+            return requestedPosition;
         }
 
         private Transform GetSpawnTransform()
@@ -419,26 +450,7 @@ namespace Game.GameFlow
 
         private void ShowBuffSelection()
         {
-            var config = ConfigManager.GetInstance()?.GetBuffConfig();
-            var allBuffs = config != null ? new List<string>(config.GetAllBuffIds()) : new List<string>();
-            if (allBuffs.Count < 3)
-            {
-                Debug.LogWarning("[LevelBootstrapper] Buff config has fewer than 3 entries. Cannot open three-choice selection.");
-                return;
-            }
-
-            var selectedBuffs = new List<string>();
-            for (int i = 0; i < 3; i++)
-            {
-                int randomIndex = Random.Range(0, allBuffs.Count);
-                selectedBuffs.Add(allBuffs[randomIndex]);
-                allBuffs.RemoveAt(randomIndex);
-            }
-
-            UIManager.GetInstance()?.ShowPanel<BuffSelectPanel>(
-                PanelNames.BuffSelect,
-                PanelLayers.BuffSelect,
-                panel => panel.ShowWithBuffs(selectedBuffs, OnBuffSelected));
+            BuffSelectionService.ShowThreeChoices(OnBuffSelected);
         }
 
         private void ShowOpeningStoryComicOrBuffSelection(RunData run)
@@ -504,6 +516,7 @@ namespace Game.GameFlow
             RestoreOpenedChests(snapshot);
             RestoreChestSnapshots(snapshot);
             RestoreEnemySnapshots(snapshot);
+            RestoreRegionFlowSnapshot(snapshot);
             UnityEngine.Object.FindFirstObjectByType<LevelDirector>()?.CompleteRuntimeSnapshotRestore();
             RestoreShopSnapshots(snapshot);
             RestoreGroundDrops(snapshot);
@@ -612,6 +625,18 @@ namespace Game.GameFlow
                 snapshot.levelDirector = directorSnapshot;
             else
                 snapshot.levelDirector = null;
+        }
+
+        private static void CaptureRegionFlowSnapshot(LevelSnapshot snapshot)
+        {
+            if (snapshot == null)
+                return;
+
+            RogueliteRegionFlowController flowController = UnityEngine.Object.FindFirstObjectByType<RogueliteRegionFlowController>(FindObjectsInactive.Exclude);
+            if (flowController != null && flowController.TryBuildSnapshot(out RogueliteRegionFlowSnapshotSave flowSnapshot))
+                snapshot.regionFlow = flowSnapshot;
+            else
+                snapshot.regionFlow = null;
         }
 
         private static void RestoreOpenedChests(LevelSnapshot snapshot)
@@ -733,12 +758,22 @@ namespace Game.GameFlow
             if (snapshot == null || snapshot.runtimeSnapshotVersion <= 0)
                 return;
 
+            Dictionary<string, RoguelitePlacedGuardian> placedGuardians = BuildPlacedGuardianMap();
+            foreach (RoguelitePlacedGuardian guardian in placedGuardians.Values)
+                guardian?.DeactivateForSnapshotRestore();
+
             EnemyController[] currentEnemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int i = 0; i < currentEnemies.Length; i++)
             {
                 EnemyController enemy = currentEnemies[i];
                 if (enemy == null)
                     continue;
+
+                if (enemy.GetComponentInParent<RoguelitePlacedGuardian>() != null)
+                {
+                    enemy.gameObject.SetActive(false);
+                    continue;
+                }
 
                 enemy.gameObject.SetActive(false);
                 UnityEngine.Object.Destroy(enemy.gameObject);
@@ -750,7 +785,18 @@ namespace Game.GameFlow
                 return;
 
             for (int i = 0; i < snapshot.enemies.Count; i++)
-                EnemySpawnRuntime.SpawnEnemyFromSnapshot(snapshot.enemies[i], catalog);
+            {
+                EnemySnapshot enemySnapshot = snapshot.enemies[i];
+                string runtimeId = enemySnapshot?.runtimeId?.Trim();
+                if (!string.IsNullOrEmpty(runtimeId)
+                    && placedGuardians.TryGetValue(runtimeId, out RoguelitePlacedGuardian placedGuardian))
+                {
+                    placedGuardian.RestoreFromSnapshot(enemySnapshot);
+                    continue;
+                }
+
+                EnemySpawnRuntime.SpawnEnemyFromSnapshot(enemySnapshot, catalog);
+            }
         }
 
         private void ApplyOnlineWorldSnapshotState(LevelSnapshot snapshot)
@@ -762,6 +808,7 @@ namespace Game.GameFlow
             RestoreChestSnapshots(snapshot);
             ApplyOnlineEnemySnapshots(snapshot);
             RestoreSpawnerSnapshots(snapshot);
+            RestoreRegionFlowSnapshot(snapshot);
             RestoreLevelDirectorSnapshot(snapshot);
             RestoreShopSnapshots(snapshot);
         }
@@ -772,6 +819,7 @@ namespace Game.GameFlow
                 return;
 
             SanitizeEnemySnapshots(snapshot);
+            Dictionary<string, RoguelitePlacedGuardian> placedGuardians = BuildPlacedGuardianMap();
             Dictionary<string, EnemyController> currentByRuntimeId = new Dictionary<string, EnemyController>();
             EnemyController[] currentEnemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int i = 0; i < currentEnemies.Length; i++)
@@ -802,6 +850,14 @@ namespace Game.GameFlow
                         continue;
                     }
 
+                    if (placedGuardians.TryGetValue(runtimeId, out RoguelitePlacedGuardian placedGuardian))
+                    {
+                        placedGuardian.RestoreFromSnapshot(enemySnapshot);
+                        EnemyController placedEnemy = placedGuardian.GetComponentInChildren<EnemyController>(true);
+                        placedEnemy?.SetOnlineRemoteSimulationDisabled(true);
+                        continue;
+                    }
+
                     catalog ??= EnemySpawnRuntime.BuildVariantCatalog();
                     EnemyController spawnedEnemy = EnemySpawnRuntime.SpawnEnemyFromSnapshot(enemySnapshot, catalog);
                     spawnedEnemy?.SetOnlineRemoteSimulationDisabled(true);
@@ -814,9 +870,34 @@ namespace Game.GameFlow
                 if (enemy == null || snapshotRuntimeIds.Contains(enemy.RuntimeId))
                     continue;
 
+                RoguelitePlacedGuardian placedGuardian = enemy.GetComponentInParent<RoguelitePlacedGuardian>();
+                if (placedGuardian != null)
+                {
+                    placedGuardian.DeactivateForSnapshotRestore();
+                    continue;
+                }
+
                 enemy.gameObject.SetActive(false);
                 UnityEngine.Object.Destroy(enemy.gameObject);
             }
+        }
+
+        private static Dictionary<string, RoguelitePlacedGuardian> BuildPlacedGuardianMap()
+        {
+            var result = new Dictionary<string, RoguelitePlacedGuardian>(System.StringComparer.Ordinal);
+            RoguelitePlacedGuardian[] guardians = UnityEngine.Object.FindObjectsByType<RoguelitePlacedGuardian>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < guardians.Length; i++)
+            {
+                RoguelitePlacedGuardian guardian = guardians[i];
+                if (guardian == null || string.IsNullOrWhiteSpace(guardian.PlacementId))
+                    continue;
+
+                string placementId = guardian.PlacementId.Trim();
+                if (!result.TryAdd(placementId, guardian))
+                    Debug.LogError($"[LevelBootstrapper] 场景直摆守卫者 ID 重复：{placementId}", guardian);
+            }
+
+            return result;
         }
 
         private static void RestoreSpawnerSnapshots(LevelSnapshot snapshot)
@@ -861,6 +942,16 @@ namespace Game.GameFlow
                 director.RestoreSnapshot(snapshot.levelDirector);
                 director.CompleteRuntimeSnapshotRestore();
             }
+        }
+
+        private static void RestoreRegionFlowSnapshot(LevelSnapshot snapshot)
+        {
+            if (snapshot?.regionFlow == null)
+                return;
+
+            RogueliteRegionFlowController[] flowControllers = UnityEngine.Object.FindObjectsByType<RogueliteRegionFlowController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < flowControllers.Length; i++)
+                flowControllers[i]?.RestoreSnapshot(snapshot.regionFlow);
         }
 
         private static void SanitizeEnemySnapshots(LevelSnapshot snapshot)

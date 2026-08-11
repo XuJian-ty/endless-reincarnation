@@ -42,6 +42,9 @@ namespace Game.Presentation
         // ── 候选动作缓冲区（避免每帧 GC）────────────────────────────────
         private readonly List<PendingActionData> _candidates = new List<PendingActionData>(16);
         private bool _airJumpConsumedThisAirborne;
+        private bool _hasAirMovementBasis;
+        private Vector3 _airMovementRight;
+        private Vector3 _airMovementForward;
 
         public PlayerStateMachine(IPlayerContext ctx) => _ctx = ctx;
 
@@ -100,23 +103,28 @@ namespace Game.Presentation
                 case GameAction.FallAttack:    ChangeState<FallAttackStartState>(); break;
                 case GameAction.Jump:
                 {
+                    EnsureAirMovementBasis();
                     bool executeAsAirJump = ShouldExecuteAsAirJump();
                     if (executeAsAirJump)
                     {
                         _airJumpConsumedThisAirborne = true;
-                        ChangeState<AirJumpState>();
+                        ChangeState<AirJumpState>(state =>
+                            state.InitialHorizontalVelocity = CaptureCurrentHorizontalVelocity());
                         break;
                     }
 
-                    ChangeState<JumpState>();
+                    ChangeState<JumpState>(state =>
+                        state.InitialHorizontalVelocity = CaptureCurrentHorizontalVelocity());
                     break;
                 }
                 case GameAction.AirJump:
                     if (!ShouldExecuteAsAirJump())
                         break;
 
+                    EnsureAirMovementBasis();
                     _airJumpConsumedThisAirborne = true;
-                    ChangeState<AirJumpState>();
+                    ChangeState<AirJumpState>(state =>
+                        state.InitialHorizontalVelocity = CaptureCurrentHorizontalVelocity());
                     break;
                 case GameAction.Walk:          ChangeState<MoveState>(s => s.InitialIsRunning = false); break;
                 case GameAction.Run:           ChangeState<MoveState>(s => s.InitialIsRunning = true);  break;
@@ -275,7 +283,7 @@ namespace Game.Presentation
 
             if (input.MoveInput.sqrMagnitude > 0.01f)
                 _candidates.Add(new PendingActionData(
-                    input.IsRunRequested ? GameAction.Run : GameAction.Walk));
+                    input.IsRunningRequested ? GameAction.Run : GameAction.Walk));
         }
 
         private static bool IsAirState(PlayerStateBase state) =>
@@ -286,10 +294,42 @@ namespace Game.Presentation
             or FallAttackStartState
             or FallAttackLoopState;
 
+        private Vector3 CaptureCurrentHorizontalVelocity()
+        {
+            Vector3 horizontalVelocity = _ctx.Mover.Velocity;
+            horizontalVelocity.y = 0f;
+            return horizontalVelocity;
+        }
+
+        public Vector3 GetAirMoveDirection(Vector2 input)
+        {
+            if (input.sqrMagnitude < 0.01f)
+                return Vector3.zero;
+
+            EnsureAirMovementBasis();
+            Vector3 direction = _airMovementRight * input.x + _airMovementForward * input.y;
+            if (direction.sqrMagnitude > 1f)
+                direction.Normalize();
+            return direction;
+        }
+
+        private void EnsureAirMovementBasis()
+        {
+            if (_hasAirMovementBasis)
+                return;
+
+            _airMovementRight = _ctx.GetMoveDirection(Vector2.right).normalized;
+            _airMovementForward = _ctx.GetMoveDirection(Vector2.up).normalized;
+            _hasAirMovementBasis = true;
+        }
+
         private void RefreshAirJumpCycleState()
         {
             if (_ctx?.Mover != null && _ctx.Mover.IsGrounded)
+            {
                 _airJumpConsumedThisAirborne = false;
+                _hasAirMovementBasis = false;
+            }
         }
 
         private bool ShouldExecuteAsAirJump()

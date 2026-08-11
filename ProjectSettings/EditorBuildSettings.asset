@@ -10,13 +10,13 @@ EditorBuildSettings:
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/Level_1.unity
-    guid: e1444d6c00a81054e8a1beb852f9005a
+    guid: 760ade7542e0bdc418001d0c87986079
   - enabled: 1
     path: Assets/Scenes/Level_2.unity
-    guid: e9b0842cecfcd1448a569fc702058bcb
+    guid: e1444d6c00a81054e8a1beb852f9005a
   - enabled: 1
     path: Assets/Scenes/Level_3.unity
-    guid: 760ade7542e0bdc418001d0c87986079
+    guid: e9b0842cecfcd1448a569fc702058bcb
   - enabled: 1
     path: Assets/Scenes/Level_4.unity
     guid: 1cf2301c9ba3400449b798c3f9d442fd
@@ -26,8 +26,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/BattleMemoryScene.unity
     guid: c1a9b703e20b4c8fa743970520f3c052
-  - enabled: 1
-    path: Assets/Scenes/FinalBossDuelScene.unity
-    guid: d7a4f1d9b8ec4f44a9e2c99701ea4be1
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

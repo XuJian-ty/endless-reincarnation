@@ -208,6 +208,16 @@ namespace Game.Presentation
                 return _runtimeId;
             }
         }
+        public void AssignPlacedRuntimeId(string runtimeId)
+        {
+            if (string.IsNullOrWhiteSpace(runtimeId))
+            {
+                Debug.LogError($"[Enemy] {name} 的场景直摆运行时 ID 为空。", this);
+                return;
+            }
+
+            _runtimeId = runtimeId.Trim();
+        }
         public bool CountsAsLevelBoss => _countsAsLevelBoss;
         public EnemyIntent CurrentIntent { get; set; }
         public float HurtRemainingTime => _hurtRemainingTime;

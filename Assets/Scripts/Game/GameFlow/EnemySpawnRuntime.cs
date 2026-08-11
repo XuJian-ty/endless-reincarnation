@@ -384,7 +384,7 @@ namespace Game.GameFlow
             bool usePool = type != EnemyType.Boss;
             Transform enemiesRoot = LevelRuntimeHierarchy.GetEnemiesRoot();
             GameObject instance = usePool
-                ? PoolMgr.GetInstance().GetObjSync(prefab, enemiesRoot)
+                ? PoolMgr.GetInstance().GetObjSync(prefab, position, rotation, enemiesRoot)
                 : (enemiesRoot != null
                     ? UnityEngine.Object.Instantiate(prefab, position, rotation, enemiesRoot)
                     : UnityEngine.Object.Instantiate(prefab, position, rotation));

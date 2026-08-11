@@ -116,7 +116,8 @@ namespace Game.GameFlow
             _navMeshAgent = GetComponent<NavMeshAgent>();
             if (_navMeshAgent != null && _navMeshAgent.enabled)
             {
-                _navMeshAgent.isStopped = true;
+                if (_navMeshAgent.isOnNavMesh)
+                    _navMeshAgent.isStopped = true;
                 _navMeshAgent.enabled = false;
             }
 

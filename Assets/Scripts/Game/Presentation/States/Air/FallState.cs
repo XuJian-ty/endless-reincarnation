@@ -16,9 +16,14 @@ namespace Game.Presentation
 
         protected override void OnTick(float dt, in PlayerInputData input)
         {
-            var dir = Ctx.GetMoveDirection(input.MoveInput);
+            var dir = Ctx.StateMachine.GetAirMoveDirection(input.MoveInput);
             if (dir.sqrMagnitude > 0.001f)
-                Ctx.Mover.SetHorizontalVelocity(dir * (Ctx.WalkSpeed * 0.5f));
+            {
+                Vector3 horizontalVelocity = Ctx.Mover.Velocity;
+                horizontalVelocity.y = 0f;
+                float airSpeed = Mathf.Max(horizontalVelocity.magnitude, Ctx.WalkSpeed * 0.5f);
+                Ctx.Mover.SetHorizontalVelocity(dir * airSpeed);
+            }
 
             if (Ctx.Mover.IsNearGround(0.3f))
                 GoTo<LandState>();

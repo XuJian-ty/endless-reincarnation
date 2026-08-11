@@ -244,6 +244,29 @@ namespace Game.Data
             return null;
         }
 
+        public string ResolveMutationUnlockItemId(string resolvedSkillId)
+        {
+            if (string.IsNullOrWhiteSpace(resolvedSkillId))
+                return string.Empty;
+
+            string normalizedSkillId = resolvedSkillId.Trim();
+            if (string.Equals(GetResolvedSkillId(), normalizedSkillId, StringComparison.Ordinal))
+                return string.Empty;
+
+            if (IsPassiveSkill)
+            {
+                PassiveSkillEffectDefinition definition = ResolvePassiveSkillEffectDefinition(normalizedSkillId);
+                return !string.IsNullOrWhiteSpace(definition?.mutationUnlockItemId)
+                    ? definition.mutationUnlockItemId.Trim()
+                    : string.Empty;
+            }
+
+            SharedSkillDefinition sharedDefinition = ResolveSkillEffectDefinition(normalizedSkillId);
+            return !string.IsNullOrWhiteSpace(sharedDefinition?.mutationUnlockItemId)
+                ? sharedDefinition.mutationUnlockItemId.Trim()
+                : string.Empty;
+        }
+
         public bool ContainsSkillVariant(string resolvedSkillId)
         {
             if (string.IsNullOrWhiteSpace(resolvedSkillId))

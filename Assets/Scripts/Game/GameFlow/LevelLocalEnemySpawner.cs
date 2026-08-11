@@ -19,6 +19,8 @@ namespace Game.GameFlow
         private LevelLocalEnemySpawnPlanSO _planLibrary;
         [SerializeField] [Min(0)] [Tooltip("本局部生成器使用的方案列表项索引。")]
         private int _planIndex;
+        [SerializeField] [Tooltip("勾选后由区域流程显式激活；未激活前不会执行生成任务。")]
+        private bool _waitForActivation;
 
         private System.Random _rng;
         private EnemySpawnVariantCatalog _variantCatalog;
@@ -32,10 +34,14 @@ namespace Game.GameFlow
         private float _taskTimer;
         private bool _restoredFromSnapshot;
         private bool _restoreFinished;
+        private bool _isActivated;
+        private bool _initialTaskStarted;
+        private bool _canDriveSimulation;
 
         private void Awake()
         {
-            if (!OnlineDungeonSessionCoordinator.GetInstance().ShouldDriveOnlineWorldSimulation())
+            _canDriveSimulation = OnlineDungeonSessionCoordinator.GetInstance().ShouldDriveOnlineWorldSimulation();
+            if (!_canDriveSimulation)
             {
                 enabled = false;
                 return;
@@ -45,6 +51,7 @@ namespace Game.GameFlow
             _seed = seed ^ gameObject.scene.handle ^ transform.position.GetHashCode() ^ _planIndex;
             _rng = new System.Random(_seed);
             _variantCatalog = EnemySpawnRuntime.BuildVariantCatalog();
+            _isActivated = !_waitForActivation;
             ResolvePlanIfNeeded();
             PreparePlannedSpawnCounts();
             ApplySnapshotIfAvailable();
@@ -59,23 +66,21 @@ namespace Game.GameFlow
             }
 
             if (_restoredFromSnapshot)
-                yield break;
-
-            yield return null;
-            TryExecuteOneTask();
-
-            if (_resolvedPlan == null || _resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnOnce)
             {
-                MarkFinished();
+                if (_isActivated && !_initialTaskStarted)
+                    yield return ExecuteInitialTaskAfterActivation();
                 yield break;
             }
 
-            _taskTimer = Mathf.Max(0.1f, _resolvedPlan.taskInterval);
+            if (!_isActivated)
+                yield break;
+
+            yield return ExecuteInitialTaskAfterActivation();
         }
 
         private void Update()
         {
-            if (_resolvedPlan == null || _resolvedPlan.spawnMode != LocalEnemySpawnMode.SpawnRepeatedly)
+            if (!_isActivated || !_initialTaskStarted || _resolvedPlan == null || _resolvedPlan.spawnMode != LocalEnemySpawnMode.SpawnRepeatedly)
                 return;
 
             if (_resolvedPlan.taskTotalMode == LocalEnemySpawnTaskTotalMode.FixedCount &&
@@ -96,17 +101,41 @@ namespace Game.GameFlow
         [ContextMenu("立即执行局部生成")]
         public void TryExecuteOneTask()
         {
+            TryExecuteOneTaskInternal();
+        }
+
+        private bool TryExecuteOneTaskInternal()
+        {
             if (!ResolvePlanIfNeeded())
-                return;
+                return false;
 
             Vector3 center = transform.position;
             EnemySpawnRuntime.TryResolveCenterOnNavMesh(transform.position, out center);
             System.Random taskRng = CreateTaskRandom(_taskAttemptCount);
             _taskAttemptCount++;
-            int spawnCount = DequeuePlannedSpawnCount(taskRng);
-            if (EnemySpawnRuntime.TrySpawnTask(_resolvedTask, spawnCount, center, taskRng, _variantCatalog))
-                _executedTaskCount++;
+            int spawnCount = PeekPlannedSpawnCount(taskRng);
+            if (!EnemySpawnRuntime.TrySpawnTask(_resolvedTask, spawnCount, center, taskRng, _variantCatalog))
+                return false;
+
+            if (_plannedSpawnCounts.Count > 0)
+                _plannedSpawnCounts.Dequeue();
+            _executedTaskCount++;
+            return true;
         }
+
+        public void ActivateSpawner()
+        {
+            if (!_canDriveSimulation || _isActivated || _restoreFinished)
+                return;
+
+            _isActivated = true;
+            enabled = true;
+            if (isActiveAndEnabled && !_restoredFromSnapshot)
+                StartCoroutine(ExecuteInitialTaskAfterActivation());
+        }
+
+        public bool IsActivated => _isActivated;
+        public bool HasStartedInitialTask => _initialTaskStarted;
 
         public int GetPlannedGuardianCount()
         {
@@ -147,6 +176,8 @@ namespace Game.GameFlow
             snapshot = new LocalSpawnerSnapshotSave
             {
                 spawnerId = GetSnapshotId(),
+                isActivated = _isActivated,
+                initialTaskStarted = _initialTaskStarted,
                 isFinished = IsFinished(),
                 executedTaskCount = Mathf.Max(0, _executedTaskCount),
                 attemptCount = Mathf.Max(0, _taskAttemptCount),
@@ -165,6 +196,8 @@ namespace Game.GameFlow
                 return;
 
             _restoredFromSnapshot = true;
+            _isActivated = snapshot.isActivated;
+            _initialTaskStarted = snapshot.initialTaskStarted;
             _restoreFinished = snapshot.isFinished;
             _executedTaskCount = Mathf.Max(0, snapshot.executedTaskCount);
             _taskAttemptCount = Mathf.Max(0, snapshot.attemptCount);
@@ -244,10 +277,10 @@ namespace Game.GameFlow
                 _plannedSpawnCounts.Enqueue(_resolvedTask.ResolveSpawnCount(previewRng));
         }
 
-        private int DequeuePlannedSpawnCount(System.Random rng)
+        private int PeekPlannedSpawnCount(System.Random rng)
         {
             if (_plannedSpawnCounts.Count > 0)
-                return _plannedSpawnCounts.Dequeue();
+                return _plannedSpawnCounts.Peek();
 
             return _resolvedTask != null ? _resolvedTask.ResolveSpawnCount(rng) : 0;
         }
@@ -272,11 +305,6 @@ namespace Game.GameFlow
                 }
             }
 
-            // 兼容旧运行时快照：当敌人已按快照恢复，但旧存档中尚未记录局部生成器状态时，
-            // 禁止场景内局部生成器再次 fresh spawn，避免和快照敌人叠加。
-            _restoredFromSnapshot = true;
-            _restoreFinished = true;
-            _plannedSpawnCounts.Clear();
         }
 
         private bool IsFinished()
@@ -294,6 +322,38 @@ namespace Game.GameFlow
                 return _executedTaskCount >= Mathf.Max(1, _resolvedPlan.totalTaskCount);
 
             return false;
+        }
+
+        private IEnumerator ExecuteInitialTaskAfterActivation()
+        {
+            yield return null;
+            while (_isActivated && !_initialTaskStarted && !_restoreFinished)
+            {
+                ExecuteInitialTaskOnce();
+                if (_initialTaskStarted || _restoreFinished)
+                    yield break;
+
+                yield return new WaitForSeconds(1f);
+            }
+        }
+
+        private void ExecuteInitialTaskOnce()
+        {
+            if (_initialTaskStarted || !_isActivated || _restoreFinished)
+                return;
+
+            if (!TryExecuteOneTaskInternal())
+                return;
+
+            _initialTaskStarted = true;
+
+            if (_resolvedPlan == null || _resolvedPlan.spawnMode == LocalEnemySpawnMode.SpawnOnce)
+            {
+                MarkFinished();
+                return;
+            }
+
+            _taskTimer = Mathf.Max(0.1f, _resolvedPlan.taskInterval);
         }
 
         private void MarkFinished()

@@ -21,7 +21,7 @@ MonoBehaviour:
       - skillId: passive_1
         displayName: "\u589E\u52A0\u8840\u91CF"
         effectDescription: "\u589E\u52A01000\u751F\u547D\u503C\u4E0A\u9650"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 1000
           mpAdd: 0
@@ -39,7 +39,7 @@ MonoBehaviour:
       - skillId: passive_1_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u8840\u91CF"
         effectDescription: "\u589E\u52A02000\u751F\u547D\u503C\u4E0A\u9650"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_1_passive_1_variant1
         statModifier:
           hpAdd: 2000
           mpAdd: 0
@@ -57,7 +57,7 @@ MonoBehaviour:
       - skillId: passive_1_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u8840\u91CF"
         effectDescription: "\u589E\u52A05000\u751F\u547D\u503C\u4E0A\u9650"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_1_passive_1_variant2
         statModifier:
           hpAdd: 5000
           mpAdd: 0
@@ -77,7 +77,7 @@ MonoBehaviour:
       - skillId: passive_2
         displayName: "\u589E\u52A0\u84DD\u91CF"
         effectDescription: "\u589E\u52A0500\u6CD5\u529B\u503C\u4E0A\u9650"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 500
@@ -95,7 +95,7 @@ MonoBehaviour:
       - skillId: passive_2_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u84DD\u91CF"
         effectDescription: "\u589E\u52A01000\u6CD5\u529B\u503C\u4E0A\u9650"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_2_passive_2_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 1000
@@ -113,7 +113,7 @@ MonoBehaviour:
       - skillId: passive_2_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u84DD\u91CF"
         effectDescription: "\u589E\u52A02500\u6CD5\u529B\u503C\u4E0A\u9650"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_2_passive_2_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 2500
@@ -133,7 +133,7 @@ MonoBehaviour:
       - skillId: passive_3
         displayName: "\u589E\u52A0\u653B\u51FB\u529B"
         effectDescription: "\u589E\u52A050\u653B\u51FB\u529B"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -151,7 +151,7 @@ MonoBehaviour:
       - skillId: passive_3_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u653B\u51FB\u529B"
         effectDescription: "\u589E\u52A0100\u653B\u51FB\u529B"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_3_passive_3_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -169,7 +169,7 @@ MonoBehaviour:
       - skillId: passive_3_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u653B\u51FB\u529B"
         effectDescription: "\u589E\u52A0250\u653B\u51FB\u529B"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_3_passive_3_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -189,7 +189,7 @@ MonoBehaviour:
       - skillId: passive_4
         displayName: "\u589E\u52A0\u9632\u5FA1\u529B"
         effectDescription: "\u589E\u52A0100\u9632\u5FA1\u529B"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -207,7 +207,7 @@ MonoBehaviour:
       - skillId: passive_4_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u9632\u5FA1\u529B"
         effectDescription: "\u589E\u52A0200\u9632\u5FA1\u529B"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_4_passive_4_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -225,7 +225,7 @@ MonoBehaviour:
       - skillId: passive_4_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u9632\u5FA1\u529B"
         effectDescription: "\u589E\u52A0500\u9632\u5FA1\u529B"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_4_passive_4_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -245,7 +245,7 @@ MonoBehaviour:
       - skillId: passive_5
         displayName: "\u589E\u52A0\u6BCF\u79D2\u56DE\u8840"
         effectDescription: "\u589E\u52A025\u6BCF\u79D2\u56DE\u8840"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -263,7 +263,7 @@ MonoBehaviour:
       - skillId: passive_5_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u6BCF\u79D2\u56DE\u8840"
         effectDescription: "\u589E\u52A050\u6BCF\u79D2\u56DE\u8840"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_5_passive_5_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -281,7 +281,7 @@ MonoBehaviour:
       - skillId: passive_5_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u6BCF\u79D2\u56DE\u8840"
         effectDescription: "\u589E\u52A0125\u6BCF\u79D2\u56DE\u8840"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_5_passive_5_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -301,7 +301,7 @@ MonoBehaviour:
       - skillId: passive_6
         displayName: "\u589E\u52A0\u6BCF\u79D2\u56DE\u84DD"
         effectDescription: "\u589E\u52A012.5\u6BCF\u79D2\u56DE\u84DD"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -319,7 +319,7 @@ MonoBehaviour:
       - skillId: passive_6_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u6BCF\u79D2\u56DE\u84DD"
         effectDescription: "\u589E\u52A025\u6BCF\u79D2\u56DE\u84DD"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_6_passive_6_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -337,7 +337,7 @@ MonoBehaviour:
       - skillId: passive_6_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u6BCF\u79D2\u56DE\u84DD"
         effectDescription: "\u589E\u52A062.5\u6BCF\u79D2\u56DE\u84DD"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_6_passive_6_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -357,7 +357,7 @@ MonoBehaviour:
       - skillId: passive_7
         displayName: "\u589E\u52A0\u66B4\u51FB\u7387"
         effectDescription: "\u589E\u52A010%\u66B4\u51FB\u7387"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -375,7 +375,7 @@ MonoBehaviour:
       - skillId: passive_7_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u66B4\u51FB\u7387"
         effectDescription: "\u589E\u52A020%\u66B4\u51FB\u7387"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_7_passive_7_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -393,7 +393,7 @@ MonoBehaviour:
       - skillId: passive_7_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u66B4\u51FB\u7387"
         effectDescription: "\u589E\u52A050%\u66B4\u51FB\u7387"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_7_passive_7_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -413,7 +413,7 @@ MonoBehaviour:
       - skillId: passive_8
         displayName: "\u589E\u52A0\u66B4\u51FB\u4F24\u5BB3"
         effectDescription: "\u589E\u52A020%\u66B4\u51FB\u4F24\u5BB3"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -431,7 +431,7 @@ MonoBehaviour:
       - skillId: passive_8_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u66B4\u51FB\u4F24\u5BB3"
         effectDescription: "\u589E\u52A040%\u66B4\u51FB\u4F24\u5BB3"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_8_passive_8_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -449,7 +449,7 @@ MonoBehaviour:
       - skillId: passive_8_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u66B4\u51FB\u4F24\u5BB3"
         effectDescription: "\u589E\u52A0100%\u66B4\u51FB\u4F24\u5BB3"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_8_passive_8_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -469,7 +469,7 @@ MonoBehaviour:
       - skillId: passive_9
         displayName: "\u589E\u52A0\u653B\u901F"
         effectDescription: "\u589E\u52A010%\u653B\u51FB\u901F\u5EA6"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -487,7 +487,7 @@ MonoBehaviour:
       - skillId: passive_9_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u653B\u901F"
         effectDescription: "\u589E\u52A020%\u653B\u51FB\u901F\u5EA6"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_9_passive_9_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -505,7 +505,7 @@ MonoBehaviour:
       - skillId: passive_9_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u653B\u901F"
         effectDescription: "\u589E\u52A050%\u653B\u51FB\u901F\u5EA6"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_9_passive_9_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -525,7 +525,7 @@ MonoBehaviour:
       - skillId: passive_10
         displayName: "\u589E\u52A0\u79FB\u901F"
         effectDescription: "\u589E\u52A010%\u79FB\u52A8\u901F\u5EA6"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -543,7 +543,7 @@ MonoBehaviour:
       - skillId: passive_10_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u79FB\u901F"
         effectDescription: "\u589E\u52A020%\u79FB\u52A8\u901F\u5EA6"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_10_passive_10_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -561,7 +561,7 @@ MonoBehaviour:
       - skillId: passive_10_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u79FB\u901F"
         effectDescription: "\u589E\u52A050%\u79FB\u52A8\u901F\u5EA6"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_10_passive_10_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -581,7 +581,7 @@ MonoBehaviour:
       - skillId: passive_11
         displayName: "\u589E\u52A0\u5438\u8840\u6BD4\u4F8B"
         effectDescription: "\u589E\u52A010%\u5438\u8840\u6BD4\u4F8B"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -599,7 +599,7 @@ MonoBehaviour:
       - skillId: passive_11_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u5438\u8840\u6BD4\u4F8B"
         effectDescription: "\u589E\u52A020%\u5438\u8840\u6BD4\u4F8B"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_11_passive_11_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -617,7 +617,7 @@ MonoBehaviour:
       - skillId: passive_11_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u5438\u8840\u6BD4\u4F8B"
         effectDescription: "\u589E\u52A050%\u5438\u8840\u6BD4\u4F8B"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_11_passive_11_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -637,7 +637,7 @@ MonoBehaviour:
       - skillId: passive_12
         displayName: "\u589E\u52A0\u589E\u4F24\u6BD4\u4F8B"
         effectDescription: "\u589E\u52A010%\u589E\u4F24\u6BD4\u4F8B"
-        mutationTalentCost: 0
+        mutationUnlockItemId: 
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -655,7 +655,7 @@ MonoBehaviour:
       - skillId: passive_12_Variant1
         displayName: "\u589E\u52A0\u9AD8\u989D\u589E\u4F24\u6BD4\u4F8B"
         effectDescription: "\u589E\u52A020%\u589E\u4F24\u6BD4\u4F8B"
-        mutationTalentCost: 2
+        mutationUnlockItemId: mutation_unlock_passive_12_passive_12_variant1
         statModifier:
           hpAdd: 0
           mpAdd: 0
@@ -673,7 +673,7 @@ MonoBehaviour:
       - skillId: passive_12_Variant2
         displayName: "\u589E\u52A0\u5DE8\u989D\u589E\u4F24\u6BD4\u4F8B"
         effectDescription: "\u589E\u52A050%\u589E\u4F24\u6BD4\u4F8B"
-        mutationTalentCost: 5
+        mutationUnlockItemId: mutation_unlock_passive_12_passive_12_variant2
         statModifier:
           hpAdd: 0
           mpAdd: 0

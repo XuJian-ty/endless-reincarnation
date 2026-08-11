@@ -32,7 +32,7 @@ namespace Game.Presentation
             if (_timer <= 0f)
             {
                 Vector2 moveInput = input.MoveInput;
-                bool isRunRequested = input.IsRunRequested;
+                bool isRunRequested = input.IsRunningRequested;
                 CompleteWithPending(() =>
                 {
                     if (IsGrounded)

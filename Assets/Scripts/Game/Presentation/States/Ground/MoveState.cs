@@ -9,7 +9,7 @@ namespace Game.Presentation
     /// 仅改变移动速度和动画参数，避免冗余状态切换开销。
     ///
     /// 进入配置：DodgeState 80% 结束闪避并释放 Walk/Run 缓存时，通过 configure 委托设置 InitialIsRunning，
-    /// 其他情况下由 PlayerInputData.IsRunRequested 决定。
+    /// 其他情况下由 PlayerInputData.IsRunningRequested 决定。
     /// </summary>
     public class MoveState : PlayerStateBase
     {
@@ -58,8 +58,10 @@ namespace Game.Presentation
                 return;
             }
 
-            _isRunning = input.IsRunRequested;
-            float speed = _isRunning ? Ctx.RunSpeed : Ctx.WalkSpeed;
+            _isRunning = input.IsRunningRequested;
+            float speed = input.IsSprintRequested
+                ? Ctx.RunSpeed * 2f
+                : _isRunning ? Ctx.RunSpeed : Ctx.WalkSpeed;
             var   dir   = Ctx.GetMoveDirection(input.MoveInput);
 
             Ctx.Mover.SetHorizontalVelocity(dir * speed);

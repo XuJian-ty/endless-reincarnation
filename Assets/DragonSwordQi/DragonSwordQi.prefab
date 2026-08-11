@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &390566406299302872
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8666293641181015483}
+  - component: {fileID: 5219899121721989429}
+  m_Layer: 0
+  m_Name: DragonSwordQi
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8666293641181015483
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 390566406299302872}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5219899121721989429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 390566406299302872}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7d936a275297a44f941c963452ca70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dragonBodyMaterial: {fileID: 2100000, guid: e579e49d82c22c54494db63b574b658c, type: 2}
+  dragonCoreMaterial: {fileID: 2100000, guid: 3e668d1d86be89643bd9aacf80aa836b, type: 2}
+  trailMaterial: {fileID: 2100000, guid: 814c315a399a6ed49a2a6951dd722a03, type: 2}
+  particleMaterial: {fileID: 2100000, guid: 45c32b8fee789e8478c863a8ba8e1330, type: 2}
+  shockwaveMaterial: {fileID: 2100000, guid: bbfeb410dd5e5be42b3c817404640cca, type: 2}
+  chargeAudio: {fileID: 8300000, guid: 62d11705d330aad4e85328842fe962a6, type: 3}
+  flightAudio: {fileID: 8300000, guid: edc7b89c9d73a7342a7962e6b740f0a0, type: 3}
+  impactAudio: {fileID: 8300000, guid: ca73a44265f2329478b930e58b5ffc94, type: 3}
+  chargeDuration: 0.42
+  flightDuration: 1.28
+  lingerDuration: 0.62
+  loopDelay: 0.55
+  bodySegments: 72
+  radialSides: 10
+  bodyRadius: 0.56
+  bodyPathSpan: 0.62
+  bodyWaveAmplitude: 0.82
+  bodyWaveFrequency: 9
+  pathStart: {x: 0, y: 0, z: 0}
+  pathControlA: {x: -3.4, y: 3.4, z: 3.8}
+  pathControlB: {x: 3.8, y: 2.4, z: 10.5}
+  pathEnd: {x: 0, y: 1.1, z: 15.2}
+  playOnAwake: 0
+  loop: 0
+  destroyOnComplete: 1
+  enableCameraShake: 0
+  cameraShakeStrength: 0.16
