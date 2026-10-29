@@ -19,7 +19,8 @@ internal sealed class SocialAppService
 
     private readonly IDbContextFactory<SocialDbContext> _dbContextFactory;
     private readonly OnlineDungeonClient _onlineDungeonClient;
-    private readonly string _defaultDungeonServerUrl;
+    private readonly string _internalDungeonServerUrl;
+    private readonly string _publicDungeonServerUrl;
 
     public SocialAppService(
         IDbContextFactory<SocialDbContext> dbContextFactory,
@@ -28,30 +29,20 @@ internal sealed class SocialAppService
     {
         _dbContextFactory = dbContextFactory;
         _onlineDungeonClient = onlineDungeonClient;
-        _defaultDungeonServerUrl = NormalizeServerUrl(configuration["OnlineDungeon:DefaultServerUrl"], "http://127.0.0.1:5086");
+        _internalDungeonServerUrl = ReadRequiredServerUrl(configuration, "OnlineDungeon:InternalServerUrl");
+        _publicDungeonServerUrl = ReadRequiredServerUrl(configuration, "OnlineDungeon:PublicServerUrl");
     }
 
-    private string ResolveDungeonServerUrl(string requestHost)
+    private static string ReadRequiredServerUrl(IConfiguration configuration, string key)
     {
-        string host = string.IsNullOrWhiteSpace(requestHost) ? "127.0.0.1" : requestHost.Trim();
-        int colonIndex = host.IndexOf(':');
-        if (colonIndex >= 0)
-            host = host[..colonIndex];
+        string value = configuration[key]?.Trim() ?? string.Empty;
+        if (!Uri.TryCreate(value, UriKind.Absolute, out Uri? uri)
+            || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new InvalidOperationException($"配置项 {key} 必须是有效的 HTTP 或 HTTPS 地址");
+        }
 
-        if (string.IsNullOrWhiteSpace(host))
-            host = "127.0.0.1";
-
-        if (string.Equals(host, "127.0.0.1", StringComparison.Ordinal) ||
-            string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
-            return _defaultDungeonServerUrl;
-
-        return $"http://{host}:5086";
-    }
-
-    private static string NormalizeServerUrl(string? value, string fallback)
-    {
-        string normalized = string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
-        return normalized.TrimEnd('/');
+        return value.TrimEnd('/');
     }
 
     public bool TryRegister(AuthRequest request, out SocialUserDto? user, out string error)
@@ -790,7 +781,7 @@ internal sealed class SocialAppService
             .ToList();
     }
 
-    public bool TryRespondToAidRequest(RespondAidRequestRequest request, string requestHost, out AidSessionDto? aidSession, out string error)
+    public bool TryRespondToAidRequest(RespondAidRequestRequest request, out AidSessionDto? aidSession, out string error)
     {
         aidSession = null;
         using SocialDbContext db = _dbContextFactory.CreateDbContext();
@@ -851,9 +842,8 @@ internal sealed class SocialAppService
         string sessionId = Guid.NewGuid().ToString("N");
         string hostJoinToken = Guid.NewGuid().ToString("N");
         string helperJoinToken = Guid.NewGuid().ToString("N");
-        string dungeonServerUrl = ResolveDungeonServerUrl(requestHost);
         if (!_onlineDungeonClient.TryCreateInstance(
-                dungeonServerUrl,
+                _internalDungeonServerUrl,
                 new CreateDungeonInstanceRequest
                 {
                     instanceId = sessionId,
@@ -879,7 +869,7 @@ internal sealed class SocialAppService
         }
 
         if (!_onlineDungeonClient.TryJoinInstance(
-                dungeonServerUrl,
+                _internalDungeonServerUrl,
                 dungeonInstanceId,
                 new JoinDungeonInstanceRequest
                 {
@@ -895,7 +885,7 @@ internal sealed class SocialAppService
         }
 
         if (!_onlineDungeonClient.TryJoinInstance(
-                dungeonServerUrl,
+                _internalDungeonServerUrl,
                 dungeonInstanceId,
                 new JoinDungeonInstanceRequest
                 {
@@ -930,7 +920,7 @@ internal sealed class SocialAppService
             HelperSaveId = helperContext.SaveId,
             HelperPlayerName = string.IsNullOrWhiteSpace(helperContext.PlayerName) ? aidRequest.HelperPlayerName : helperContext.PlayerName,
             HelperLevelIndex = Math.Max(1, helperContext.LevelIndex),
-            DungeonServerUrl = dungeonServerUrl,
+            DungeonServerUrl = _publicDungeonServerUrl,
             DungeonInstanceId = dungeonInstanceId,
             DungeonRealtimeUdpPort = dungeonInstance.realtimeUdpPort,
             DungeonRealtimeKcpPort = dungeonInstance.realtimeKcpPort,
@@ -1018,7 +1008,7 @@ internal sealed class SocialAppService
         db.SaveChanges();
 
         if (!_onlineDungeonClient.TryCloseInstance(
-                entity.DungeonServerUrl,
+                _internalDungeonServerUrl,
                 entity.DungeonInstanceId,
                 "aid_session_closed",
                 out string closeDungeonError))

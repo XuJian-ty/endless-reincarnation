@@ -215,6 +215,7 @@ namespace Game.UI
             ConfigureTooltipRaycastTargets(tooltipPanel);
             ConfigureTooltipRaycastTargets(previewTooltipPanel);
             BindContextMenuButtons();
+            BindMobilePreviewEvents();
         }
 
         private static void ConfigureIconImage(Image image)
@@ -280,7 +281,8 @@ namespace Game.UI
             click.callback.AddListener(data =>
             {
                 var ped = (PointerEventData)data;
-                if (ped.button == PointerEventData.InputButton.Right)
+                if (ped.button == PointerEventData.InputButton.Right ||
+                    (Application.isMobilePlatform && ped.button == PointerEventData.InputButton.Left))
                     OnSlotRightClick(displayIndex);
             });
             trigger.triggers.Add(click);
@@ -288,6 +290,22 @@ namespace Game.UI
             var scroll = new EventTrigger.Entry { eventID = EventTriggerType.Scroll };
             scroll.callback.AddListener(data => ForwardSlotScroll(data as PointerEventData));
             trigger.triggers.Add(scroll);
+
+            var initializeDrag = new EventTrigger.Entry { eventID = EventTriggerType.InitializePotentialDrag };
+            initializeDrag.callback.AddListener(data => ForwardSlotInitializePotentialDrag(data as PointerEventData));
+            trigger.triggers.Add(initializeDrag);
+
+            var beginDrag = new EventTrigger.Entry { eventID = EventTriggerType.BeginDrag };
+            beginDrag.callback.AddListener(data => ForwardSlotBeginDrag(data as PointerEventData));
+            trigger.triggers.Add(beginDrag);
+
+            var drag = new EventTrigger.Entry { eventID = EventTriggerType.Drag };
+            drag.callback.AddListener(data => ForwardSlotDrag(data as PointerEventData));
+            trigger.triggers.Add(drag);
+
+            var endDrag = new EventTrigger.Entry { eventID = EventTriggerType.EndDrag };
+            endDrag.callback.AddListener(data => ForwardSlotEndDrag(data as PointerEventData));
+            trigger.triggers.Add(endDrag);
         }
 
         private void ForwardSlotScroll(PointerEventData eventData)
@@ -296,6 +314,30 @@ namespace Game.UI
                 return;
 
             scrollRect.OnScroll(eventData);
+        }
+
+        private void ForwardSlotInitializePotentialDrag(PointerEventData eventData)
+        {
+            if (eventData != null && scrollRect != null)
+                scrollRect.OnInitializePotentialDrag(eventData);
+        }
+
+        private void ForwardSlotBeginDrag(PointerEventData eventData)
+        {
+            if (eventData != null && scrollRect != null)
+                scrollRect.OnBeginDrag(eventData);
+        }
+
+        private void ForwardSlotDrag(PointerEventData eventData)
+        {
+            if (eventData != null && scrollRect != null)
+                scrollRect.OnDrag(eventData);
+        }
+
+        private void ForwardSlotEndDrag(PointerEventData eventData)
+        {
+            if (eventData != null && scrollRect != null)
+                scrollRect.OnEndDrag(eventData);
         }
 
         private void BindContextMenuButtons()
@@ -317,6 +359,38 @@ namespace Game.UI
                 btnUnequip.onClick.RemoveListener(OnUnequipClicked);
                 btnUnequip.onClick.AddListener(OnUnequipClicked);
             }
+        }
+
+        private void BindMobilePreviewEvents()
+        {
+            if (!Application.isMobilePlatform)
+                return;
+
+            if (playerModelArea != null)
+                BindMobilePreviewTarget(playerModelArea.gameObject, false);
+
+            if (equippedWeaponIcon != null)
+                BindMobilePreviewTarget(equippedWeaponIcon.gameObject, true);
+        }
+
+        private void BindMobilePreviewTarget(GameObject target, bool equippedWeaponTarget)
+        {
+            if (target == null)
+                return;
+
+            Graphic graphic = target.GetComponent<Graphic>();
+            if (graphic == null)
+            {
+                Image transparentImage = target.AddComponent<Image>();
+                transparentImage.color = Color.clear;
+                graphic = transparentImage;
+            }
+            graphic.raycastTarget = true;
+
+            var relay = target.GetComponent<BackpackMobilePreviewPointerRelay>();
+            if (relay == null)
+                relay = target.AddComponent<BackpackMobilePreviewPointerRelay>();
+            relay.Initialize(this, equippedWeaponTarget);
         }
 
         private static void ConfigureTooltipRaycastTargets(GameObject panel)
@@ -1111,7 +1185,9 @@ namespace Game.UI
 
             _playerModelPreviewImage.texture = _playerModelPreviewTexture;
             _playerModelPreviewImage.color = Color.white;
-            _playerModelPreviewImage.raycastTarget = false;
+            _playerModelPreviewImage.raycastTarget = Application.isMobilePlatform;
+            if (Application.isMobilePlatform)
+                BindMobilePreviewTarget(_playerModelPreviewImage.gameObject, false);
         }
 
         private PlayerController ResolvePreviewSourcePlayer()
@@ -1344,6 +1420,9 @@ namespace Game.UI
 
         private void HandlePreviewPointerInput()
         {
+            if (Application.isMobilePlatform)
+                return;
+
             if (_playerModelPreviewTransform == null || playerModelArea == null)
             {
                 HidePreviewTooltip();
@@ -1360,39 +1439,93 @@ namespace Game.UI
                 OnPreviewRightClick();
 
             if (UnityEngine.Input.GetMouseButtonDown(0) && insidePreview)
-            {
-                _previewPointerTracking = true;
-                _previewPointerDragging = false;
-                _previewPointerDownPosition = mousePosition;
-                _previewPointerDownYaw = _playerModelPreviewYaw;
-            }
+                BeginPreviewPointer(mousePosition);
 
             if (_previewPointerTracking && UnityEngine.Input.GetMouseButton(0))
-            {
-                float deltaX = mousePosition.x - _previewPointerDownPosition.x;
-                if (!_previewPointerDragging && Mathf.Abs(deltaX) >= PreviewDragThresholdPixels)
-                    _previewPointerDragging = true;
-
-                if (_previewPointerDragging)
-                {
-                    _playerModelPreviewYaw = _previewPointerDownYaw - deltaX * previewDragRotateSpeed;
-                    _playerModelPreviewTransform.rotation = Quaternion.Euler(
-                        previewModelRotation.x,
-                        _playerModelPreviewYaw,
-                        previewModelRotation.z);
-                }
-            }
+                UpdatePreviewPointer(mousePosition);
 
             if (_previewPointerTracking && UnityEngine.Input.GetMouseButtonUp(0))
-            {
-                bool shouldAttack = insidePreview && !_previewPointerDragging;
-                _previewPointerTracking = false;
-                bool wasDragging = _previewPointerDragging;
-                _previewPointerDragging = false;
+                EndPreviewPointer(mousePosition);
+        }
 
-                if (!wasDragging && shouldAttack)
-                    _previewCombat.RequestNormalAttack();
-            }
+        internal void BeginMobilePreviewPointer(PointerEventData eventData)
+        {
+            if (eventData != null && eventData.button == PointerEventData.InputButton.Left)
+                BeginPreviewPointer(eventData.position);
+        }
+
+        internal void DragMobilePreviewPointer(PointerEventData eventData)
+        {
+            if (eventData != null && eventData.button == PointerEventData.InputButton.Left)
+                UpdatePreviewPointer(eventData.position);
+        }
+
+        internal void EndMobilePreviewPointer(PointerEventData eventData)
+        {
+            if (eventData != null && eventData.button == PointerEventData.InputButton.Left)
+                EndPreviewPointer(eventData.position);
+        }
+
+        internal void OpenMobileEquippedWeaponMenu(PointerEventData eventData)
+        {
+            if (eventData != null && eventData.button == PointerEventData.InputButton.Left)
+                OnPreviewRightClick();
+        }
+
+        internal void ShowMobileEquippedWeaponInfo()
+        {
+            WeaponInstance weapon = GetPreviewWeapon();
+            RectTransform anchorRect = GetPreviewSlotAnchorRect();
+            if (weapon == null || anchorRect == null)
+                return;
+
+            HideRightTooltip();
+            HideContextMenu();
+            ShowPreviewTooltipAt(anchorRect, weapon);
+        }
+
+        private void BeginPreviewPointer(Vector2 screenPosition)
+        {
+            if (_playerModelPreviewTransform == null || !IsPointerInsidePreview(screenPosition))
+                return;
+
+            _previewPointerTracking = true;
+            _previewPointerDragging = false;
+            _previewPointerDownPosition = screenPosition;
+            _previewPointerDownYaw = _playerModelPreviewYaw;
+        }
+
+        private void UpdatePreviewPointer(Vector2 screenPosition)
+        {
+            if (!_previewPointerTracking || _playerModelPreviewTransform == null)
+                return;
+
+            float deltaX = screenPosition.x - _previewPointerDownPosition.x;
+            if (!_previewPointerDragging && Mathf.Abs(deltaX) >= PreviewDragThresholdPixels)
+                _previewPointerDragging = true;
+
+            if (!_previewPointerDragging)
+                return;
+
+            _playerModelPreviewYaw = _previewPointerDownYaw - deltaX * previewDragRotateSpeed;
+            _playerModelPreviewTransform.rotation = Quaternion.Euler(
+                previewModelRotation.x,
+                _playerModelPreviewYaw,
+                previewModelRotation.z);
+        }
+
+        private void EndPreviewPointer(Vector2 screenPosition)
+        {
+            if (!_previewPointerTracking)
+                return;
+
+            bool shouldAttack = IsPointerInsidePreview(screenPosition) && !_previewPointerDragging;
+            _previewPointerTracking = false;
+            bool wasDragging = _previewPointerDragging;
+            _previewPointerDragging = false;
+
+            if (!wasDragging && shouldAttack)
+                _previewCombat.RequestNormalAttack();
         }
 
         private void HandlePreviewHover(bool insidePreview)
@@ -1566,6 +1699,123 @@ namespace Game.UI
             if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
                 return null;
             return canvas.worldCamera;
+        }
+    }
+
+    internal sealed class BackpackMobilePreviewPointerRelay : MonoBehaviour,
+        IPointerDownHandler,
+        IDragHandler,
+        IPointerUpHandler,
+        IPointerClickHandler
+    {
+        private const float LongPressDuration = 0.55f;
+        private const float LongPressMoveThresholdSqr = 144f;
+
+        private BackpackPanel _owner;
+        private bool _equippedWeaponTarget;
+        private int _pointerId = int.MinValue;
+        private Vector2 _pointerDownPosition;
+        private float _longPressTime;
+        private bool _trackingLongPress;
+        private bool _longPressTriggered;
+        private bool _gestureCanceled;
+
+        public void Initialize(BackpackPanel owner, bool equippedWeaponTarget)
+        {
+            _owner = owner;
+            _equippedWeaponTarget = equippedWeaponTarget;
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (!Application.isMobilePlatform || eventData == null)
+                return;
+
+            if (!_equippedWeaponTarget)
+            {
+                _owner?.BeginMobilePreviewPointer(eventData);
+                return;
+            }
+
+            _pointerId = eventData.pointerId;
+            _pointerDownPosition = eventData.position;
+            _longPressTime = Time.unscaledTime + LongPressDuration;
+            _trackingLongPress = true;
+            _longPressTriggered = false;
+            _gestureCanceled = false;
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (!Application.isMobilePlatform || eventData == null)
+                return;
+
+            if (!_equippedWeaponTarget)
+            {
+                _owner?.DragMobilePreviewPointer(eventData);
+                return;
+            }
+
+            if (eventData.pointerId == _pointerId
+                && (eventData.position - _pointerDownPosition).sqrMagnitude > LongPressMoveThresholdSqr)
+            {
+                _trackingLongPress = false;
+                _gestureCanceled = true;
+            }
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            if (!Application.isMobilePlatform || eventData == null)
+                return;
+
+            if (!_equippedWeaponTarget)
+            {
+                _owner?.EndMobilePreviewPointer(eventData);
+                return;
+            }
+
+            if (eventData.pointerId == _pointerId)
+                _trackingLongPress = false;
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (!Application.isMobilePlatform || !_equippedWeaponTarget)
+                return;
+
+            if (!_longPressTriggered && !_gestureCanceled)
+                _owner?.OpenMobileEquippedWeaponMenu(eventData);
+
+            ResetGesture();
+        }
+
+        private void Update()
+        {
+            if (!_equippedWeaponTarget
+                || !_trackingLongPress
+                || _longPressTriggered
+                || Time.unscaledTime < _longPressTime)
+            {
+                return;
+            }
+
+            _trackingLongPress = false;
+            _longPressTriggered = true;
+            _owner?.ShowMobileEquippedWeaponInfo();
+        }
+
+        private void OnDisable()
+        {
+            ResetGesture();
+        }
+
+        private void ResetGesture()
+        {
+            _pointerId = int.MinValue;
+            _trackingLongPress = false;
+            _longPressTriggered = false;
+            _gestureCanceled = false;
         }
     }
 }

@@ -10,8 +10,6 @@ services:
       MYSQL_USER: endless
       MYSQL_PASSWORD: endless_dev_password
       MYSQL_ROOT_PASSWORD: root_dev_password
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -31,7 +29,8 @@ services:
         condition: service_healthy
     environment:
       ConnectionStrings__SocialDatabase: Server=mysql;Port=3306;Database=endless_reincarnation_social;User=endless;Password=endless_dev_password;TreatTinyAsBoolean=false;
-      OnlineDungeon__DefaultServerUrl: http://online-dungeon-server:5086
+      OnlineDungeon__InternalServerUrl: http://online-dungeon-server:5086
+      OnlineDungeon__PublicServerUrl: https://endless-dungeon.xinyin.space
     ports:
       - "5076:5076"
 
@@ -43,8 +42,6 @@ services:
     restart: unless-stopped
     ports:
       - "5086:5086"
-      - "5087:5087/udp"
-      - "5088:5088"
 
 volumes:
   mysql_data:

@@ -5,6 +5,7 @@ using Game.GameFlow;
 using Game.Input;
 using ProjectBase;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -12,9 +13,9 @@ using UnityEngine.UI;
 namespace Game.UI
 {
     /// <summary>
-    /// 通用对话面板：显示一轮 NPC 台词，按 E 后进入玩家答复选择；确认答复后进入下一轮或结束。
+    /// 通用对话面板：显示一轮 NPC 台词，按任意键后进入玩家答复选择；确认答复后进入下一轮或结束。
     /// </summary>
-    public sealed class DialoguePanel : BasePanel
+    public sealed class DialoguePanel : BasePanel, IPointerClickHandler
     {
         private const string ReplyOptionResourcePath = "UI/DialogueReplyOption";
         private const float NavigateRepeatInterval = 0.18f;
@@ -89,19 +90,27 @@ namespace Game.UI
                 return;
 
             if (_state == DialogueState.SelectingReply)
-                HandleReplyNavigation();
-
-            if (!WasInteractPressedThisFrame())
-                return;
-
-            if (_state == DialogueState.ShowingNpcLine)
             {
-                ShowReplyOptions();
+                HandleReplyNavigation();
+                if (WasInteractPressedThisFrame())
+                    ConfirmSelectedReply();
                 return;
             }
 
-            if (_state == DialogueState.SelectingReply)
-                ConfirmSelectedReply();
+            if (_state == DialogueState.ShowingNpcLine &&
+                !Application.isMobilePlatform &&
+                WasAnyKeyboardKeyPressedThisFrame())
+                ShowReplyOptions();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+                return;
+            if (!_sessionActive || _state != DialogueState.ShowingNpcLine)
+                return;
+
+            ShowReplyOptions();
         }
 
         private void ShowRoundLine()
@@ -116,7 +125,7 @@ namespace Game.UI
             _state = DialogueState.ShowingNpcLine;
             SetText(_speakerNameText, string.IsNullOrWhiteSpace(_config.speakerName) ? "胡桃" : _config.speakerName);
             SetText(_contentText, round.hutaoLine);
-            SetText(_hintText, "按 E 继续");
+            SetText(_hintText, Application.isMobilePlatform ? "点击继续" : "按任意键继续");
             SetGraphicVisible(_speakerNameText, true);
             SetGraphicVisible(_contentText, true);
 
@@ -174,6 +183,7 @@ namespace Game.UI
                 }
 
                 SetText(text, options[i]?.replyText);
+                ConfigureReplyTouch(optionObject, toggle);
                 _activeOptionObjects.Add(optionObject);
                 _spawnedOptionToggles.Add(toggle);
                 _spawnedOptionTexts.Add(text);
@@ -183,7 +193,7 @@ namespace Game.UI
                 firstToggle.isOn = true;
 
             _state = DialogueState.SelectingReply;
-            SetText(_hintText, "点击选项后按 E 确认");
+            SetText(_hintText, Application.isMobilePlatform ? "点击选项确认" : "点击选项后按 E 确认");
 
             if (_optionsRoot != null)
                 _optionsRoot.gameObject.SetActive(true);
@@ -213,6 +223,34 @@ namespace Game.UI
 
             _roundIndex++;
             ShowRoundLine();
+        }
+
+        private void ConfigureReplyTouch(GameObject optionObject, Toggle toggle)
+        {
+            if (optionObject == null || toggle == null)
+                return;
+
+            EventTrigger trigger = optionObject.GetComponent<EventTrigger>();
+            if (trigger == null)
+                trigger = optionObject.AddComponent<EventTrigger>();
+            if (trigger.triggers == null)
+                trigger.triggers = new List<EventTrigger.Entry>();
+
+            trigger.triggers.RemoveAll(entry => entry.eventID == EventTriggerType.PointerClick);
+            var clickEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+            clickEntry.callback.AddListener(data =>
+            {
+                if (!Application.isMobilePlatform || !_sessionActive || _state != DialogueState.SelectingReply)
+                    return;
+
+                PointerEventData pointer = data as PointerEventData;
+                if (pointer == null || pointer.button != PointerEventData.InputButton.Left)
+                    return;
+
+                toggle.SetIsOnWithoutNotify(true);
+                ConfirmSelectedReply();
+            });
+            trigger.triggers.Add(clickEntry);
         }
 
         private void HandleReplyNavigation()
@@ -324,6 +362,12 @@ namespace Game.UI
         {
             InputAction action = ResolveInteractAction();
             return action != null && action.WasPressedThisFrame();
+        }
+
+        private static bool WasAnyKeyboardKeyPressedThisFrame()
+        {
+            Keyboard keyboard = Keyboard.current;
+            return keyboard != null && keyboard.anyKey.wasPressedThisFrame;
         }
 
         private InputAction ResolveNavigateAction()

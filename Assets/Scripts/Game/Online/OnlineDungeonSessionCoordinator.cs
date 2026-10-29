@@ -68,9 +68,15 @@ namespace Game.Online
         private readonly HashSet<string> _pendingOnlineDropPickups = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _pendingOnlineChestOpens = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _openedOnlineChests = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _authorityRuntimeIds = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _spawnedDropIds = new HashSet<string>(StringComparer.Ordinal);
         private readonly Dictionary<string, DroppedPickupRuntime> _onlineDrops = new Dictionary<string, DroppedPickupRuntime>(StringComparer.Ordinal);
+        private readonly Dictionary<string, ChestInteractable> _appliedOpenedOnlineChests = new Dictionary<string, ChestInteractable>(StringComparer.Ordinal);
+        private readonly Dictionary<string, EnemyController> _authorityEnemiesByRuntimeId = new Dictionary<string, EnemyController>(StringComparer.Ordinal);
         private readonly Dictionary<string, SocialAidRemotePlayerAvatar> _remoteAvatars = new Dictionary<string, SocialAidRemotePlayerAvatar>(StringComparer.Ordinal);
+        private readonly List<OnlineDungeonEnemyAuthorityInfo> _realtimeEnemyAuthorityStates = new List<OnlineDungeonEnemyAuthorityInfo>();
+        private readonly List<OnlineDungeonEnemyAuthorityInfo> _realtimeEnemyAuthorityStatePool = new List<OnlineDungeonEnemyAuthorityInfo>();
+        private readonly OnlineDungeonEnemyAuthorityStateSyncRequest _realtimeEnemyAuthorityRequest = new OnlineDungeonEnemyAuthorityStateSyncRequest();
 
         public SocialAidSessionInfo ActiveAidSession => _activeAidSession;
         public bool HasActiveSession => _activeAidSession != null
@@ -626,6 +632,7 @@ namespace Game.Online
             _pendingOnlineDropPickups.Clear();
             _pendingOnlineChestOpens.Clear();
             _openedOnlineChests.Clear();
+            _appliedOpenedOnlineChests.Clear();
             _spawnedDropIds.Clear();
         }
 
@@ -638,6 +645,7 @@ namespace Game.Online
             _pendingOnlineDropPickups.Clear();
             _pendingOnlineChestOpens.Clear();
             _openedOnlineChests.Clear();
+            _appliedOpenedOnlineChests.Clear();
             _spawnedDropIds.Clear();
         }
 
@@ -684,13 +692,11 @@ namespace Game.Online
                 _activeAidSession.dungeonInstanceId,
                 currentUserId,
                 _activeAidSession.dungeonJoinToken,
-                _activeAidSession.dungeonRealtimeUdpPort,
-                _activeAidSession.dungeonRealtimeKcpPort,
                 error => Debug.LogWarning($"[OnlineDungeonSessionCoordinator] 联机副本实时通道启动失败：{error}"));
 
             if (_realtimeClient.IsRunning)
             {
-                Debug.Log($"[OnlineDungeonSessionCoordinator] 联机副本实时通道启动。UDP={_activeAidSession.dungeonRealtimeUdpPort} KCP={_activeAidSession.dungeonRealtimeKcpPort}");
+                Debug.Log($"[OnlineDungeonSessionCoordinator] 联机副本WSS实时通道启动。Server={_activeAidSession.dungeonServerUrl}");
                 MonoMgr.GetInstance().AddUpdateListener(TickRealtimeClient);
                 MonoMgr.GetInstance().AddLateUpdateListener(TickRealtimeClient);
             }
@@ -701,6 +707,8 @@ namespace Game.Online
             MonoMgr.GetInstance().RemoveUpdateListener(TickRealtimeClient);
             MonoMgr.GetInstance().RemoveLateUpdateListener(TickRealtimeClient);
             _realtimeClient.Stop();
+            _authorityEnemiesByRuntimeId.Clear();
+            _authorityRuntimeIds.Clear();
             _lastAppliedAuthorityStateVersion = 0;
             _nextOnlineAuthorityTime = 0f;
             _nextOnlineAuthorityApplyLogTime = 0f;
@@ -750,48 +758,57 @@ namespace Game.Online
             if (!HasActiveSession || !ShouldDriveOnlineWorldSimulation())
                 return null;
 
-            EnemyController[] enemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            List<OnlineDungeonEnemyAuthorityInfo> enemyStates = new List<OnlineDungeonEnemyAuthorityInfo>();
-            for (int i = 0; i < enemies.Length; i++)
+            IReadOnlyList<EnemyController> enemies = EnemyController.ActiveEnemies;
+            _realtimeEnemyAuthorityStates.Clear();
+            for (int i = 0; i < enemies.Count; i++)
             {
                 EnemyController enemy = enemies[i];
-                if (enemy == null || !enemy.TryBuildSnapshot(out EnemySnapshot snapshot))
+                if (enemy == null || !enemy.IsAlive)
                     continue;
 
+                string enemyId = enemy.EnemyId;
+                if (string.IsNullOrWhiteSpace(enemyId))
+                    continue;
+
+                int stateIndex = _realtimeEnemyAuthorityStates.Count;
+                if (stateIndex >= _realtimeEnemyAuthorityStatePool.Count)
+                    _realtimeEnemyAuthorityStatePool.Add(new OnlineDungeonEnemyAuthorityInfo());
+
+                OnlineDungeonEnemyAuthorityInfo enemyState = _realtimeEnemyAuthorityStatePool[stateIndex];
+                Vector3 position = enemy.transform.position;
+                float currentHp = Mathf.Max(0f, enemy.CurrentHp);
                 EnemyResolvedSkill activeSkill = enemy.ActiveSkill;
                 Vector3? activeSkillTarget = enemy.ActiveSkillTargetPosition;
-                enemyStates.Add(new OnlineDungeonEnemyAuthorityInfo
-                {
-                    runtimeId = snapshot.runtimeId,
-                    enemyId = snapshot.id,
-                    enemyType = snapshot.enemyType,
-                    x = snapshot.x,
-                    y = snapshot.y,
-                    z = snapshot.z,
-                    yaw = snapshot.yaw,
-                    currentHp = snapshot.currentHp,
-                    currentPoise = snapshot.currentPoise,
-                    countsAsLevelBoss = snapshot.countsAsLevelBoss,
-                    isDead = snapshot.currentHp <= 0f,
-                    showCombatHealthBar = enemy.ShouldShowCombatHealthBar,
-                    moveBlend = enemy.AnimatorMoveBlend,
-                    moveForward = enemy.AnimatorMoveForward,
-                    moveStrafe = enemy.AnimatorMoveStrafe,
-                    activeSkillSequence = activeSkill != null ? enemy.ActiveSkillSequence : 0,
-                    activeSkillSlot = activeSkill != null ? activeSkill.SlotIndex : -1,
-                    activeSkillId = activeSkill != null ? activeSkill.SkillId : string.Empty,
-                    activeSkillAnimationTrigger = activeSkill != null ? activeSkill.AnimationTrigger : string.Empty,
-                    hasActiveSkillTarget = activeSkillTarget.HasValue,
-                    activeSkillTargetX = activeSkillTarget.HasValue ? activeSkillTarget.Value.x : 0f,
-                    activeSkillTargetY = activeSkillTarget.HasValue ? activeSkillTarget.Value.y : 0f,
-                    activeSkillTargetZ = activeSkillTarget.HasValue ? activeSkillTarget.Value.z : 0f,
-                });
+                enemyState.runtimeId = enemy.RuntimeId;
+                enemyState.enemyId = enemyId;
+                enemyState.enemyType = (int)enemy.EnemyCategory;
+                enemyState.x = position.x;
+                enemyState.y = position.y;
+                enemyState.z = position.z;
+                enemyState.yaw = enemy.transform.eulerAngles.y;
+                enemyState.currentHp = currentHp;
+                enemyState.currentPoise = Mathf.Max(0f, enemy.CurrentPoise);
+                enemyState.countsAsLevelBoss = enemy.IsFinalBossVisual;
+                enemyState.isDead = currentHp <= 0f;
+                enemyState.showCombatHealthBar = enemy.ShouldShowCombatHealthBar;
+                enemyState.moveBlend = enemy.AnimatorMoveBlend;
+                enemyState.moveForward = enemy.AnimatorMoveForward;
+                enemyState.moveStrafe = enemy.AnimatorMoveStrafe;
+                enemyState.activeSkillSequence = activeSkill != null ? enemy.ActiveSkillSequence : 0;
+                enemyState.activeSkillSlot = activeSkill != null ? activeSkill.SlotIndex : -1;
+                enemyState.activeSkillId = activeSkill != null ? activeSkill.SkillId : string.Empty;
+                enemyState.activeSkillAnimationTrigger = activeSkill != null ? activeSkill.AnimationTrigger : string.Empty;
+                enemyState.hasActiveSkillTarget = activeSkillTarget.HasValue;
+                enemyState.activeSkillTargetX = activeSkillTarget.HasValue ? activeSkillTarget.Value.x : 0f;
+                enemyState.activeSkillTargetY = activeSkillTarget.HasValue ? activeSkillTarget.Value.y : 0f;
+                enemyState.activeSkillTargetZ = activeSkillTarget.HasValue ? activeSkillTarget.Value.z : 0f;
+                enemyState.updatedAtUtc = null;
+                enemyState.diedAtUtc = null;
+                _realtimeEnemyAuthorityStates.Add(enemyState);
             }
 
-            return new OnlineDungeonEnemyAuthorityStateSyncRequest
-            {
-                enemies = enemyStates,
-            };
+            _realtimeEnemyAuthorityRequest.enemies = _realtimeEnemyAuthorityStates;
+            return _realtimeEnemyAuthorityRequest;
         }
 
         private void ApplyRealtimePlayerSnapshot(OnlineDungeonRealtimePlayerSnapshotInfo snapshot)
@@ -1274,9 +1291,10 @@ namespace Game.Online
 
         private void ApplyAuthorityState(OnlineDungeonAuthorityStateInfo state)
         {
+            bool drivesWorldSimulation = ShouldDriveOnlineWorldSimulation();
             if (state == null || !state.initialized || state.version <= _lastAppliedAuthorityStateVersion)
             {
-                if (!ShouldDriveOnlineWorldSimulation() && Time.unscaledTime >= _nextOnlineAuthorityTime)
+                if (!drivesWorldSimulation && Time.unscaledTime >= _nextOnlineAuthorityTime)
                 {
                     _nextOnlineAuthorityTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
                     Debug.Log($"[OnlineAuthority] Authority state skipped. reason={(state == null ? "null" : !state.initialized ? "notInitialized" : "oldVersion")} version={(state != null ? state.version : 0)} lastVersion={_lastAppliedAuthorityStateVersion} scene={SceneManager.GetActiveScene().name}");
@@ -1285,7 +1303,7 @@ namespace Game.Online
                 return;
             }
 
-            if (!ShouldDriveOnlineWorldSimulation() && !IsAuthorityStateSceneReady())
+            if (!drivesWorldSimulation && !IsAuthorityStateSceneReady())
             {
                 if (Time.unscaledTime >= _nextOnlineAuthorityTime)
                 {
@@ -1298,10 +1316,11 @@ namespace Game.Online
 
             if (state.enemies != null)
             {
+                RebuildAuthorityEnemyLookup();
                 for (int i = 0; i < state.enemies.Count; i++)
-                    ApplyEnemyAuthorityState(state.enemies[i]);
+                    ApplyEnemyAuthorityState(state.enemies[i], drivesWorldSimulation);
 
-                PruneEnemiesMissingFromAuthorityState(state.enemies);
+                PruneEnemiesMissingFromAuthorityState(state.enemies, drivesWorldSimulation);
             }
 
             if (state.chests != null)
@@ -1324,19 +1343,29 @@ namespace Game.Online
                 bool openedAdded = _openedOnlineChests.Add(chestId);
                 bool pendingBefore = _pendingOnlineChestOpens.Contains(chestId);
                 bool pendingRemoved = _pendingOnlineChestOpens.Remove(chestId);
+                if (_appliedOpenedOnlineChests.TryGetValue(chestId, out ChestInteractable appliedChest) && appliedChest != null)
+                    return;
+
                 ChestInteractable[] chests = UnityEngine.Object.FindObjectsByType<ChestInteractable>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 int matchedCount = 0;
+                ChestInteractable matchedChest = null;
                 for (int i = 0; i < chests.Length; i++)
                 {
                     ChestInteractable chest = chests[i];
                     if (chest != null && string.Equals(chest.GetSnapshotId(), chestId, StringComparison.Ordinal))
                     {
                         matchedCount++;
+                        matchedChest = chest;
                         chest.ApplyOnlineAuthorityOpened();
                     }
                 }
 
-                Debug.Log($"[OnlineReward] Apply chest authority opened. chest={chestId} openedAdded={openedAdded} pendingBefore={pendingBefore} pendingRemoved={pendingRemoved} matched={matchedCount} scanned={chests.Length} openedBy={chestState.openedByUserId} scene={SceneManager.GetActiveScene().name}");
+                if (matchedCount > 0)
+                {
+                    _appliedOpenedOnlineChests[chestId] = matchedChest;
+                    Debug.Log($"[OnlineReward] Apply chest authority opened. chest={chestId} openedAdded={openedAdded} pendingBefore={pendingBefore} pendingRemoved={pendingRemoved} matched={matchedCount} scanned={chests.Length} openedBy={chestState.openedByUserId} scene={SceneManager.GetActiveScene().name}");
+                }
+
                 return;
             }
 
@@ -1347,15 +1376,32 @@ namespace Game.Online
             bootstrapper?.ApplyOnlineChestAuthorityState(chestState);
         }
 
-        private void ApplyEnemyAuthorityState(OnlineDungeonEnemyAuthorityInfo enemyState)
+        private void RebuildAuthorityEnemyLookup()
+        {
+            _authorityEnemiesByRuntimeId.Clear();
+            IReadOnlyList<EnemyController> enemies = EnemyController.ActiveEnemies;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                EnemyController enemy = enemies[i];
+                if (enemy == null)
+                    continue;
+
+                string runtimeId = enemy.RuntimeId;
+                if (!string.IsNullOrWhiteSpace(runtimeId) && !_authorityEnemiesByRuntimeId.ContainsKey(runtimeId))
+                    _authorityEnemiesByRuntimeId.Add(runtimeId, enemy);
+            }
+        }
+
+        private void ApplyEnemyAuthorityState(OnlineDungeonEnemyAuthorityInfo enemyState, bool drivesWorldSimulation)
         {
             if (enemyState == null || string.IsNullOrWhiteSpace(enemyState.runtimeId))
                 return;
 
-            EnemyController enemy = EnemyController.FindByRuntimeId(enemyState.runtimeId);
+            string runtimeId = enemyState.runtimeId.Trim();
+            _authorityEnemiesByRuntimeId.TryGetValue(runtimeId, out EnemyController enemy);
             if (enemy == null)
             {
-                if (ShouldDriveOnlineWorldSimulation())
+                if (drivesWorldSimulation)
                     return;
 
                 Debug.Log($"[OnlineAuthority] Authority enemy missing locally, spawning. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} hp={enemyState.currentHp} dead={enemyState.isDead} scene={SceneManager.GetActiveScene().name}");
@@ -1366,17 +1412,17 @@ namespace Game.Online
                     Debug.Log($"[OnlineAuthority] Authority enemy spawn failed. runtime={enemyState.runtimeId} enemyId={enemyState.enemyId} dead={enemyState.isDead} scene={SceneManager.GetActiveScene().name}");
                     return;
                 }
+
+                _authorityEnemiesByRuntimeId[runtimeId] = enemy;
             }
 
-            if (!ShouldDriveOnlineWorldSimulation())
-                enemy.transform.SetPositionAndRotation(
-                    new Vector3(enemyState.x, enemyState.y, enemyState.z),
-                    Quaternion.Euler(0f, enemyState.yaw, 0f));
+            if (!drivesWorldSimulation)
+                enemy.ApplyOnlineRemotePose(new Vector3(enemyState.x, enemyState.y, enemyState.z), enemyState.yaw);
 
             bool countsAsLevelBoss = IsFinalBossAuthorityContext(enemyState) || enemyState.countsAsLevelBoss;
             enemy.SetCountsAsLevelBoss(countsAsLevelBoss);
             enemy.ApplyOnlineAuthorityState(enemyState.currentHp, enemyState.isDead, enemyState.showCombatHealthBar);
-            if (!ShouldDriveOnlineWorldSimulation())
+            if (!drivesWorldSimulation)
             {
                 if (Time.unscaledTime >= _nextOnlineAuthorityApplyLogTime && (enemyState.moveBlend > 0.05f || enemyState.activeSkillSequence > 0 || enemyState.isDead))
                 {
@@ -1425,24 +1471,24 @@ namespace Game.Online
                    && FinalBossDuelSceneRuntime.IsFinalBossDuelScene();
         }
 
-        private void PruneEnemiesMissingFromAuthorityState(List<OnlineDungeonEnemyAuthorityInfo> enemyStates)
+        private void PruneEnemiesMissingFromAuthorityState(List<OnlineDungeonEnemyAuthorityInfo> enemyStates, bool drivesWorldSimulation)
         {
-            if (ShouldDriveOnlineWorldSimulation() || enemyStates == null)
+            if (drivesWorldSimulation || enemyStates == null)
                 return;
 
-            HashSet<string> authorityRuntimeIds = new HashSet<string>(StringComparer.Ordinal);
+            _authorityRuntimeIds.Clear();
             for (int i = 0; i < enemyStates.Count; i++)
             {
                 OnlineDungeonEnemyAuthorityInfo enemyState = enemyStates[i];
                 if (enemyState != null && !string.IsNullOrWhiteSpace(enemyState.runtimeId))
-                    authorityRuntimeIds.Add(enemyState.runtimeId.Trim());
+                    _authorityRuntimeIds.Add(enemyState.runtimeId.Trim());
             }
 
-            EnemyController[] enemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            for (int i = 0; i < enemies.Length; i++)
+            IReadOnlyList<EnemyController> enemies = EnemyController.ActiveEnemies;
+            for (int i = 0; i < enemies.Count; i++)
             {
                 EnemyController enemy = enemies[i];
-                if (enemy == null || authorityRuntimeIds.Contains(enemy.RuntimeId))
+                if (enemy == null || _authorityRuntimeIds.Contains(enemy.RuntimeId))
                     continue;
 
                 UnityEngine.Object.Destroy(enemy.gameObject);

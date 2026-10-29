@@ -584,7 +584,7 @@ namespace Game.UI
 
         private bool EnsureLoggedIn()
         {
-            if (SocialSession.GetInstance().IsLoggedIn)
+            if (SocialSession.GetInstance().IsOnlineAccount)
                 return true;
 
             SetStatus("请先登录账号", new Color(1f, 0.72f, 0.4f, 1f));

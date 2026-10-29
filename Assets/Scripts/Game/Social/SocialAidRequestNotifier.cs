@@ -50,7 +50,7 @@ namespace Game.Social
 
         private static bool ShouldPoll()
         {
-            return SocialSession.GetInstance().IsLoggedIn
+            return SocialSession.GetInstance().IsOnlineAccount
                    && GameStateMachine.GetInstance().CurrentState == GameStateMachine.State.InLevel;
         }
 

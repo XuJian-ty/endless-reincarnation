@@ -117,7 +117,19 @@ namespace Game.UI
 
         private void OnToggleBackpackRequested() => TogglePanel<BackpackPanel>(PanelNames.Backpack, PanelLayers.Backpack, true);
         private void OnToggleSkillTreeRequested() => TogglePanel<SkillTreePanel>(PanelNames.SkillTree, PanelLayers.SkillTree, true);
-        private void OnToggleKeyConfigRequested() => TogglePanel<KeyConfigPanel>(PanelNames.KeyConfig, PanelLayers.KeyConfig, true);
+        private void OnToggleKeyConfigRequested()
+        {
+            if (Application.isMobilePlatform)
+            {
+                if (!IsGameplayUiContext() || IsAnyBlockingPanelOpen(UIManager.GetInstance()))
+                    return;
+
+                MobileGameplayControls.BeginLayoutEditing();
+                return;
+            }
+
+            TogglePanel<KeyConfigPanel>(PanelNames.KeyConfig, PanelLayers.KeyConfig, true);
+        }
         private void OnToggleMenuRequested() => TogglePanel<MenuPanel>(PanelNames.Menu, PanelLayers.Menu, true);
 
         private void ClosePanelAndMark(string panelName, bool broadcastToAidPeer = false)

@@ -18,6 +18,8 @@ namespace Game.Presentation
     public class EnemyController : MonoBehaviour, ICombatHardControlReceiver
     {
         private static readonly List<EnemyController> ActiveEnemyControllers = new List<EnemyController>();
+        private static readonly int MoveXHash = Animator.StringToHash("MoveX");
+        private static readonly int MoveYHash = Animator.StringToHash("MoveY");
 
         [Serializable]
         private sealed class RuntimeStatModifier
@@ -62,11 +64,23 @@ namespace Game.Presentation
         private SkillTimelineRunner _onlineRemoteVisualTimelineRunner;
         private int _onlineRemoteVisualSkillSequence;
         private const float OnlineAuthorityIntervalSeconds = 1.5f;
+        private const float OnlineRemotePoseInterpolationSeconds = 0.1f;
+        private const float OnlineRemoteTeleportDistance = 6f;
         private float _nextOnlineRemoteMovementLogTime;
-        private float _nextOnlineRemoteHeartbeatLogTime;
-        private float _lastOnlineRemoteMovementApplyTime;
-        private float _lastOnlineRemoteSkillApplyTime;
         private int _lastLoggedMissingRemoteSkillSequence;
+        private Animator _onlineRemoteAnimator;
+        private AnimatorControllerParameter[] _onlineRemoteAnimatorParameters = Array.Empty<AnimatorControllerParameter>();
+        private EnemyPerception _onlineRemotePerception;
+        private bool _onlineRemotePresentationCacheInitialized;
+        private bool _onlineRemoteAnimatorHasMoveX;
+        private bool _onlineRemoteAnimatorHasMoveY;
+        private bool _loggedMissingOnlineRemoteAnimator;
+        private Vector3 _onlineRemoteInterpolationStartPosition;
+        private Quaternion _onlineRemoteInterpolationStartRotation;
+        private Vector3 _onlineRemoteTargetPosition;
+        private Quaternion _onlineRemoteTargetRotation;
+        private float _onlineRemotePoseElapsed;
+        private bool _hasOnlineRemotePose;
         private float _idleUntilTime;
         private float _decisionLockUntilTime;
         private bool _isInPostCastRecovery;
@@ -84,6 +98,7 @@ namespace Game.Presentation
         private GameObject _poolSourcePrefab;
         private bool _onlineRemoteSimulationDisabled;
         private bool _onlineAuthorityCombatVisible;
+        private LevelBossVisualMarker _levelBossVisualMarker;
         private float _currentPoise;
         private bool _poiseInitialized;
         private string _runtimeId;
@@ -219,6 +234,7 @@ namespace Game.Presentation
             _runtimeId = runtimeId.Trim();
         }
         public bool CountsAsLevelBoss => _countsAsLevelBoss;
+        public bool IsFinalBossVisual => IsFinalBoss();
         public EnemyIntent CurrentIntent { get; set; }
         public float HurtRemainingTime => _hurtRemainingTime;
         public bool IsHurt => _hurtRemainingTime > 0f;
@@ -281,6 +297,12 @@ namespace Game.Presentation
                 Debug.Log($"[OnlineAuthority] Remote simulation flag changed. runtime={RuntimeId} enemyId={EnemyId} disabled={disabled} scene={gameObject.scene.name}");
 
             _onlineRemoteSimulationDisabled = disabled;
+            _onlineRemoteInterpolationStartPosition = transform.position;
+            _onlineRemoteInterpolationStartRotation = transform.rotation;
+            _onlineRemoteTargetPosition = transform.position;
+            _onlineRemoteTargetRotation = transform.rotation;
+            _onlineRemotePoseElapsed = OnlineRemotePoseInterpolationSeconds;
+            _hasOnlineRemotePose = false;
             EnemyAI ai = GetComponent<EnemyAI>();
             if (ai != null)
                 ai.enabled = !disabled;
@@ -292,6 +314,32 @@ namespace Game.Presentation
             EnemyCombat combat = GetComponent<EnemyCombat>();
             if (combat != null)
                 combat.enabled = !disabled;
+        }
+
+        public void ApplyOnlineRemotePose(Vector3 position, float yaw)
+        {
+            Quaternion rotation = Quaternion.Euler(0f, yaw, 0f);
+            if (!_onlineRemoteSimulationDisabled)
+                return;
+
+            float correctionDistance = Vector3.Distance(transform.position, position);
+            if (!_hasOnlineRemotePose || correctionDistance >= OnlineRemoteTeleportDistance)
+            {
+                transform.SetPositionAndRotation(position, rotation);
+                _onlineRemoteInterpolationStartPosition = position;
+                _onlineRemoteInterpolationStartRotation = rotation;
+                _onlineRemotePoseElapsed = OnlineRemotePoseInterpolationSeconds;
+            }
+            else
+            {
+                _onlineRemoteInterpolationStartPosition = transform.position;
+                _onlineRemoteInterpolationStartRotation = transform.rotation;
+                _onlineRemotePoseElapsed = 0f;
+            }
+
+            _onlineRemoteTargetPosition = position;
+            _onlineRemoteTargetRotation = rotation;
+            _hasOnlineRemotePose = true;
         }
 
         public Vector3 ResolveFlightAnchorPosition(Vector3 baseTargetPosition)
@@ -328,7 +376,8 @@ namespace Game.Presentation
             RegisterActiveEnemy();
             _rng = new System.Random();
             InitializeRuntimeState();
-            _countsAsLevelBoss = GetComponent<LevelBossVisualMarker>() != null;
+            _levelBossVisualMarker = GetComponent<LevelBossVisualMarker>();
+            _countsAsLevelBoss = _levelBossVisualMarker != null;
             EnsureInitialized();
             EnsureHeadHealthBar();
         }
@@ -415,9 +464,8 @@ namespace Game.Presentation
 
             if (_onlineRemoteSimulationDisabled)
             {
+                TickOnlineRemotePose(Time.deltaTime);
                 TickOnlineRemoteVisualTimeline(Time.deltaTime);
-                LogOnlineRemoteHeartbeat();
-                UpdateHeadHealthBar();
                 return;
             }
 
@@ -625,32 +673,42 @@ namespace Game.Presentation
             }
 
             SetAnimatorMove(moveBlend, moveForward, moveStrafe);
-            _lastOnlineRemoteMovementApplyTime = Time.unscaledTime;
-            Animator animator = GetComponent<Animator>();
+            EnsureOnlineRemotePresentationCache();
+            Animator animator = _onlineRemoteAnimator;
             if (animator == null)
             {
-                if (Time.unscaledTime >= _nextOnlineRemoteMovementLogTime)
+                if (!_loggedMissingOnlineRemoteAnimator)
                 {
-                    _nextOnlineRemoteMovementLogTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
+                    _loggedMissingOnlineRemoteAnimator = true;
                     Debug.Log($"[OnlineAuthority] Remote movement has no animator. runtime={RuntimeId} enemyId={EnemyId} move=({moveBlend:F3},{moveForward:F3},{moveStrafe:F3}) scene={gameObject.scene.name}");
                 }
 
                 return;
             }
 
-            bool hasMoveX = HasAnimatorParameter(animator, "MoveX", AnimatorControllerParameterType.Float);
-            bool hasMoveY = HasAnimatorParameter(animator, "MoveY", AnimatorControllerParameterType.Float);
-            if (hasMoveX)
-                animator.SetFloat("MoveX", _animatorMoveStrafe);
-            if (hasMoveY)
-                animator.SetFloat("MoveY", _animatorMoveSigned);
+            if (_onlineRemoteAnimatorHasMoveX)
+                animator.SetFloat(MoveXHash, _animatorMoveStrafe);
+            if (_onlineRemoteAnimatorHasMoveY)
+                animator.SetFloat(MoveYHash, _animatorMoveSigned);
+        }
 
-            if (Time.unscaledTime >= _nextOnlineRemoteMovementLogTime && (moveBlend > 0.05f || moveForward > 0.05f || moveStrafe > 0.05f || !hasMoveX || !hasMoveY))
-            {
-                _nextOnlineRemoteMovementLogTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
-                AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                Debug.Log($"[OnlineAuthority] Remote movement applied. runtime={RuntimeId} enemyId={EnemyId} move=({moveBlend:F3},{moveForward:F3},{moveStrafe:F3}) hasMoveX={hasMoveX} hasMoveY={hasMoveY} animatorSpeed={animator.speed:F2} stateHash={stateInfo.shortNameHash} normalized={stateInfo.normalizedTime:F2} scene={gameObject.scene.name}");
-            }
+        private void TickOnlineRemotePose(float deltaTime)
+        {
+            if (!_hasOnlineRemotePose || deltaTime <= 0f)
+                return;
+
+            _onlineRemotePoseElapsed = Mathf.Min(
+                OnlineRemotePoseInterpolationSeconds,
+                _onlineRemotePoseElapsed + deltaTime);
+            float interpolationT = Mathf.Clamp01(_onlineRemotePoseElapsed / OnlineRemotePoseInterpolationSeconds);
+            transform.position = Vector3.LerpUnclamped(
+                _onlineRemoteInterpolationStartPosition,
+                _onlineRemoteTargetPosition,
+                interpolationT);
+            transform.rotation = Quaternion.Slerp(
+                _onlineRemoteInterpolationStartRotation,
+                _onlineRemoteTargetRotation,
+                interpolationT);
         }
 
         public bool CanCastSkill(int slot)
@@ -686,19 +744,29 @@ namespace Game.Presentation
             EnsureBaseVisualScale();
             if (!value)
             {
+                if (!_countsAsLevelBoss && _levelBossVisualMarker == null)
+                    return;
+
                 _countsAsLevelBoss = false;
                 transform.localScale = _baseVisualScale;
-                LevelBossVisualMarker marker = GetComponent<LevelBossVisualMarker>();
-                if (marker != null)
-                    Destroy(marker);
+                if (_levelBossVisualMarker != null)
+                    Destroy(_levelBossVisualMarker);
+                _levelBossVisualMarker = null;
+                _headHealthBar?.RefreshHeightOffset();
+                UpdateHeadHealthBar();
                 return;
             }
+
+            if (_countsAsLevelBoss && _levelBossVisualMarker != null)
+                return;
 
             _countsAsLevelBoss = true;
             float scaleMultiplier = ConfigManager.GetInstance()?.GetPlayerCloneAndLevelBossVisualConfig()?.levelBoss.scaleMultiplier ?? 3f;
             transform.localScale = _baseVisualScale * scaleMultiplier;
-            if (GetComponent<LevelBossVisualMarker>() == null)
-                gameObject.AddComponent<LevelBossVisualMarker>();
+            if (_levelBossVisualMarker == null)
+                _levelBossVisualMarker = gameObject.AddComponent<LevelBossVisualMarker>();
+            _headHealthBar?.RefreshHeightOffset();
+            UpdateHeadHealthBar();
         }
 
         private void EnsureBaseVisualScale()
@@ -961,8 +1029,13 @@ namespace Game.Presentation
         public void ApplyOnlineAuthorityState(float currentHp, bool isDead, bool showCombatHealthBar)
         {
             EnsureInitialized();
-            _stats.currentHp = Mathf.Clamp(currentHp, 0f, Mathf.Max(1f, _stats.maxHp));
-            _onlineAuthorityCombatVisible = _onlineRemoteSimulationDisabled && !isDead && showCombatHealthBar;
+            float nextHp = Mathf.Clamp(currentHp, 0f, Mathf.Max(1f, _stats.maxHp));
+            bool nextCombatVisible = _onlineRemoteSimulationDisabled && !isDead && showCombatHealthBar;
+            bool presentationChanged = !Mathf.Approximately(_stats.currentHp, nextHp)
+                                       || _onlineAuthorityCombatVisible != nextCombatVisible
+                                       || _dead != isDead;
+            _stats.currentHp = nextHp;
+            _onlineAuthorityCombatVisible = nextCombatVisible;
             if (isDead || _stats.currentHp <= 0f)
             {
                 _onlineAuthorityCombatVisible = false;
@@ -978,7 +1051,8 @@ namespace Game.Presentation
             _dead = false;
             _deathFinalized = false;
             _deathCleanupTime = 0f;
-            UpdateHeadHealthBar();
+            if (presentationChanged)
+                UpdateHeadHealthBar();
         }
 
         public void ApplyOnlineRemoteSkillPresentation(
@@ -1024,14 +1098,13 @@ namespace Game.Presentation
                 ? activeSkillAnimationTrigger.Trim()
                 : resolvedSkill != null ? resolvedSkill.AnimationTrigger : definition.GetAnimationTriggerOrEmpty();
             SetOnlineRemoteVisualTrigger(triggerName);
-            _lastOnlineRemoteSkillApplyTime = Time.unscaledTime;
-            Debug.Log($"[OnlineAuthority] Remote skill applied. runtime={RuntimeId} enemyId={EnemyId} sequence={activeSkillSequence} slot={activeSkillSlot} skill={activeSkillId} trigger={triggerName} hasTarget={hasActiveSkillTarget} scene={gameObject.scene.name}");
 
             _onlineRemoteVisualTimelineRunner?.Stop();
             _onlineRemoteVisualTimelineRunner = new SkillTimelineRunner();
+            EnsureOnlineRemotePresentationCache();
             _onlineRemoteVisualTimelineRunner.Begin(
                 definition,
-                new EnemySkillExecutionContext(this, GetComponent<EnemyPerception>(), _onlineRemoteVisualOverlapBuffer),
+                new EnemySkillExecutionContext(this, _onlineRemotePerception, _onlineRemoteVisualOverlapBuffer),
                 -1f,
                 1f,
                 null,
@@ -1048,27 +1121,6 @@ namespace Game.Presentation
                 _onlineRemoteVisualTimelineRunner = null;
         }
 
-        private void LogOnlineRemoteHeartbeat()
-        {
-            if (Time.unscaledTime < _nextOnlineRemoteHeartbeatLogTime)
-                return;
-
-            _nextOnlineRemoteHeartbeatLogTime = Time.unscaledTime + OnlineAuthorityIntervalSeconds;
-            Animator animator = GetComponent<Animator>();
-            bool hasAnimator = animator != null;
-            float animatorSpeed = hasAnimator ? animator.speed : 0f;
-            int stateHash = 0;
-            float normalizedTime = 0f;
-            if (hasAnimator)
-            {
-                AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                stateHash = stateInfo.shortNameHash;
-                normalizedTime = stateInfo.normalizedTime;
-            }
-
-            Debug.Log($"[OnlineAuthority] Remote enemy heartbeat. runtime={RuntimeId} enemyId={EnemyId} hp={CurrentHp:F1} dead={_dead} move=({_animatorMoveBlend:F3},{_animatorMoveSigned:F3},{_animatorMoveStrafe:F3}) hasAnimator={hasAnimator} animatorSpeed={animatorSpeed:F2} stateHash={stateHash} normalized={normalizedTime:F2} timelineActive={_onlineRemoteVisualTimelineRunner != null} visualSkillSeq={_onlineRemoteVisualSkillSequence} secondsSinceMove={(Time.unscaledTime - _lastOnlineRemoteMovementApplyTime):F2} secondsSinceSkill={(Time.unscaledTime - _lastOnlineRemoteSkillApplyTime):F2} scene={gameObject.scene.name}");
-        }
-
         private void RotateOnlineRemoteVisualToward(Vector3 targetPosition)
         {
             Vector3 direction = targetPosition - transform.position;
@@ -1082,24 +1134,49 @@ namespace Game.Presentation
             if (string.IsNullOrWhiteSpace(triggerName))
                 return;
 
-            Animator animator = GetComponent<Animator>();
-            if (animator == null || !HasAnimatorParameter(animator, triggerName, AnimatorControllerParameterType.Trigger))
+            EnsureOnlineRemotePresentationCache();
+            Animator animator = _onlineRemoteAnimator;
+            if (animator == null || !HasOnlineRemoteAnimatorParameter(triggerName, AnimatorControllerParameterType.Trigger))
                 return;
 
             animator.ResetTrigger(triggerName);
             animator.SetTrigger(triggerName);
         }
 
-        private static bool HasAnimatorParameter(Animator animator, string parameterName, AnimatorControllerParameterType parameterType)
+        private void EnsureOnlineRemotePresentationCache()
         {
-            if (animator == null || string.IsNullOrWhiteSpace(parameterName))
+            if (_onlineRemotePresentationCacheInitialized)
+                return;
+
+            _onlineRemotePresentationCacheInitialized = true;
+            _onlineRemoteAnimator = GetComponent<Animator>();
+            _onlineRemotePerception = GetComponent<EnemyPerception>();
+            _onlineRemoteAnimatorParameters = _onlineRemoteAnimator != null
+                ? _onlineRemoteAnimator.parameters
+                : Array.Empty<AnimatorControllerParameter>();
+            for (int i = 0; i < _onlineRemoteAnimatorParameters.Length; i++)
+            {
+                AnimatorControllerParameter parameter = _onlineRemoteAnimatorParameters[i];
+                if (parameter.type != AnimatorControllerParameterType.Float)
+                    continue;
+
+                if (parameter.nameHash == MoveXHash)
+                    _onlineRemoteAnimatorHasMoveX = true;
+                else if (parameter.nameHash == MoveYHash)
+                    _onlineRemoteAnimatorHasMoveY = true;
+            }
+        }
+
+        private bool HasOnlineRemoteAnimatorParameter(string parameterName, AnimatorControllerParameterType parameterType)
+        {
+            if (string.IsNullOrWhiteSpace(parameterName))
                 return false;
 
-            AnimatorControllerParameter[] parameters = animator.parameters;
-            for (int i = 0; i < parameters.Length; i++)
+            int parameterHash = Animator.StringToHash(parameterName);
+            for (int i = 0; i < _onlineRemoteAnimatorParameters.Length; i++)
             {
-                AnimatorControllerParameter parameter = parameters[i];
-                if (parameter.type == parameterType && string.Equals(parameter.name, parameterName, StringComparison.Ordinal))
+                AnimatorControllerParameter parameter = _onlineRemoteAnimatorParameters[i];
+                if (parameter.type == parameterType && parameter.nameHash == parameterHash)
                     return true;
             }
 
@@ -1530,8 +1607,10 @@ namespace Game.Presentation
 
         private void EnsureHeadHealthBar()
         {
-            if (_headHealthBar == null)
-                _headHealthBar = GetComponent<ActorHeadHealthBar>();
+            if (_headHealthBar != null)
+                return;
+
+            _headHealthBar = GetComponent<ActorHeadHealthBar>();
             if (_headHealthBar == null)
                 _headHealthBar = gameObject.AddComponent<ActorHeadHealthBar>();
 
@@ -1556,7 +1635,7 @@ namespace Game.Presentation
 
         private bool IsFinalBoss()
         {
-            return EnemyCategory == EnemyType.Boss && GetComponent<LevelBossVisualMarker>() != null;
+            return EnemyCategory == EnemyType.Boss && _levelBossVisualMarker != null;
         }
 
         private void RegisterActiveEnemy()

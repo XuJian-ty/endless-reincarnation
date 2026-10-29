@@ -62,7 +62,12 @@ namespace Game.UI
 
         private void BuildRows()
         {
-            if (_gameplayMap == null || keyListRoot == null) return;
+            if (keyListRoot == null) return;
+
+            _rows.Clear();
+            ClearRowChildren();
+
+            if (_gameplayMap == null) return;
 
             _rebindConfig = ConfigManager.GetInstance()?.GetKeyRebindConfig();
             if (_rebindConfig?.entries == null || _rebindConfig.entries.Count == 0)
@@ -70,9 +75,6 @@ namespace Game.UI
                 Debug.LogWarning("[KeyConfigPanel] 未找到按键重绑定配置（Resources/配置/按键重绑定配置），请通过菜单创建或检查配置。");
                 return;
             }
-
-            _rows.Clear();
-            ClearRowChildren();
 
             for (int i = 0; i < _rebindConfig.entries.Count; i++)
             {
@@ -102,6 +104,41 @@ namespace Game.UI
             }
 
             EnsureContentHeightFitsAllRows();
+        }
+
+        private void CreateMobileLayoutRow()
+        {
+            GameObject rowGo = CreateOneRow();
+            if (rowGo == null) return;
+
+            KeyConfigRow row = rowGo.GetComponent<KeyConfigRow>();
+            if (row == null)
+            {
+                Destroy(rowGo);
+                return;
+            }
+
+            row.SetCustom(
+                "手机端按键布局",
+                "位置 / 大小",
+                "调整",
+                OnEditMobileLayoutClicked,
+                "恢复默认",
+                OnResetMobileLayoutClicked);
+            _rows.Add(row);
+        }
+
+        private void OnEditMobileLayoutClicked()
+        {
+            if (!MobileGameplayControls.BeginLayoutEditing())
+                return;
+
+            UIManager.GetInstance().HidePanel(PanelNames.KeyConfig);
+        }
+
+        private static void OnResetMobileLayoutClicked()
+        {
+            MobileGameplayControls.ResetLayoutToDefaultsAndSave();
         }
 
         private void ClearRowChildren()

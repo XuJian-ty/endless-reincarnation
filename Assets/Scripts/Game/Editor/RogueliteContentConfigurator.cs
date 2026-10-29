@@ -10,16 +10,12 @@ namespace Game.Editor
     public static class RogueliteContentConfigurator
     {
         private const string MutationItemPrefix = "mutation_unlock_";
-        private const string MutationMeleeRareIconPath = "Assets/UI图片/变异道具图标/变异核心_近战_精良.png";
-        private const string MutationMeleeEpicIconPath = "Assets/UI图片/变异道具图标/变异核心_近战_史诗.png";
-        private const string MutationRangedRareIconPath = "Assets/UI图片/变异道具图标/变异核心_远程_精良.png";
-        private const string MutationRangedEpicIconPath = "Assets/UI图片/变异道具图标/变异核心_远程_史诗.png";
-        private const string MutationPassiveRareIconPath = "Assets/UI图片/变异道具图标/变异核心_被动_精良.png";
-        private const string MutationPassiveEpicIconPath = "Assets/UI图片/变异道具图标/变异核心_被动_史诗.png";
+        private const string MutationItemIconDirectory = "Assets/UI图片/变异道具图标/专属";
         private const string SkillConfigPath = "Assets/Resources/配置/玩家动作及技能配置库.asset";
         private const string SkillEffectPath = "Assets/Resources/配置/技能效果库.asset";
         private const string PassiveSkillEffectPath = "Assets/Resources/配置/被动技能效果库.asset";
         private const string ItemDisplayPath = "Assets/Resources/配置/物品显示配置.asset";
+        private const string PlayerInitialItemConfigPath = "Assets/Resources/配置/角色初始道具配置.asset";
         private const string LevelConfigPath = "Assets/Resources/配置/关卡配置库.asset";
         private const string LocalSpawnPlanPath = "Assets/Resources/配置/关卡局部生成方案库.asset";
         private const string SpawnTaskDatabasePath = "Assets/Resources/配置/生成任务库.asset";
@@ -39,12 +35,14 @@ namespace Game.Editor
             SkillEffectDatabaseSO skillEffects = LoadRequired<SkillEffectDatabaseSO>(SkillEffectPath);
             PassiveSkillEffectDatabaseSO passiveEffects = LoadRequired<PassiveSkillEffectDatabaseSO>(PassiveSkillEffectPath);
             ItemDisplayDatabaseSO itemDisplay = LoadRequired<ItemDisplayDatabaseSO>(ItemDisplayPath);
+            PlayerInitialItemConfigSO playerInitialItems = LoadRequired<PlayerInitialItemConfigSO>(PlayerInitialItemConfigPath);
             LevelConfigDatabaseSO levelConfig = LoadRequired<LevelConfigDatabaseSO>(LevelConfigPath);
             LevelLocalEnemySpawnPlanSO localSpawnPlans = LoadRequired<LevelLocalEnemySpawnPlanSO>(LocalSpawnPlanPath);
             EnemySpawnTaskDatabaseSO spawnTasks = LoadRequired<EnemySpawnTaskDatabaseSO>(SpawnTaskDatabasePath);
 
             List<MutationItemDefinition> mutationItems = ConfigureMutationUnlockItems(skillConfig);
             ConfigureItemDisplay(itemDisplay, mutationItems);
+            ConfigureMutationInitialItems(playerInitialItems, mutationItems);
             ConfigureMutationDrops(levelConfig, mutationItems);
             ConfigureRegionSpawnerMode(levelConfig);
             ConfigureRegionSpawnPlans(localSpawnPlans);
@@ -53,6 +51,7 @@ namespace Game.Editor
             EditorUtility.SetDirty(skillEffects);
             EditorUtility.SetDirty(passiveEffects);
             EditorUtility.SetDirty(itemDisplay);
+            EditorUtility.SetDirty(playerInitialItems);
             EditorUtility.SetDirty(levelConfig);
             EditorUtility.SetDirty(localSpawnPlans);
             EditorUtility.SetDirty(spawnTasks);
@@ -108,7 +107,7 @@ namespace Game.Editor
                 string itemId = BuildMutationItemId(entry.GetResolvedActionId(), skillId);
                 EnsureUniqueItemId(itemId, usedItemIds);
                 definition.mutationUnlockItemId = itemId;
-                result.Add(BuildMutationItem(entry, skillId, definition.displayName, itemId, i));
+                result.Add(BuildMutationItem(entry, skillId, definition.displayName, itemId, WeaponRarity.Legendary));
             }
         }
 
@@ -122,6 +121,11 @@ namespace Game.Editor
                 return;
 
             string defaultSkillId = entry.GetResolvedSkillId();
+            int mutationDirectionCount = CountPassiveMutationDirections(variantGroup.entries, defaultSkillId);
+            if (mutationDirectionCount > 4)
+                throw new InvalidOperationException($"被动技能 {entry.GetResolvedActionId()} 的变异方向超过四个，现有品质阶级不足。");
+
+            int mutationDirectionIndex = 0;
             for (int i = 0; i < variantGroup.entries.Count; i++)
             {
                 PassiveSkillEffectDefinition definition = variantGroup.entries[i];
@@ -138,8 +142,34 @@ namespace Game.Editor
                 string itemId = BuildMutationItemId(entry.GetResolvedActionId(), skillId);
                 EnsureUniqueItemId(itemId, usedItemIds);
                 definition.mutationUnlockItemId = itemId;
-                result.Add(BuildMutationItem(entry, skillId, definition.displayName, itemId, i));
+                WeaponRarity rarity = ResolvePassiveMutationRarity(mutationDirectionIndex, mutationDirectionCount);
+                result.Add(BuildMutationItem(entry, skillId, definition.displayName, itemId, rarity));
+                mutationDirectionIndex++;
             }
+        }
+
+        private static int CountPassiveMutationDirections(
+            List<PassiveSkillEffectDefinition> definitions,
+            string defaultSkillId)
+        {
+            int count = 0;
+            for (int i = 0; i < definitions.Count; i++)
+            {
+                PassiveSkillEffectDefinition definition = definitions[i];
+                if (definition == null || string.IsNullOrWhiteSpace(definition.skillId))
+                    continue;
+
+                if (!string.Equals(definition.skillId.Trim(), defaultSkillId, StringComparison.Ordinal))
+                    count++;
+            }
+
+            return count;
+        }
+
+        private static WeaponRarity ResolvePassiveMutationRarity(int mutationDirectionIndex, int mutationDirectionCount)
+        {
+            int stepsBeforeLast = mutationDirectionCount - mutationDirectionIndex - 1;
+            return (WeaponRarity)((int)WeaponRarity.Legendary - stepsBeforeLast);
         }
 
         private static MutationItemDefinition BuildMutationItem(
@@ -147,7 +177,7 @@ namespace Game.Editor
             string skillId,
             string variantDisplayName,
             string itemId,
-            int variantIndex)
+            WeaponRarity rarity)
         {
             string skillDisplayName = !string.IsNullOrWhiteSpace(entry.displayName)
                 ? entry.displayName.Trim()
@@ -155,30 +185,19 @@ namespace Game.Editor
             string directionDisplayName = !string.IsNullOrWhiteSpace(variantDisplayName)
                 ? variantDisplayName.Trim()
                 : skillId;
-            WeaponRarity rarity = variantIndex >= 2 ? WeaponRarity.Epic : WeaponRarity.Rare;
             return new MutationItemDefinition
             {
                 itemId = itemId,
                 displayName = $"{skillDisplayName}·{directionDisplayName}变异核心",
                 description = $"用于永久解锁“{skillDisplayName}”的“{directionDisplayName}”变异方向。解锁后可免费自由切换。",
-                icon = ResolveMutationItemIcon(entry, rarity),
+                icon = ResolveMutationItemIcon(itemId),
                 rarity = rarity,
             };
         }
 
-        private static Sprite ResolveMutationItemIcon(SkillConfigEntry entry, WeaponRarity rarity)
+        private static Sprite ResolveMutationItemIcon(string itemId)
         {
-            bool isEpic = rarity == WeaponRarity.Epic;
-            if (entry.IsPassiveSkill)
-                return LoadRequired<Sprite>(isEpic ? MutationPassiveEpicIconPath : MutationPassiveRareIconPath);
-
-            string actionId = entry.GetResolvedActionId();
-            if (actionId.StartsWith("attack", StringComparison.OrdinalIgnoreCase))
-                return LoadRequired<Sprite>(isEpic ? MutationMeleeEpicIconPath : MutationMeleeRareIconPath);
-            if (actionId.StartsWith("shoot", StringComparison.OrdinalIgnoreCase))
-                return LoadRequired<Sprite>(isEpic ? MutationRangedEpicIconPath : MutationRangedRareIconPath);
-
-            throw new InvalidOperationException($"动作 {actionId} 未配置变异道具图标类别。");
+            return LoadRequired<Sprite>($"{MutationItemIconDirectory}/{itemId}.png");
         }
 
         private static void ConfigureItemDisplay(ItemDisplayDatabaseSO itemDisplay, List<MutationItemDefinition> mutationItems)
@@ -198,6 +217,25 @@ namespace Game.Editor
                     icon = item.icon,
                     description = item.description,
                     rarity = item.rarity,
+                });
+            }
+        }
+
+        private static void ConfigureMutationInitialItems(
+            PlayerInitialItemConfigSO playerInitialItems,
+            List<MutationItemDefinition> mutationItems)
+        {
+            playerInitialItems.initialItems ??= new List<PlayerInitialItemEntry>();
+            playerInitialItems.initialItems.RemoveAll(entry => entry != null
+                && !string.IsNullOrWhiteSpace(entry.itemId)
+                && entry.itemId.StartsWith(MutationItemPrefix, StringComparison.Ordinal));
+
+            for (int i = 0; i < mutationItems.Count; i++)
+            {
+                playerInitialItems.initialItems.Add(new PlayerInitialItemEntry
+                {
+                    itemId = mutationItems[i].itemId,
+                    count = 1,
                 });
             }
         }

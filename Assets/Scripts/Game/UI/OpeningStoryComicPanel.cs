@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using ProjectBase;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -10,7 +11,7 @@ namespace Game.UI
     /// <summary>
     /// 游戏开场剧情漫画面板：按任意键逐张翻页，结束后继续关卡原流程。
     /// </summary>
-    public class OpeningStoryComicPanel : BasePanel
+    public class OpeningStoryComicPanel : BasePanel, IPointerClickHandler
     {
         [Header("剧情图片")]
         [SerializeField] private Sprite firstPage;
@@ -65,7 +66,21 @@ namespace Game.UI
             if (_onComplete == null)
                 return;
 
-            if (!WasContinuePressed())
+            if (WasContinuePressed())
+                AdvancePage();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData == null)
+                return;
+
+            AdvancePage();
+        }
+
+        private void AdvancePage()
+        {
+            if (_onComplete == null)
                 return;
 
             _pageIndex++;
@@ -120,15 +135,6 @@ namespace Game.UI
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null && keyboard.anyKey.wasPressedThisFrame)
                 return true;
-
-            Mouse mouse = Mouse.current;
-            if (mouse != null &&
-                (mouse.leftButton.wasPressedThisFrame ||
-                 mouse.rightButton.wasPressedThisFrame ||
-                 mouse.middleButton.wasPressedThisFrame))
-            {
-                return true;
-            }
 
             Gamepad gamepad = Gamepad.current;
             return gamepad != null &&

@@ -1,10 +1,13 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 using Game.GameFlow;
 using Game.Online;
 using Newtonsoft.Json;
@@ -17,20 +20,29 @@ namespace Game.Social
     {
         private const int DiscoveryPort = 5087;
         private const int DiscoveryTimeoutMilliseconds = 700;
+        private const string GuestUserId = "guest_local";
 
         private SocialUserInfo _currentUser;
         private string _serverBaseUrl;
+        private bool _isGuest;
 
         public event Action SessionChanged;
 
         public SocialUserInfo CurrentUser => _currentUser;
         public bool IsLoggedIn => _currentUser != null && !string.IsNullOrWhiteSpace(_currentUser.userId);
+        public bool IsGuest => IsLoggedIn && _isGuest;
+        public bool IsOnlineAccount => IsLoggedIn && !_isGuest;
+        public SocialUserInfo OnlineUser => IsOnlineAccount ? _currentUser : null;
         public string ServerBaseUrl => _serverBaseUrl;
 
         public SocialSession()
         {
             _serverBaseUrl = string.Empty;
-            TryApplyDiscoveredServerBaseUrl();
+#if UNITY_ANDROID && !UNITY_EDITOR
+            SocialSessionServerConfigLoader.Load(this);
+#else
+            LoadServerConfigFromFile();
+#endif
         }
 
         public void Login(SocialUserInfo userInfo)
@@ -43,9 +55,21 @@ namespace Game.Social
                 userId = userInfo.userId?.Trim(),
                 username = userInfo.username?.Trim(),
             };
+            _isGuest = false;
 
             SocialAidRequestNotifier.GetInstance();
             SocialSessionQuitHandler.EnsureExists();
+            SessionChanged?.Invoke();
+        }
+
+        public void LoginAsGuest()
+        {
+            _currentUser = new SocialUserInfo
+            {
+                userId = GuestUserId,
+                username = "游客",
+            };
+            _isGuest = true;
             SessionChanged?.Invoke();
         }
 
@@ -55,6 +79,7 @@ namespace Game.Social
                 return;
 
             _currentUser = null;
+            _isGuest = false;
             SessionChanged?.Invoke();
         }
 
@@ -65,6 +90,47 @@ namespace Game.Social
                 : serverBaseUrl.Trim();
 
             return trimmed.TrimEnd('/');
+        }
+
+        internal void ApplyServerConfigJson(string json)
+        {
+            try
+            {
+                OnlineServerConfig config = JsonConvert.DeserializeObject<OnlineServerConfig>(json);
+                string configuredUrl = NormalizeServerBaseUrl(config?.socialServerBaseUrl);
+                if (!Uri.TryCreate(configuredUrl, UriKind.Absolute, out Uri uri)
+                    || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+                {
+                    Debug.LogError("[SocialSession] online-server.json 中的 socialServerBaseUrl 无效。");
+                    return;
+                }
+
+                _serverBaseUrl = configuredUrl;
+                Debug.Log($"[SocialSession] 已加载联机服务器配置：{_serverBaseUrl}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[SocialSession] 联机服务器配置解析失败：{e.Message}");
+            }
+        }
+
+        private void LoadServerConfigFromFile()
+        {
+            string path = Path.Combine(Application.streamingAssetsPath, "online-server.json");
+            if (!File.Exists(path))
+            {
+                Debug.LogError($"[SocialSession] 未找到联机服务器配置：{path}");
+                return;
+            }
+
+            try
+            {
+                ApplyServerConfigJson(File.ReadAllText(path, Encoding.UTF8));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[SocialSession] 联机服务器配置读取失败：{e.Message}");
+            }
         }
 
         private void TryApplyDiscoveredServerBaseUrl()
@@ -300,6 +366,44 @@ namespace Game.Social
             public long sequence;
             public JObject payload;
         }
+
+        [Serializable]
+        private sealed class OnlineServerConfig
+        {
+            public string socialServerBaseUrl;
+        }
+    }
+
+    internal sealed class SocialSessionServerConfigLoader : MonoBehaviour
+    {
+        private static SocialSessionServerConfigLoader _instance;
+
+        public static void Load(SocialSession session)
+        {
+            if (_instance == null)
+            {
+                GameObject root = new GameObject("SocialSessionServerConfigLoader");
+                UnityEngine.Object.DontDestroyOnLoad(root);
+                _instance = root.AddComponent<SocialSessionServerConfigLoader>();
+            }
+
+            _instance.StartCoroutine(_instance.LoadConfig(session));
+        }
+
+        private IEnumerator LoadConfig(SocialSession session)
+        {
+            string path = $"{Application.streamingAssetsPath.TrimEnd('/', '\\')}/online-server.json";
+            using UnityWebRequest request = UnityWebRequest.Get(path);
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"[SocialSession] 联机服务器配置读取失败：{request.error}");
+                yield break;
+            }
+
+            session.ApplyServerConfigJson(request.downloadHandler.text);
+        }
     }
 
     internal sealed class SocialSessionQuitHandler : MonoBehaviour
@@ -335,7 +439,7 @@ namespace Game.Social
                 SocialAidSessionCoordinator.GetInstance().StopSession();
             }
 
-            if (SocialSession.GetInstance().IsLoggedIn)
+            if (SocialSession.GetInstance().IsOnlineAccount)
             {
                 SocialService.GetInstance().ClearActiveSaveContext(
                     (_, _) => { },

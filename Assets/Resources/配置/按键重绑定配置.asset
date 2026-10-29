@@ -46,6 +46,9 @@ MonoBehaviour:
   - actionName: Dodge
     bindingPart: 
     displayName: "\u95EA\u907F"
+  - actionName: Sprint
+    bindingPart: 
+    displayName: "\u5954\u8DD1\u52A0\u901F"
   - actionName: Jump
     bindingPart: 
     displayName: "\u8DF3\u8DC3"

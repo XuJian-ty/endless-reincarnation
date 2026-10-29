@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 926842a735444601880e296f37163552, type: 3}
+  m_Name: "\u89D2\u8272\u521D\u59CB\u9053\u5177\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  initialItems:
+  - itemId: gold
+    count: 500
+  - itemId: talent_point
+    count: 0
+  - itemId: potion_hp
+    count: 3
+  - itemId: potion_mp
+    count: 3
+  - itemId: nectar
+    count: 1
+  - itemId: mutation_unlock_attack0_attack0_variant1
+    count: 1
+  - itemId: mutation_unlock_attack1_attack1_variant1
+    count: 1
+  - itemId: mutation_unlock_attack2_attack2_variant1
+    count: 1
+  - itemId: mutation_unlock_attack2_attack2_variant2
+    count: 1
+  - itemId: mutation_unlock_attack3_attack3_variant1
+    count: 1
+  - itemId: mutation_unlock_shoot_shoot_variant1
+    count: 1
+  - itemId: mutation_unlock_shoot_shoot_variant2
+    count: 1
+  - itemId: mutation_unlock_shootcharge_shootcharge_variant1
+    count: 1
+  - itemId: mutation_unlock_shootcharge_shootcharge_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_1_passive_1_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_1_passive_1_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_2_passive_2_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_2_passive_2_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_3_passive_3_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_3_passive_3_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_4_passive_4_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_4_passive_4_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_5_passive_5_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_5_passive_5_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_6_passive_6_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_6_passive_6_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_7_passive_7_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_7_passive_7_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_8_passive_8_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_8_passive_8_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_9_passive_9_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_9_passive_9_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_10_passive_10_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_10_passive_10_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_11_passive_11_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_11_passive_11_variant2
+    count: 1
+  - itemId: mutation_unlock_passive_12_passive_12_variant1
+    count: 1
+  - itemId: mutation_unlock_passive_12_passive_12_variant2
+    count: 1

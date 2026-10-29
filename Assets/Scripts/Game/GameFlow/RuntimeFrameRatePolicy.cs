@@ -7,7 +7,11 @@ namespace Game.GameFlow
     /// </summary>
     public static class RuntimeFrameRatePolicy
     {
+#if UNITY_ANDROID
+        private const int TargetFrameRate = 60;
+#else
         private const int TargetFrameRate = 120;
+#endif
         private static RuntimeFrameRatePolicyRunner _runner;
         private static bool _windowsRealtimePolicyApplied;
 

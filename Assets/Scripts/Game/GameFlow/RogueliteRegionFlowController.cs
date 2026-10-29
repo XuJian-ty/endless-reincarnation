@@ -5,6 +5,7 @@ using Game.Domain;
 using Game.Online;
 using Game.Presentation;
 using Game.Saving;
+using Game.UI;
 using UnityEngine;
 
 namespace Game.GameFlow
@@ -330,6 +331,14 @@ namespace Game.GameFlow
                 || _buffSelectionOpen
                 || Time.unscaledTime < _buffRetryTime)
             {
+                return;
+            }
+
+            RunData run = GameStateMachine.GetInstance()?.CurrentRun;
+            if ((run != null && run.pendingBuffSelection)
+                || GameplayUIInputBridge.IsAnyGameplayPanelOpen())
+            {
+                _buffRetryTime = Time.unscaledTime + 0.5f;
                 return;
             }
 

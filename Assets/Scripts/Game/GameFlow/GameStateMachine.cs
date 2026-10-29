@@ -579,7 +579,7 @@ namespace Game.GameFlow
 
         private void SyncActiveSaveContext()
         {
-            if (string.IsNullOrWhiteSpace(_currentSaveId) || !SocialSession.GetInstance().IsLoggedIn)
+            if (string.IsNullOrWhiteSpace(_currentSaveId) || !SocialSession.GetInstance().IsOnlineAccount)
                 return;
 
             SocialService.GetInstance().SetActiveSaveContext(
@@ -619,7 +619,7 @@ namespace Game.GameFlow
 
         private void ClearActiveSaveContext()
         {
-            if (!SocialSession.GetInstance().IsLoggedIn)
+            if (!SocialSession.GetInstance().IsOnlineAccount)
                 return;
 
             SocialService.GetInstance().ClearActiveSaveContext(

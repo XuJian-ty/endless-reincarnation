@@ -274,13 +274,13 @@ namespace Game.Presentation
         private void OnUseHealthPotion(InputValue value)
         {
             if (value.Get<float>() > 0.5f)
-                TryUsePotion(PlayerModel.ItemIds.PotionHp);
+                UseHealthPotion();
         }
 
         private void OnUseManaPotion(InputValue value)
         {
             if (value.Get<float>() > 0.5f)
-                TryUsePotion(PlayerModel.ItemIds.PotionMp);
+                UseManaPotion();
         }
 
         private void OnToggleAttackMode(InputValue value)
@@ -646,6 +646,16 @@ namespace Game.Presentation
                    || currentState is IdleState
                    || currentState is MoveState
                    || currentState is AimState;
+        }
+
+        public void UseHealthPotion()
+        {
+            TryUsePotion(PlayerModel.ItemIds.PotionHp);
+        }
+
+        public void UseManaPotion()
+        {
+            TryUsePotion(PlayerModel.ItemIds.PotionMp);
         }
 
         private void ExitAimStateToLocomotion()

@@ -448,7 +448,25 @@ internal static class DevelopmentBackendAutoStarter
 
     private static string QuoteArgument(string value)
     {
-        return $"\"{value.Replace("\"", "\\\"")}\"";
+        StringBuilder quoted = new StringBuilder(value.Length + 2);
+        quoted.Append('"');
+        int backslashCount = 0;
+        foreach (char character in value)
+        {
+            if (character == '\\')
+            {
+                backslashCount++;
+                continue;
+            }
+
+            quoted.Append('\\', character == '"' ? backslashCount * 2 + 1 : backslashCount);
+            quoted.Append(character);
+            backslashCount = 0;
+        }
+
+        quoted.Append('\\', backslashCount * 2);
+        quoted.Append('"');
+        return quoted.ToString();
     }
 
     private static string Tail(string value, int maximumLength)

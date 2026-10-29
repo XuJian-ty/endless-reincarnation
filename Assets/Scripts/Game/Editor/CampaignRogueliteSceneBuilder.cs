@@ -298,6 +298,8 @@ namespace Game.Editor
             BuildNavigation(spec, scene, sceneFolder);
             ValidateNavigation(spec, branchCenters);
             BuildPrefabEnvironment(spec, propRoot);
+            if (spec.levelIndex == 2)
+                Level2HighlandEnvironmentBuilder.BuildIntoScene(scene, environmentRoot.transform);
             CreateGameFlow(spec, scene);
             CreateFallDeathController(spec, scene);
             ConfigureRegionGameplay(spec, flowRoot, spawnerRoot, branchCenters);

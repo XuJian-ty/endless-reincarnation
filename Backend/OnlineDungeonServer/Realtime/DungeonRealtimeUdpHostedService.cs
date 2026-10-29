@@ -80,6 +80,12 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             return;
         }
 
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.HelloType, StringComparison.Ordinal))
+        {
+            await HandleHelloAsync(transport, result.RemoteEndPoint, envelope, cancellationToken);
+            return;
+        }
+
         if (string.Equals(envelope.Type, DungeonRealtimeProtocol.PlayerStateType, StringComparison.Ordinal))
         {
             await HandlePlayerStateAsync(transport, result.RemoteEndPoint, envelope, cancellationToken);
@@ -98,7 +104,35 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             return;
         }
 
-        await SendErrorAsync(transport, result.RemoteEndPoint, envelope.InstanceId, envelope.UserId, "UDP实时状态通道不处理该消息类型", cancellationToken);
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.UiPanelEventType, StringComparison.Ordinal)
+            || string.Equals(envelope.Type, DungeonRealtimeProtocol.UiPanelPollType, StringComparison.Ordinal))
+        {
+            await HandleUiPanelSyncAsync(transport, result.RemoteEndPoint, envelope, cancellationToken);
+            return;
+        }
+
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.SceneLoadEventType, StringComparison.Ordinal)
+            || string.Equals(envelope.Type, DungeonRealtimeProtocol.SceneLoadPollType, StringComparison.Ordinal))
+        {
+            await HandleSceneLoadSyncAsync(transport, result.RemoteEndPoint, envelope, cancellationToken);
+            return;
+        }
+
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.DamageEventType, StringComparison.Ordinal)
+            || string.Equals(envelope.Type, DungeonRealtimeProtocol.DamagePollType, StringComparison.Ordinal))
+        {
+            await HandleDamageSyncAsync(transport, result.RemoteEndPoint, envelope, cancellationToken);
+            return;
+        }
+
+        if (string.Equals(envelope.Type, DungeonRealtimeProtocol.RewardEventType, StringComparison.Ordinal)
+            || string.Equals(envelope.Type, DungeonRealtimeProtocol.RewardPollType, StringComparison.Ordinal))
+        {
+            await HandleRewardSyncAsync(transport, result.RemoteEndPoint, envelope, cancellationToken);
+            return;
+        }
+
+        await SendErrorAsync(transport, result.RemoteEndPoint, envelope.InstanceId, envelope.UserId, "实时通道不处理该消息类型", cancellationToken);
     }
 
     private static async Task HandleServerDiscoveryAsync(
@@ -131,7 +165,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             UserId = envelope.UserId,
             JoinToken = envelope.JoinToken,
         };
-        if (!_registry.TryValidateParticipant(envelope.InstanceId, validateRequest, out _, out string error))
+        if (!_registry.TryBeginRealtimePlayerStateStream(envelope.InstanceId, validateRequest, out string error))
         {
             await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, error, cancellationToken);
             return;
@@ -190,7 +224,7 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             return;
         }
 
-        if (!_registry.TryUpsertPlayerPose(envelope.InstanceId, request, out DungeonPlayerPoseListDto? poses, out string error))
+        if (!_registry.TryUpsertPlayerPose(envelope.InstanceId, request, envelope.Sequence, out DungeonPlayerPoseListDto? poses, out string error))
         {
             await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, error, cancellationToken);
             return;
@@ -357,6 +391,100 @@ internal sealed class DungeonRealtimeUdpHostedService : BackgroundService
             envelope.InstanceId,
             envelope.UserId,
             DungeonRealtimeProtocol.UiPanelSnapshotType,
+            DungeonRealtimeProtocol.ChannelReliableEvent,
+            envelope.Sequence,
+            payload,
+            cancellationToken);
+    }
+
+    private async Task HandleSceneLoadSyncAsync(
+        IRealtimeDatagramTransport transport,
+        IPEndPoint remoteEndPoint,
+        DungeonRealtimeEnvelope envelope,
+        CancellationToken cancellationToken)
+    {
+        DungeonRealtimeSceneLoadSyncPayload? syncPayload = null;
+        if (envelope.Payload != null)
+        {
+            try
+            {
+                syncPayload = envelope.Payload.Value.Deserialize<DungeonRealtimeSceneLoadSyncPayload>(DungeonRealtimeProtocol.JsonOptions);
+            }
+            catch
+            {
+                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, "场景加载实时事件格式无效", cancellationToken);
+                return;
+            }
+        }
+
+        string ackEventId = string.Empty;
+        DungeonSceneLoadStateDto? state;
+        string action = syncPayload?.Action?.Trim() ?? string.Empty;
+        if (string.Equals(action, "start", StringComparison.Ordinal))
+        {
+            ackEventId = syncPayload?.EventId?.Trim() ?? string.Empty;
+            var request = new StartDungeonSceneLoadRequest
+            {
+                UserId = envelope.UserId,
+                JoinToken = envelope.JoinToken,
+                TransitionId = syncPayload?.TransitionId,
+                SceneName = syncPayload?.SceneName,
+                BossId = syncPayload?.BossId,
+                BossDisplayName = syncPayload?.BossDisplayName,
+            };
+            if (!_registry.TryStartSceneLoad(envelope.InstanceId, request, out state, out string startError))
+            {
+                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, startError, cancellationToken);
+                return;
+            }
+        }
+        else if (string.Equals(action, "ready", StringComparison.Ordinal))
+        {
+            ackEventId = syncPayload?.EventId?.Trim() ?? string.Empty;
+            var request = new MarkDungeonSceneLoadReadyRequest
+            {
+                UserId = envelope.UserId,
+                JoinToken = envelope.JoinToken,
+                TransitionId = syncPayload?.TransitionId,
+            };
+            if (!_registry.TryMarkSceneLoadReady(envelope.InstanceId, request, out state, out string readyError))
+            {
+                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, readyError, cancellationToken);
+                return;
+            }
+        }
+        else if (string.Equals(action, "complete", StringComparison.Ordinal))
+        {
+            ackEventId = syncPayload?.EventId?.Trim() ?? string.Empty;
+            var request = new CompleteDungeonSceneLoadRequest
+            {
+                UserId = envelope.UserId,
+                JoinToken = envelope.JoinToken,
+                TransitionId = syncPayload?.TransitionId,
+            };
+            if (!_registry.TryCompleteSceneLoad(envelope.InstanceId, request, out state, out string completeError))
+            {
+                await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, completeError, cancellationToken);
+                return;
+            }
+        }
+        else if (!_registry.TryGetSceneLoadState(envelope.InstanceId, envelope.UserId, envelope.JoinToken, out state, out string stateError))
+        {
+            await SendErrorAsync(transport, remoteEndPoint, envelope.InstanceId, envelope.UserId, stateError, cancellationToken);
+            return;
+        }
+
+        var payload = new DungeonRealtimeSceneLoadSnapshotPayload
+        {
+            AckEventId = ackEventId,
+            State = state,
+        };
+        await SendAsync(
+            transport,
+            remoteEndPoint,
+            envelope.InstanceId,
+            envelope.UserId,
+            DungeonRealtimeProtocol.SceneLoadSnapshotType,
             DungeonRealtimeProtocol.ChannelReliableEvent,
             envelope.Sequence,
             payload,

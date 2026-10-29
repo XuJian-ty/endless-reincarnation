@@ -156,7 +156,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             UserId = envelope.UserId,
             JoinToken = envelope.JoinToken,
         };
-        if (!_registry.TryValidateParticipant(envelope.InstanceId, validateRequest, out _, out string error))
+        if (!_registry.TryBeginRealtimePlayerStateStream(envelope.InstanceId, validateRequest, out string error))
         {
             SendError(connectionId, envelope.InstanceId, envelope.UserId, error);
             return;
@@ -208,7 +208,7 @@ internal sealed class DungeonRealtimeKcpHostedService : BackgroundService
             return;
         }
 
-        if (!_registry.TryUpsertPlayerPose(envelope.InstanceId, request, out DungeonPlayerPoseListDto? poses, out string error))
+        if (!_registry.TryUpsertPlayerPose(envelope.InstanceId, request, envelope.Sequence, out DungeonPlayerPoseListDto? poses, out string error))
         {
             SendError(connectionId, envelope.InstanceId, envelope.UserId, error);
             return;

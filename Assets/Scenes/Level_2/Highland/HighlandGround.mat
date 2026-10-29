@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: HighlandGround
+  m_Shader: {fileID: 4800000, guid: 31a011b33e5a5604c927cff197c631fd, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _GroundTex:
+        m_Texture: {fileID: 2800000, guid: 53606c36d7f4f9947b2742118eee6a77, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RockTex:
+        m_Texture: {fileID: 2800000, guid: 7dd77619e382f814a8d9456d248cec53, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SnowTex:
+        m_Texture: {fileID: 2800000, guid: 3753f76a7af1f804e892552bdf0d10df, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AmbientStrength: 0.82
+    - _DetailScale: 0.38
+    - _GroundTiling: 0.11
+    - _MacroScale: 0.016
+    - _NormalVariation: 0.2
+    - _RockTiling: 0.065
+    - _SlopeBlend: 0.4
+    - _SlopeStart: 0.31
+    - _Smoothness: 0.16
+    - _SnowAmount: 0
+    - _SnowFade: 24
+    - _SnowLine: 95
+    - _TextureStrength: 0.44
+    m_Colors:
+    - _BaseColor: {r: 0.31, g: 0.41, b: 0.13, a: 1}
+    - _SecondaryColor: {r: 0.48, g: 0.46, b: 0.2, a: 1}
+    - _SlopeColor: {r: 0.42, g: 0.4, b: 0.34, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

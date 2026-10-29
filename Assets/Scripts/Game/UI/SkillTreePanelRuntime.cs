@@ -244,7 +244,10 @@ namespace Game.UI
 
         public void HandleSlotPointerClick(SkillTreeSlotView slotView, PointerEventData eventData)
         {
-            if (slotView == null || eventData == null || eventData.button != PointerEventData.InputButton.Right)
+            bool isClearClick = eventData != null &&
+                                (eventData.button == PointerEventData.InputButton.Right ||
+                                 (Application.isMobilePlatform && eventData.button == PointerEventData.InputButton.Left));
+            if (slotView == null || !isClearClick)
                 return;
 
             PlayerModel player = ResolvePlayerModel();

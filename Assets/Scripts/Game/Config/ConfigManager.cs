@@ -29,6 +29,7 @@ namespace Game
         private SkillTreeGraphConfigSO _skillTreeGraphConfig;
         private CharacterAnimationLibrarySO _characterAnimationLibrary;
         private ItemDisplayDatabaseSO _itemDisplayDatabase;
+        private PlayerInitialItemConfigSO _playerInitialItemConfig;
         private SlotBackgroundConfigSO _slotBackgroundConfig;
         private KeyRebindConfigSO _keyRebindConfig;
         private BackpackUIConfigSO _backpackUIConfig;
@@ -173,6 +174,13 @@ namespace Game
             if (_itemDisplayDatabase == null)
                 _itemDisplayDatabase = Resources.Load<ItemDisplayDatabaseSO>(ConfigPathPrefix + "物品显示配置");
             return _itemDisplayDatabase;
+        }
+
+        public PlayerInitialItemConfigSO GetPlayerInitialItemConfig()
+        {
+            if (_playerInitialItemConfig == null)
+                _playerInitialItemConfig = Resources.Load<PlayerInitialItemConfigSO>(ConfigPathPrefix + "角色初始道具配置");
+            return _playerInitialItemConfig;
         }
 
         public SlotBackgroundConfigSO GetSlotBackgroundConfig()

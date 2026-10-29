@@ -18,6 +18,13 @@ builder.Services.AddHostedService<DungeonRealtimeKcpHostedService>();
 
 var app = builder.Build();
 
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(20),
+});
+
+app.Map("/api/realtime", DungeonRealtimeWebSocketTunnel.HandleAsync);
+
 app.MapGet("/api/health", (DungeonInstanceRegistry registry) =>
 {
     return Results.Ok(ApiResponse<object>.Ok(new
@@ -84,7 +91,7 @@ app.MapPost("/api/dungeons/{instanceId}/players/pose", (
     UpsertDungeonPlayerPoseRequest request,
     DungeonInstanceRegistry registry) =>
 {
-    if (!registry.TryUpsertPlayerPose(instanceId, request, out DungeonPlayerPoseListDto? poses, out string error))
+    if (!registry.TryUpsertPlayerPose(instanceId, request, 0, out DungeonPlayerPoseListDto? poses, out string error))
         return Results.BadRequest(ApiResponse<DungeonPlayerPoseListDto>.Fail(error));
 
     return Results.Ok(ApiResponse<DungeonPlayerPoseListDto>.Ok(poses!, "玩家姿态已同步"));
@@ -498,7 +505,34 @@ internal sealed class DungeonInstanceRegistry
         }
     }
 
-    public bool TryUpsertPlayerPose(string instanceId, UpsertDungeonPlayerPoseRequest request, out DungeonPlayerPoseListDto? poses, out string error)
+    public bool TryBeginRealtimePlayerStateStream(
+        string instanceId,
+        ValidateDungeonParticipantRequest request,
+        out string error)
+    {
+        error = string.Empty;
+        if (!TryGetRecord(instanceId, out DungeonInstanceRecord record, out error))
+            return false;
+
+        lock (record.SyncRoot)
+        {
+            if (!TryValidateParticipantCore(record, request.UserId, request.JoinToken, out DungeonParticipantRecord? participantOrNull, out error))
+                return false;
+
+            DungeonParticipantRecord participant = participantOrNull!;
+            participant.IsConnected = true;
+            participant.LastSeenAtUtc = DateTime.UtcNow;
+            record.PlayerPoseSequences.Remove(participant.UserId);
+            return true;
+        }
+    }
+
+    public bool TryUpsertPlayerPose(
+        string instanceId,
+        UpsertDungeonPlayerPoseRequest request,
+        long stateSequence,
+        out DungeonPlayerPoseListDto? poses,
+        out string error)
     {
         poses = null;
         error = string.Empty;
@@ -515,6 +549,17 @@ internal sealed class DungeonInstanceRegistry
             DateTime now = DateTime.UtcNow;
             participant.IsConnected = true;
             participant.LastSeenAtUtc = now;
+            if (stateSequence > 0
+                && record.PlayerPoseSequences.TryGetValue(participant.UserId, out long lastStateSequence)
+                && stateSequence <= lastStateSequence)
+            {
+                poses = ToPoseListDto(record, participant.UserId);
+                return true;
+            }
+
+            if (stateSequence > 0)
+                record.PlayerPoseSequences[participant.UserId] = stateSequence;
+
             record.PlayerPoses[participant.UserId] = new DungeonPlayerPoseRecord
             {
                 UserId = participant.UserId,
@@ -2974,6 +3019,7 @@ internal sealed class DungeonInstanceRecord
     public DateTime UpdatedAtUtc { get; set; }
     public Dictionary<string, DungeonParticipantRecord> Participants { get; } = new(StringComparer.Ordinal);
     public Dictionary<string, DungeonPlayerPoseRecord> PlayerPoses { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, long> PlayerPoseSequences { get; } = new(StringComparer.Ordinal);
     public DungeonWorldSnapshotRecord? WorldSnapshot { get; set; }
     public bool AuthorityInitialized { get; set; }
     public long AuthorityVersion { get; set; }

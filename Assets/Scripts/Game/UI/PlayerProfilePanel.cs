@@ -1,7 +1,9 @@
+using System;
 using Game.GameFlow;
 using ProjectBase;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 #if UNITY_EDITOR
@@ -20,6 +22,7 @@ namespace Game.UI
         private Button _closeButton;
         private RectTransform _portraitPreviewRect;
         private RectTransform _cropWindow;
+        private RectTransform _cropArea;
         private RectTransform _cropDimImageRect;
         private RectTransform _cropBrightImageRect;
         private Image _cropDimImage;
@@ -29,6 +32,8 @@ namespace Game.UI
         private float _portraitZoom = 1f;
         private Vector2 _portraitOffset;
         private bool _draggingCrop;
+        private bool _pinchingCrop;
+        private float _lastCropPinchDistance;
         private Vector2 _lastCropDragPosition;
         private bool _uiBuilt;
 
@@ -55,6 +60,11 @@ namespace Game.UI
         public override void HideMe()
         {
             gameObject.SetActive(false);
+        }
+
+        private void Update()
+        {
+            UpdateCropPinch();
         }
 
         private void EnsureBuilt()
@@ -130,12 +140,40 @@ namespace Game.UI
 
         private void OnUploadPortraitClicked()
         {
-            string path = OpenPortraitFilePanel();
+#if UNITY_ANDROID && !UNITY_EDITOR
+            SetStatus("正在打开图片选择器...", new Color(0.75f, 0.86f, 1f, 1f));
+            AndroidPortraitFilePicker.Open(OnPortraitFileSelected);
+#else
+            OnPortraitFileSelected(OpenPortraitFilePanel());
+#endif
+        }
+
+        private void OnPortraitFileSelected(string path)
+        {
+            if (this == null)
+                return;
+
             if (string.IsNullOrWhiteSpace(path))
             {
-#if !UNITY_EDITOR
-                SetStatus("当前构建暂未接入运行时文件选择器。", new Color(1f, 0.45f, 0.45f, 1f));
+#if UNITY_ANDROID && !UNITY_EDITOR
+                SetStatus("已取消选择头像。", new Color(0.75f, 0.86f, 1f, 1f));
 #endif
+                return;
+            }
+
+            const string errorPrefix = "ERROR:";
+            if (path.StartsWith(errorPrefix, StringComparison.Ordinal))
+            {
+                string errorCode = path.Substring(errorPrefix.Length);
+                string errorMessage = errorCode switch
+                {
+                    "UNSUPPORTED_FORMAT" => "头像文件只支持 png、jpg、jpeg。",
+                    "FILE_TOO_LARGE" => "头像文件不能超过 32 MB。",
+                    "READ_FAILED" => "无法读取选择的头像文件。",
+                    "NO_ACTIVITY" => "当前无法打开 Android 图片选择器。",
+                    _ => errorCode,
+                };
+                SetStatus(errorMessage, new Color(1f, 0.45f, 0.45f, 1f));
                 return;
             }
 
@@ -150,7 +188,11 @@ namespace Game.UI
             _portraitZoom = 1f;
             _portraitOffset = Vector2.zero;
             ShowCropWindow();
-            SetStatus("在预览窗口拖动头像，滚动鼠标滚轮缩放。", new Color(0.6f, 1f, 0.72f, 1f));
+            SetStatus(
+                Application.isMobilePlatform
+                    ? "在预览窗口拖动头像调整显示区域。"
+                    : "在预览窗口拖动头像，滚动鼠标滚轮缩放。",
+                new Color(0.6f, 1f, 0.72f, 1f));
         }
 
         private void OnSaveClicked()
@@ -232,7 +274,7 @@ namespace Game.UI
         private void BeginCropDrag(BaseEventData eventData)
         {
             PointerEventData pointerData = eventData as PointerEventData;
-            if (_pendingPortraitTexture == null || pointerData == null)
+            if (_pendingPortraitTexture == null || pointerData == null || _pinchingCrop)
                 return;
 
             _draggingCrop = true;
@@ -242,7 +284,7 @@ namespace Game.UI
         private void DragCrop(BaseEventData eventData)
         {
             PointerEventData pointerData = eventData as PointerEventData;
-            if (!_draggingCrop || _pendingPortraitTexture == null || pointerData == null)
+            if (!_draggingCrop || _pinchingCrop || _pendingPortraitTexture == null || pointerData == null)
                 return;
 
             Vector2 delta = pointerData.position - _lastCropDragPosition;
@@ -255,6 +297,87 @@ namespace Game.UI
         private void EndCropDrag(BaseEventData eventData)
         {
             _draggingCrop = false;
+        }
+
+        private void UpdateCropPinch()
+        {
+            if (_cropWindow == null
+                || !_cropWindow.gameObject.activeSelf
+                || _cropArea == null
+                || _pendingPortraitTexture == null)
+            {
+                ResetCropPinch();
+                return;
+            }
+
+            Touchscreen touchscreen = Touchscreen.current;
+            if (touchscreen == null)
+            {
+                ResetCropPinch();
+                return;
+            }
+
+            Vector2 firstPosition = Vector2.zero;
+            Vector2 secondPosition = Vector2.zero;
+            int activeTouchCount = 0;
+            for (int i = 0; i < touchscreen.touches.Count && activeTouchCount < 2; i++)
+            {
+                var touch = touchscreen.touches[i];
+                UnityEngine.InputSystem.TouchPhase phase = touch.phase.ReadValue();
+                if (phase is UnityEngine.InputSystem.TouchPhase.None
+                    or UnityEngine.InputSystem.TouchPhase.Ended
+                    or UnityEngine.InputSystem.TouchPhase.Canceled)
+                {
+                    continue;
+                }
+
+                Vector2 position = touch.position.ReadValue();
+                if (!RectTransformUtility.RectangleContainsScreenPoint(_cropArea, position))
+                    continue;
+
+                if (activeTouchCount == 0)
+                    firstPosition = position;
+                else
+                    secondPosition = position;
+                activeTouchCount++;
+            }
+
+            if (activeTouchCount < 2)
+            {
+                ResetCropPinch();
+                return;
+            }
+
+            float currentDistance = Vector2.Distance(firstPosition, secondPosition);
+            if (!_pinchingCrop)
+            {
+                _pinchingCrop = true;
+                _draggingCrop = false;
+                _lastCropPinchDistance = currentDistance;
+                return;
+            }
+
+            if (_lastCropPinchDistance > 0f && currentDistance > 0f)
+            {
+                float previousZoom = _portraitZoom;
+                _portraitZoom = Mathf.Clamp(
+                    _portraitZoom * (currentDistance / _lastCropPinchDistance),
+                    CropMinZoom,
+                    CropMaxZoom);
+                if (!Mathf.Approximately(previousZoom, _portraitZoom))
+                {
+                    ClampPortraitOffset();
+                    ApplyCropPreviewTransform();
+                }
+            }
+
+            _lastCropPinchDistance = currentDistance;
+        }
+
+        private void ResetCropPinch()
+        {
+            _pinchingCrop = false;
+            _lastCropPinchDistance = 0f;
         }
 
         private void OnCropScroll(BaseEventData eventData)
@@ -391,6 +514,7 @@ namespace Game.UI
                 _cropWindow.gameObject.SetActive(false);
 
             _draggingCrop = false;
+            ResetCropPinch();
         }
 
         private void OnCropConfirmClicked()
@@ -476,6 +600,7 @@ namespace Game.UI
             GameObject cropAreaObject = new GameObject("CropArea", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(RectMask2D), typeof(Button));
             cropAreaObject.transform.SetParent(parent, false);
             RectTransform cropArea = cropAreaObject.GetComponent<RectTransform>();
+            _cropArea = cropArea;
             cropArea.anchorMin = new Vector2(0.5f, 0.5f);
             cropArea.anchorMax = new Vector2(0.5f, 0.5f);
             cropArea.pivot = new Vector2(0.5f, 0.5f);
@@ -717,5 +842,63 @@ namespace Game.UI
             AttachButtonListeners();
         }
 
+    }
+
+    internal sealed class AndroidPortraitFilePicker : MonoBehaviour
+    {
+        private const string BridgeObjectName = "PlayerProfileAndroidFilePicker";
+        private static AndroidPortraitFilePicker _instance;
+        private static Action<string> _callback;
+
+        public static void Open(Action<string> callback)
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            EnsureInstance();
+            _callback = callback;
+
+            try
+            {
+                using AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                using AndroidJavaClass picker = new AndroidJavaClass("com.endlessreincarnation.mobile.PortraitPickerActivity");
+                picker.CallStatic("Open", activity);
+            }
+            catch (Exception ex)
+            {
+                Complete("ERROR:无法打开图片选择器：" + ex.Message);
+            }
+#else
+            callback?.Invoke(string.Empty);
+#endif
+        }
+
+        public void OnAndroidPortraitPicked(string result)
+        {
+            Complete(result);
+        }
+
+        private static void EnsureInstance()
+        {
+            if (_instance != null)
+                return;
+
+            GameObject bridgeObject = GameObject.Find(BridgeObjectName);
+            if (bridgeObject == null)
+            {
+                bridgeObject = new GameObject(BridgeObjectName);
+                UnityEngine.Object.DontDestroyOnLoad(bridgeObject);
+            }
+
+            _instance = bridgeObject.GetComponent<AndroidPortraitFilePicker>();
+            if (_instance == null)
+                _instance = bridgeObject.AddComponent<AndroidPortraitFilePicker>();
+        }
+
+        private static void Complete(string result)
+        {
+            Action<string> callback = _callback;
+            _callback = null;
+            callback?.Invoke(result ?? string.Empty);
+        }
     }
 }

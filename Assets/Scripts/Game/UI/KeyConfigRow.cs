@@ -19,6 +19,8 @@ namespace Game.UI
         private int _bindingIndex;
         private System.Action<InputAction, int, KeyConfigRow> _onRebindClicked;
         private System.Action<InputAction, int> _onResetClicked;
+        private System.Action _onCustomPrimaryClicked;
+        private System.Action _onCustomSecondaryClicked;
 
         /// <summary>动态创建行时注入控件引用（无预制体时由 KeyConfigPanel 调用）。</summary>
         public void SetLabelAndKey(Text label, Text key, Button rebindBtn, Button resetBtn = null)
@@ -37,9 +39,42 @@ namespace Game.UI
             _bindingIndex = bindingIndex;
             _onRebindClicked = onRebindClicked;
             _onResetClicked = onResetClicked;
+            _onCustomPrimaryClicked = null;
+            _onCustomSecondaryClicked = null;
 
             if (labelText != null) labelText.text = displayName;
             RefreshKeyText();
+
+            if (rebindButton != null)
+            {
+                rebindButton.onClick.RemoveAllListeners();
+                rebindButton.onClick.AddListener(OnRebindClick);
+            }
+            if (resetButton != null)
+            {
+                resetButton.onClick.RemoveAllListeners();
+                resetButton.onClick.AddListener(OnResetClick);
+            }
+        }
+
+        public void SetCustom(
+            string displayName,
+            string valueText,
+            string primaryButtonText,
+            System.Action onPrimaryClicked,
+            string secondaryButtonText,
+            System.Action onSecondaryClicked)
+        {
+            _action = null;
+            _onRebindClicked = null;
+            _onResetClicked = null;
+            _onCustomPrimaryClicked = onPrimaryClicked;
+            _onCustomSecondaryClicked = onSecondaryClicked;
+
+            if (labelText != null) labelText.text = displayName;
+            if (keyText != null) keyText.text = valueText;
+            SetButtonText(rebindButton, primaryButtonText);
+            SetButtonText(resetButton, secondaryButtonText);
 
             if (rebindButton != null)
             {
@@ -74,12 +109,31 @@ namespace Game.UI
 
         private void OnRebindClick()
         {
+            if (_onCustomPrimaryClicked != null)
+            {
+                _onCustomPrimaryClicked.Invoke();
+                return;
+            }
+
             _onRebindClicked?.Invoke(_action, _bindingIndex, this);
         }
 
         private void OnResetClick()
         {
+            if (_onCustomSecondaryClicked != null)
+            {
+                _onCustomSecondaryClicked.Invoke();
+                return;
+            }
+
             _onResetClicked?.Invoke(_action, _bindingIndex);
+        }
+
+        private static void SetButtonText(Button button, string content)
+        {
+            Text text = button != null ? button.GetComponentInChildren<Text>(true) : null;
+            if (text != null)
+                text.text = content;
         }
     }
 }

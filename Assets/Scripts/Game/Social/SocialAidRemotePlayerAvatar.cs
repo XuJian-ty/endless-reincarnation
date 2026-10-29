@@ -68,6 +68,9 @@ namespace Game.Social
         private float _displayedMoveY;
         private bool _hasDisplayedMoveParameters;
         private PlayerAttackMode _lastPresentedAttackMode = PlayerAttackMode.Melee;
+        private bool _hasPresentedWeaponState;
+        private bool _lastPresentedHasMeleeWeapon;
+        private bool _lastPresentedHasRangedWeapon;
         private bool _aimActive;
         private bool _aimLayerActive;
         private float _targetAimPitch;
@@ -134,7 +137,7 @@ namespace Game.Social
 
         public void ApplyActionPresentation(string actionId, string skillEffectId, int actionSequence, float actionElapsedSeconds, float actionNormalizedProgress, float sampleTime)
         {
-            if (actionSequence <= 0 || actionSequence == _lastActionSequence)
+            if (actionSequence <= 0 || actionSequence <= _lastActionSequence)
                 return;
 
             _lastActionSequence = actionSequence;
@@ -242,8 +245,18 @@ namespace Game.Social
         private void ApplySnapshotPresentation(RemotePoseSnapshot snapshot, float moveSpeed, float moveX, float moveY)
         {
             _lastPresentedMoveSpeed = moveSpeed;
-            _lastPresentedAttackMode = snapshot.attackMode;
-            ApplyWeaponState(snapshot.attackMode, snapshot.hasMeleeWeapon, snapshot.hasRangedWeapon);
+            if (!_hasPresentedWeaponState ||
+                _lastPresentedAttackMode != snapshot.attackMode ||
+                _lastPresentedHasMeleeWeapon != snapshot.hasMeleeWeapon ||
+                _lastPresentedHasRangedWeapon != snapshot.hasRangedWeapon)
+            {
+                _hasPresentedWeaponState = true;
+                _lastPresentedAttackMode = snapshot.attackMode;
+                _lastPresentedHasMeleeWeapon = snapshot.hasMeleeWeapon;
+                _lastPresentedHasRangedWeapon = snapshot.hasRangedWeapon;
+                ApplyWeaponState(snapshot.attackMode, snapshot.hasMeleeWeapon, snapshot.hasRangedWeapon);
+            }
+
             ApplyAnimationState(moveSpeed, moveX, moveY, snapshot.action, snapshot.actionId, snapshot.attackMode);
             ApplyAimLayerState(snapshot.attackMode);
         }

@@ -148,6 +148,11 @@ namespace Game.Input
             return _uiMap?.FindAction(actionName) ?? _gameplayMap?.FindAction(actionName);
         }
 
+        public static void RequestToggleBackpack() => _toggleBackpackRequested?.Invoke();
+        public static void RequestToggleSkillTree() => _toggleSkillTreeRequested?.Invoke();
+        public static void RequestToggleKeyConfig() => _toggleKeyConfigRequested?.Invoke();
+        public static void RequestToggleMenu() => _toggleMenuRequested?.Invoke();
+
         private void OnToggleBackpackPerformed(InputAction.CallbackContext _) => _toggleBackpackRequested?.Invoke();
         private void OnToggleSkillTreePerformed(InputAction.CallbackContext _) => _toggleSkillTreeRequested?.Invoke();
         private void OnToggleKeyConfigPerformed(InputAction.CallbackContext _) => _toggleKeyConfigRequested?.Invoke();

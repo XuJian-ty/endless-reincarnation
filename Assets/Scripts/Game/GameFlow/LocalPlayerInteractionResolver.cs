@@ -14,6 +14,13 @@ namespace Game.GameFlow
     /// </summary>
     public static class LocalPlayerInteractionResolver
     {
+        private static int _mobileInteractRequestedFrame = int.MinValue;
+
+        public static void RequestMobileInteract()
+        {
+            _mobileInteractRequestedFrame = Time.frameCount;
+        }
+
         public static Transform ResolvePlayerTransform(Scene interactionScene, Transform cachedPlayerTransform)
         {
             if (IsUsablePlayerTransform(cachedPlayerTransform, interactionScene))
@@ -38,9 +45,9 @@ namespace Game.GameFlow
         {
 #if ENABLE_INPUT_SYSTEM
             InputAction interactAction = ResolveInteractAction(localPlayerTransform);
-            return interactAction != null && interactAction.WasPressedThisFrame();
+            return IsMobileInteractRequested() || (interactAction != null && interactAction.WasPressedThisFrame());
 #else
-            return false;
+            return IsMobileInteractRequested();
 #endif
         }
 
@@ -48,10 +55,16 @@ namespace Game.GameFlow
         {
 #if ENABLE_INPUT_SYSTEM
             InputAction interactAction = ResolveInteractAction(localPlayerTransform);
-            return interactAction != null && interactAction.IsPressed();
+            return IsMobileInteractRequested() || (interactAction != null && interactAction.IsPressed());
 #else
-            return false;
+            return IsMobileInteractRequested();
 #endif
+        }
+
+        private static bool IsMobileInteractRequested()
+        {
+            int frameOffset = Time.frameCount - _mobileInteractRequestedFrame;
+            return frameOffset is 0 or 1;
         }
 
         private static bool IsUsablePlayerTransform(Transform playerTransform, Scene interactionScene)

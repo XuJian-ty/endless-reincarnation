@@ -3357,9 +3357,9 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6663020237317949801, guid: 1f0754f224af04141b10edc780c129e6,
               type: 3}
             anchor: 0
-            useFollowDuration: 0
-            followDuration: 0
-            offset: {x: 0, y: 0, z: 10.654}
+            useFollowDuration: 1
+            followDuration: 1.25
+            offset: {x: 0, y: 0, z: 10.6}
             rotationEuler: {x: -0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
             onHitTriggerDelay: 0
@@ -3605,9 +3605,9 @@ MonoBehaviour:
           - particlePrefab: {fileID: 6663020237317949801, guid: 1f0754f224af04141b10edc780c129e6,
               type: 3}
             anchor: 0
-            useFollowDuration: 0
-            followDuration: 0
-            offset: {x: 0, y: 0, z: 10.654}
+            useFollowDuration: 1
+            followDuration: 1.25
+            offset: {x: 0, y: 0, z: 10.6}
             rotationEuler: {x: 0, y: 0, z: 0}
             scale: {x: 1, y: 1, z: 1}
             onHitTriggerDelay: 0

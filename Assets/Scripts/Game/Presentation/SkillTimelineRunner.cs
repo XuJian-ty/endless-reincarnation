@@ -30,6 +30,13 @@ namespace Game.Presentation
         }
 
         [Serializable]
+        private sealed class DamageWindowCompanionVfxInstance
+        {
+            public UnityEngine.GameObject instance;
+            public UnityEngine.GameObject sourcePrefab;
+        }
+
+        [Serializable]
         private sealed class ActiveDamageWindow
         {
             public SkillDamageEffect effect;
@@ -44,6 +51,7 @@ namespace Game.Presentation
             public bool wasDetectionActive;
             public int lastActivationCycleIndex = -1;
             public readonly HashSet<UnityEngine.Transform> hitTargets = new HashSet<UnityEngine.Transform>();
+            public readonly List<DamageWindowCompanionVfxInstance> companionVfxInstances = new List<DamageWindowCompanionVfxInstance>();
         }
 
         [Serializable]
@@ -770,11 +778,20 @@ namespace Game.Presentation
                 if (companionVfx?.particlePrefab == null)
                     continue;
 
-                UnityEngine.GameObject instance = UnityEngine.Object.Instantiate(companionVfx.particlePrefab, root.transform);
+                UnityEngine.GameObject instance = PoolMgr.GetInstance().GetObjSync(companionVfx.particlePrefab, root.transform);
+                if (instance == null)
+                    continue;
+
                 instance.transform.localPosition = companionVfx.offset;
                 instance.transform.localRotation = UnityEngine.Quaternion.Euler(companionVfx.rotationEuler);
+                SkillEffectExecutor.PreparePooledVfxInstance(instance, companionVfx.particlePrefab);
                 instance.transform.localScale = UnityEngine.Vector3.Scale(instance.transform.localScale, companionVfx.scale * rangeScale);
-                ConfigureDamageWindowCompanionParticles(instance);
+                ConfigureDamageWindowCompanionParticles(instance, companionVfx.particlePrefab);
+                window.companionVfxInstances.Add(new DamageWindowCompanionVfxInstance
+                {
+                    instance = instance,
+                    sourcePrefab = companionVfx.particlePrefab,
+                });
             }
 
             window.companionVfxRoot = root;
@@ -794,10 +811,19 @@ namespace Game.Presentation
 
         private static void DestroyDamageWindowCompanionVfx(ActiveDamageWindow window)
         {
-            if (window?.companionVfxRoot == null)
+            if (window == null)
                 return;
 
-            UnityEngine.Object.Destroy(window.companionVfxRoot);
+            for (int i = window.companionVfxInstances.Count - 1; i >= 0; i--)
+            {
+                DamageWindowCompanionVfxInstance companionVfx = window.companionVfxInstances[i];
+                if (companionVfx?.instance != null)
+                    SkillEffectExecutor.ReturnPooledVfxInstance(companionVfx.instance, companionVfx.sourcePrefab);
+            }
+
+            window.companionVfxInstances.Clear();
+            if (window.companionVfxRoot != null)
+                UnityEngine.Object.Destroy(window.companionVfxRoot);
             window.companionVfxRoot = null;
         }
 
@@ -823,12 +849,12 @@ namespace Game.Presentation
             return false;
         }
 
-        private static void ConfigureDamageWindowCompanionParticles(UnityEngine.GameObject instance)
+        private static void ConfigureDamageWindowCompanionParticles(UnityEngine.GameObject instance, UnityEngine.GameObject sourcePrefab)
         {
             if (instance == null)
                 return;
 
-            UnityEngine.ParticleSystem[] particleSystems = instance.GetComponentsInChildren<UnityEngine.ParticleSystem>(true);
+            UnityEngine.ParticleSystem[] particleSystems = SkillEffectExecutor.GetCachedVfxParticleSystems(instance, sourcePrefab);
             for (int i = 0; i < particleSystems.Length; i++)
             {
                 UnityEngine.ParticleSystem particleSystem = particleSystems[i];

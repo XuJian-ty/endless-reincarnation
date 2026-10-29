@@ -24,7 +24,7 @@ namespace Game.UI
             gameObject.SetActive(true);
             if (_passwordInput != null)
                 _passwordInput.text = string.Empty;
-            SetStatus("请输入账号信息后注册或登录", new Color(0.92f, 0.92f, 0.92f, 1f));
+            SetStatus("可使用账号登录，也可以游客身份离线游玩", new Color(0.92f, 0.92f, 0.92f, 1f));
         }
 
         public override void HideMe()
@@ -37,7 +37,8 @@ namespace Game.UI
             if (_uiBuilt)
                 return;
 
-            if (transform.Find("Window") != null)
+            Transform prefabWindow = transform.Find("Window");
+            if (prefabWindow != null)
             {
                 _usernameInput = GetControl<InputField>("Input_Username");
                 _passwordInput = GetControl<InputField>("Input_Password");
@@ -46,6 +47,9 @@ namespace Game.UI
                 Button prefabRegisterButton = GetControl<Button>("Btn_Register");
                 if (prefabRegisterButton != null)
                 {
+                    RectTransform registerRect = prefabRegisterButton.transform as RectTransform;
+                    if (registerRect != null)
+                        registerRect.anchoredPosition = new Vector2(-235f, registerRect.anchoredPosition.y);
                     prefabRegisterButton.onClick.RemoveAllListeners();
                     prefabRegisterButton.onClick.AddListener(OnRegisterClicked);
                 }
@@ -53,9 +57,22 @@ namespace Game.UI
                 Button prefabLoginButton = GetControl<Button>("Btn_Login");
                 if (prefabLoginButton != null)
                 {
+                    RectTransform loginRect = prefabLoginButton.transform as RectTransform;
+                    if (loginRect != null)
+                        loginRect.anchoredPosition = new Vector2(5f, loginRect.anchoredPosition.y);
                     prefabLoginButton.onClick.RemoveAllListeners();
                     prefabLoginButton.onClick.AddListener(OnLoginClicked);
                 }
+
+                Button prefabGuestButton = RuntimeOverlayPanelBuilder.CreateButton(
+                    prefabWindow,
+                    "Btn_Guest",
+                    "游客登录",
+                    new Vector2(215f, -178f),
+                    new Vector2(180f, 64f),
+                    new Color(0.38f, 0.4f, 0.45f, 1f),
+                    Color.white);
+                prefabGuestButton.onClick.AddListener(OnGuestClicked);
 
                 if (_usernameInput != null && _passwordInput != null && _statusText != null)
                 {
@@ -140,7 +157,7 @@ namespace Game.UI
                 window,
                 "Btn_Register",
                 "注册并登录",
-                new Vector2(-140f, -165f),
+                new Vector2(-235f, -165f),
                 new Vector2(220f, 64f),
                 new Color(0.27f, 0.53f, 0.35f, 1f),
                 Color.white);
@@ -150,11 +167,21 @@ namespace Game.UI
                 window,
                 "Btn_Login",
                 "登录",
-                new Vector2(130f, -165f),
+                new Vector2(5f, -165f),
                 new Vector2(180f, 64f),
                 new Color(0.22f, 0.42f, 0.68f, 1f),
                 Color.white);
             loginButton.onClick.AddListener(OnLoginClicked);
+
+            Button guestButton = RuntimeOverlayPanelBuilder.CreateButton(
+                window,
+                "Btn_Guest",
+                "游客登录",
+                new Vector2(215f, -165f),
+                new Vector2(180f, 64f),
+                new Color(0.38f, 0.4f, 0.45f, 1f),
+                Color.white);
+            guestButton.onClick.AddListener(OnGuestClicked);
 
             _uiBuilt = true;
         }
@@ -193,6 +220,12 @@ namespace Game.UI
                     UIManager.GetInstance()?.HidePanel(PanelNames.AccountLogin);
                 },
                 error => SetStatus(error, new Color(1f, 0.62f, 0.62f, 1f)));
+        }
+
+        private void OnGuestClicked()
+        {
+            SocialSession.GetInstance().LoginAsGuest();
+            UIManager.GetInstance()?.HidePanel(PanelNames.AccountLogin);
         }
 
         private void SetStatus(string message, Color color)

@@ -3,6 +3,7 @@ using Game.Data;
 using Game.Social;
 using ProjectBase;
 using Game;
+using UnityEngine.EventSystems;
 
 namespace Game.UI
 {
@@ -11,7 +12,7 @@ namespace Game.UI
     /// 用户按下任意键后隐藏提示并显示主菜单面板。挂在 Resources/UI/MainMenuBackground 预制体根物体上。
     /// 主菜单 BGM 在 ShowMe 时即应用，进入游戏后第一时间播放，无需等点击。
     /// </summary>
-    public class MainMenuBackgroundPanel : BasePanel
+    public class MainMenuBackgroundPanel : BasePanel, IPointerClickHandler
     {
         [SerializeField] private GameObject promptClickToContinue;
 
@@ -75,10 +76,21 @@ namespace Game.UI
 
         private void Update()
         {
+            if (UnityEngine.Input.anyKeyDown)
+                TryShowMainMenu();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData != null)
+                TryShowMainMenu();
+        }
+
+        private void TryShowMainMenu()
+        {
             if (_mainMenuShown) return;
             if (promptClickToContinue != null && !promptClickToContinue.activeSelf) return;
             if (Time.frameCount <= _promptAvailableFrame) return;
-            if (!UnityEngine.Input.anyKeyDown && !UnityEngine.Input.GetMouseButtonDown(0)) return;
 
             _mainMenuShown = true;
             if (promptClickToContinue != null)

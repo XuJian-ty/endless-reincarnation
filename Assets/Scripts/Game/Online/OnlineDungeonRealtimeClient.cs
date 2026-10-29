@@ -1,8 +1,13 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using kcp2k;
@@ -12,7 +17,7 @@ namespace Game.Online
 {
     public sealed class OnlineDungeonRealtimeClient : IDisposable
     {
-        private const int ProtocolVersion = 3;
+        private const int ProtocolVersion = 4;
         private const int ReceiveBufferBytes = 64 * 1024;
         private const float HelloRetryIntervalSeconds = 1f;
         private const float HelloTimeoutSeconds = 8f;
@@ -27,9 +32,10 @@ namespace Game.Online
         private const float OnlineAuthorityIntervalSeconds = 1.5f;
         private const int MaxPendingReliableEvents = 256;
         private const int MaxPendingKcpSends = 128;
+        private const int MaxPendingWebSocketMessages = 128;
         private const float ReliableEventResendIntervalSeconds = 0.15f;
-        private const string ExpectedStateTransport = "udp-unreliable-snapshot";
-        private const string ExpectedEventTransport = "kcp-reliable-event";
+        private const string ExpectedStateTransport = "websocket-reliable-tunnel";
+        private const string ExpectedEventTransport = "websocket-reliable-tunnel";
         private const string ExpectedSynchronizationMode = "state-sync-snapshot-interpolation";
         private const string ExpectedAuthoritySchema = "enemy-authority-v3-movement-skill-chest-reward-scene-load";
         private const string ExpectedSessionLifecycleMode = "server-authoritative-session-close";
@@ -39,7 +45,6 @@ namespace Game.Online
 
         private IRealtimeTransport _stateTransport;
         private IRealtimeTransport _eventTransport;
-        private IPEndPoint _remoteEndPoint;
         private string _instanceId = string.Empty;
         private string _userId = string.Empty;
         private string _joinToken = string.Empty;
@@ -73,25 +78,11 @@ namespace Game.Online
             string instanceId,
             string userId,
             string joinToken,
-            int udpPort,
-            int kcpPort,
             Action<string> onError)
         {
             Stop();
 
-            if (udpPort <= 0 || kcpPort <= 0)
-            {
-                onError?.Invoke("联机副本实时通信端口未配置");
-                return;
-            }
-
-            if (!TryResolveRemoteEndPoint(dungeonServerUrl, udpPort, out _remoteEndPoint, out string error))
-            {
-                onError?.Invoke(error);
-                return;
-            }
-
-            if (!TryResolveRemoteEndPoint(dungeonServerUrl, kcpPort, out IPEndPoint eventEndPoint, out error))
+            if (!TryBuildRealtimeWebSocketUri(dungeonServerUrl, out Uri realtimeUri, out string error))
             {
                 onError?.Invoke(error);
                 return;
@@ -102,8 +93,9 @@ namespace Game.Online
             _joinToken = joinToken ?? string.Empty;
             try
             {
-                _stateTransport = new UdpRealtimeTransport(_remoteEndPoint);
-                _eventTransport = new KcpRealtimeTransport(eventEndPoint);
+                var transport = new WebSocketRealtimeTransport(realtimeUri);
+                _stateTransport = transport;
+                _eventTransport = transport;
             }
             catch (Exception ex)
             {
@@ -140,7 +132,6 @@ namespace Game.Online
         {
             IsRunning = false;
             IsConnected = false;
-            _remoteEndPoint = null;
             _instanceId = string.Empty;
             _userId = string.Empty;
             _joinToken = string.Empty;
@@ -180,7 +171,8 @@ namespace Game.Online
                 return;
 
             _stateTransport.Tick();
-            _eventTransport.Tick();
+            if (!ReferenceEquals(_stateTransport, _eventTransport))
+                _eventTransport.Tick();
 
             if (!IsConnected)
             {
@@ -207,11 +199,16 @@ namespace Game.Online
                 _lastPlayerStateSendFrame = Time.frameCount;
             }
 
+            bool sentEnemyAuthorityState = false;
             if (IsConnected && buildEnemyAuthorityState != null && Time.unscaledTime >= _nextEnemyAuthorityStateSendTime && _lastEnemyAuthorityStateSendFrame != Time.frameCount)
             {
                 OnlineDungeonEnemyAuthorityStateSyncRequest request = buildEnemyAuthorityState();
                 if (request != null)
+                {
                     SendEnemyAuthorityState(request, onError);
+                    sentEnemyAuthorityState = true;
+                    _nextAuthorityPollTime = Time.unscaledTime + AuthorityPollIntervalSeconds;
+                }
 
                 _nextEnemyAuthorityStateSendTime = Time.unscaledTime + EnemyAuthorityStateSendIntervalSeconds;
                 _lastEnemyAuthorityStateSendFrame = Time.frameCount;
@@ -229,7 +226,7 @@ namespace Game.Online
                 _nextSceneLoadPollTime = Time.unscaledTime + SceneLoadPollIntervalSeconds;
             }
 
-            if (IsConnected && Time.unscaledTime >= _nextAuthorityPollTime && _lastAuthorityPollFrame != Time.frameCount)
+            if (IsConnected && !sentEnemyAuthorityState && Time.unscaledTime >= _nextAuthorityPollTime && _lastAuthorityPollFrame != Time.frameCount)
             {
                 SendAuthorityPoll(onError);
                 _nextAuthorityPollTime = Time.unscaledTime + AuthorityPollIntervalSeconds;
@@ -477,7 +474,7 @@ namespace Game.Online
             {
                 version = ProtocolVersion,
                 type = "authorityPoll",
-                channel = "state",
+                channel = "event",
                 instanceId = _instanceId,
                 userId = _userId,
                 joinToken = _joinToken,
@@ -491,7 +488,6 @@ namespace Game.Online
             }
 
             Send(envelope, onError);
-            SendReliableStateFallback(envelope, onError);
         }
 
         private void SendPlayerState(OnlineDungeonPlayerPoseRequest request, Action<string> onError)
@@ -517,7 +513,7 @@ namespace Game.Online
             {
                 version = ProtocolVersion,
                 type = "enemyAuthorityState",
-                channel = "state",
+                channel = "event",
                 instanceId = _instanceId,
                 userId = _userId,
                 joinToken = _joinToken,
@@ -525,7 +521,6 @@ namespace Game.Online
                 payload = JObject.FromObject(request),
             };
             Send(envelope, onError);
-            SendReliableStateFallback(envelope, onError);
         }
 
         private void SendNextUiPanelSync(Func<long> getAfterSequence, Action<string> onError)
@@ -558,7 +553,7 @@ namespace Game.Online
         private void Send(OnlineDungeonRealtimeEnvelope envelope, Action<string> onError)
         {
             IRealtimeTransport transport = SelectTransport(envelope.channel);
-            if (transport == null || _remoteEndPoint == null)
+            if (transport == null)
                 return;
 
             try
@@ -866,9 +861,9 @@ namespace Game.Online
             return payload.enemyRuntimeId;
         }
 
-        private static bool TryResolveRemoteEndPoint(string dungeonServerUrl, int port, out IPEndPoint endPoint, out string error)
+        private static bool TryBuildRealtimeWebSocketUri(string dungeonServerUrl, out Uri realtimeUri, out string error)
         {
-            endPoint = null;
+            realtimeUri = null;
             error = string.Empty;
 
             if (!Uri.TryCreate(dungeonServerUrl, UriKind.Absolute, out Uri uri))
@@ -877,28 +872,28 @@ namespace Game.Online
                 return false;
             }
 
-            string host = uri.Host;
-            if (string.IsNullOrWhiteSpace(host))
+            string scheme;
+            if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+                scheme = "wss";
+            else if (string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+                scheme = "ws";
+            else
             {
-                error = "联机副本服务器主机为空";
+                error = "联机副本服务器地址必须使用 HTTP 或 HTTPS";
                 return false;
             }
 
             try
             {
-                IPAddress[] addresses = Dns.GetHostAddresses(host);
-                for (int i = 0; i < addresses.Length; i++)
+                var builder = new UriBuilder(uri)
                 {
-                    IPAddress address = addresses[i];
-                    if (address.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        endPoint = new IPEndPoint(address, port);
-                        return true;
-                    }
-                }
-
-                error = "无法解析联机副本服务器 IPv4 地址";
-                return false;
+                    Scheme = scheme,
+                    Path = "/api/realtime",
+                    Query = string.Empty,
+                    Fragment = string.Empty,
+                };
+                realtimeUri = builder.Uri;
+                return true;
             }
             catch (Exception ex)
             {
@@ -928,6 +923,129 @@ namespace Game.Online
             void Send(byte[] bytes);
 
             bool TryReceive(out byte[] bytes);
+        }
+
+        private sealed class WebSocketRealtimeTransport : IRealtimeTransport
+        {
+            private const int WebSocketBufferBytes = 8 * 1024;
+
+            private readonly ClientWebSocket _client = new ClientWebSocket();
+            private readonly ConcurrentQueue<byte[]> _incoming = new ConcurrentQueue<byte[]>();
+            private readonly ConcurrentQueue<byte[]> _outgoing = new ConcurrentQueue<byte[]>();
+            private readonly SemaphoreSlim _outgoingSignal = new SemaphoreSlim(0);
+            private readonly CancellationTokenSource _cancellation = new CancellationTokenSource();
+            private readonly Task _runTask;
+            private string _failureMessage;
+            private int _disposed;
+
+            public WebSocketRealtimeTransport(Uri realtimeUri)
+            {
+                _client.Options.KeepAliveInterval = TimeSpan.FromSeconds(20);
+                _runTask = RunAsync(realtimeUri);
+            }
+
+            public int Available => _incoming.Count;
+
+            public void Tick()
+            {
+                string failureMessage = Interlocked.Exchange(ref _failureMessage, null);
+                if (!string.IsNullOrWhiteSpace(failureMessage))
+                    Debug.LogWarning($"[OnlineDungeonRealtimeClient] WebSocket实时通道错误：{failureMessage}");
+            }
+
+            public void Send(byte[] bytes)
+            {
+                if (Volatile.Read(ref _disposed) != 0 || bytes == null || bytes.Length <= 0)
+                    return;
+
+                while (_outgoing.Count >= MaxPendingWebSocketMessages)
+                    _outgoing.TryDequeue(out _);
+
+                _outgoing.Enqueue(bytes);
+                _outgoingSignal.Release();
+            }
+
+            public bool TryReceive(out byte[] bytes)
+            {
+                return _incoming.TryDequeue(out bytes);
+            }
+
+            public void Dispose()
+            {
+                if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                    return;
+
+                _cancellation.Cancel();
+                _client.Abort();
+                _outgoingSignal.Release();
+            }
+
+            private async Task RunAsync(Uri realtimeUri)
+            {
+                try
+                {
+                    await _client.ConnectAsync(realtimeUri, _cancellation.Token);
+                    Task sendTask = SendLoopAsync(_cancellation.Token);
+                    Task receiveTask = ReceiveLoopAsync(_cancellation.Token);
+                    await Task.WhenAny(sendTask, receiveTask);
+                    _cancellation.Cancel();
+                    await Task.WhenAll(sendTask, receiveTask);
+                }
+                catch (OperationCanceledException) when (_cancellation.IsCancellationRequested)
+                {
+                }
+                catch (Exception ex)
+                {
+                    if (Volatile.Read(ref _disposed) == 0)
+                        Interlocked.Exchange(ref _failureMessage, ex.Message);
+                }
+            }
+
+            private async Task SendLoopAsync(CancellationToken cancellationToken)
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await _outgoingSignal.WaitAsync(cancellationToken);
+                    while (_outgoing.TryDequeue(out byte[] bytes))
+                    {
+                        await _client.SendAsync(
+                            new ArraySegment<byte>(bytes),
+                            WebSocketMessageType.Binary,
+                            true,
+                            cancellationToken);
+                    }
+                }
+            }
+
+            private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
+            {
+                var receiveBuffer = new byte[WebSocketBufferBytes];
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    using (var messageBuffer = new MemoryStream(ReceiveBufferBytes))
+                    {
+                        WebSocketReceiveResult result;
+                        do
+                        {
+                            result = await _client.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), cancellationToken);
+                            if (result.MessageType == WebSocketMessageType.Close)
+                                return;
+
+                            if (result.Count > 0)
+                                messageBuffer.Write(receiveBuffer, 0, result.Count);
+
+                            if (messageBuffer.Length > ReceiveBufferBytes)
+                                throw new InvalidOperationException("联机副本实时消息超过大小限制");
+                        }
+                        while (!result.EndOfMessage);
+
+                        while (_incoming.Count >= MaxPendingWebSocketMessages)
+                            _incoming.TryDequeue(out _);
+
+                        _incoming.Enqueue(messageBuffer.ToArray());
+                    }
+                }
+            }
         }
 
         private sealed class UdpRealtimeTransport : IRealtimeTransport

@@ -87,6 +87,49 @@ namespace Game.Presentation
         }
     }
 
+    internal sealed class SkillVfxRuntimeCache : MonoBehaviour
+    {
+        private bool _initialized;
+        private GameObject _sourcePrefab;
+        private bool _hasNaturalDestroyDuration;
+        private float _naturalDestroyDuration;
+
+        public Vector3 SourceLocalScale { get; private set; } = Vector3.one;
+        public TrailRenderer[] TrailRenderers { get; private set; } = Array.Empty<TrailRenderer>();
+        public ParticleSystem[] ParticleSystems { get; private set; } = Array.Empty<ParticleSystem>();
+        public Rigidbody[] Rigidbodies { get; private set; } = Array.Empty<Rigidbody>();
+        public Collider[] Colliders { get; private set; } = Array.Empty<Collider>();
+        public Behaviour[] Behaviours { get; private set; } = Array.Empty<Behaviour>();
+
+        public void EnsureInitialized(GameObject sourcePrefab)
+        {
+            if (_initialized && (sourcePrefab == null || _sourcePrefab == sourcePrefab))
+                return;
+
+            _initialized = true;
+            _sourcePrefab = sourcePrefab;
+            _hasNaturalDestroyDuration = false;
+            SourceLocalScale = sourcePrefab != null ? sourcePrefab.transform.localScale : transform.localScale;
+            TrailRenderers = GetComponentsInChildren<TrailRenderer>(true);
+            ParticleSystems = GetComponentsInChildren<ParticleSystem>(true);
+            Rigidbodies = GetComponentsInChildren<Rigidbody>(true);
+            Colliders = GetComponentsInChildren<Collider>(true);
+            Behaviours = GetComponentsInChildren<Behaviour>(true);
+        }
+
+        public bool TryGetNaturalDestroyDuration(out float duration)
+        {
+            duration = _naturalDestroyDuration;
+            return _hasNaturalDestroyDuration;
+        }
+
+        public void SetNaturalDestroyDuration(float duration)
+        {
+            _naturalDestroyDuration = duration;
+            _hasNaturalDestroyDuration = true;
+        }
+    }
+
     public static class SkillEffectExecutor
     {
         private const float SkillSfxMinDistance = 6f;
@@ -1116,11 +1159,10 @@ namespace Game.Presentation
                 }
             }
 
-            ResetReusableVfxState(instance, effect.particlePrefab, usePool);
-            SanitizeSpawnedVfxInstance(instance);
+            PrepareReusableVfxState(instance, effect.particlePrefab, usePool);
             instance.transform.localScale = Vector3.Scale(instance.transform.localScale, effect.scale * rangeScale);
             ConfigureCueFollow(instance, effect, anchor, followAnchor);
-            ConfigureVfxMotion(instance, effect.motion, useWorldMotion);
+            ConfigureVfxMotion(instance, effect.particlePrefab, effect.motion, useWorldMotion);
             ApplyCueMotion(instance, effect, caster, useWorldMotion, aimProvider);
             EnsureCuePauseProxy(instance);
             return instance;
@@ -1143,21 +1185,29 @@ namespace Game.Presentation
             detachProxy.Configure(anchor, effect.offset, Quaternion.Euler(effect.rotationEuler), effect.useFollowDuration, effect.followDuration);
         }
 
-        private static void SanitizeSpawnedVfxInstance(GameObject instance)
+        private static void SanitizeSpawnedVfxInstance(SkillVfxRuntimeCache cache)
         {
-            if (instance == null)
+            if (cache == null)
                 return;
 
-            DisableBehaviours<ProjectileMover>(instance);
-            DisableBehaviours<ProjectileMoveScript>(instance);
-            DisableBehaviours<Projectile>(instance);
-            DisableBehaviours<ExplodingProjectile>(instance);
-            DisableBehaviours<Bullet>(instance);
-            DisableBehaviours<AutoDestroyPS>(instance);
-            DisableBehaviours<AudioTrigger>(instance);
-            DisableBehaviours<destroyMe>(instance);
+            Behaviour[] behaviours = cache.Behaviours;
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                Behaviour behaviour = behaviours[i];
+                if (behaviour is ProjectileMover
+                    || behaviour is ProjectileMoveScript
+                    || behaviour is Projectile
+                    || behaviour is ExplodingProjectile
+                    || behaviour is Bullet
+                    || behaviour is AutoDestroyPS
+                    || behaviour is AudioTrigger
+                    || behaviour is destroyMe)
+                {
+                    behaviour.enabled = false;
+                }
+            }
 
-            Rigidbody[] rigidbodies = instance.GetComponentsInChildren<Rigidbody>(true);
+            Rigidbody[] rigidbodies = cache.Rigidbodies;
             for (int i = 0; i < rigidbodies.Length; i++)
             {
                 Rigidbody rigidbody = rigidbodies[i];
@@ -1174,7 +1224,7 @@ namespace Game.Presentation
                 rigidbody.detectCollisions = false;
             }
 
-            Collider[] colliders = instance.GetComponentsInChildren<Collider>(true);
+            Collider[] colliders = cache.Colliders;
             for (int i = 0; i < colliders.Length; i++)
             {
                 Collider collider = colliders[i];
@@ -1330,12 +1380,12 @@ namespace Game.Presentation
             instance.AddComponent<SkillCuePauseProxy>();
         }
 
-        private static void ConfigureVfxMotion(GameObject instance, SkillMotionSettings motion, bool useWorldMotion)
+        private static void ConfigureVfxMotion(GameObject instance, GameObject sourcePrefab, SkillMotionSettings motion, bool useWorldMotion)
         {
             if (instance == null || motion == null || !useWorldMotion || !motion.IsActive)
                 return;
 
-            ParticleSystem[] particleSystems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            ParticleSystem[] particleSystems = GetCachedVfxParticleSystems(instance, sourcePrefab);
             for (int i = 0; i < particleSystems.Length; i++)
             {
                 ParticleSystem particleSystem = particleSystems[i];
@@ -1348,18 +1398,18 @@ namespace Game.Presentation
             }
         }
 
-        private static void ResetReusableVfxState(GameObject instance, GameObject sourcePrefab, bool usePool)
+        private static void PrepareReusableVfxState(GameObject instance, GameObject sourcePrefab, bool usePool)
         {
             if (instance == null)
                 return;
 
+            SkillVfxRuntimeCache cache = GetOrCreateVfxRuntimeCache(instance, sourcePrefab);
             if (usePool)
                 BindPooledReturner(instance, sourcePrefab);
 
-            if (sourcePrefab != null)
-                instance.transform.localScale = sourcePrefab.transform.localScale;
+            instance.transform.localScale = cache.SourceLocalScale;
 
-            TrailRenderer[] trailRenderers = instance.GetComponentsInChildren<TrailRenderer>(true);
+            TrailRenderer[] trailRenderers = cache.TrailRenderers;
             for (int i = 0; i < trailRenderers.Length; i++)
             {
                 TrailRenderer trailRenderer = trailRenderers[i];
@@ -1367,7 +1417,7 @@ namespace Game.Presentation
                     trailRenderer.Clear();
             }
 
-            ParticleSystem[] particleSystems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            ParticleSystem[] particleSystems = cache.ParticleSystems;
             for (int i = 0; i < particleSystems.Length; i++)
             {
                 ParticleSystem particleSystem = particleSystems[i];
@@ -1377,6 +1427,38 @@ namespace Game.Presentation
                 particleSystem.Clear(true);
                 particleSystem.Play(true);
             }
+
+            SanitizeSpawnedVfxInstance(cache);
+        }
+
+        internal static void PreparePooledVfxInstance(GameObject instance, GameObject sourcePrefab)
+        {
+            PrepareReusableVfxState(instance, sourcePrefab, true);
+        }
+
+        internal static void ReturnPooledVfxInstance(GameObject instance, GameObject sourcePrefab)
+        {
+            BindPooledReturner(instance, sourcePrefab)?.ReturnNow();
+        }
+
+        internal static ParticleSystem[] GetCachedVfxParticleSystems(GameObject instance, GameObject sourcePrefab)
+        {
+            if (instance == null)
+                return Array.Empty<ParticleSystem>();
+
+            return GetOrCreateVfxRuntimeCache(instance, sourcePrefab).ParticleSystems;
+        }
+
+        private static SkillVfxRuntimeCache GetOrCreateVfxRuntimeCache(GameObject instance, GameObject sourcePrefab)
+        {
+            if (instance == null)
+                return null;
+
+            SkillVfxRuntimeCache cache = instance.GetComponent<SkillVfxRuntimeCache>();
+            if (cache == null)
+                cache = instance.AddComponent<SkillVfxRuntimeCache>();
+            cache.EnsureInitialized(sourcePrefab);
+            return cache;
         }
 
         private static PooledObjectReturner BindPooledReturner(GameObject instance, GameObject sourcePrefab)
@@ -1391,25 +1473,20 @@ namespace Game.Presentation
             return returner;
         }
 
-        private static void DisableBehaviours<T>(GameObject instance) where T : Behaviour
-        {
-            T[] behaviours = instance.GetComponentsInChildren<T>(true);
-            for (int i = 0; i < behaviours.Length; i++)
-            {
-                T behaviour = behaviours[i];
-                if (behaviour != null)
-                    behaviour.enabled = false;
-            }
-        }
-
         private static float ResolveNaturalDestroyDuration(GameObject instance)
         {
             if (instance == null)
                 return 0.1f;
 
+            SkillVfxRuntimeCache cache = instance.GetComponent<SkillVfxRuntimeCache>();
+            if (cache == null)
+                cache = GetOrCreateVfxRuntimeCache(instance, null);
+            if (cache.TryGetNaturalDestroyDuration(out float cachedDuration))
+                return cachedDuration;
+
             float duration = 0.1f;
 
-            ParticleSystem[] particleSystems = instance.GetComponentsInChildren<ParticleSystem>(true);
+            ParticleSystem[] particleSystems = cache.ParticleSystems;
             for (int i = 0; i < particleSystems.Length; i++)
             {
                 ParticleSystem particleSystem = particleSystems[i];
@@ -1420,7 +1497,7 @@ namespace Game.Presentation
                 duration = Mathf.Max(duration, ResolveCurveMaxDuration(main.startDelay) + main.duration + ResolveCurveMaxDuration(main.startLifetime));
             }
 
-            TrailRenderer[] trailRenderers = instance.GetComponentsInChildren<TrailRenderer>(true);
+            TrailRenderer[] trailRenderers = cache.TrailRenderers;
             for (int i = 0; i < trailRenderers.Length; i++)
             {
                 TrailRenderer trailRenderer = trailRenderers[i];
@@ -1428,14 +1505,15 @@ namespace Game.Presentation
                     duration = Mathf.Max(duration, trailRenderer.time);
             }
 
-            AudioSource[] audioSources = instance.GetComponentsInChildren<AudioSource>(true);
-            for (int i = 0; i < audioSources.Length; i++)
+            Behaviour[] behaviours = cache.Behaviours;
+            for (int i = 0; i < behaviours.Length; i++)
             {
-                AudioSource audioSource = audioSources[i];
+                AudioSource audioSource = behaviours[i] as AudioSource;
                 if (audioSource != null && audioSource.clip != null)
                     duration = Mathf.Max(duration, audioSource.clip.length);
             }
 
+            cache.SetNaturalDestroyDuration(duration);
             return duration;
         }
 

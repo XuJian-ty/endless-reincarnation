@@ -38,6 +38,8 @@ namespace Game.Presentation
         [Header("Collision")]
         [SerializeField] private LayerMask _collisionMask;
         [SerializeField] private float _collisionRadius = 0.2f;
+        [SerializeField] private float _collisionPadding = 0.08f;
+        [SerializeField] private float _collisionReturnSpeed = 9f;
 
         private Camera _cameraComponent;
         private Transform _target;
@@ -49,7 +51,12 @@ namespace Game.Presentation
         private float _currentAimBlend;
         private float _targetAimZoomLevel;
         private float _currentAimZoomLevel;
+        private float _baseCollisionDistance;
+        private float _overrideCollisionDistance;
+        private readonly RaycastHit[] _collisionHits = new RaycastHit[16];
         private bool _anglesInitialized;
+        private bool _baseCollisionInitialized;
+        private bool _overrideCollisionInitialized;
         private bool _loggedMissingTargetWarning;
         private bool _loggedMissingInputWarning;
 
@@ -80,6 +87,8 @@ namespace Game.Presentation
             _currentAimBlend = 0f;
             _targetAimZoomLevel = 0f;
             _currentAimZoomLevel = 0f;
+            _baseCollisionInitialized = false;
+            _overrideCollisionInitialized = false;
             _loggedMissingTargetWarning = false;
             _loggedMissingInputWarning = false;
 
@@ -138,11 +147,19 @@ namespace Game.Presentation
             Vector3 desiredPos = pivotPos
                                  + rotation * (_aimShoulderOffset * _currentAimBlend)
                                  + rotation * (Vector3.back * cameraDistance);
-            Vector3 resolvedBasePosition = ResolveCameraCollision(pivotPos, desiredPos);
+            Vector3 resolvedBasePosition = ResolveCameraCollision(
+                pivotPos,
+                desiredPos,
+                ref _baseCollisionDistance,
+                ref _baseCollisionInitialized);
 
             if (hasCameraOverride && cameraOverride.IsActive)
             {
-                Vector3 overridePosition = ResolveCameraCollision(cameraOverride.LookAtPosition, cameraOverride.DesiredPosition);
+                Vector3 overridePosition = ResolveCameraCollision(
+                    cameraOverride.LookAtPosition,
+                    cameraOverride.DesiredPosition,
+                    ref _overrideCollisionDistance,
+                    ref _overrideCollisionInitialized);
                 float blendWeight = Mathf.Clamp01(cameraOverride.BlendWeight);
                 Vector3 finalPosition = Vector3.Lerp(resolvedBasePosition, overridePosition, blendWeight);
                 Vector3 finalLookAt = Vector3.Lerp(pivotPos, cameraOverride.LookAtPosition, blendWeight);
@@ -151,6 +168,8 @@ namespace Game.Presentation
                 SyncAnglesFromCameraPose(finalPosition, finalLookAt);
                 return;
             }
+
+            _overrideCollisionInitialized = false;
 
             transform.position = resolvedBasePosition;
             transform.LookAt(pivotPos);
@@ -253,7 +272,11 @@ namespace Game.Presentation
             return player != null && player.TryGetDetachedCameraOverride(_targetHeight, out request);
         }
 
-        private Vector3 ResolveCameraCollision(Vector3 lookAtPosition, Vector3 desiredPosition)
+        private Vector3 ResolveCameraCollision(
+            Vector3 lookAtPosition,
+            Vector3 desiredPosition,
+            ref float currentDistance,
+            ref bool distanceInitialized)
         {
             Vector3 offset = desiredPosition - lookAtPosition;
             float desiredDistance = offset.magnitude;
@@ -261,11 +284,57 @@ namespace Game.Presentation
                 return desiredPosition;
 
             Vector3 dir = offset / desiredDistance;
-            float resolvedDistance = desiredDistance;
-            if (Physics.SphereCast(lookAtPosition, _collisionRadius, dir, out var hit, desiredDistance, _collisionMask))
-                resolvedDistance = Mathf.Clamp(hit.distance - _collisionRadius, 0.05f, desiredDistance);
+            float collisionRadius = ResolveCollisionRadius();
+            float targetDistance = desiredDistance;
+            int hitCount = Physics.SphereCastNonAlloc(
+                lookAtPosition,
+                collisionRadius,
+                dir,
+                _collisionHits,
+                desiredDistance,
+                _collisionMask,
+                QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit hit = _collisionHits[i];
+                if (hit.collider == null || (_target != null && hit.transform.IsChildOf(_target)))
+                    continue;
+                targetDistance = Mathf.Min(
+                    targetDistance,
+                    Mathf.Clamp(hit.distance - _collisionPadding, 0.05f, desiredDistance));
+            }
 
-            return lookAtPosition + dir * resolvedDistance;
+            if (!distanceInitialized)
+            {
+                currentDistance = targetDistance;
+                distanceInitialized = true;
+            }
+            else if (targetDistance < currentDistance)
+            {
+                currentDistance = targetDistance;
+            }
+            else
+            {
+                currentDistance = Mathf.MoveTowards(
+                    currentDistance,
+                    targetDistance,
+                    _collisionReturnSpeed * Time.deltaTime);
+            }
+
+            currentDistance = Mathf.Min(currentDistance, desiredDistance);
+            return lookAtPosition + dir * currentDistance;
+        }
+
+        private float ResolveCollisionRadius()
+        {
+            if (_cameraComponent == null)
+                return _collisionRadius;
+
+            float nearClip = _cameraComponent.nearClipPlane;
+            float halfHeight = nearClip * Mathf.Tan(_cameraComponent.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            float halfWidth = halfHeight * _cameraComponent.aspect;
+            float nearPlaneRadius = Mathf.Sqrt(halfWidth * halfWidth + halfHeight * halfHeight);
+            return Mathf.Max(_collisionRadius, nearPlaneRadius + _collisionPadding);
         }
 
         private void SyncAnglesFromCameraPose(Vector3 cameraPosition, Vector3 lookAtPosition)

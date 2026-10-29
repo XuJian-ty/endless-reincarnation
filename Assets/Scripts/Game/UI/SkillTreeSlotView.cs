@@ -74,7 +74,9 @@ namespace Game.UI
                 if (_skillNameText != null)
                     _skillNameText.text = "空槽位";
                 if (_hintText != null)
-                    _hintText.text = "拖拽主动技能到此处，右键可清空";
+                    _hintText.text = Application.isMobilePlatform
+                        ? "拖拽主动技能到此处，点击可清空"
+                        : "拖拽主动技能到此处，右键可清空";
                 if (_iconImage != null)
                     _iconImage.enabled = false;
                 return;
@@ -122,7 +124,9 @@ namespace Game.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (eventData != null && eventData.button == PointerEventData.InputButton.Right)
+            if (eventData != null &&
+                (eventData.button == PointerEventData.InputButton.Right ||
+                 (Application.isMobilePlatform && eventData.button == PointerEventData.InputButton.Left)))
                 _owner?.HandleSlotPointerClick(this, eventData);
         }
     }

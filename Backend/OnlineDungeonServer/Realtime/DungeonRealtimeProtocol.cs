@@ -5,16 +5,16 @@ namespace OnlineDungeonServer.Realtime;
 
 internal static class DungeonRealtimeProtocol
 {
-    public const int Version = 3;
+    public const int Version = 4;
     public const int DefaultPort = 5087;
     public const int DefaultKcpPort = 5088;
-    public const int MaxDatagramBytes = 16 * 1024;
-    public const int MaxReliableMessageBytes = 64 * 1024;
+    public const int MaxDatagramBytes = 60 * 1024;
+    public const int MaxReliableMessageBytes = 60 * 1024;
 
     public const string ChannelUnreliableState = "state";
     public const string ChannelReliableEvent = "event";
-    public const string StateTransport = "udp-unreliable-snapshot";
-    public const string EventTransport = "kcp-reliable-event";
+    public const string StateTransport = "websocket-reliable-tunnel";
+    public const string EventTransport = "websocket-reliable-tunnel";
     public const string SynchronizationMode = "state-sync-snapshot-interpolation";
     public const string AuthoritySchema = "enemy-authority-v3-movement-skill-chest-reward-scene-load";
     public const string SessionLifecycleMode = "server-authoritative-session-close";

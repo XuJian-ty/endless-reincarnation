@@ -37,7 +37,7 @@ namespace Game.Saving
 
         private ISaveStorage CreateDefaultStorage()
         {
-            if (SocialSession.GetInstance().IsLoggedIn)
+            if (SocialSession.GetInstance().IsOnlineAccount)
                 return _remoteStorage ??= new RemoteSaveStorage();
 
             return _fileStorage ??= new FileSaveStorage();
@@ -46,6 +46,7 @@ namespace Game.Saving
         private void HandleSessionChanged()
         {
             _storage = null;
+            _index.Clear();
         }
 
         public static string GetCurrentUserSaveRoot()
@@ -324,7 +325,7 @@ namespace Game.Saving
                     difficulty       = difficulty,
                     player           = new PlayerSaveData { level = 1, exp = 0 },
                     inventory        = new InventorySaveData(),
-                    itemCounts       = new ItemCountSaveData { gold = 500, talentPoints = 0 },
+                    itemCounts       = new ItemCountSaveData(),
                     equippedWeapon   = null,
                     meleeEquippedWeapon = null,
                     rangedEquippedWeapon = null,
@@ -356,9 +357,7 @@ namespace Game.Saving
             for (int i = 0; i < Domain.PlayerModel.SlotCount; i++)
                 run.inventory.slots.Add(new InventorySlotSave());
 
-            SetStarterStack(run.inventory.slots, 0, Domain.PlayerModel.ItemIds.PotionHp, 3);
-            SetStarterStack(run.inventory.slots, 1, Domain.PlayerModel.ItemIds.PotionMp, 3);
-            SetStarterStack(run.inventory.slots, 2, Domain.PlayerModel.ItemIds.Nectar, 1);
+            ApplyConfiguredStarterItems(run);
 
             WeaponDatabaseSO weaponDb = ConfigManager.GetInstance()?.GetWeaponDatabase();
             if (weaponDb == null)
@@ -380,7 +379,11 @@ namespace Game.Saving
 
         private static string GetCurrentUserStorageKey()
         {
-            SocialUserInfo currentUser = SocialSession.GetInstance().CurrentUser;
+            SocialSession session = SocialSession.GetInstance();
+            if (session.IsGuest)
+                return "guest_local";
+
+            SocialUserInfo currentUser = session.CurrentUser;
             if (currentUser != null && !string.IsNullOrWhiteSpace(currentUser.userId))
                 return SanitizePathSegment(currentUser.userId.Trim());
 
@@ -404,14 +407,86 @@ namespace Game.Saving
             return new string(chars);
         }
 
-        private static void SetStarterStack(List<InventorySlotSave> slots, int index, string itemId, int count)
+        private static void ApplyConfiguredStarterItems(RunData run)
         {
-            if (slots == null || index < 0 || index >= slots.Count || string.IsNullOrWhiteSpace(itemId) || count <= 0)
-                return;
+            run.itemCounts ??= new ItemCountSaveData();
+            run.itemCounts.gold = 0;
+            run.itemCounts.talentPoints = 0;
+            run.itemCounts.items ??= new List<ItemStackSave>();
+            run.itemCounts.items.Clear();
 
-            slots[index].weapon = null;
-            slots[index].itemId = itemId;
-            slots[index].count = count;
+            PlayerInitialItemConfigSO config = ConfigManager.GetInstance()?.GetPlayerInitialItemConfig();
+            if (config == null)
+            {
+                Debug.LogError("[SaveSystem] 缺少角色初始道具配置，新角色不会获得初始道具。");
+                return;
+            }
+
+            if (config.initialItems == null)
+            {
+                Debug.LogError("[SaveSystem] 角色初始道具配置的初始道具列表为空。");
+                return;
+            }
+
+            var usedItemIds = new HashSet<string>(StringComparer.Ordinal);
+            int nextSlotIndex = 0;
+            for (int i = 0; i < config.initialItems.Count; i++)
+            {
+                PlayerInitialItemEntry entry = config.initialItems[i];
+                if (entry == null || entry.count == 0)
+                    continue;
+
+                if (entry.count < 0 || string.IsNullOrWhiteSpace(entry.itemId))
+                {
+                    Debug.LogError($"[SaveSystem] 角色初始道具配置第 {i + 1} 项无效。");
+                    continue;
+                }
+
+                string itemId = entry.itemId.Trim();
+                if (!usedItemIds.Add(itemId))
+                {
+                    Debug.LogError($"[SaveSystem] 角色初始道具配置包含重复物品 ID：{itemId}");
+                    continue;
+                }
+
+                if (itemId == Domain.PlayerModel.ItemIds.Gold)
+                {
+                    run.itemCounts.gold = entry.count;
+                    continue;
+                }
+
+                if (itemId == Domain.PlayerModel.ItemIds.TalentPoint)
+                {
+                    run.itemCounts.talentPoints = entry.count;
+                    continue;
+                }
+
+                nextSlotIndex = AddStarterStack(run.inventory.slots, nextSlotIndex, itemId, entry.count);
+                if (nextSlotIndex < 0)
+                    return;
+            }
+        }
+
+        private static int AddStarterStack(List<InventorySlotSave> slots, int nextSlotIndex, string itemId, int count)
+        {
+            int remaining = count;
+            while (remaining > 0)
+            {
+                if (nextSlotIndex >= slots.Count)
+                {
+                    Debug.LogError($"[SaveSystem] 角色初始道具超过背包容量，无法写入物品：{itemId}");
+                    return -1;
+                }
+
+                int stackCount = Math.Min(remaining, Domain.InventorySlot.MaxStack);
+                slots[nextSlotIndex].weapon = null;
+                slots[nextSlotIndex].itemId = itemId;
+                slots[nextSlotIndex].count = stackCount;
+                remaining -= stackCount;
+                nextSlotIndex++;
+            }
+
+            return nextSlotIndex;
         }
     }
 }

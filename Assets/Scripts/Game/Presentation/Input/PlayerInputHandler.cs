@@ -25,6 +25,7 @@ namespace Game.Presentation
     public class PlayerInputHandler : MonoBehaviour
     {
         private const float DodgeHoldDuration = 0.2f;
+        private const float MobileAttackHoldDuration = 0.2f;
 
         // ── 双击奔跑配置 ──────────────────────────────────────────────────
         [SerializeField] private float _doubleTapWindow = 0.25f;
@@ -51,6 +52,16 @@ namespace Game.Presentation
         private float _dodgePressStartedAt;
         private bool _altAttackReceived;
 
+        // ── 移动端触控输入 ────────────────────────────────────────────────
+        private Vector2 _mobileMoveInput;
+        private Vector2 _mobileLookDelta;
+        private bool _mobileRunRequested;
+        private bool _mobileSprintRequested;
+        private bool _mobileAttackHeld;
+        private bool _mobileChargeStarted;
+        private float _mobileAttackPressStartedAt;
+        private readonly List<int> _mobilePressedSkillIndices = new List<int>(4);
+
         // ── InputAction 引用（在 Inspector 绑定或由 PlayerInput 注入）────
 #if ENABLE_INPUT_SYSTEM
         private sealed class SkillInputBinding
@@ -65,6 +76,7 @@ namespace Game.Presentation
         private InputAction _lookAction;
         private InputAction _jumpAction;
         private InputAction _dodgeAction;
+        private InputAction _sprintAction;
         private InputAction _fallAttackAction;
         private InputAction _chargeStartAction;
         private readonly List<SkillInputBinding> _skillBindings = new List<SkillInputBinding>(4);
@@ -90,6 +102,7 @@ namespace Game.Presentation
             _lookAction       = playerInput.actions["Look"];
             _jumpAction       = playerInput.actions["Jump"];
             _dodgeAction      = playerInput.actions["Dodge"];
+            _sprintAction     = playerInput.actions["Sprint"];
             _fallAttackAction = playerInput.actions["FallAttack"];
             _chargeStartAction = playerInput.actions["ChargeStart"];
 
@@ -154,31 +167,98 @@ namespace Game.Presentation
         public void RegisterChargeStart()   => _chargeStartReceived  = true;
         public void RegisterChargeRelease() => _chargeReleaseReceived = true;
 
+        public void SetMobileMovement(Vector2 moveInput, bool runRequested)
+        {
+            _mobileMoveInput = Vector2.ClampMagnitude(moveInput, 1f);
+            _mobileRunRequested = runRequested && _mobileMoveInput.sqrMagnitude > 0.01f;
+        }
+
+        public void AddMobileLookDelta(Vector2 lookDelta)
+        {
+            _mobileLookDelta += lookDelta;
+        }
+
+        public void RegisterMobileJump() => _jumpReceived = true;
+        public void RegisterMobileDodge() => _dodgeReceived = true;
+        public void SetMobileSprint(bool requested) => _mobileSprintRequested = requested;
+
+        public void RegisterMobileSkill(int slotIndex)
+        {
+            if (slotIndex < 0 || _mobilePressedSkillIndices.Contains(slotIndex))
+                return;
+
+            _mobilePressedSkillIndices.Add(slotIndex);
+        }
+
+        public void BeginMobileAttack()
+        {
+            if (_mobileAttackHeld)
+                return;
+
+            _mobileAttackHeld = true;
+            _mobileChargeStarted = false;
+            _mobileAttackPressStartedAt = Time.unscaledTime;
+        }
+
+        public void EndMobileAttack()
+        {
+            if (!_mobileAttackHeld)
+                return;
+
+            if (_mobileChargeStarted)
+                _chargeReleaseReceived = true;
+            else
+                _attackTapReceived = true;
+
+            _mobileAttackHeld = false;
+            _mobileChargeStarted = false;
+        }
+
+        public void ResetMobileInput()
+        {
+            _mobileMoveInput = Vector2.zero;
+            _mobileLookDelta = Vector2.zero;
+            _mobileRunRequested = false;
+            _mobileSprintRequested = false;
+            _mobileAttackHeld = false;
+            _mobileChargeStarted = false;
+            _mobilePressedSkillIndices.Clear();
+        }
+
         // ── 每帧更新（由 PlayerController.Update 调用）──────────────────
         public void ManualUpdate()
         {
 #if ENABLE_INPUT_SYSTEM
-            var moveRaw = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
-            var lookRaw = _lookAction?.ReadValue<Vector2>() ?? Vector2.zero;
+            var actionMove = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
+            var moveRaw = _mobileMoveInput.sqrMagnitude > 0.01f ? _mobileMoveInput : actionMove;
+            var lookRaw = (_lookAction?.ReadValue<Vector2>() ?? Vector2.zero) + ConsumeMobileLookDelta();
             UpdateRunDetection(moveRaw);
             UpdateDodgeHold();
+            UpdateMobileAttackHold();
 
             // 实时同步 LMB 按压状态：Hold Interaction 的 canceled 不走 Send Messages，
             // 所以用 action phase 判断——只有 Started 或 Performed 才算按住
             if (_chargeStartAction != null)
             {
                 var phase = _chargeStartAction.phase;
-                _isLmbHeld = phase == InputActionPhase.Started || phase == InputActionPhase.Performed;
+                _isLmbHeld = _mobileAttackHeld || phase == InputActionPhase.Started || phase == InputActionPhase.Performed;
+            }
+            else
+            {
+                _isLmbHeld = _mobileAttackHeld;
             }
 
             _pressedSkillIndices.Clear();
             CollectPressedSkillIndices(_pressedSkillIndices);
+            CollectMobileSkillIndices(_pressedSkillIndices);
 
             CurrentInput = new PlayerInputData(
                 moveInput:            moveRaw,
                 lookDelta:            lookRaw,
-                isRunRequested:       _isRunRequested,
-                isSprintRequested:    _dodgePressActive && _dodgeHoldActivated,
+                isRunRequested:       _isRunRequested || _mobileRunRequested,
+                isSprintRequested:    (_dodgePressActive && _dodgeHoldActivated) ||
+                                      (_sprintAction?.IsPressed() ?? false) ||
+                                      _mobileSprintRequested,
                 isLmbHeld:            _isLmbHeld,
                 jumpPressed:          Consume(ref _jumpReceived),
                 dodgePressed:         Consume(ref _dodgeReceived),
@@ -241,12 +321,43 @@ namespace Game.Presentation
             _dodgeHoldActivated = false;
         }
 
+        private void UpdateMobileAttackHold()
+        {
+            if (!_mobileAttackHeld || _mobileChargeStarted)
+                return;
+
+            if (Time.unscaledTime - _mobileAttackPressStartedAt < MobileAttackHoldDuration)
+                return;
+
+            _mobileChargeStarted = true;
+            _chargeStartReceived = true;
+        }
+
         // ── 工具方法 ──────────────────────────────────────────────────────
         private static bool Consume(ref bool flag)
         {
             if (!flag) return false;
             flag = false;
             return true;
+        }
+
+        private Vector2 ConsumeMobileLookDelta()
+        {
+            Vector2 value = _mobileLookDelta;
+            _mobileLookDelta = Vector2.zero;
+            return value;
+        }
+
+        private void CollectMobileSkillIndices(List<int> pressedSkillIndices)
+        {
+            for (int i = 0; i < _mobilePressedSkillIndices.Count; i++)
+            {
+                int slotIndex = _mobilePressedSkillIndices[i];
+                if (!pressedSkillIndices.Contains(slotIndex))
+                    pressedSkillIndices.Add(slotIndex);
+            }
+
+            _mobilePressedSkillIndices.Clear();
         }
 
 #if ENABLE_INPUT_SYSTEM

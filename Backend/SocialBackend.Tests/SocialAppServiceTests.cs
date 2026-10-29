@@ -142,12 +142,11 @@ public sealed class SocialAppServiceTests
                 requestId = aidRequest!.requestId,
                 decision = "accept",
             },
-            "127.0.0.1",
             out AidSessionDto? aidSession,
             out string acceptError));
         Assert.NotNull(aidSession);
         Assert.Equal(string.Empty, acceptError);
-        Assert.Equal("http://127.0.0.1:5086", aidSession!.dungeonServerUrl);
+        Assert.Equal("https://dungeon.example.test", aidSession!.dungeonServerUrl);
         Assert.Equal(5087, aidSession.dungeonRealtimeUdpPort);
         Assert.Equal(5088, aidSession.dungeonRealtimeKcpPort);
         Assert.Equal(2, aidSession.participants.Count);
@@ -193,7 +192,8 @@ public sealed class SocialAppServiceTests
         IConfiguration configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["OnlineDungeon:DefaultServerUrl"] = "http://127.0.0.1:5086",
+                ["OnlineDungeon:InternalServerUrl"] = "http://127.0.0.1:5086",
+                ["OnlineDungeon:PublicServerUrl"] = "https://dungeon.example.test",
             })
             .Build();
 

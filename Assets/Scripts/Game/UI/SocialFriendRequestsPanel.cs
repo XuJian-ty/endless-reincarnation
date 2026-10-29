@@ -139,7 +139,7 @@ namespace Game.UI
 
         private void RefreshRequests()
         {
-            if (!SocialSession.GetInstance().IsLoggedIn)
+            if (!SocialSession.GetInstance().IsOnlineAccount)
             {
                 SetStatus("请先登录账号", new Color(1f, 0.72f, 0.4f, 1f));
                 return;

@@ -211,13 +211,13 @@ namespace Game.UI
             buttonObject.transform.SetParent(transform, false);
 
             RectTransform rect = buttonObject.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(0f, 0f);
-            rect.pivot = new Vector2(0f, 0f);
-            rect.anchoredPosition = new Vector2(24f, 24f);
+            rect.anchorMin = new Vector2(0f, 0.5f);
+            rect.anchorMax = new Vector2(0f, 0.5f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.anchoredPosition = new Vector2(24f, 0f);
             rect.sizeDelta = socialHubButtonBackground != null
-                ? new Vector2(58f, 56f)
-                : new Vector2(112f, 44f);
+                ? new Vector2(116f, 112f)
+                : new Vector2(224f, 88f);
 
             Image image = buttonObject.GetComponent<Image>();
             if (socialHubButtonBackground != null)
@@ -252,7 +252,7 @@ namespace Game.UI
             Text label = labelObject.GetComponent<Text>();
             label.text = "社交";
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.fontSize = socialHubButtonBackground != null ? 10 : 20;
+            label.fontSize = socialHubButtonBackground != null ? 20 : 40;
             label.fontStyle = FontStyle.Bold;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = socialHubButtonBackground != null ? Color.black : Color.white;
@@ -267,7 +267,7 @@ namespace Game.UI
             if (_socialHubButton == null)
                 return;
 
-            bool loggedIn = SocialSession.GetInstance().IsLoggedIn;
+            bool loggedIn = SocialSession.GetInstance().IsOnlineAccount;
             _socialHubButton.interactable = loggedIn;
 
             Image image = _socialHubButton.targetGraphic as Image;

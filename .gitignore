@@ -6,6 +6,9 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+/.utmp/
+/output/
+/Minimap-*.png
 /Backend/**/bin/
 /Backend/**/obj/
 /Backend/**/publish/
@@ -14,6 +17,7 @@
 
 # Visual Studio
 .vs/
+/.vscode/
 *.csproj
 !Backend/**/*.csproj
 *.unityproj

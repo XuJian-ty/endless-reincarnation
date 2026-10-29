@@ -758,6 +758,7 @@ namespace Game.Editor
                 new KeyRebindEntry { actionName = "ToggleSkillTree", displayName = "技能树" },
                 new KeyRebindEntry { actionName = "ToggleMenu", displayName = "菜单" },
                 new KeyRebindEntry { actionName = "Dodge", displayName = "闪避" },
+                new KeyRebindEntry { actionName = "Sprint", displayName = "奔跑加速" },
                 new KeyRebindEntry { actionName = "Jump", displayName = "跳跃" },
                 new KeyRebindEntry { actionName = "Move", bindingPart = "up", displayName = "移动-上" },
                 new KeyRebindEntry { actionName = "Move", bindingPart = "down", displayName = "移动-下" },
